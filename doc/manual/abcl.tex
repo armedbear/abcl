@@ -1,6 +1,8 @@
 % -*- mode: latex; -*-
 % http://en.wikibooks.org/wiki/LaTeX/
 \documentclass[10pt]{book}
+% also need to have cm-super installed for high quality rendering
+\usepackage[T1]{fontenc}
 \usepackage{abcl}
 
 \usepackage{hyperref} % Put this one last, it redefines lots of internals
@@ -8,22 +10,35 @@
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.5.0-dev\\
+\date{Version 1.5.0-rc-0\\
 \smallskip
-December 2016}
+June 2017}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
 \maketitle
 
 \tableofcontents
+%%Preface to the Sixth edition, abcl-1.5.0
+\subsection{Preface to the Sixth Edition}
+
+With the sixth major release of the implementation, we make the
+following explicit revision of our compatibility to the underlying
+JVM.  Since we are an open source implementation, we insist on
+possible open access to the sources from with an JDK may both be built
+and run upon.  This requirement is no longer met by Java 5, so
+henceforth with the release of \textsc{ABCL} 1.5 ABCL will support
+Java 6, Java 7 and Java 8 runtimes.
+
+%% We should probably not release a 1.5.0, go straight for abcl-1.6.0?
+%% Not worth the effort: Java 9 is the current abcl-1.6.0 release driver.
 
 %%Preface to the Fifth edition, abcl-1.4.0
 \subsection{Preface to the Fifth Edition}
 
 \textsc{ABCL} 1.4 consolidates eighteen months of production bugfixes,
 and substantially improves the support for invoking external
-processes via SYS:RUN-PROGRAM.
+processes via \code{SYS:RUN-PROGRAM}.
 
 %%Preface to the Fourth edition, abcl-1.3.
 \subsection{Preface to the Fourth Edition}
@@ -143,7 +158,7 @@ contemporary Common Lisp.
 \textsc{ABCL} is licensed under the terms of the \textsc{GPL} v2 of
 June 1991 with the ``classpath-exception'' (see the file
 \texttt{COPYING} in the source distribution \footnote{See
-  \url{http://abcl.org/svn/trunk/tags/1.4.0/COPYING}} for
+  \url{http://abcl.org/svn/trunk/tags/1.5.0/COPYING}} for
 the license, term 13 in the same file for the classpath exception).
 This license broadly means that you must distribute the sources to
 \textsc{ABCL}, including any changes you make, together with a program that
@@ -159,7 +174,8 @@ course.
 \item Douglas Miles \texttt{Thanks for the whacky IKVM stuff and keeping the flame alive
   in the dark years.}
 \item Alan Ruttenberg \texttt{Thanks for JSS.}
-  \item piso
+\item Olof-Joachim Frahm  
+\item piso
 \item and of course
 \emph{Peter Graves}
 \end{itemize}
@@ -169,7 +185,7 @@ course.
 
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-\texttt{abcl.jar} or possibly something like \texttt{abcl-1.4.0.jar} if
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.5.0.jar} if
 using a versioned package on the local filesystem from your system
 vendor.  This jar file can be executed from the command line to obtain a
 \textsc{REPL}\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
@@ -1186,7 +1202,7 @@ where \code{CLASS-STRING} is a string naming a Java class in dotted package
 form.
 
 For instance the following specialization would perhaps allow one to
-print more information about the contents of a java.util.Collection
+print more information about the contents of a \code{java.util.Collection}
 object
 
 \begin{listing-lisp}
@@ -1294,6 +1310,9 @@ semantics to the execution of \code{REQUIRE} on the following symbols:
         Sucks
       \item \code{abcl-introspect} Provides a framework for
         introspecting runtime Java and Lisp object values.
+      \item \code{abcl-build} Provides a toolkit for building ABCL
+        from source, as well as installing the necessary tools for
+        such builds.
         
 \end{enumerate}
 
@@ -1314,7 +1333,7 @@ reader in the definition of the \code{SHARPSIGN-DOUBLE-QUOTE}
 
 \section{ASDF}
 
-asdf-3.2.0 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
+asdf-3.2.1 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
 but not initialized by default, as it relies on the \textsc{CLOS} subsystem
 which can take a bit of time to start \footnote{While this time is
   ``merely'' on the order of seconds for contemporary 2011 machines,
@@ -1331,7 +1350,7 @@ CL-USER> (require :asdf)
 
 The \textsc{ABCL} contrib is packaged as a separate jar archive usually named
 \code{abcl-contrib.jar} or possibly something like
-\code{abcl-contrib-1.4.0.jar}.  The contrib jar is not loaded by the
+\code{abcl-contrib-1.5.0.jar}.  The contrib jar is not loaded by the
 implementation by default, and must be first intialized by the
 \code{REQUIRE} mechanism before using any specific contrib:
 
@@ -1420,7 +1439,7 @@ Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
 More extensive documentations and examples can be found at
-\url{http://abcl.org/svn/tags/1.4.0/contrib/abcl-asdf/README.markdown}.
+\url{http://abcl.org/svn/tags/1.5.0/contrib/abcl-asdf/README.markdown}.
 
 \section{asdf-jar}
 
@@ -1431,7 +1450,7 @@ this package will recursively package all the required source and
 fasls in a jar archive.
 
 The documentation for this contrib can be found at
-\url{http://abcl.org/svn/tags/1.4.0/contrib/asdf-jar/README.markdown}.
+\url{http://abcl.org/svn/tags/1.5.0/contrib/asdf-jar/README.markdown}.
 
 \section{jss}
 \label{section:jss}
@@ -1466,25 +1485,32 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp} %$ <-- un-confuse Emacs font-lock
 
 Some more information on jss can be found in its documentation at
-\url{http://abcl.org/svn/tags/1.4.0/contrib/jss/README.markdown}
+\url{http://abcl.org/svn/tags/1.5.0/contrib/jss/README.markdown}
 
 \section{jfli}
 \label{section:jfli}
 
 The contrib contains a pure-Java version of JFLI. 
 
-\url{http://abcl.org/svn/tags/1.4.0/contrib/jfli/README}.
+\url{http://abcl.org/svn/tags/1.5.0/contrib/jfli/README}.
 
 \section{abcl-introspect}
+
+\textsc{ABCL-INTROSPECT} offers more extensive systems for inspecting the state
+of the implementation, most notably in integration with SLIME, where
+the backtrace mechanism is augmented to the poiont that local
+variables are inspectable.
 
 A compiled function is an instance of a class - This class has
 multiple instances if it represents a closure, or a single instance if
 it represents a non-closed-over function.
 
-The ABCL compiler stores constants that are used in function execution
-as private java fields. This includes symbols used to invoke function,
-locally-defined functions (such as via labels or flet) and string and
-other literal
+The \textsc{ABCL} compiler stores constants that are used in function
+execution as private java fields. This includes symbols used to invoke
+function, locally-defined functions (such as via \code{LABEL} or
+\code{flet}) and string and other literal objects.
+\textsc{ABCL-INTROSPECT} implements a ``do what I mean'' API for
+introspecting these constants.
 
 ABCL-INTROSPECT provides access to those internal values, and
 uses them in at least two ways. First, to annotate locally defined
@@ -1500,7 +1526,6 @@ useful. The second use to to find source locations for frames in the
 debugger. If the source location for a local function is asked for the
 location of its 'owner' is instead returns.
 
-
 In order to record information about local functions, ABCL defines a
 function-plist, which is for the most part unused, but is used here
 with set of keys indicating where the local function was defined and
@@ -1512,8 +1537,41 @@ to to take them into account as they are discovered.
 ABCL-INTROSPECT does not depend on jss, but provides a bit of
 jss-specific functionality if jss *is* loaded.
 
-\url{http://abcl.org/svn/abcl/contrib/abcl-introspect/}.
+\url{http://abcl.org/svn/tags/1.5.0/contrib/abcl-introspect/}.
 
+\section{abcl-build}
+
+\textsc{ABCL-BUILD} constitutes a new implementation for the original
+Lisp-hosted ABCL build system API in the package \code{ABCL-BUILD}
+that uses the same build artifacts as all of the other current builds.
+
+\subsection{Utilities}
+
+\textsc{ABCL-BUILD} consolidates various utilities that are useful
+for system construction, namely
+\begin{itemize}
+
+\item The ability to introspect the invocation of given executable in
+  the current implementation process PATH.
+
+\item Downloading and unpackages selected JVM artifacts, namely the
+  Ant and Maven build tools.  The \code{ABCL-BUILD:WITH-ANT} and
+  \code{ABCL-BUILD:WITH-MVN} macros abstracts this installation
+  procedure conveniently away from the User.
+
+\item The beginings of a generic framework to download arbitrary
+    archives from the network.
+\end{itemize}
+
+\url{http://abcl.org/svn/tags/1.5.0/contrib/abcl-build/}.
+
+\section{named-readtables}
+
+\code{NAMED-READTABLES} is a library that provides a namespace for
+readtables akin to the already-existing namespace of packages.
+
+\url{https://github.com/melisgl/named-readtables/}.
+\url{http://abcl.org/svn/tags/1.5.0/contrib/named-readtables/}.
 
 \chapter{History}
 \index{History}
@@ -1557,6 +1615,9 @@ bridges to the source repository at
 \url{https://gitlab.common-lisp.net/abcl/abcl/} so that pull
 requests for enhancements to the implementation many be more easily
 facilitated.
+
+In June 2017, we released the Sixth Edition of the implementation
+which dropped support for running on Java 5.
 
 \appendix 
 

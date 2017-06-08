@@ -56,11 +56,7 @@ public final class logeqv extends Primitive
     @Override
     public LispObject execute(LispObject arg)
     {
-        if (arg instanceof Fixnum)
-            return arg;
-        if (arg instanceof Bignum)
-            return arg;
-        return type_error(arg, Symbol.INTEGER);
+        return checkInteger(arg);
     }
 
     @Override

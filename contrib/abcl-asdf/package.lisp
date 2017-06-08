@@ -2,12 +2,19 @@
 
 (defpackage abcl-asdf
   (:use cl)
+  (:import-from :abcl/build
+                #:split-string)
   (:export 
 ;;; Public API
    #:resolve
 
-   #:ensure-mvn-version
 
+   ;; Configuring Maven
+
+   #:with-aether
+
+   #:ensure-mvn-version
+   
    #:find-mvn
 
    #:*mvn-directory*
@@ -25,6 +32,7 @@
    #:*maven-remote-repository*
    #:resolve-artifact
    #:resolve-dependencies
+   #:resolve-multiple-maven-dependencies
 
    #:as-classpath
 
@@ -33,6 +41,10 @@
    
    #:*added-to-classpath*
    #:*inhibit-add-to-classpath*))
+
+
+
+
 
 
 

@@ -54,9 +54,8 @@
 (defmethod operation-done-p ((operation compile-op) (c jar-directory))
   t)
 
-(defclass jar-file (static-file) ())
-
-(defmethod source-file-type ((c jar-file) (s module)) "jar")
+(defclass jar-file (static-file)
+  ((type :initform "jar")))
 
 (defmethod perform ((operation compile-op) (c jar-file))
   (java:add-to-classpath (component-pathname c)))

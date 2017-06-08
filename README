@@ -92,7 +92,7 @@ RUNNING FROM BINARY RELEASE
 After you have downloaded a binary release from either
 [Maven][maven-abcl] or from [abcl.org][abcl.org-release] archive
 unpack it into its own directory. To run ABCL directly from this
-directory, make sure Java (version 1.5 or up) is in your shell's
+directory, make sure Java (version 1.6 or up) is in your shell's
 path. 
 
 [maven-abcl]:         <mvn:abcl.org/abcl/>
@@ -105,7 +105,7 @@ Then issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.4.0
+    Armed Bear Common Lisp 1.5.0
     Java 1.8.0_102 Oracle Corporation
     Java HotSpot(TM) 64-Bit Server VM
     Low-level initialization completed in 0.324 seconds.
@@ -130,7 +130,7 @@ preferred (and most tested way) is to being to use the Ant build tool:
   implementations for this process: SBCL, CMUCL, OpenMCL, Allegro
   CL, LispWorks or CLISP.
 
-In all cases you need a Java 5 or later JDK (JDK 1.[5678] have been
+In all cases you will need a Java 6 or later JDK (JDK 1.[678] have been
 tested).  Just the JRE isn't enough, as you need the Java compiler
 ('javac') to compile the Java source of the ABCL implementation.
 
@@ -178,21 +178,9 @@ debug process.
 Building from Lisp
 ------------------
 
-Building from another Common Lisp implementation is the most venerable
-and least tested way of building ABCL.  It produces a "non-standard"
-version of the distribution that doesn't share build instructions with
-the previous two methods, but it still may be of interest to those who
-absolutely don't want to know anything about Java.  The other Common
-Lisp implementation does not actually perform any compliation, but is
-merely used to orchestrate the invocation of tools in the JDK.
-
-First, copy the file 'customizations.lisp.in' to 'customization.lisp',
-in the directory containing this README file, editing to suit your
-situation, paying attention to the comments in the file.  The critical
-step is to have Lisp special variable '*JDK*' point to the root of the
-Java Development Kit.  Underneath the directory referenced by the
-value of '*JDK*' there should be an executable Java compiler in
-'bin/javac' ('bin/javac.exe' under Windows).
+You need to have a Java compiler installed locally.  If the Ant build
+tool does not exist, it will be downloaded and used to invoke the Ant
+build.
 
 Then, one may either use the 'build-from-lisp.bash' shell script or load
 the necessary files into your Lisp image by hand.
@@ -229,7 +217,7 @@ into limitations on command line length (but is a lot slower).
 
 ### Building from another Lisp manually
 
-There is also an ASDF definition in 'abcl.asd' for the BUILD-ABCL
+There is also an ASDF definition in 'abcl.asd' for ABCL/BUILD
 which can be used to load the necessary Lisp definitions, after which
 
     CL-USER> (build-abcl:build-abcl :clean t :full t)
@@ -294,6 +282,6 @@ On behalf of all ABCL development team and contributors,
     vibhu
     dmiles
 
-October 2016
+June 2017
 
 

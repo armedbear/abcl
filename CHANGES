@@ -5,22 +5,135 @@ Version 1.5.0
 <http://github.com/armedbear/abcl/>
 Unreleased
 
+Enhancements
+------------
+
+* [r14934] ABCL-INTROSPECT a contrib for accessing ABCL compiler
+  information (Alan).
+
+* [r14907] ABCL-AIO all-in-one jar target creates dist/abcl-aio.jar (Alan).
+
+* [r15009] Rework ABCL-BUILD as a contrib which uses UIOP machinery to
+  invoke Ant on <file:build.xml>, unifying all build mechanisms to a single
+  prescriptive source artifact external to Common-Lisp.
+
+* [r14911] [r14955] [r14914]  Source recording on SYS:SOURCE plist 
+  PRECOMPILER possibly beta reduce form with function
+  position lambda, record arglist during Build
+
+* [r14912] [r14922] Re-write the ASDF descriptions using secondary systems
+
+* [r14917] build: 'abcl.clean.application.fasls' now cleans only ABCL fasls
+
+* [r14923] Added Dockerfile to package ABCL in Docker
+
+* [r14927] Build add ability to download Maven from Ant
+
+* [r14931] Bless EXT:GET-PID as the offical way to get process id
+
+* [r14947] JSS syntax for access Java fields (Alan)
+
+* [r14962] JSS:J2LIST as a convenience method for turning "anything"
+  in Java to an appropriate Lisp list.
+
+* [r14967] (Provisional) ABCL-ASDF JDK-JAR ASDF class to describe JDK
+  path locations (Alan).
+
+* [r14969] Add QUICKLISP-ABCL:*QUICKLISP-PARENT-DIR* special (Alan).
+
+* [r14978] Implement MAKE-LOAD-FORM for Java fields (Alan).
+
+* [r15013] Restore the ability SYSTEM:CHOOSE-ASSEMBLER to use Objectweb
+
+* [r15018] Enable use of MVN-MODULE in ASDF definitions (Alan).
+
+* [r15019] Add NAMED-READTABLES from <​https://github.com/melisgl/named-readtables
+
+
 Fixes
 -----
 
-* Fix CL:MAKE-PATHNAME for explicitly nil HOST
-
-* JNEW-RUNTIME-CLASS 
+* [r14903] JNEW-RUNTIME-CLASS (Olof)
+  Make static functions and :int parameters work.  Fix return
+  conversion for null.  Ensure that the same classloader is used.
 
 * Fix CL:OPEN for :DIRECTION :INPUT (pipping)
 
-* ABCL-ASDF uses the value of the reported Maven home to look for
-  libraries, fixing loading CFFI under FreeBSD 11-RELEASE
+* [r14905] ABCL-ASDF uses the value of the reported Maven home to look
+  for libraries, fixing loading CFFI under FreeBSD 11-RELEASE.
+
+* [r14906] JSS:LOOKUP-CLASSNAME would return allcaps class name if not
+  found (alan).
+
+* [r14909] QUICKLISP-ABCL simplify load/compile logic.
+
+* [r14918] JAVA Remove generic Throwable handler from JAVA:JFIELD innards
+
+* [r14919] ABCL-ASDF fix finding Maven on Fedora
+
+* [r14926] ABCL-ASDF fix problems with test suite's reliance on PROVE
+
+* [r14921] CL:DIRECTORY no longer errors on files containing asterisk characters
+
+* [r14950] Fix restart calculation for compiled closures (Alan)
+
+* [r14952] Guard printing of large Java objects (Alan)
+
+* [r14953] Fix debugging frames which don't have a pathname (Alan)
+
+* [r14956] Show function documentation in describe (Alan)
+
+* [r14966] JAVA:CHAIN returns last value of computation (Alan)
+
+* [r14973] ABCL-ASDF probes for "mvn" and "mvn.cmd" under Windows
+
+* [r14974] Standardize the use of CL:*LOAD-VERBOSE* to control loading
+  verbosity.
+
+* [r14976] Fix CL:GET-OUTPUT-STREAM-STRING to reset underlying buffer
+
+* [r14979] Fix JavaObject.getParts() for Java arrays (Alan).
+
+* [r14980] Fix SETF for EXT:URL-PATHNAME-FRAGMENT
+
+* [r14987] Fix CL:MAKE-PATHNAME for explicitly nil HOST
+
+* [r14996] Correctly implement 'time-of-the-time' daylight savings
+  semantics (Scott).
+
+* [r15001] Fix signalling simple error with #\~ in CL:FORMAT string
+  (Alan).
+
+* [r15002] Fix problems with SHARED-INITIALIZE (Olof).
+
+* [r15003] Fix ENSURE-GENERIC-FUNCTION when removing definition (Olof).
+
+* [r15004] Fix DESTRUCTURING-BIND with &rest arguments (Olof)
+
+* [r15024] Optimise LOGCOUNT (Olof).
+
+* [r15026] Support bignum argument for FILE-POSITION (Olof).
+
+* [r15032] Better directory validation; handle :UNSPECIFIC (Olof).
+
+* [r15033] Fix LOOP code size estimation (Olof).
+
+* [r15034] Fix NTH inlining type mismatch (Olof).
+
+* [r15035] Fix byte code verification error in edge case (Olof).
+
+* [r15036] Fix PACKAGE-ERROR-PACKAGE behaviour (Olof).
+
+* [r15037] Fix MAX type derivation (Olof).
+
+* [r15038] Fix NPE if directory can't be accessed (Olof).
+
+* [r15044] Documentation renders less/greater-than characters correctly (Olof).
 
 Updates
 -------
 
-* ASDF 3.2.0
+* ASDF 3.2.1
 
 
 Version 1.4.0

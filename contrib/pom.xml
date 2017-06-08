@@ -13,7 +13,7 @@
   </parent>
   <groupId>org.abcl</groupId>
   <artifactId>abcl-contrib</artifactId>
-  <version>1.5.0-SNAPSHOT</version>
+  <version>1.5.0-rc-1</version>
   <packaging>jar</packaging>
   <name>Armed Bear Common Lisp (ABCL) Contribs</name>
   <description>Extra packages--contribs--for ABCL</description>

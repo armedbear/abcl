@@ -97,6 +97,8 @@ public final class Keyword
         JAVA_1_5            = internKeyword("JAVA-1.5"),
         JAVA_1_6            = internKeyword("JAVA-1.6"),
         JAVA_1_7            = internKeyword("JAVA-1.7"),
+        JAVA_1_8            = internKeyword("JAVA-1.8"),
+        JAVA_1_9            = internKeyword("JAVA-1.9"),
         KEY                 = internKeyword("KEY"),
         KEY_AND_VALUE       = internKeyword("KEY-AND-VALUE"),
         KEY_OR_VALUE        = internKeyword("KEY-OR-VALUE"),

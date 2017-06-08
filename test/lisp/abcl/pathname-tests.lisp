@@ -1722,3 +1722,13 @@
        (pathname-name p) (pathname-type p) (pathname-version p) (pathname-directory p)))
   :wild :wild :wild (:absolute :wild))
       
+
+(deftest pathname.make-pathname.3
+    (signals-error
+     (make-pathname :directory '(:absolute ("a" "b")))
+     'file-error)
+  t)
+
+(deftest pathname.make-pathname.4
+    (directory-namestring (make-pathname :directory :unspecific))
+  "")

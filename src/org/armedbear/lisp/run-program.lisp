@@ -28,10 +28,14 @@
 ;;; this exception to your version of the library, but you are not
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
+(in-package :system)
 
-(in-package "SYSTEM")
+(require :java)
 
-(require "JAVA")
+(defparameter *implementations*
+  '(:java-1.6 :java-1.7 :java-1.8)) ;; UNUSED
+(defun not-java-6 ()
+  (not (find :java-1.6 *features*)))
 
 (export '(run-program process process-p process-input process-output
           process-error process-alive-p process-wait process-exit-code
@@ -143,27 +147,54 @@ The &key arguments have the following meanings:
                                     (princ-to-string (cdr entry))))))
     (let ((input-stream-p (eq input :stream))
           (output-stream-p (eq output :stream))
-          (error-stream-p (eq error :stream)))
+          (error-stream-p (eq error :stream))
+          output-redirection
+          input-redirection
+          error-redirection)
       (unless output-stream-p
-        (unless (setup-output-redirection process-builder output NIL if-output-exists)
+        (unless (setf output-redirection
+                      (setup-output-redirection process-builder output NIL if-output-exists))
           (return-from run-program)))
       (if (eq error :output)
           (java:jcall "redirectErrorStream" process-builder T)
           (unless error-stream-p
-            (unless (setup-output-redirection process-builder error T if-error-exists)
+            (unless (setf error-redirection
+                          (setup-output-redirection process-builder error T if-error-exists))
               (return-from run-program))))
       (unless input-stream-p
-        (unless (setup-input-redirection process-builder input if-input-does-not-exist)
+        (unless (setf input-redirection
+                      (setup-input-redirection process-builder input if-input-does-not-exist))
           (return-from run-program)))
       (when directory
         (java:jcall "directory" process-builder (java:jnew "java.io.File" (namestring directory))))
-      (let ((process (make-process (%process-builder-start process-builder)
-                                   input-stream-p output-stream-p error-stream-p)))
-        (when wait (process-wait process))
-        process))))
+      (let ((process 
+             (if (not-java-6)
+                 (make-process (%process-builder-start process-builder)
+                               input-stream-p output-stream-p error-stream-p)
+                 (make-process (%process-builder-start process-builder)
+                               t t t))))
+        (when (find :java-1.6 *features*)
+          (when input-redirection
+            (let ((input (process-input process)))
+              (threads:make-thread (lambda () (from-file input-redirection input)))))
+          (when output-redirection
+            (let ((output (process-output process))
+                  (file (first output-redirection))
+                  (appendp (second output-redirection)))
+              (threads:make-thread (lambda () (to-file output file :append appendp)))))
+          (when error-redirection
+            (let ((error (process-error process))
+                  (file (first output-redirection))
+                  (appendp (second output-redirection)))
+              (threads:make-thread (lambda () (to-file error file :append appendp))))))
+        (when (or wait
+                  (not-java-6)
+                  (process-wait process))
+          process)))))
 
 (defconstant +inherit+
-  (java:jfield "java.lang.ProcessBuilder$Redirect" "INHERIT"))
+  (ignore-errors
+    (java:jfield "java.lang.ProcessBuilder$Redirect" "INHERIT")))
 
 (defun coerce-to-file (value)
   (java:jnew
@@ -178,24 +209,54 @@ The &key arguments have the following meanings:
          (t
           (error "Don't know how to set up null stream on this platform."))))))
 
+(define-condition implementation-not-available (error)
+  ((missing :initarg :missing
+            :reader missing))
+  (:report (lambda (condition stream)
+             (format stream "This JVM is missing the ~a implementation." (missing condition)))))
+
 (defun setup-input-redirection (process-builder value if-does-not-exist)
+  "Returns boolean truth when input redirections has been successfully set up.
+
+As a second value, returns either nil if input should inherit from the
+parent process, or a java.io.File reference to the file to read input from."
   (let ((redirect (if (eq value T)
-                      +inherit+
+                      ;; Either inherit stdio or fail
+                      (if (not-java-6)
+                          +inherit+
+                          (signal 'implementation-not-available
+                                  :missing "Inheritance for subprocess of standard input"))
+                      ;; or read from a file
                       (let ((file (coerce-to-file value)))
                         (when value
                           (if (eq if-does-not-exist :create)
                               (open value :direction :probe :if-does-not-exist :create)
                               (unless (probe-file value)
                                 (ecase if-does-not-exist
-                                  (:error (error "Input file ~S does not exist." value))
-                                  ((NIL) (return-from setup-input-redirection))))))
-                        (java:jstatic "from" "java.lang.ProcessBuilder$Redirect" file)))))
-    (java:jcall "redirectInput" process-builder redirect))
-  T)
+                                  (:error
+                                   (error "Input file ~S does not already exist." value))
+                                  ((NIL)
+                                   (return-from setup-input-redirection))))))
+                        (if (not-java-6)
+                            (java:jstatic "from" "java.lang.ProcessBuilder$Redirect" file)
+                            file)))))
+    (when (not-java-6)
+      (java:jcall "redirectInput" process-builder redirect))
+    redirect))
 
+#|
+value
+  t   inherit from
+|#
 (defun setup-output-redirection (process-builder value errorp if-does-exist)
   (let ((redirect (if (eq value T)
-                      +inherit+
+                      (if (not-java-6)
+                          +inherit+
+                          (if errorp
+                              (signal 'implementation-not-available
+                                      :missing "Inheritance for subprocess of standard error")
+                              (signal 'implementation-not-available
+                                      :missing "Inheritance for subprocess of standard output")))
                       (let ((file (coerce-to-file value))
                             appendp)
                         (when (and value (probe-file value))
@@ -207,13 +268,16 @@ The &key arguments have the following meanings:
                                                 :if-exists if-does-exist)))
                             (:append (setf appendp T))
                             ((NIL) (return-from setup-output-redirection))))
-                        (if appendp
-                            (java:jstatic "appendTo" "java.lang.ProcessBuilder$Redirect" file)
-                            (java:jstatic "to" "java.lang.ProcessBuilder$Redirect" file))))))
-    (if errorp
-        (java:jcall "redirectError" process-builder redirect)
-        (java:jcall "redirectOutput" process-builder redirect)))
-  T)
+			(if (not-java-6)
+			  (if appendp
+			      (java:jstatic "appendTo" "java.lang.ProcessBuilder$Redirect" file)
+			      (java:jstatic "to" "java.lang.ProcessBuilder$Redirect" file))
+			  (list file appendp))))))
+    (when (not-java-6)
+      (if errorp
+	  (java:jcall "redirectError" process-builder redirect)
+	  (java:jcall "redirectOutput" process-builder redirect)))
+    redirect))
 
 ;;; The process structure.
 (defstruct (process (:constructor %make-process (jprocess)))
@@ -312,3 +376,37 @@ The &key arguments have the following meanings:
 
 (defun %process-kill (jprocess)
   (java:jcall "destroy" jprocess))
+
+(defun to-file (input java.io.file &key (append nil))
+  (declare (ignore append)) ;; FIXME
+  (let ((file (java:jcall "toString" java.io.file)))
+    (with-open-file (s file
+                       :direction :output
+                       :element-type (stream-element-type input))
+      (let ((buffer (make-array 8192 :element-type (stream-element-type input))))
+        (loop
+           :for bytes-read = (read-sequence buffer input)
+           :while (plusp bytes-read)
+           :do (write-sequence buffer s :end bytes-read)))))
+  (close input))
+
+(defun from-file (java.io.file output)
+  (let ((file (java:jcall "toString" java.io.file)))
+    (with-open-file (s file
+                       :direction :input
+                       :element-type (stream-element-type output))
+      (let ((buffer (make-array 8192 :element-type (stream-element-type output))))
+        (loop
+           :for bytes-read = (read-sequence buffer s)
+           :while (plusp bytes-read)
+           :do (write-sequence buffer output :end bytes-read))))
+    (close output)))
+  
+#|
+tests
+
+(uiop:run-program "uname -a" :output :string)
+
+(uiop:run-program "cat /etc/passwd" :output :string)
+
+|#

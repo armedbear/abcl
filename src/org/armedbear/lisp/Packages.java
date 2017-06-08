@@ -125,7 +125,7 @@ public final class Packages
     Object obj = map.get(nickname);
     if (obj != null && obj != pkg)
       {
-        error(new PackageError("A package named " + nickname + " already exists."));
+        error(new PackageError("A package named " + nickname + " already exists.", new SimpleString(nickname)));
         return;
       }
     map.put(nickname, pkg);

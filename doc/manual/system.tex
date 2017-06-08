@@ -619,7 +619,8 @@ should be checked for wildness.
 --- Variable: \textbf{*abcl-contrib*} [\textbf{system}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Pathname of the ABCL contrib.
+Pathname of the abcl-contrib artifact.
+
 Initialized via SYSTEM:FIND-CONTRIB.
 \end{adjustwidth}
 
@@ -702,6 +703,18 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{SYSTEM:*DISASSEMBLERS*}
+\index{*DISASSEMBLERS*}
+--- Variable: \textbf{*disassemblers*} [\textbf{system}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Methods of invoking CL:DISASSEMBLE consisting of a pushable list of (name function), where function takes a object to disassemble, returns the results as a string.
+
+The system is :jad using the venerable-but-still-works JAD. 
+
 \end{adjustwidth}
 
 \paragraph{}
@@ -993,6 +1006,17 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{SYSTEM:CHOOSE-DISASSEMBLER}
+\index{CHOOSE-DISASSEMBLER}
+--- Function: \textbf{choose-disassembler} [\textbf{system}] \textit{\&optional name}
+
+\begin{adjustwidth}{5em}{5em}
+Hook to choose invoked behavior of CL:DISASSEMBLE by using one of the methods registered in SYSTEM:*DISASSEMBLERS*. 
+
+Optionally, prefer the strategy named NAME if one exists.
+\end{adjustwidth}
+
+\paragraph{}
 \label{SYSTEM:CLASS-BYTES}
 \index{CLASS-BYTES}
 --- Function: \textbf{class-bytes} [\textbf{system}] \textit{class}
@@ -1116,15 +1140,6 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{SYSTEM:DEFAULT-TIME-ZONE}
-\index{DEFAULT-TIME-ZONE}
---- Function: \textbf{default-time-zone} [\textbf{system}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-Returns the OFFSET of the default time zone for this instance of the implementation, and as a second value the state of the DAYLIGHT-P predicate.
 \end{adjustwidth}
 
 \paragraph{}
@@ -2430,7 +2445,7 @@ not-documented
 --- Function: \textbf{sha256} [\textbf{system}] \textit{\&rest paths-or-strings}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Returned ASCIIfied representation of SHA256 digest of byte-based resource at PATHS-OR-STRINGs.
 \end{adjustwidth}
 
 \paragraph{}
@@ -2646,7 +2661,8 @@ not-documented
 --- Function: \textbf{unzip} [\textbf{system}] \textit{pathname \&optional directory => unzipped\_pathnames}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Unpack zip archive at PATHNAME returning a list of extracted pathnames.
+If the optional DIRECTORY is specified, root the abstraction in that directory, otherwise use the current value of *DEFAULT-PATHNAME-DEFAULTS*.
 \end{adjustwidth}
 
 \paragraph{}

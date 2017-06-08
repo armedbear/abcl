@@ -5249,7 +5249,7 @@ for use with derive-type-times.")
         one-integer-type
       (derive-compiler-types args op))))
 
-(define-int-bounds-derivation max (low1 low2 high1 high2)
+(define-int-bounds-derivation max (low1 high1 low2 high2)
   (values (or (when (and low1 low2) (max low1 low2)) low1 low2)
           ; if either maximum is unbound, their maximum is unbound
           (when (and high1 high2) (max high1 high2))))
@@ -5531,8 +5531,12 @@ We need more thought here.
 
 (define-inlined-function compile-nth (form target representation)
   ((check-arg-count form 2))
-  (let ((index-form (second form))
-        (list-form (third form)))
+  (let* ((index-form (second form))
+         (list-form (third form))
+         (index-type (derive-compiler-type index-form)))
+    (unless (fixnum-type-p index-type)
+      (compile-function-call form target representation)
+      (return-from compile-nth))
     (with-operand-accumulation
         ((compile-operand index-form :int)
          (compile-operand list-form nil)
@@ -6844,8 +6848,6 @@ We need more thought here.
   t)
 
 (defun p2-throw (form target representation)
-  ;; FIXME What if we're called with a non-NIL representation?
-  (declare (ignore representation))
   (with-operand-accumulation
       ((emit-thread-operand)
        (compile-operand (second form) nil) ; Tag.
@@ -6855,7 +6857,11 @@ We need more thought here.
 			 (lisp-object-arg-types 2) nil))
   ;; Following code will not be reached.
   (when target
-    (emit-push-nil)
+    (ecase representation
+      ((:int :boolean :char)
+       (emit 'iconst_0))
+      ((nil)
+       (emit-push-nil)))
     (emit-move-from-stack target)))
 
 (defun p2-unwind-protect-node (block target)

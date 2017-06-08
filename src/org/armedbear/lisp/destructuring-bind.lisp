@@ -142,6 +142,11 @@
     (when (eq keyword (car remaining))
       (return t))))
 
+(defun dot-length (cons)
+  (do ((rest cons (cdr rest))
+       (length 0 (1+ length)))
+      ((or (null rest) (atom rest)) length)))
+
 (defun parse-defmacro-lambda-list
        (lambda-list arg-list-name name error-kind error-fun
 		    &optional top-level env-illegal ;;env-arg-name
@@ -193,7 +198,7 @@
                       (setq *env-var* (car rest-of-args)
                             env-arg-used t))
 		     (t
-		      (defmacro-error "&ENVIRONMENT" error-kind name))))
+		      (defmacro-error "&ENVIRONMENT" name))))
 	      ((or (eq var '&rest) (eq var '&body))
 	       (cond ((and (cdr rest-of-args) (symbolp (cadr rest-of-args)))
 		      (setq rest-of-args (cdr rest-of-args))
@@ -209,7 +214,7 @@
 			(parse-defmacro-lambda-list
 			 destructuring-lambda-list sub name error-kind error-fun)))
 		     (t
-		      (defmacro-error (symbol-name var) error-kind name))))
+		      (defmacro-error (symbol-name var) name))))
 	      ((eq var '&optional)
 	       (setq now-processing :optionals))
 	      ((eq var '&key)
@@ -279,25 +284,23 @@
 		  (push-let-binding var nil nil))))
 	      (t
 	       (error "non-symbol in lambda-list: ~S" var)))))
-    ;; Generate code to check the number of arguments, unless dotted
-    ;; in which case length will not work.
-    (unless restp
-      (push `(unless (<= ,minimum
-                         (length ,path-0)
-                         ,@(unless restp
-                             (list maximum)))
-               ,(if (eq error-fun 'error)
-                    `(arg-count-error ',error-kind ',name ,path-0
-                                      ',lambda-list ,minimum
-                                      ,(unless restp maximum))
-                    `(,error-fun 'arg-count-error
-                      :kind ',error-kind
-                      ,@(when name `(:name ',name))
-                      :argument ,path-0
-                      :lambda-list ',lambda-list
-                      :minimum ,minimum
-                      ,@(unless restp `(:maximum ,maximum)))))
-            *arg-tests*))
+    ;; Generate code to check the number of arguments.
+    (push `(unless (<= ,minimum
+                       (dot-length ,path-0)
+                       ,@(unless restp
+                           (list maximum)))
+             ,(if (eq error-fun 'error)
+                  `(arg-count-error ',error-kind ',name ,path-0
+                                    ',lambda-list ,minimum
+                                    ,(unless restp maximum))
+                  `(,error-fun 'arg-count-error
+                    :kind ',error-kind
+                    ,@(when name `(:name ',name))
+                    :argument ,path-0
+                    :lambda-list ',lambda-list
+                    :minimum ,minimum
+                    ,@(unless restp `(:maximum ,maximum)))))
+          *arg-tests*)
     (if keys
         (let ((problem (gensym "KEY-PROBLEM-"))
               (info (gensym "INFO-")))

@@ -5,11 +5,10 @@
 
 usage()
 {
-    echo "WARNING: This build method can produce slightly different results than"
-    echo "         the canonical Ant build method."
     echo
     echo "USAGE:"
-    echo "$0 <implementation> [[ --clean=T | --full=T | --batch=NIL ]]"
+        echo "$0 <implementation>"
+#    echo "$0 <implementation> [[ --clean=T | --full=T | --batch=NIL ]]"
 }
 
 if [ -z "$1" ]; then
@@ -39,10 +38,12 @@ if [ $? != 0 ] ; then
 fi
 eval set -- "$TEMP"
 
+# TODO all ignored
 CLEAN="t"
 FULL="t"
 BATCH="t"
 
+# TODO all ignored
 while true ; do
     case "$1" in
         --clean) 
@@ -65,21 +66,8 @@ while true ; do
         esac
 done
 
-FORM="(build-abcl:build-abcl :clean $CLEAN :full $FULL :batch $BATCH)"
-FILE="build-abcl.lisp"
-
-if [[ ! -r customizations.lisp ]]; then
-    cat <<-EOF
-
-Failed to find configuration in 'customizations.lisp'.  Please copy
-'customizations.lisp.in' to 'customizations.lisp', editing it to
-reflect local configuration.
-
-EOF
-    exit 1
-fi
-
-
+FORM="(abcl/build:abcl/build)"
+FILE="src/org/abcl/lisp/build/build-abcl.lisp"
 
 abcl()
 {

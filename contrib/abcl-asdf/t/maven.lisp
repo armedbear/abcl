@@ -20,12 +20,6 @@
 (ok
  (abcl-asdf:resolve "org.abcl/abcl"))
 
-(ok 
- (let ((result (abcl-asdf:resolve-dependencies "org.armedbear.lisp" "abcl")))
-   (and result
-        (format *standard-output* "~&~A~%" result)
-        (type-p result 'cons))))
-
 (finalize)
 
 

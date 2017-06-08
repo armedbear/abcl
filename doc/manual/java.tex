@@ -86,10 +86,10 @@ not-documented
 \paragraph{}
 \label{JAVA:DESCRIBE-JAVA-OBJECT}
 \index{DESCRIBE-JAVA-OBJECT}
---- Function: \textbf{describe-java-object} [\textbf{java}] \textit{}
+--- Function: \textbf{describe-java-object} [\textbf{java}] \textit{object stream}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Print a human friendly description of Java OBJECT to STREAM.
 \end{adjustwidth}
 
 \paragraph{}
@@ -346,7 +346,9 @@ When called with one argument, returns the name of the Java class
 --- Function: \textbf{jclass-of} [\textbf{java}] \textit{object \&optional name}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Returns the name of the Java class of OBJECT. If the NAME argument is
+  supplied, verifies that OBJECT is an instance of the named class. The name
+  of the class or nil is always returned as a second value.
 \end{adjustwidth}
 
 \paragraph{}

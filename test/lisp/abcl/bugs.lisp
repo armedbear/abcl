@@ -133,6 +133,11 @@ nil)
        :collecting (cons x y))
   ((0.0 . 0) (0.0 . 1)))
 
+;; http://abcl.org/trac/ticket/444
+;; https://trac.clozure.com/ccl/ticket/1085
+(deftest bugs.loop.2
+    (loop for x = #'(lambda ()) for y = 10 then 20 return y)
+  10)
 
 ;; http://abcl.org/trac/ticket/294
 (deftest bugs.reader.1

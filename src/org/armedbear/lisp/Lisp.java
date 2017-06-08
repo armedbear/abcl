@@ -1082,7 +1082,14 @@ public final class Lisp
       }
   }
 
-  public static Symbol checkSymbol(LispObject obj)
+  public static final LispInteger checkInteger(LispObject obj) {
+    if (obj instanceof LispInteger)
+      return (LispInteger) obj;
+    return (LispInteger) // Not reached.
+      type_error(obj, Symbol.INTEGER);
+  }
+
+  public static final Symbol checkSymbol(LispObject obj)
   {             
           if (obj instanceof Symbol)      
                   return (Symbol) obj;         
@@ -1861,10 +1868,11 @@ public final class Lisp
   {
     if (obj instanceof Package)
       return (Package) obj;
-    Package pkg = getCurrentPackage().findPackage(javaString(obj));
+    String name = javaString(obj);
+    Package pkg = getCurrentPackage().findPackage(name);
     if (pkg != null)
       return pkg;
-    error(new PackageError(obj.princToString() + " is not the name of a package."));
+    error(new PackageError(obj.princToString() + " is not the name of a package.", obj));
     // Not reached.
     return null;
   }
@@ -2398,6 +2406,10 @@ public final class Lisp
         featureList = new Cons(Keyword.JAVA_1_6, featureList);
     } else if (javaVersion.startsWith("1.7")) {
         featureList = new Cons(Keyword.JAVA_1_7, featureList);
+    } else if (javaVersion.startsWith("1.8")) {
+        featureList = new Cons(Keyword.JAVA_1_8, featureList);
+    } else if (javaVersion.startsWith("1.9")) {
+        featureList = new Cons(Keyword.JAVA_1_9, featureList);
     }
     // Processor architecture
     if(osArch != null) {

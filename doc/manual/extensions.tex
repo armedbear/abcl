@@ -107,6 +107,15 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{EXTENSIONS:*GUI-BACKEND*}
+\index{*GUI-BACKEND*}
+--- Variable: \textbf{*gui-backend*} [\textbf{extensions}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
 \label{EXTENSIONS:*INSPECTOR-HOOK*}
 \index{*INSPECTOR-HOOK*}
 --- Variable: \textbf{*inspector-hook*} [\textbf{extensions}] \textit{}
@@ -336,24 +345,7 @@ Collect ({(Name [Initial-Value] [Function])}*) {Form}*
 --- Macro: \textbf{collect} [\textbf{extensions}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Collect ({(Name [Initial-Value] [Function])}*) {Form}*
-  Collect some values somehow.  Each of the collections specifies a bunch of
-  things which collected during the evaluation of the body of the form.  The
-  name of the collection is used to define a local macro, a la MACROLET.
-  Within the body, this macro will evaluate each of its arguments and collect
-  the result, returning the current value after the collection is done.  The
-  body is evaluated as a PROGN; to get the final values when you are done, just
-  call the collection macro with no arguments.
-
-  Initial-Value is the value that the collection starts out with, which
-  defaults to NIL.  Function is the function which does the collection.  It is
-  a function which will accept two arguments: the value to be collected and the
-  current collection.  The result of the function is made the new value for the
-  collection.  As a totally magical special-case, the Function may be Collect,
-  which tells us to build a list in forward order; this is the default.  If an
-  Initial-Value is supplied for Collect, the stuff will be rplacd'd onto the
-  end.  Note that Function may be anything that can appear in the functional
-  position, including macros and lambdas.
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -467,17 +459,6 @@ Used to be in SLIME but generally useful, so now back in ABCL proper.
 \end{adjustwidth}
 
 \paragraph{}
-\label{EXTENSIONS:GET-PID}
-\index{GET-PID}
---- Function: \textbf{get-pid} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-Get the process identifier of this lisp process. 
-
-Used to be in SLIME but generally useful, so now back in ABCL proper.
-\end{adjustwidth}
-
-\paragraph{}
 \label{EXTENSIONS:GET-SOCKET-STREAM}
 \index{GET-SOCKET-STREAM}
 --- Function: \textbf{get-socket-stream} [\textbf{extensions}] \textit{socket \&key (element-type (quote character)) (external-format default)}
@@ -493,7 +474,7 @@ EXTERNAL-FORMAT must be of the same format as specified for OPEN.
 --- Function: \textbf{get-time-zone} [\textbf{extensions}] \textit{time-in-millis}
 
 \begin{adjustwidth}{5em}{5em}
-Return the timezone difference in hours for TIME-IN-MILLIS via the Daylight assumptions that were in place at its occurance. i.e. implement 'time of the time semantics'.
+Returns as the first value the timezone difference in hours from the Greenwich meridian for TIME-IN-MILLIS via the Daylight Savings Time assumptions that were in place at the instant's occurance.  Returns as the second value a boolean as to whether daylight savings time was in effect at the occurance.
 \end{adjustwidth}
 
 \paragraph{}
@@ -520,7 +501,7 @@ Returns all environment variables as an alist containing (name . value)
 --- Function: \textbf{init-gui} [\textbf{extensions}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Dummy function used to autoload this file
 \end{adjustwidth}
 
 \paragraph{}
@@ -628,7 +609,7 @@ Create and return the pathname of a previously non-existent file.
 --- Function: \textbf{make-weak-reference} [\textbf{extensions}] \textit{obj}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Creates a weak reference to 'obj'.
 \end{adjustwidth}
 
 \paragraph{}
@@ -809,7 +790,7 @@ Returns either the function or NIL if no resolution was possible.
 --- Function: \textbf{run-shell-command} [\textbf{extensions}] \textit{command \&key directory (output *standard-output*)}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Deprecated.  Use SYS:RUN-PROGRAM.
 \end{adjustwidth}
 
 \paragraph{}

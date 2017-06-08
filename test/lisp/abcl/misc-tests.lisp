@@ -118,3 +118,37 @@
                (write-string "Goodbye, World!" stream)
                (get-output-stream-string stream)))
   T)
+
+(deftest destructuring-bind.1
+  (signals-error (destructuring-bind (a b &rest c) '(1) (list a b)) 'program-error)
+  T)
+
+(deftest destructuring-bind.2
+  (signals-error (destructuring-bind (a . b) '() (list a b)) 'program-error)
+  T)
+
+(deftest destructuring-bind.3
+  (destructuring-bind (a . b) '(1) (list a b))
+  (1 NIL))
+
+;; this used to fail during byte code verification
+(deftest nth.inlined.1
+    (prog1 T (compile NIL (lambda (list) (nth (lambda ()) list))))
+  T)
+
+;; these used to fail during byte code verification
+(deftest throw.representation.1
+    (prog1 T (compile NIL (lambda () (eql (the fixnum (throw 'foo 42)) 2))))
+  T)
+
+(deftest throw.representation.2
+    (prog1 T (compile NIL (lambda () (char-code (the character (throw 'foo 42))))))
+  T)
+
+(deftest throw.representation.3
+    (prog1 T (compile NIL (lambda () (if (the boolean (throw 'foo 42)) 1 2))))
+  T)
+
+(deftest package-error-package.1
+    (package-error-package (nth-value 1 (ignore-errors (intern "FOO" :bar))))
+  :bar)

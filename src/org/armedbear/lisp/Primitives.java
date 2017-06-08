@@ -3235,10 +3235,11 @@ public final class Primitives {
             if (nicknames != NIL) {
                 LispObject list = nicknames;
                 while (list != NIL) {
-                    String nick = javaString(list.car());
+                    LispObject lispNick = list.car();
+                    String nick = javaString(lispNick);
                     if (currentpkg.findPackage(nick) != null) {
                         error(new PackageError("A package named " + nick +
-                                               " already exists."));
+                                               " already exists.", lispNick));
                     }
                     list = list.cdr();
                 }
@@ -3304,7 +3305,7 @@ public final class Primitives {
             final Package pkg = getCurrentPackage().findPackage(packageName);
             if (pkg == null)
                 return error(new PackageError("The name " + packageName +
-                                              " does not designate any package."));
+                                              " does not designate any package.", arg));
             SpecialBinding binding =
                 LispThread.currentThread().getSpecialBinding(Symbol._PACKAGE_);
             if (binding != null)

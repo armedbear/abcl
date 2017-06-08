@@ -19,12 +19,12 @@
   dc:identifier         <urn:abcl.org/1.5.0#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "03-FEB-2017" ;
+  dc:modified          "08-JUN-2017" ;
   dc:version           "abcl-1.5.0" ;
-  dc:release           "dev" ;
+  dc:release           "rc-1" ;
   abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
-  abcl:svn             <http://abcl.org/trac/changeset/14886> .
+  abcl:svn             <http://abcl.org/trac/changeset/14990> . ;; UPDATE
  
 <> 
   rdfs:seeAlso <file:README> ;
@@ -99,7 +99,7 @@ _:user dc:identifier <http://ville.not.org/#me>  ;
 
 doap:Project rdfs:seeAlso [
   a rdf:Bag;
-  rdf:_0 <http://abcl.org/releases/1.4.0/abcl-1.4.0.jar> ;
+  rdf:_0 <http://abcl.org/releases/1.5.0/abcl-1.5.0.jar> ;
   rdf:_1 <http://abcl.org/trac/timeline> ;
   rdf:_2 <http://abcl.org/trac/wiki> ;
   rdf:_4 <https://github.com/easye/abcl/> ;
@@ -116,6 +116,7 @@ doap:Project rdfs:seeAlso [
     rdf:_14 <http://abcl.org/releases/1.3.2/abcl-1.3.1.jar> ;
      rdf:_7 <http://abcl.org/releases/1.3.2/abcl-1.3.2.jar> ;
      rdf:_8 <http://abcl.org/releases/1.3.3/abcl-1.3.3.jar> ;
+     rdf:_9 <http://abcl.org/releases/1.4.0/abcl-1.4.0.jar> ;
   ] ;
 ] .
 
@@ -154,8 +155,13 @@ doap:Project rdfs:seeAlso
     rdf:_10 abcl:abcl-introspect ;
 ] .
 
-abcl:jna dc:version "4.2.2" .
-abcl:asdf dc:version "3.2.0" .
+abcl:jna
+        dc:version "4.2.2" .
+abcl:asdf
+        dc:version "3.2.1" .
+
+abcl:abcl-introspect  
+  rdfs:seeAlso <file:contrib/abcl-introspect/README.markdown> .                             
 
 abcl:abcl-contrib  
   rdfs:seeAlso <file:contrib/README.markdown> .                             

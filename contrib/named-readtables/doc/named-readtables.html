@@ -1,0 +1,468 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html> 
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <title>EDITOR-HINTS.NAMED-READTABLES - 0.9</title><style type="text/css">
+  pre { padding:5px; background-color:#e0e0e0 }
+  h3, h4 { text-decoration: underline; }
+  a { text-decoration: none; padding: 1px 2px 1px 2px; }
+  a:visited { text-decoration: none; padding: 1px 2px 1px 2px; }
+  a:hover { text-decoration: none; padding: 1px 1px 1px 1px; border: 1px solid #000000; } 
+  a:focus { text-decoration: none; padding: 1px 2px 1px 2px; border: none; }
+  a.none { text-decoration: none; padding: 0; }
+  a.none:visited { text-decoration: none; padding: 0; } 
+  a.none:hover { text-decoration: none; border: none; padding: 0; } 
+  a.none:focus { text-decoration: none; border: none; padding: 0; } 
+  a.noborder { text-decoration: none; padding: 0; } 
+  a.noborder:visited { text-decoration: none; padding: 0; } 
+  a.noborder:hover { text-decoration: none; border: none; padding: 0; } 
+  a.noborder:focus { text-decoration: none; border: none; padding: 0; }  
+  pre.none { padding:5px; background-color:#ffffff }
+  </style>
+</head>
+
+<body bgcolor=white>
+
+<h2> EDITOR-HINTS.NAMED-READTABLES - 0.9</h2>
+
+<h5>&nbsp;&nbsp;&nbsp;&nbsp; by Tobias C Rittweiler </h5>
+
+<font color=red>Repository:</font> <br>&nbsp;<br>
+
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <code>darcs get http://common-lisp.net/project/editor-hints/darcs/named-readtables/</code>
+
+<br>&nbsp;<br>
+
+<font color=red>Download:</font> <br>&nbsp;<br>
+
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="http://common-lisp.net/project/editor-hints/releases/named-readtables-0.9.tar.gz">editor-hints.named-readtables-0.9.tar.gz </a><br>&nbsp;<br><h3><a class=none name="contents">Contents</a></h3>
+<ol>
+  <li> <a href="#what_are_named-readtables?">What are Named-Readtables?</a>
+  <li> <a href="#notes_on_the_api">Notes on the API</a>
+  <li> <a href="#important_api_idiosyncrasies">Important API idiosyncrasies</a>
+  <li> <a href="#preregistered_readtables">Preregistered Readtables</a>
+  <li> <a href="#examples">Examples</a>
+  <li> <a href="#acknowledgements">Acknowledgements</a>
+
+
+    <li><a href="#dictionary">Dictionary</a>
+    <ol>
+    <li><a href="#COPY-NAMED-READTABLE"><code>COPY-NAMED-READTABLE</code></a>
+    <li><a href="#DEFREADTABLE"><code>DEFREADTABLE</code></a>
+    <li><a href="#ENSURE-READTABLE"><code>ENSURE-READTABLE</code></a>
+    <li><a href="#FIND-READTABLE"><code>FIND-READTABLE</code></a>
+    <li><a href="#IN-READTABLE"><code>IN-READTABLE</code></a>
+    <li><a href="#LIST-ALL-NAMED-READTABLES"><code>LIST-ALL-NAMED-READTABLES</code></a>
+    <li><a href="#MAKE-READTABLE"><code>MAKE-READTABLE</code></a>
+    <li><a href="#MERGE-READTABLES-INTO"><code>MERGE-READTABLES-INTO</code></a>
+    <li><a href="#NAMED-READTABLE-DESIGNATOR"><code>NAMED-READTABLE-DESIGNATOR</code></a>
+    <li><a href="#READER-MACRO-CONFLICT"><code>READER-MACRO-CONFLICT</code></a>
+    <li><a href="#READTABLE-DOES-ALREADY-EXIST"><code>READTABLE-DOES-ALREADY-EXIST</code></a>
+    <li><a href="#READTABLE-DOES-NOT-EXIST"><code>READTABLE-DOES-NOT-EXIST</code></a>
+    <li><a href="#READTABLE-NAME"><code>READTABLE-NAME</code></a>
+    <li><a href="#REGISTER-READTABLE"><code>REGISTER-READTABLE</code></a>
+    <li><a href="#RENAME-READTABLE"><code>RENAME-READTABLE</code></a>
+    <li><a href="#UNREGISTER-READTABLE"><code>UNREGISTER-READTABLE</code></a>
+
+    </ol>
+</ol> <br>&nbsp;<br><h3><a class=none name="what_are_named-readtables?">What are Named-Readtables?</a></h3>
+&nbsp; &nbsp; Named-Readtables is a library that provides a namespace for readtables akin to the <br> &nbsp; &nbsp; already-existing namespace of packages. In particular:
+<ul>
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <li>you can associate readtables with names, and retrieve readtables by names;</li>
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <li>you can associate source files with readtable names, and be sure that the right readtable is <br> active when compiling/loading the file;</li>
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <li>similiarly, your development environment now has a chance to automatically determine what <br> readtable should be active while processing source forms on interactive commands. (E.g. think <br> of `C-c C-c&#039; in Slime [yet to be done])</li>
+</ul>
+&nbsp; &nbsp; Additionally, it also attempts to become a facility for using readtables in a <u>modular</u> way. In <br> &nbsp; &nbsp; particular:
+<ul>
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <li>it provides a macro to specify the content of a readtable at a glance;</li>
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <li>it makes it possible to use multiple inheritance between readtables.</li>
+</ul>
+<br>&nbsp;<br><h3><a class=none name="notes_on_the_api">Notes on the API</a></h3>
+&nbsp; &nbsp; The <code>API</code> heavily imitates the <code>API</code> of packages. This has the nice property that any experienced <br> &nbsp; &nbsp; Common Lisper will take it up without effort.
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <code><a href="#DEFREADTABLE"><code>DEFREADTABLE</code></a></code> - <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/m_defpkg.htm"><code>DEFPACKAGE</code></a></code>
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <code><a href="#IN-READTABLE"><code>IN-READTABLE</code></a></code> - <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/m_in_pkg.htm"><code>IN-PACKAGE</code></a></code>
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <code><a href="#MERGE-READTABLES-INTO"><code>MERGE-READTABLES-INTO</code></a></code> - <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/f_use_pk.htm"><code>USE-PACKAGE</code></a></code>
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <code><a href="#MAKE-READTABLE"><code>MAKE-READTABLE</code></a></code> - <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/f_mk_pkg.htm"><code>MAKE-PACKAGE</code></a></code>
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <code><a href="#UNREGISTER-READTABLE"><code>UNREGISTER-READTABLE</code></a></code> - <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/f_del_pk.htm"><code>DELETE-PACKAGE</code></a></code>
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <code><a href="#RENAME-READTABLE"><code>RENAME-READTABLE</code></a></code> - <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/f_rn_pkg.htm"><code>RENAME-PACKAGE</code></a></code>
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <code><a href="#FIND-READTABLE"><code>FIND-READTABLE</code></a></code> - <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/f_find_p.htm"><code>FIND-PACKAGE</code></a></code>
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <code><a href="#READTABLE-NAME"><code>READTABLE-NAME</code></a></code> - <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/f_pkg_na.htm"><code>PACKAGE-NAME</code></a></code>
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <code><a href="#LIST-ALL-NAMED-READTABLES"><code>LIST-ALL-NAMED-READTABLES</code></a></code> - <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/f_list_a.htm"><code>LIST-ALL-PACKAGES</code></a></code>
+<br>&nbsp;<br><h3><a class=none name="important_api_idiosyncrasies">Important API idiosyncrasies</a></h3>
+&nbsp; &nbsp; There are three major differences between the <code>API</code> of Named-Readtables, and the <code>API</code> of packages.
+<br><br>
+&nbsp; &nbsp; &nbsp; <code>1.</code> Readtable names are symbols not strings.
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Time has shown that the fact that packages are named by strings causes severe headache because of <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the potential of package names colliding with each other.
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Hence, readtables are named by symbols lest to make the situation worse than it already is. <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Consequently, readtables named <code>CL-ORACLE:SQL-SYNTAX</code> and <code>CL-MYSQL:SQL-SYNTAX</code> can happily coexist <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; next to each other. Or, taken to an extreme, <code>SCHEME:SYNTAX</code> and <code>ELISP:SYNTAX.</code>
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; If, for example to duly signify the importance of your cool readtable hack, you really think it <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; deserves a global name, you can always resort to keywords.
+<br><br>
+&nbsp; &nbsp; &nbsp; <code>2.</code> The inheritance is resolved statically, not dynamically.
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; A package that uses another package will have access to all the other package&#039;s exported <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; symbols, even to those that will be added after its definition. I.e. the inheritance is resolved at <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; run-time, that is dynamically.
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Unfortunately, we cannot do the same for readtables in a portable manner.
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Therefore, we do not talk about &quot;using&quot; another readtable but about &quot;merging&quot; <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the other readtable&#039;s definition into the readtable we are going to define. I.e. the <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; inheritance is resolved once at definition time, that is statically.
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; (Such merging can more or less be implemented portably albeit at a certain cost. Most of the time, <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; this cost manifests itself at the time a readtable is defined, i.e. once at compile-time, so it may <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; not bother you. Nonetheless, we provide extra support for Sbcl, ClozureCL, and AllegroCL at the <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; moment. Patches for your implementation of choice are welcome, of course.)
+<br><br>
+&nbsp; &nbsp; &nbsp; <code>3.</code> <code><a href="#DEFREADTABLE"><code>DEFREADTABLE</code></a></code> does not have compile-time effects.
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; If you define a package via <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/m_defpkg.htm"><code>DEFPACKAGE</code></a>,</code> you can make that package the currently active package for <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the subsequent compilation of the same file via <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/m_in_pkg.htm"><code>IN-PACKAGE</code></a>.</code> The same is, however, not true for <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <code><a href="#DEFREADTABLE"><code>DEFREADTABLE</code></a></code> and <code><a href="#IN-READTABLE"><code>IN-READTABLE</code></a></code> for the following reason:
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; It&#039;s unlikely that the need for special reader-macros arises for a problem which can be <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; solved in just one file. Most often, you&#039;re going to define the reader macro functions, and <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; set up the corresponding readtable in an extra file.
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; If <code><a href="#DEFREADTABLE"><code>DEFREADTABLE</code></a></code> had compile-time effects, you&#039;d have to wrap each definition of a <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; reader-macro function in an <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/s_eval_w.htm"><code>EVAL-WHEN</code></a></code> to make its definition available at compile-time. Because <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; that&#039;s simply not the common case, <code><a href="#DEFREADTABLE"><code>DEFREADTABLE</code></a></code> does not have a compile-time effect.
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; If you want to use a readtable within the same file as its definition, wrap the <code><a href="#DEFREADTABLE"><code>DEFREADTABLE</code></a></code> and <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the reader-macro function definitions in an explicit <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/s_eval_w.htm"><code>EVAL-WHEN</code></a>.</code>
+<br>&nbsp;<br><h3><a class=none name="preregistered_readtables">Preregistered Readtables</a></h3>
+&nbsp; &nbsp; &nbsp; &nbsp; - <code>NIL,</code> <code>:STANDARD,</code> and <code>:COMMON-LISP</code> designate the <i><a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_s.htm#standard_readtable">standard readtable</a></i>.
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; - <code>:MODERN</code> designates a <u>case-preserving</u> <i><a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_s.htm#standard-readtable">standard-readtable</a></i>.
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; - <code>:CURRENT</code> designates the <i><a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_c.htm#current_readtable">current readtable</a></i>.
+<br>&nbsp;<br><h3><a class=none name="examples">Examples</a></h3>
+<pre>
+     (defreadtable elisp:syntax
+        (:merge :standard)
+        (:macro-char #\? #&#039;elisp::read-character-literal t)
+        (:macro-char #\[ #&#039;elisp::read-vector-literal t)
+        ...
+        (:case :preserve))
+    
+     (defreadtable scheme:syntax
+        (:merge :standard)
+        (:macro-char #\[ #&#039;(lambda (stream char)
+                              (read-delimited-list #\] stream)))
+        (:macro-char #\# :dispatch)
+        (:dispatch-macro-char #\# #\t #&#039;scheme::read-#t)
+        (:dispatch-macro-char #\# #\f #&#039;scheme::read-#f)
+        ...
+        (:case :preserve))
+    
+     (in-readtable elisp:syntax)
+    
+     ...
+    
+     (in-readtable scheme:syntax)
+    
+     ...
+</pre>
+
+<br>&nbsp;<br><h3><a class=none name="acknowledgements">Acknowledgements</a></h3>
+&nbsp; &nbsp; Thanks to Robert Goldman for making me want to write this library.
+<br><br>
+&nbsp; &nbsp; Thanks to Stephen Compall, Ariel Badichi, David Lichteblau, Bart Botta, David Crawford, and Pascal <br> &nbsp; &nbsp; Costanza for being early adopters, providing comments and bugfixes.
+<br>&nbsp;<br>
+<br>&nbsp;<br><h3><a class=none name="dictionary">Dictionary</a></h3>
+
+
+<!-- Entry for COPY-NAMED-READTABLE -->
+
+<p><br>[Function]<br><a class=none name='COPY-NAMED-READTABLE'><b>copy-named-readtable</b> <i>named-readtable</i> =&gt; <i>result</i></a><br><br>&nbsp;&nbsp;Argument and Values:<blockquote><i>named-readtable</i>: <code>(OR
+                                                                                                                                                                                                                            READTABLE
+                                                                                                                                                                                                                            SYMBOL)</code></blockquote><blockquote><i>result</i>: <code>READTABLE</code></blockquote>&nbsp;&nbsp;Description:
+<blockquote>
+
+Like <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/f_cp_rdt.htm"><code>COPY-READTABLE</code></a></code> but takes a <code><a href="#NAMED-READTABLE-DESIGNATOR"><code>NAMED-READTABLE-DESIGNATOR</code></a></code> as argument.
+
+
+</blockquote>
+
+<!-- End of entry for COPY-NAMED-READTABLE -->
+
+
+<!-- Entry for DEFREADTABLE -->
+
+<p><br>[Macro]<br><a class=none name='DEFREADTABLE'><b>defreadtable</b> <i>name &amp;body options</i> =&gt; <i>result</i></a><br><br>&nbsp;&nbsp;Description:
+<blockquote>
+
+Define a new named readtable, whose name is given by the symbol <i>name</i>. Or, if a readtable is <br> already registered under that name, redefine that one.
+<br><br>
+The readtable can be populated using the following <i>options</i>:
+<br><br>
+&nbsp; &nbsp; <code>(:MERGE</code> <i>readtable-designators</i>+)
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Merge the readtables designated into the new readtable being defined as per <code><a href="#MERGE-READTABLES-INTO"><code>MERGE-READTABLES-INTO</code></a>.</code>
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; If no <code>:MERGE</code> clause is given, an empty readtable is used. See <code><a href="#MAKE-READTABLE"><code>MAKE-READTABLE</code></a>.</code>
+<br><br>
+&nbsp; &nbsp; <code>(:FUZE</code> <i>readtable-designators</i>+)
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Like <code>:MERGE</code> except:
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Error conditions of type <code><a href="#READER-MACRO-CONFLICT"><code>READER-MACRO-CONFLICT</code></a></code> that are signaled during the merge operation will <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; be silently <u>continued</u>. It follows that reader macros in earlier entries will be overwritten by <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; later ones.
+<br><br>
+&nbsp; &nbsp; <code>(:DISPATCH-MACRO-CHAR</code> <i>macro-char</i> <i>sub-char</i> <i>function</i>)
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Define a new sub character <i>sub-char</i> for the dispatching macro character <i>macro-char</i>, <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; per <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/f_set__1.htm"><code>SET-DISPATCH-MACRO-CHARACTER</code></a>.</code> You probably have to define <i>macro-char</i> as a dispatching <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; macro character by the following option first.
+<br><br>
+&nbsp; &nbsp; <code>(:MACRO-CHAR</code> <i>macro-char</i> <i>function</i> [<i>non-terminating-p</i>])
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Define a new macro character in the readtable, per <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/f_set_ma.htm"><code>SET-MACRO-CHARACTER</code></a>.</code> If <i>function</i> is the <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; keyword <code>:DISPATCH,</code> <i>macro-char</i> is made a dispatching macro character, per <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/f_mk_dis.htm"><code>MAKE-DISPATCH-MACRO-CHARACTER</code></a>.</code>
+<br><br>
+&nbsp; &nbsp; <code>(:SYNTAX-FROM</code> <i>from-readtable-designator</i> <i>from-char</i> <i>to-char</i>)
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Set the character syntax of <i>to-char</i> in the readtable being defined to the same syntax as <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <i>from-char</i> as per <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/f_set_sy.htm"><code>SET-SYNTAX-FROM-CHAR</code></a>.</code>
+<br><br>
+&nbsp; &nbsp; <code>(:CASE</code> <i>case-mode</i>)
+<br><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Defines the <i><a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_c.htm#case_sensitivity_mode">case sensitivity mode</a></i> of the resulting readtable.
+<br><br>
+Any number of option clauses may appear. The options are grouped by their type, but in each group <br> the order the options appeared textually is preserved. The following groups exist and are executed <br> in the following order: <code>:MERGE</code> and <code>:FUZE</code> (one group), <code>:CASE,</code> <code>:MACRO-CHAR</code> and <code>:DISPATCH-MACRO-CHAR</code> <br> (one group), finally <code>:SYNTAX-FROM.</code>
+<br><br>
+Notes:
+<br><br>
+&nbsp; &nbsp; The readtable is defined at load-time. If you want to have it available at compilation time <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/a__.htm"><code>-</code></a>-</code> say <br> &nbsp; &nbsp; to use its reader-macros in the same file as its definition <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/a__.htm"><code>-</code></a>-</code> you have to wrap the <code><a href="#DEFREADTABLE"><code>DEFREADTABLE</code></a></code> <br> &nbsp; &nbsp; form in an explicit <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/s_eval_w.htm"><code>EVAL-WHEN</code></a>.</code>
+<br><br>
+&nbsp; &nbsp; On redefinition, the target readtable is made empty first before it&#039;s refilled according to <br> &nbsp; &nbsp; the clauses.
+<br><br>
+&nbsp; &nbsp; <code>NIL,</code> <code>:STANDARD,</code> <code>:COMMON-LISP,</code> <code>:MODERN,</code> and <code>:CURRENT</code> are preregistered readtable names.
+
+
+</blockquote>
+
+<!-- End of entry for DEFREADTABLE -->
+
+
+<!-- Entry for ENSURE-READTABLE -->
+
+<p><br>[Function]<br><a class=none name='ENSURE-READTABLE'><b>ensure-readtable</b> <i>name <tt>&amp;optional</tt> default</i> =&gt; <i>result</i></a><br><br>&nbsp;&nbsp;Argument and Values:<blockquote><i>name</i>: <code>(OR
+                                                                                                                                                                                                                             READTABLE
+                                                                                                                                                                                                                             SYMBOL)</code></blockquote><blockquote><i>default</i>: <code>(OR
+                                                                                                                                                                                                                                                                                           READTABLE
+                                                                                                                                                                                                                                                                                           SYMBOL)</code></blockquote><blockquote><i>result</i>: <code>READTABLE</code></blockquote>&nbsp;&nbsp;Description:
+<blockquote>
+
+Looks up the readtable specified by <i>name</i> and returns it if it&#039;s found. If it is not <br> found, it registers the readtable designated by <i>default</i> under the name represented by <br> <i>name</i>; or if no default argument is given, it signals an error of type <br> <code><a href="#READTABLE-DOES-NOT-EXIST"><code>READTABLE-DOES-NOT-EXIST</code></a></code> instead.
+
+
+</blockquote>
+
+<!-- End of entry for ENSURE-READTABLE -->
+
+
+<!-- Entry for FIND-READTABLE -->
+
+<p><br>[Function]<br><a class=none name='FIND-READTABLE'><b>find-readtable</b> <i>name</i> =&gt; <i>result</i></a><br><br>&nbsp;&nbsp;Argument and Values:<blockquote><i>name</i>: <code>(OR
+                                                                                                                                                                                          READTABLE
+                                                                                                                                                                                          SYMBOL)</code></blockquote><blockquote><i>result</i>: <code>(OR
+                                                                                                                                                                                                                                                       READTABLE
+                                                                                                                                                                                                                                                       NULL)</code></blockquote>&nbsp;&nbsp;Description:
+<blockquote>
+
+Looks for the readtable specified by <i>name</i> and returns it if it is found. Returns <code>NIL</code> <br> otherwise.
+
+
+</blockquote>
+
+<!-- End of entry for FIND-READTABLE -->
+
+
+<!-- Entry for IN-READTABLE -->
+
+<p><br>[Macro]<br><a class=none name='IN-READTABLE'><b>in-readtable</b> <i>name</i> =&gt; <i>result</i></a><br><br>&nbsp;&nbsp;Description:
+<blockquote>
+
+Set <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/v_rdtabl.htm"><code>*READTABLE*</code></a></code> to the readtable referred to by the symbol <i>name</i>.
+
+
+</blockquote>
+
+<!-- End of entry for IN-READTABLE -->
+
+
+<!-- Entry for LIST-ALL-NAMED-READTABLES -->
+
+<p><br>[Function]<br><a class=none name='LIST-ALL-NAMED-READTABLES'><b>list-all-named-readtables</b> <i></i> =&gt; <i>result</i></a><br><br>&nbsp;&nbsp;Argument and Values:<blockquote><i>result</i>: <code>LIST</code></blockquote>&nbsp;&nbsp;Description:
+<blockquote>
+
+Returns a list of all registered readtables. The returned list is guaranteed to be fresh, but may <br> contain duplicates.
+
+
+</blockquote>
+
+<!-- End of entry for LIST-ALL-NAMED-READTABLES -->
+
+
+<!-- Entry for MAKE-READTABLE -->
+
+<p><br>[Function]<br><a class=none name='MAKE-READTABLE'><b>make-readtable</b> <i><tt>&amp;optional</tt> name <tt>&amp;key</tt> merge</i> =&gt; <i>result</i></a><br><br>&nbsp;&nbsp;Argument and Values:<blockquote><i>name</i>: <code>(OR
+                                                                                                                                                                                                                                         READTABLE
+                                                                                                                                                                                                                                         SYMBOL)</code></blockquote><blockquote><i>merge</i>: <code>LIST</code></blockquote><blockquote><i>result</i>: <code>READTABLE</code></blockquote>&nbsp;&nbsp;Description:
+<blockquote>
+
+Creates and returns a new readtable under the specified <i>name</i>.
+<br><br>
+<i>merge</i> takes a list of <code><a href="#NAMED-READTABLE-DESIGNATORS"><code>NAMED-READTABLE-DESIGNATORS</code></a></code> and specifies the readtables the new <br> readtable is created from. (See the <code>:MERGE</code> clause of <code><a href="#DEFREADTABLE"><code>DEFREADTABLE</code></a></code> for details.)
+<br><br>
+If <i>merge</i> is <code>NIL,</code> an empty readtable is used instead.
+<br><br>
+If <i>name</i> is not given, an anonymous empty readtable is returned.
+<br><br>
+Notes:
+<br><br>
+&nbsp; &nbsp; An empty readtable is a readtable where each character&#039;s syntax is the same as in the <br> &nbsp; &nbsp; <i><a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_s.htm#standard_readtable">standard readtable</a></i> except that each macro character has been made a constituent. Basically: <br> &nbsp; &nbsp; whitespace stays whitespace, everything else is constituent.
+
+
+</blockquote>
+
+<!-- End of entry for MAKE-READTABLE -->
+
+
+<!-- Entry for MERGE-READTABLES-INTO -->
+
+<p><br>[Function]<br><a class=none name='MERGE-READTABLES-INTO'><b>merge-readtables-into</b> <i>result-readtable <tt>&amp;rest</tt> named-readtables</i> =&gt; <i>result</i></a><br><br>&nbsp;&nbsp;Argument and Values:<blockquote><i>result-readtable</i>: <code>(OR
+                                                                                                                                                                                                                                                                    READTABLE
+                                                                                                                                                                                                                                                                    SYMBOL)</code></blockquote><blockquote><i>named-readtables</i>: <code>(OR
+                                                                                                                                                                                                                                                                                                                                           READTABLE
+                                                                                                                                                                                                                                                                                                                                           SYMBOL)</code></blockquote><blockquote><i>result</i>: <code>READTABLE</code></blockquote>&nbsp;&nbsp;Description:
+<blockquote>
+
+Copy the contents of each readtable in <i>named-readtables</i> into <i>result-table</i>.
+<br><br>
+If a macro character appears in more than one of the readtables, i.e. if a conflict is discovered <br> during the merge, an error of type <code><a href="#READER-MACRO-CONFLICT"><code>READER-MACRO-CONFLICT</code></a></code> is signaled.
+
+
+</blockquote>
+
+<!-- End of entry for MERGE-READTABLES-INTO -->
+
+
+<!-- Entry for NAMED-READTABLE-DESIGNATOR -->
+
+<p><br>[Type]<br><a class=none name='NAMED-READTABLE-DESIGNATOR'><b>named-readtable-designator</b></a><br><br>&nbsp;&nbsp;Description:
+<blockquote>
+
+Either a symbol or a readtable itself.
+
+
+</blockquote>
+
+<!-- End of entry for NAMED-READTABLE-DESIGNATOR -->
+
+
+<!-- Entry for READER-MACRO-CONFLICT -->
+
+<p><br>[Condition type]<br><a class=none name='READER-MACRO-CONFLICT'><b>reader-macro-conflict</b></a><br><br>&nbsp;&nbsp;Description:
+<blockquote>
+
+Continuable.
+<br><br>
+This condition is signaled during the merge process if a) a reader macro (be it a macro character <br> or the sub character of a dispatch macro character) is both present in the source as well as the <br> target readtable, and b) if and only if the two respective reader macro functions differ.
+
+
+</blockquote>
+
+<!-- End of entry for READER-MACRO-CONFLICT -->
+
+
+<!-- Entry for READTABLE-DOES-ALREADY-EXIST -->
+
+<p><br>[Condition type]<br><a class=none name='READTABLE-DOES-ALREADY-EXIST'><b>readtable-does-already-exist</b></a><br><br>&nbsp;&nbsp;Description:
+<blockquote>
+
+Continuable.
+
+
+</blockquote>
+
+<!-- End of entry for READTABLE-DOES-ALREADY-EXIST -->
+
+
+<!-- Entry for READTABLE-DOES-NOT-EXIST -->
+
+<p><br>[Condition type]<br><a class=none name='READTABLE-DOES-NOT-EXIST'><b>readtable-does-not-exist</b></a><br><br>
+<blockquote>
+
+
+
+</blockquote>
+
+<!-- End of entry for READTABLE-DOES-NOT-EXIST -->
+
+
+<!-- Entry for READTABLE-NAME -->
+
+<p><br>[Function]<br><a class=none name='READTABLE-NAME'><b>readtable-name</b> <i>named-readtable</i> =&gt; <i>result</i></a><br><br>&nbsp;&nbsp;Argument and Values:<blockquote><i>named-readtable</i>: <code>(OR
+                                                                                                                                                                                                                READTABLE
+                                                                                                                                                                                                                SYMBOL)</code></blockquote><blockquote><i>result</i>: <code>SYMBOL</code></blockquote>&nbsp;&nbsp;Description:
+<blockquote>
+
+Returns the name of the readtable designated by <i>named-readtable</i>, or <code>NIL.</code>
+
+
+</blockquote>
+
+<!-- End of entry for READTABLE-NAME -->
+
+
+<!-- Entry for REGISTER-READTABLE -->
+
+<p><br>[Function]<br><a class=none name='REGISTER-READTABLE'><b>register-readtable</b> <i>name readtable</i> =&gt; <i>result</i></a><br><br>&nbsp;&nbsp;Argument and Values:<blockquote><i>name</i>: <code>SYMBOL</code></blockquote><blockquote><i>readtable</i>: <code>READTABLE</code></blockquote><blockquote><i>result</i>: <code>READTABLE</code></blockquote>&nbsp;&nbsp;Description:
+<blockquote>
+
+Associate <i>readtable</i> with <i>name</i>. Returns the readtable.
+
+
+</blockquote>
+
+<!-- End of entry for REGISTER-READTABLE -->
+
+
+<!-- Entry for RENAME-READTABLE -->
+
+<p><br>[Function]<br><a class=none name='RENAME-READTABLE'><b>rename-readtable</b> <i>old-name new-name</i> =&gt; <i>result</i></a><br><br>&nbsp;&nbsp;Argument and Values:<blockquote><i>old-name</i>: <code>(OR
+                                                                                                                                                                                                               READTABLE
+                                                                                                                                                                                                               SYMBOL)</code></blockquote><blockquote><i>new-name</i>: <code>SYMBOL</code></blockquote><blockquote><i>result</i>: <code>READTABLE</code></blockquote>&nbsp;&nbsp;Description:
+<blockquote>
+
+Replaces the associated name of the readtable designated by <i>old-name</i> with <i>new-name</i>. <br> If a readtable is already registered under <i>new-name</i>, an error of type <br> <code><a href="#READTABLE-DOES-ALREADY-EXIST"><code>READTABLE-DOES-ALREADY-EXIST</code></a></code> is signaled.
+
+
+</blockquote>
+
+<!-- End of entry for RENAME-READTABLE -->
+
+
+<!-- Entry for UNREGISTER-READTABLE -->
+
+<p><br>[Function]<br><a class=none name='UNREGISTER-READTABLE'><b>unregister-readtable</b> <i>named-readtable</i> =&gt; <i>result</i></a><br><br>&nbsp;&nbsp;Argument and Values:<blockquote><i>named-readtable</i>: <code>(OR
+                                                                                                                                                                                                                            READTABLE
+                                                                                                                                                                                                                            SYMBOL)</code></blockquote><blockquote><i>result</i>: <code>(MEMBER
+                                                                                                                                                                                                                                                                                         T
+                                                                                                                                                                                                                                                                                         NIL)</code></blockquote>&nbsp;&nbsp;Description:
+<blockquote>
+
+Remove the association of <i>named-readtable</i>. Returns <code><a href="http://www.lispworks.com/reference/HyperSpec/Body/a_t.htm"><code>T</code></a></code> if successfull, <code>NIL</code> otherwise.
+
+
+</blockquote>
+
+<!-- End of entry for UNREGISTER-READTABLE -->
+
+
+<hr>
+<p>
+This documentation was generated on 2009-11-5 from a Lisp image using some home-brewn,
+duct-taped, <br> evolutionary hacked extension of Edi Weitz' 
+<a href="http://weitz.de/documentation-template/">DOCUMENTATION-TEMPLATE</a>.
+</p>
+
+</body>
+</html>

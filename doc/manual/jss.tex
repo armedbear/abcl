@@ -26,15 +26,6 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{JSS:*MUFFLE-WARNINGS*}
-\index{*MUFFLE-WARNINGS*}
---- Variable: \textbf{*muffle-warnings*} [\textbf{jss}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
 \label{JSS:CLASSFILES-IMPORT}
 \index{CLASSFILES-IMPORT}
 --- Function: \textbf{classfiles-import} [\textbf{jss}] \textit{directory}
@@ -74,7 +65,7 @@ If OBJECT is a symbol it names a dot qualified static FIELD.
 \paragraph{}
 \label{JSS:HASHMAP-TO-HASHTABLE}
 \index{HASHMAP-TO-HASHTABLE}
---- Function: \textbf{hashmap-to-hashtable} [\textbf{jss}] \textit{hashmap \&rest rest \&key (keyfun (function identity)) (valfun (function identity)) (invert? nil) table \&allow-other-keys}
+--- Function: \textbf{hashmap-to-hashtable} [\textbf{jss}] \textit{hashmap \&rest rest \&key (keyfun (function identity)) (valfun (function identity)) (invert? NIL) table \&allow-other-keys}
 
 \begin{adjustwidth}{5em}{5em}
 Converts the a HASHMAP reference to a java.util.HashMap object to a Lisp hashtable.
@@ -99,7 +90,7 @@ Push these imports onto the search path. If multiple, earlier in list take prece
 \paragraph{}
 \label{JSS:INVOKE-RESTARGS}
 \index{INVOKE-RESTARGS}
---- Function: \textbf{invoke-restargs} [\textbf{jss}] \textit{method object args \&optional (raw? nil)}
+--- Function: \textbf{invoke-restargs} [\textbf{jss}] \textit{method object args \&optional (raw? NIL)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented

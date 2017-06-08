@@ -1,8 +1,4 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP -*-
-
-(require :asdf)
-(in-package :asdf)
-
 (defsystem abcl
   :version "1.5.0"
   :in-order-to ((test-op (test-op "abcl/test/lisp"))))
@@ -63,6 +59,8 @@
                          #+abcl
                          (:file "package-local-nicknames-tests")))))
 
+;;; FIXME Currently requires ACBL-CONTRIB and QUICKLISP-ABCL to be
+;;; loaded, but can't seem to put in the :defsystem-depends-on stanza
 (defsystem abcl/t
   :description "Tests for ABCL via PROVE."
   :defsystem-depends-on (prove-asdf)
@@ -73,10 +71,15 @@
   :components ((:module package
                         :pathname "t/"
                         :components ((:file "package")))
+               (:module java6
+                        :depends-on (package)
+                        :pathname "t/"
+                        :components ((:test-file "run-program")))
                (:module build
                         :depends-on (package)
                         :pathname "t/"
                         :components ((:test-file "resolve-multiple-maven-dependencies")
+                                     (:test-file "disassemble")
                                      (:test-file "pathname")))))
 
 ;;;
@@ -142,42 +145,6 @@ be in a directory named '../ansi-test/'."
                (:module wrapper :pathname "test/lisp/cl-bench/" 
                         :depends-on (package) :components
                         ((:file "wrapper")))))
- 
-;;; aka the "Lisp-hosted build system" which doesn't share build
-;;; instructions with the canonical build system in <file:build.xml>
-;;; Works for: abcl, sbcl, clisp, cmu, lispworks, allegro, openmcl
-(defsystem abcl/build
-  :version "2.0.0"
-  :description "Build ABCL from a Lisp.  Downloads necessary build-time tools to local cache."
-  :in-order-to ((test-op (test-op abcl/build/t)))
-  :components ((:module package
-                        :pathname "src/org/abcl/lisp/build/"
-                        :components ((:file "package")))
-               (:module build
-                        :pathname "src/org/abcl/lisp/build/"
-                        :depends-on (package)
-                        :serial t 
-                        :components (;;; TODO optionally parse a local configuration for customization
-                                     (:file "platform")
-                                     (:file "customizations-default")
-                                     (:file "install")
-                                     (:file "ant")
-                                     (:file "build-abcl")))))
-(defsystem abcl/build/t
-  :description "Test ABCL build system."
-  :defsystem-depends-on (prove-asdf)
-  :depends-on (abcl/build
-               prove)
-  :perform (asdf:test-op (op c)
-                         (uiop:symbol-call :prove-asdf 'run-test-system c))
-  :components ((:module package
-                        :pathname "t/"
-                        :components ((:file "package")))
-               (:module build
-                        :depends-on (package)
-                        :pathname "t/"
-                        :components ((:test-file "abcl-build")))))
-
 (defsystem abcl/documentation
   :description "Tools to generate LaTeX source from docstrings."
   :depends-on (swank)

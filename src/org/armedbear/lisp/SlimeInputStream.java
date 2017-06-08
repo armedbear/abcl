@@ -125,7 +125,7 @@ public class SlimeInputStream extends Stream
     @Override
     protected boolean _charReady()
     {
-        return offset < length ? true : false;
+        return offset < length;
     }
 
 

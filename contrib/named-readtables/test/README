@@ -1,0 +1,364 @@
+# Named Readtables Manual
+
+###### \[in package EDITOR-HINTS.NAMED-READTABLES\]
+## named-readtables ASDF System Details
+
+- Version: 0.9
+- Description: Library that creates a namespace for named readtable
+  akin to the namespace of packages.
+- Licence: BSD, see LICENSE
+- Author: Tobias C. Rittweiler <trittweiler@common-lisp.net>
+- Maintainer: Gábor Melis
+- Mailto: [mega@retes.hu](mailto:mega@retes.hu)
+
+## Introduction
+
+Named-Readtables is a library that provides a namespace for
+readtables akin to the already-existing namespace of packages. In
+particular:
+
+- you can associate readtables with names, and retrieve
+  readtables by names;
+
+- you can associate source files with readtable names, and be
+  sure that the right readtable is active when compiling/loading
+  the file;
+
+- similiarly, your development environment now has a chance to
+  automatically determine what readtable should be active while
+  processing source forms on interactive commands. (E.g. think of
+  `C-c C-c` in Slime (yet to be done))
+
+It follows that Named-Readtables is a facility for using readtables in
+a localized way.
+
+Additionally, it also attempts to become a facility for using
+readtables in a *modular* way. In particular:
+
+- it provides a macro to specify the content of a readtable at a
+ glance;
+
+- it makes it possible to use multiple inheritance between readtables.
+
+
+### Links
+
+Here is the [official repository][named-readtables-repo] and the
+[HTML documentation][named-readtables-doc] for the latest version.
+
+[named-readtables-repo]: https://github.com/melisgl/named-readtables 
+
+[named-readtables-doc]: http://melisgl.github.io/mgl-pax-world/named-readtables-manual.html 
+
+
+### Acknowledgements
+
+Thanks to Robert Goldman for making me want to write this library.
+
+Thanks to Stephen Compall, Ariel Badichi, David Lichteblau, Bart
+Botta, David Crawford, and Pascal Costanza for being early adopters,
+providing comments and bugfixes.
+
+## Overview
+
+### Notes on the API
+
+The API heavily imitates the API of packages. This has the nice
+property that any experienced Common Lisper will take it up without
+effort.
+
+    DEFREADTABLE              -   DEFPACKAGE
+    
+    IN-READTABLE              -   IN-PACKAGE
+    
+    MERGE-READTABLES-INTO     -   USE-PACKAGE
+    
+    MAKE-READTABLE            -   MAKE-PACKAGE
+    
+    UNREGISTER-READTABLE      -   DELETE-PACKAGE
+    
+    RENAME-READTABLE          -   RENAME-PACKAGE
+    
+    FIND-READTABLE            -   FIND-PACKAGE
+    
+    READTABLE-NAME            -   PACKAGE-NAME
+    
+    LIST-ALL-NAMED-READTABLES -   LIST-ALL-PACKAGES
+
+
+### Important API idiosyncrasies
+
+There are three major differences between the API of Named-Readtables,
+and the API of packages.
+
+1. Readtable names are symbols not strings.
+
+    Time has shown that the fact that packages are named by strings
+    causes severe headache because of the potential of package names
+    colliding with each other.
+
+    Hence, readtables are named by symbols lest to make the
+    situation worse than it already is. Consequently, readtables
+    named `CL-ORACLE:SQL-SYNTAX` and `CL-MYSQL:SQL-SYNTAX` can
+    happily coexist next to each other. Or, taken to an extreme,
+    `SCHEME:SYNTAX` and `ELISP:SYNTAX`.
+
+    If, for example to duly signify the importance of your cool
+    readtable hack, you really think it deserves a global name, you
+    can always resort to keywords.
+
+2. The inheritance is resolved statically, not dynamically.
+
+    A package that uses another package will have access to all the
+    other package's exported symbols, even to those that will be
+    added after its definition. I.e. the inheritance is resolved at
+    run-time, that is dynamically.
+
+    Unfortunately, we cannot do the same for readtables in a
+    portable manner.
+
+    Therefore, we do not talk about "using" another readtable but
+    about "merging" the other readtable's definition into the
+    readtable we are going to define. I.e. the inheritance is
+    resolved once at definition time, that is statically.
+
+    (Such merging can more or less be implemented portably albeit at
+    a certain cost. Most of the time, this cost manifests itself at
+    the time a readtable is defined, i.e. once at compile-time, so
+    it may not bother you. Nonetheless, we provide extra support for
+    Sbcl, ClozureCL, and AllegroCL at the moment. Patches for your
+    implementation of choice are welcome, of course.)
+
+3. DEFREADTABLE does not have compile-time effects.
+
+    If you define a package via DEFPACKAGE, you can make that
+    package the currently active package for the subsequent
+    compilation of the same file via IN-PACKAGE. The same is,
+    however, not true for DEFREADTABLE and IN-READTABLE for the
+    following reason:
+
+    It's unlikely that the need for special reader-macros arises for
+    a problem which can be solved in just one file. Most often,
+    you're going to define the reader macro functions, and set up
+    the corresponding readtable in an extra file.
+
+    If DEFREADTABLE had compile-time effects, you'd have to wrap
+    each definition of a reader-macro function in an EVAL-WHEN to
+    make its definition available at compile-time. Because that's
+    simply not the common case, DEFREADTABLE does not have a
+    compile-time effect.
+
+    If you want to use a readtable within the same file as its
+    definition, wrap the DEFREADTABLE and the reader-macro function
+    definitions in an explicit EVAL-WHEN.
+
+
+### Preregistered Readtables
+
+- NIL, :STANDARD, and :COMMON-LISP designate the
+*standard readtable*.
+
+- :MODERN designates a *case-preserving* *standard-readtable*.
+
+- :CURRENT designates the *current readtable*.
+
+
+### Examples
+
+```commonlisp
+(defreadtable elisp:syntax
+   (:merge :standard)
+   (:macro-char #\? #'elisp::read-character-literal t)
+   (:macro-char #\[ #'elisp::read-vector-literal t)
+   ...
+   (:case :preserve))
+
+(defreadtable scheme:syntax
+   (:merge :standard)
+   (:macro-char #\[ #'(lambda (stream char)
+                         (read-delimited-list #\] stream)))
+   (:macro-char #\# :dispatch)
+   (:dispatch-macro-char #\# #\t #'scheme::read-#t)
+   (:dispatch-macro-char #\# #\f #'scheme::read-#f)
+   ...
+   (:case :preserve))
+
+(in-readtable elisp:syntax)
+
+...
+
+(in-readtable scheme:syntax)
+
+...
+```
+
+
+## Reference
+
+- [macro] DEFREADTABLE NAME &BODY OPTIONS
+
+    Define a new named readtable, whose name is given by the symbol NAME.
+    Or, if a readtable is already registered under that name, redefine
+    that one.
+    
+    The readtable can be populated using the following OPTIONS:
+    
+    - `(:MERGE READTABLE-DESIGNATORS+)`
+    
+        Merge the readtables designated into the new readtable being
+        defined as per MERGE-READTABLES-INTO.
+    
+        If no :MERGE clause is given, an empty readtable is used. See
+        MAKE-READTABLE.
+    
+    - `(:FUSE READTABLE-DESIGNATORS+)`
+    
+        Like :MERGE except:
+    
+        Error conditions of type READER-MACRO-CONFLICT that are signaled
+        during the merge operation will be silently *continued*. It
+        follows that reader macros in earlier entries will be
+        overwritten by later ones. For backward compatibility, :FUZE is
+        accepted as an alias of :FUSE.
+    
+    - `(:DISPATCH-MACRO-CHAR MACRO-CHAR SUB-CHAR FUNCTION)`
+    
+        Define a new sub character `SUB-CHAR` for the dispatching macro
+        character `MACRO-CHAR`, per SET-DISPATCH-MACRO-CHARACTER. You
+        probably have to define `MACRO-CHAR` as a dispatching macro
+        character by the following option first.
+    
+    - `(:MACRO-CHAR MACRO-CHAR FUNCTION [NON-TERMINATING-P])`
+    
+        Define a new macro character in the readtable, per
+        SET-MACRO-CHARACTER. If `FUNCTION` is the keyword :DISPATCH,
+        `MACRO-CHAR` is made a dispatching macro character, per
+        MAKE-DISPATCH-MACRO-CHARACTER.
+    
+    - `(:SYNTAX-FROM FROM-READTABLE-DESIGNATOR FROM-CHAR TO-CHAR)`
+    
+        Set the character syntax of TO-CHAR in the readtable being
+        defined to the same syntax as FROM-CHAR as per
+        SET-SYNTAX-FROM-CHAR.
+    
+    - `(:CASE CASE-MODE)`
+    
+        Defines the *case sensitivity mode* of the resulting readtable.
+    
+    Any number of option clauses may appear. The options are grouped by
+    their type, but in each group the order the options appeared
+    textually is preserved. The following groups exist and are executed
+    in the following order: :MERGE and :FUSE (one
+    group), :CASE, :MACRO-CHAR and :DISPATCH-MACRO-CHAR (one group),
+    finally :SYNTAX-FROM.
+    
+    Notes:
+    
+    The readtable is defined at load-time. If you want to have it
+    available at compilation time -- say to use its reader-macros in the
+    same file as its definition -- you have to wrap the DEFREADTABLE
+    form in an explicit EVAL-WHEN.
+    
+    On redefinition, the target readtable is made empty first before
+    it's refilled according to the clauses.
+    
+    NIL, :STANDARD, :COMMON-LISP, :MODERN, and :CURRENT are
+    preregistered readtable names.
+
+- [macro] IN-READTABLE NAME
+
+    Set *READTABLE* to the readtable referred to by the symbol NAME.
+
+- [function] MAKE-READTABLE &OPTIONAL (NAME NIL NAME-SUPPLIED-P) &KEY MERGE
+
+    Creates and returns a new readtable under the specified
+    NAME.
+    
+    MERGE takes a list of NAMED-READTABLE-DESIGNATORS and specifies the
+    readtables the new readtable is created from. (See the :MERGE clause
+    of DEFREADTABLE for details.)
+    
+    If MERGE is NIL, an empty readtable is used instead.
+    
+    If NAME is not given, an anonymous empty readtable is returned.
+    
+    Notes:
+    
+    An empty readtable is a readtable where each character's syntax is
+    the same as in the *standard readtable* except that each macro
+    character has been made a constituent. Basically: whitespace stays
+    whitespace, everything else is constituent.
+
+- [function] MERGE-READTABLES-INTO RESULT-READTABLE &REST NAMED-READTABLES
+
+    Copy the contents of each readtable in NAMED-READTABLES into
+    RESULT-READTABLE.
+    
+    If a macro character appears in more than one of the readtables,
+    i.e. if a conflict is discovered during the merge, an error of type
+    READER-MACRO-CONFLICT is signaled.
+
+- [function] FIND-READTABLE NAME
+
+    Looks for the readtable specified by NAME and returns it if it is
+    found. Returns NIL otherwise.
+
+- [function] ENSURE-READTABLE NAME &OPTIONAL (DEFAULT NIL DEFAULT-P)
+
+    Looks up the readtable specified by NAME and returns it if it's found.
+    If it is not found, it registers the readtable designated by DEFAULT
+    under the name represented by NAME; or if no default argument is
+    given, it signals an error of type READTABLE-DOES-NOT-EXIST
+    instead.
+
+- [function] RENAME-READTABLE OLD-NAME NEW-NAME
+
+    Replaces the associated name of the readtable designated by
+    OLD-NAME with NEW-NAME. If a readtable is already registered under
+    NEW-NAME, an error of type READTABLE-DOES-ALREADY-EXIST is
+    signaled.
+
+- [function] READTABLE-NAME NAMED-READTABLE
+
+    Returns the name of the readtable designated by NAMED-READTABLE,
+    or NIL.
+
+- [function] REGISTER-READTABLE NAME READTABLE
+
+    Associate READTABLE with NAME. Returns the readtable.
+
+- [function] UNREGISTER-READTABLE NAMED-READTABLE
+
+    Remove the association of NAMED-READTABLE. Returns T if successfull,
+    NIL otherwise.
+
+- [function] COPY-NAMED-READTABLE NAMED-READTABLE
+
+    Like COPY-READTABLE but takes a NAMED-READTABLE-DESIGNATOR as argument.
+
+- [function] LIST-ALL-NAMED-READTABLES 
+
+    Returns a list of all registered readtables. The returned list is
+    guaranteed to be fresh, but may contain duplicates.
+
+- [type] NAMED-READTABLE-DESIGNATOR
+
+    Either a symbol or a readtable itself.
+
+- [condition] READER-MACRO-CONFLICT READTABLE-ERROR
+
+    Continuable.
+    
+    This condition is signaled during the merge process if a reader
+    macro (be it a macro character or the sub character of a dispatch
+    macro character) is present in the both source and the target
+    readtable and the two respective reader macro functions differ.
+
+- [condition] READTABLE-DOES-ALREADY-EXIST READTABLE-ERROR
+
+    Continuable.
+
+- [condition] READTABLE-DOES-NOT-EXIST READTABLE-ERROR
+
+* * *
+###### \[generated by [MGL-PAX](https://github.com/melisgl/mgl-pax)\]
