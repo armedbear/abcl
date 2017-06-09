@@ -5,7 +5,7 @@
   :depends-on (jss
                prove)
   :components ((:module tests
-                        :pathname "" 
+                        :pathname "t" 
                         :components ((:test-file "jss-tests"))))
   :perform (asdf:test-op (op c)
                          (uiop:symbol-call :prove-asdf 'run-test-system c)))
