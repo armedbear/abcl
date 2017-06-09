@@ -52,8 +52,8 @@ to call, and calls it.
 
 An interactive restart is available to resolve class ambiguity.
 
-Static calls are possible as well with the #" macro, but the
-first argument MUST BE A SYMBOL to distinguish 
+Static calls are possible as well with the SHARPSIGN-QUOTATION_MARK
+macro, but the first argument *must* be a symbol to distinguish
 
      (#"getProperties" "java.lang.System")
      
@@ -96,10 +96,32 @@ method is looked up based on the arguments passed, and thereafter
 that method is called directly.  Doesn't work for static methods at
 the moment (lazy)
 
-(japropos string) finds all class names matching string
+    (japropos string) 
 
-(jcmn class-name) lists the names of all methods for the class
+finds all class names matching STRING.
 
+    (jcmn class-name) 
+    
+lists the names of all methods for the CLASS-NAME.
+
+Java static fields may be addressed via the SHARPSIGN-QUOTATION_MARK macro as 
+  
+    (#"{java.lang.System}.{fileSeparator}")
+  
+### Javaparser
+
+On the reference of the JAVAPARSER system, one may use a Java DSL to
+specify invocation and chains:
+
+    (asdf:make :javaparser)
+    (#"'#1"new ByteBuddy()
+      .subclass(Object.class,t)
+      .method(ElementMatchers.named("toString"))
+      .intercept(FixedValue.value("Hello World!"))
+      .make()
+      .load(getClass().getClassLoader())
+      .getLoaded()" 
+   
 Compatibility
 -------------
 
@@ -133,7 +155,7 @@ abcl-contrib: http://abcl.org/svn/trunk/abcl/contrib/
 
 <> dc:created "2005" ;
    dc:author "Mark <evenson.not.org@gmail.com>";
-   dc:revised "06-DEC-2012" ;
-   <> abcl:documents <urn:abcl.org/release/1.3.0-dev/contrib/jss#3.0.5" .
+   dc:revised "09-JUN-2017" ;
+   asdf:long-description <urn:abcl.org/release/1.5.0/contrib/jss/README.markdown#3.3.0>" .
 
    

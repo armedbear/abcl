@@ -65,19 +65,13 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun read-invoke/javaparser (stream char arg) 
     (if (eql arg 1)
-        (if (ignore-errors (jclass "com.github.javaparser.ParseStart")) ;; chosen randomly, TODO memoize
+
+        (if (ignore-errors
+              (jclass "com.github.javaparser.ParseStart"))         ;; chosen randomly, TODO memoize
             (read-sharp-java-expression stream)
             ;; Deal with possiblity of not loading jar
             (error "Cannot load javaparser code needed for the #1 macro"))
-	(progn
-	  (unread-char char stream)
-	  (let ((name (read stream)))
-	    (if (or (find #\. name) (find #\{ name))
-		(jss-transform-to-field name)
-		(let ((object-var (gensym))
-		      (args-var (gensym)))
-		  `(lambda (,object-var &rest ,args-var) 
-		     (invoke-restargs ,name  ,object-var ,args-var ,(eql arg 0)))))))))
+        (read-invoke stream char arg)))
   (set-dispatch-macro-character #\# #\" 'read-invoke/javaparser))
 
 

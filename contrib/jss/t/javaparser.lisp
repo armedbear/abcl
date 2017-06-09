@@ -1,8 +1,5 @@
 (in-package :cl-user)
 
-#+(or) ;; 
-(in-package :jss)
-
 (defparameter expanded '(let ((jss::this jss::*object-for-this*))
       (jcall "getLoaded"
 	     (jcall "load"
@@ -32,7 +29,6 @@
 (in-package :jss-test)
 
 (prove:plan 1)
-(proveis jss::source
-    jss::expanded)
+(prove:is source expanded)
 
 (prove:finalize)
