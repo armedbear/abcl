@@ -264,7 +264,10 @@ above have used annotate local functions"
 					 `(:macro ,name)
 					 name))))
 			  (and (not (compiled-function-p function))
-			       `(:anonymous-interpreted-function))
+			       (let ((body (#"getBody" function)))
+				 (if (and (consp body) (consp (car body)) (eq (caar body) 'jss::invoke-restargs))
+				     `(:interpreted-function ,(concatenate 'string "#\"" (cadar body) "\""))
+				     `(:anonymous-interpreted-function))))
 			  (function-name-by-where-loaded-from function)))))))))
 
 (defun function-name-by-where-loaded-from (function)
@@ -281,7 +284,7 @@ above have used annotate local functions"
   function. If so add to function internal plist :jss-function and the
   name of the java methods"
   (and (find-package :jss)
-       (eq (type-of f) 'compiled-function)
+       (compiled-function-p f)
        (or (getf (sys::function-plist f) :jss-function)
 	   (let ((internals (function-internal-fields f)))
 	     (and (= (length internals) 2)
@@ -292,7 +295,7 @@ above have used annotate local functions"
 (defun local-function-p (function)
   "Helper function. Tests whether a function wasn't defined at top
   level based on function-plist annotations"
-  (and (functionp function)
+  (and (and (functionp function) (not (typep function 'generic-function)))
        (let ((plist  (sys::function-plist function)))
 	 (or (getf plist :internal-to-function)
 	     (getf plist :method-function)
