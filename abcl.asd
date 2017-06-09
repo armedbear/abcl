@@ -149,7 +149,11 @@ be in a directory named '../ansi-test/'."
   :description "Tools to generate LaTeX source from docstrings."
   :depends-on (swank)
   :components
-  ((:module grovel :pathname "doc/manual/" :serial t
-            :components ((:file "package")
+  ((:module package
+            :pathname "doc/manual/" :components ((:file "package")))
+   (:module grovel
+            :depends-on (package)
+            :pathname "doc/manual/" 
+            :components ((:file "index" :depends-on (grovel))
                          (:file "grovel")))))
 

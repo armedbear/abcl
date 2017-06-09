@@ -1,4 +1,8 @@
-(defpackage #:abcl/documentation
+(in-package :cl-user)
+
+(defpackage abcl/documentation
   (:use :cl)
-  (:export #:grovel-docstrings-as-tex))
+  (:export
+   #:index
+   #:grovel-docstrings-as-tex))
 

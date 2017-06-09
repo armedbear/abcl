@@ -1,14 +1,21 @@
 (in-package :abcl/documentation)
 
 (defun grovel-docstrings-as-tex (&key
-                                   (package (find-package :java))
-                                   (directory (asdf:component-pathname (asdf:find-component :abcl/documentation 'grovel))))
+                                   (package
+                                    (find-package :java))
+                                   (directory
+                                    (asdf:component-pathname
+                                     (asdf:find-component :abcl/documentation 'grovel))))
   "Transform exported symbols documentation in PACKAGE to DIRECTORY."
-  (let ((output-file (merge-pathnames (format nil "~A.tex" (string-downcase (package-name package))) directory))
+  (let ((output-file (merge-pathnames
+                      (format nil "~A.tex" (string-downcase (package-name package)))
+                      directory))
         (symbols (loop :for symbol :being :each :external-symbol :of package :collecting symbol)))
     (with-open-file (stream output-file :direction :output)
       (format t "Writing output to '~A'.~%" output-file)
-      (loop :for symbol :in (sort symbols (lambda (a b) (string-lessp (symbol-name a) (symbol-name b))))
+      (loop :for symbol :in (sort symbols
+                                  (lambda (a b)
+                                    (string-lessp (symbol-name a) (symbol-name b))))
          :doing (let ((documentation (symbol-as-tex symbol)))
                   (when documentation
                     (format stream "~&~A~%~%" documentation)))))))

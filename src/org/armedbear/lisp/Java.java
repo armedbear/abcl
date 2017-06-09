@@ -656,7 +656,7 @@ public final class Java
 
     private static final Primitive JARRAY_REF = new pf_jarray_ref();
     @DocString(name="jarray-ref", args="java-array &rest indices",
-    doc="Dereferences the Java array JAVA-ARRAY using the given INDICIES, " +
+    doc="Dereferences the Java array JAVA-ARRAY using the given INDICES, " +
         "coercing the result into a Lisp object, if possible.")
     private static final class pf_jarray_ref extends Primitive
     {
@@ -674,7 +674,7 @@ public final class Java
 
     private static final Primitive JARRAY_REF_RAW = new pf_jarray_ref_raw();
     @DocString(name="jarray-ref-raw", args="java-array &rest indices",
-    doc="Dereference the Java array JAVA-ARRAY using the given INDICIES. " +
+    doc="Dereference the Java array JAVA-ARRAY using the given INDICES. " +
         "Does not attempt to coerce the result into a Lisp object.")
     private static final class pf_jarray_ref_raw extends Primitive
     {
@@ -692,7 +692,7 @@ public final class Java
 
     private static final Primitive JARRAY_SET = new pf_jarray_set();
     @DocString(name="jarray-set", args="java-array new-value &rest indices",
-    doc="Stores NEW-VALUE at the given index in JAVA-ARRAY.")
+    doc="Stores NEW-VALUE at the given INDICES in JAVA-ARRAY.")
     private static final class pf_jarray_set extends Primitive
     {
         pf_jarray_set()
