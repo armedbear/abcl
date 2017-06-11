@@ -47,7 +47,10 @@ Enhancements
 
 * [r15018] Enable use of MVN-MODULE in ASDF definitions (Alan).
 
-* [r15019] Add NAMED-READTABLES from <​https://github.com/melisgl/named-readtables
+* [r15019] Add NAMED-READTABLES from <​https://github.com/melisgl/named-readtables>
+
+* [r15062] ABCL-INTROSPECT 'javaparser.asd' definition adds a
+  SHARPSIGN-ONE-QUOTATION_MARK macro to evaluate arbitrary Java expressions
 
 
 Fixes
@@ -55,9 +58,9 @@ Fixes
 
 * [r14902] Fix CL:OPEN for :DIRECTION :INPUT (pipping)
 
-* [r14903] JNEW-RUNTIME-CLASS (Olof)
-  Make static functions and :int parameters work.  Fix return
-  conversion for null.  Ensure that the same classloader is used.
+* [r14903] JNEW-RUNTIME-CLASS Make static functions and :int
+  parameters work.  Fix return conversion for null.  Ensure that the
+  same classloader is used (olof).
 
 * [r14905] ABCL-ASDF uses the value of the reported Maven home to look
   for libraries, fixing loading CFFI under FreeBSD 11-RELEASE.
@@ -129,6 +132,7 @@ Fixes
 * [r15038] Fix NPE if directory can't be accessed (Olof).
 
 * [r15044] Documentation renders less/greater-than characters correctly (Olof).
+
 
 Updates
 -------

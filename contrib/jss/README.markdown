@@ -114,7 +114,7 @@ On the reference of the JAVAPARSER system, one may use a Java DSL to
 specify invocation and chains:
 
     (asdf:make :javaparser)
-    (#"'#1"new ByteBuddy()
+    (#1"new ByteBuddy()
       .subclass(Object.class,t)
       .method(ElementMatchers.named("toString"))
       .intercept(FixedValue.value("Hello World!"))
