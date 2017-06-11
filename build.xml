@@ -217,8 +217,9 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <include name="abcl.asd"/> 
       <include name="build.xml"/>
       <include name="abcl.properties.in"/> <!--TODO: massage into abcl.properties at build-time -->
-      <include name="abcl.bat"/>
+      <include name="abcl.in"/>
       <include name="abcl.bat.in"/>
+      <include name="etc/ant/*.xml"/>
     </patternset>
 
     <target name="abcl.stage"
@@ -508,7 +509,7 @@ from ${abcl.home.dir}
       </jar>
     </target>
 
-    <target name="abcl-aio.jar" depends="abcl.compile,abcl.version">
+    <target name="abcl-aio.jar" depends="abcl.compile,abcl.stamp">
       <mkdir dir="${dist.dir}"/>
       <jar destfile="${abcl-aio.jar.path}"
            compress="true"
@@ -765,6 +766,8 @@ will compile (if necessary) and load JSS.
       <include name="build-abcl.lisp"/>
       <include name="customizations.lisp.in"/>
 
+      <include name="etc/ant/*.xml"/>
+
     </patternset>
 
     <!-- TODO merge with artifacts from 'abcl.stage' -->
@@ -776,7 +779,7 @@ will compile (if necessary) and load JSS.
       <include name="META-INF/services/javax.script.ScriptEngineFactory"/>
     </patternset>
 
-    <target name="abcl.source.prepare" depends="abcl.stamp.version">
+    <target name="abcl.source.prepare" depends="abcl.stamp">
       <property name="abcl.build.src.dir"
                 value="${build.dir}/abcl-src-${abcl.version}"/>
       <mkdir dir="${abcl.build.src.dir}/src"/>

@@ -1,7 +1,7 @@
 <project xmlns="antlib:org.apache.tools.ant">
 
 <target name="abcl.snapshot" 
-        depends="abcl.release,abcl.diagnostic,abcl.version,abcl"
+        depends="abcl.release,abcl.diagnostic,abcl"
         description="Introspect and dump the current build and
   (presumed ) runtime targets as binary executable JVM objects.">
 
@@ -21,7 +21,7 @@ abcl.src.version: ${abcl.src.version}
 </echo>
 </target>
 
-<target name="abcl.version" depends="abcl.stamp,abcl.version.hg"/>
+<!-- <target name="abcl.version" depends="abcl.stamp,abcl.version.hg"/> -->
 
 <!-- Introspect for other versioning systems if we haven't determined an upstream SVN version -->
 <target name="abcl.version.hg"
