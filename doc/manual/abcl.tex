@@ -928,12 +928,13 @@ components of zip archives.
 % RDF description of type hierarchy 
 % TODO Render via some LaTeX mode for graphviz?
 \begin{verbatim}
-  @prefix ext:   <http://abcl.not.org/cl-packages/extensions/> .
-  @prefix cl:    <http://abcl.not.org/cl-packages/common-lisp/> .
+  @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+  @prefix ext:   <http://abcl.org/cl/package/extensions/> .
+  @prefix cl:    <http://abcl.org/cl/package/common-lisp/> .
   
-  <ext:jar-pathname> a <ext:url-pathname>.
-  <ext:url-pathname> a <cl:pathname>.
-  <cl:logical-pathname> a <cl:pathname> .
+  <ext:jar-pathname>    rdfs:subClassOf <ext:url-pathname> .
+  <ext:url-pathname>    rdfs:subClassOf <cl:pathname> .
+  <cl:logical-pathname> rdfs:subClassOf <cl:pathname> .
 \end{verbatim}
 
 \label{EXTENSIONS:URL-PATHNAME}
@@ -1624,8 +1625,8 @@ bridges to the source repository at
 requests for enhancements to the implementation many be more easily
 facilitated.
 
-In June 2017, we released the Sixth Edition of the implementation
-which dropped support for running on Java 5.
+In June 2017, we released ABCL 1.5.0 which dropped support for running
+upon Java 5.
 
 \appendix 
 
