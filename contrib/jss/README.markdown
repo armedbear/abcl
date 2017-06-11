@@ -153,9 +153,9 @@ abcl-contrib: http://abcl.org/svn/trunk/abcl/contrib/
    
 # Colophon
 
-<> dc:created "2005" ;
-   dc:author "Mark <evenson.not.org@gmail.com>";
-   dc:revised "09-JUN-2017" ;
-   asdf:long-description <urn:abcl.org/release/1.5.0/contrib/jss/README.markdown#3.3.0>" .
+    <> dc:created "2005" ;
+       dc:author "Mark <evenson.not.org@gmail.com>";
+       dc:revised "11-JUN-2017" .
+
 
    

@@ -19,12 +19,12 @@
   dc:identifier         <urn:abcl.org/1.5.0#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "08-JUN-2017" ;
+  dc:modified          "11-JUN-2017" ;
   dc:version           "abcl-1.5.0" ;
-  dc:release           "rc-1" ;
+#  dc:release           "dev" ;
   abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
-  abcl:svn             <http://abcl.org/trac/changeset/14990> . ;; UPDATE
+  abcl:svn             <http://abcl.org/trac/changeset/15075> . # UPDATE
  
 <> 
   rdfs:seeAlso <file:README> ;
@@ -89,12 +89,8 @@ _:user dc:identifier <http://ville.not.org/#me>  ;
 <> doap:license  [
      dc:license <http://usefulinc.com/doap/licenses/gplv2> ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
-
-     rdfs:seeAlso <urn:abcl.org/release/1.3.3> ;
-     rdfs:seeAlso <urn:abcl.org/release/1.4.0> ;
-     dc:licenseDocument <file:COPYING> ;
      dc:licenseDocument 
-       <http://abcl.org/svn/trunk/abcl/src/org/armedbear/LICENSE> ;
+       <http://abcl.org/svn/tags/1.5.0/src/org/armedbear/COPYING> ;
 ] .
 
 doap:Project rdfs:seeAlso [

@@ -34,7 +34,7 @@ jss
     [lsw2][] Semantic Web package for dealing with OWL2 ontologies in
     RDF(S) and other notations.
     
-[lsw2]: http://code.google.com/p/lsw2/
+[lsw2]: https://github.com/alanruttenberg/lsw2/
     
 jfli
 
@@ -72,7 +72,7 @@ abcl-introspect
 abcl-build
 
     The ABCL build system plus associated utilities for manipulating
-    path executables
+    external tools via UIOP.
 
 named-readtables
     (BSD Licensed)
@@ -99,7 +99,7 @@ named-readtables
 
 Mark <evenson.not.org@gmail.com>
 Created:  2011-09-11
-Revised:  2017-07-08
+Revised:  2017-06-11
 <> abcl:documents <abcl.org/release/1.5.0/#abcl-contrib.jar> .
 
 

@@ -56,7 +56,6 @@ load is indeed coming from the jar.
 
 # Colophon
 
-Mark Evenson
-Created: 20-JUN-2011
-Modified: 16-OCT-2016
-<> abcl:documents <release#asdf-jar> .
+     Mark Evenson
+     Created: 20-JUN-2011
+     Revised: 11-JUN-2017

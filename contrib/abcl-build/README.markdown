@@ -1,9 +1,8 @@
 ABCL-BUILD
 ==========
 
-Installing the necessary toolchain to build ABCL.
+Installing and executing the necessary toolchain to build ABCL.
 
-Plus some utility functions to download needed artifacts from the
-network.
+Utility functions to download needed artifacts from the network.
 
 

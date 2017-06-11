@@ -84,7 +84,7 @@ distributed Maven POM graph][maven-abcl] or from
 directory. To run ABCL directly from this directory, make sure Java
 (version 1.6 or up) is in your shell's path.
 
-[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.4.0>
+[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.5.0>
 [maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.5.0>
 [abcl.org-release]:    <http://abcl.org/releases/1.5.0/>
 
