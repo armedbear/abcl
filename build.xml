@@ -762,12 +762,6 @@ will compile (if necessary) and load JSS.
 
       <include name="build-from-lisp.bash"/>
       
-      <!-- The remainder of these files are used by the Lisp hosted
-           build in 'build-abcl.lisp' but not used by Ant, so include
-           them in the source distribution. -->
-      <include name="make-jar.in"/>
-      <include name="make-jar.bat.in"/>
-
       <include name="build-abcl.lisp"/>
       <include name="customizations.lisp.in"/>
 
@@ -1230,9 +1224,8 @@ user.dir
     </target>
 
     <import file="netbeans-build.xml" optional="true"/> 
-<!--    <import file="j-build.xml" optional="true"/>  -->
-    <import file="not.org-build.xml" optional="true"/> 
     
-    <import file="build-snapshot.xml" optional="true"/>
+    <import file="etc/ant/build-snapshot.xml" optional="true"/>
 
-    <import file="build-maven.xml" optional="true"/> </project>
+    <import file="etc/ant/build-maven.xml" optional="true"/>
+  </project>
