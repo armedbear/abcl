@@ -71,7 +71,8 @@ FILE="src/org/abcl/lisp/build/build-abcl.lisp"
 
 abcl()
 {
-    exec "$1" --load "$2" --eval "(progn $3 (ext:quit))"
+    #    exec "$1" --load "$2" --eval "(progn $3 (ext:quit))"
+    exec "$1" --eval "(require :abcl-contrib)(require :abcl-build)" --eval "(abcl-build:build-abcl)"
 }
 
 ecl()
@@ -117,17 +118,17 @@ case "$IMPL" in
     abcl*)
         abcl  "$IMPL" "$FILE" "$FORM"          ;;
     clisp*)
-        clisp "$IMPL" "$FILE" "$FORM"          ;;
+        notimplemented "$IMPL" "$FILE" "$FORM"          ;;
     sbcl*)
-        sbcl  "$IMPL" "$FILE" "$FORM"          ;;
+        notimplemented  "$IMPL" "$FILE" "$FORM"          ;;
     lisp)
-        cmucl "$IMPL" "$FILE" "$FORM"          ;;   
+        notimplemented "$IMPL" "$FILE" "$FORM"          ;;   
     ccl*)
-        ccl   "$IMPL" "$FILE" "$FORM"          ;;
+        notimplemented   "$IMPL" "$FILE" "$FORM"          ;;
     gcl*)
         notimplemented "$IMPL" "$FILE" "$FORM" ;;
     ecl*)
-        ecl   "$IMPL" "$FILE" "$FORM"          ;;
+        notimplemented   "$IMPL" "$FILE" "$FORM"          ;;
     alisp*)
         notimplemented "$IMPL" "$FILE" "$FORM" ;;
     *)

@@ -15,29 +15,31 @@ LICENSE
 Armed Bear Common Lisp is distributed under the GNU General Public
 License with a classpath exception (see "Classpath Exception" below).
 
-A copy of GNU General Public License (GPL) is included in this
-distribution, in the file COPYING.
+A copy of GNU General Public License (GPLv2) is included in this
+distribution, in <file:COPYING>.
 
-Linking this software statically or dynamically with other modules is
-making a combined work based on this software. Thus, the terms and
-conditions of the GNU General Public License cover the whole
-combination.
+We have modfied our GPLv2 license section 13 to read:
 
+     13. Linking this library statically or dynamically with other
+     modules is making a combined work based on this library. Thus, the
+     terms and conditions of the GNU General Public License cover the
+     whole combination.
 
-Classpath Exception
--------------------
+     The following paragraph details the "classpath exception" which ABCL
+     allows as an exception to the statement about linking libraries.
 
-As a special exception, the copyright holders of this software give
-you permission to link this software with independent modules to
-produce an executable, regardless of the license terms of these
-independent modules, and to copy and distribute the resulting
-executable under terms of your choice, provided that you also meet,
-for each linked independent module, the terms and conditions of the
-license of that module. An independent module is a module which is not
-derived from or based on this software. If you modify this software,
-you may extend this exception to your version of the software, but you
-are not obligated to do so. If you do not wish to do so, delete this
-exception statement from your version.
+     As a special exception, the copyright holders of this software give
+     you permission to link this software with independent modules to
+     produce an executable, regardless of the license terms of these
+     independent modules, and to copy and distribute the resulting
+     executable under terms of your choice, provided that you also meet,
+     for each linked independent module, the terms and conditions of the
+     license of that module. An independent module is a module which is
+     not derived from or based on this software. If you modify this
+     software, you may extend this exception to your version of the
+     software, but you are not obligated to do so. If you do not wish to
+     do so, delete this exception statement from your version.
+
 
 RUNNING FROM DOCKER
 ===================
@@ -57,19 +59,6 @@ to get
     Type ":help" for a list of available commands.
     CL-USER(1): 23
     23
-    23
-    CL-USER(2): (require :abcl-contrib)
-    (require :abcl-contrib)
-    Using probed value of abcl-contrib:
-    '/home/abcl/work/abcl/dist/abcl-contrib.jar'.
-    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/quicklisp/ to ASDF.
-    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/mvn/ to ASDF.
-    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/jss/ to ASDF.
-    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/jfli/ to ASDF.
-    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/asdf-jar/ to ASDF.
-    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/abcl-introspect/ to ASDF.
-    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/abcl-asdf/ to ASDF.
-    ("uiop" "UIOP" "asdf" "ASDF" "ABCL-CONTRIB")
 
 
 [Docker Engine]: https://www.docker.com/products/docker-engine
@@ -89,142 +78,81 @@ See <file:Dockerfile> for the build instructions.
 RUNNING FROM BINARY RELEASE
 ===========================
 
-After you have downloaded a binary release from either
-[Maven][maven-abcl] or from [abcl.org][abcl.org-release] archive
-unpack it into its own directory. To run ABCL directly from this
-directory, make sure Java (version 1.6 or up) is in your shell's
-path. 
+After you have downloaded a binary release from either [the
+distributed Maven POM graph][maven-abcl] or from
+[abcl.org][abcl.org-release] archive unpack it into its own
+directory. To run ABCL directly from this directory, make sure Java
+(version 1.6 or up) is in your shell's path.
 
-[maven-abcl]:         <mvn:abcl.org/abcl/>
-[maven-abcl-contrib]: <mvn:abcl.org/abcl/abcl-contrib>
-[abcl.org-release:    <http://abcl.org/releases/>
+[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.4.0>
+[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.5.0>
+[abcl.org-release]:    <http://abcl.org/releases/1.5.0/>
 
-Then issue the following command:
+To start ABCL, simply issue the following command:
 
     cmd$ java -jar abcl.jar
 
 which should result in output like the following
 
     Armed Bear Common Lisp 1.5.0
-    Java 1.8.0_102 Oracle Corporation
+    Java 1.8.0_131 Oracle Corporation
     Java HotSpot(TM) 64-Bit Server VM
     Low-level initialization completed in 0.324 seconds.
     Startup completed in 1.892 seconds.
     Type ":help" for a list of available commands.
     CL-USER(1):
 
-Yer now at the interactive ABCL "Read Eval Print Loop" (REPL):  hacks 'n glory await.
+Yer now at the interactive ABCL "Read Eval Print Loop" (REPL): hacks
+'n glory await.
 
 
 BUILDING FROM SOURCE RELEASE
 ============================
 
-There are three ways to build ABCL from the source release with the
-preferred (and most tested way) is to being to use the Ant build tool:
+ABCL may be built from its source code by executing the build
+instructions <file:build.xml> expressed by the venerable Apache Ant
+tool.
 
-* Use the Ant build tool for Java environments.
+To build, one must have a Java 6, 7 or 8 Java Development Kit (JDK)
+installed locally. Just the Java Runtime Environment (JRE) isn't
+enough, as you need the Java compiler ('javac') to compile the Java
+source of the ABCL implementation.
 
-* Use the NetBeans [678].x IDE to open ABCL as a project.
-
-* Bootstrap ABCL using a Common Lisp implementation. Supported
-  implementations for this process: SBCL, CMUCL, OpenMCL, Allegro
-  CL, LispWorks or CLISP.
-
-In all cases you will need a Java 6 or later JDK (JDK 1.[678] have been
-tested).  Just the JRE isn't enough, as you need the Java compiler
-('javac') to compile the Java source of the ABCL implementation.
-
-Note that when deploying ABCL having JDK isn't a requirement for the
-installation site, just the equivalent JRE, as ABCL compiles directly
-to byte code, avoiding the need for the 'javac' compiler in deployment
-environments.
-
-
-Using Ant
----------
-
-Download a binary distribution [Ant version 1.7.1 or greater][1].
+Download a binary distribution [Ant version 1.7.1 or greater][ant].
 Unpack the files somewhere convenient, ensuring that the 'ant' (or
 'ant.bat' under Windows) executable is in your path and executable.
 
-[1]: http://ant.apache.org/bindownload.cgi
+[ant]: http://ant.apache.org/bindownload.cgi
 
-Then simply executing
+Then simply executing 
 
-    unix$ ant
+    cmd$ ant
 
-or
+from the directory containing the <file:build.xml> instructions will
+create an executable wrapper ('abcl' under UNIX, 'abcl.bat' under
+Windows).  Use this wrapper to start ABCL.
 
-    dos> ant.bat
-
-from the directory containing this README file will create an
-executable wrapper ('abcl' under UNIX, 'abcl.bat' under Windows).  Use
-this wrapper to start ABCL.
+The build may be customized by copying <file:abcl.properties.in> to
+<file:abcl.properties>, which will cause Ant to attempt to build
+incrementally as well as optimizing the runtime for a contemporary
+64bit desktop/server machine running Java 8.  The file may be edited
+for further customization.
 
 
 Using NetBeans
 --------------
 
-Obtain and install the [NetBeans IDE][2]. One should be able to open
-the ABCL directory as a project in the Netbeans application, whereupon
-the usual build, run, and debug targets as invoked in the GUI are
-available.  Use the 'slime' config with a suitably linked 'swank.asd'
-in '~/.asdf-install-dir/systems/' to connect a REPL to the NetBeans
-debug process.
+Alternatively, one may install the [Netbeans visual integrated
+development environment][netbeans], which contains both the Java
+Development Kit as well as the Ant build tool.
 
-[2]: http://netbeans.org/downloads/
+With Netbeans, one should be able to open the ABCL directory as a
+project whereupon the usual build, run, and debug targets as invoked
+in the GUI are available.  Use the 'slime' config with a suitably
+linked 'swank.asd' in '~/.asdf-install-dir/systems/' to connect a REPL
+to the NetBeans debug process.
 
-
-Building from Lisp
-------------------
-
-You need to have a Java compiler installed locally.  If the Ant build
-tool does not exist, it will be downloaded and used to invoke the Ant
-build.
-
-Then, one may either use the 'build-from-lisp.bash' shell script or load
-the necessary files into your Lisp image by hand.
-
-### Using the 'build-from-lisp.bash' script
-
-Under UNIX-like systems, one may simply invoke the
-'build-from-lisp.bash' script.  As noted above, one must first copy the
-'customizations.lisp.in' file to 'customizations.lisp', then edit it
-to reflect the local configuration most importantly the path to the
-Java Development Kit.
-
-After configuring 'customizations.lisp', the following would use SBCL
-as the compilation driver to build ABCL:
-
-    unix$ ./build-from-lisp.bash sbcl
-
-After a successful build, you may use 'abcl' ('abcl.bat' on Windows)
-to start ABCL.  Note that this wrappers contain absolute paths, so
-you'll need to edit them if you move things around after the build.
-
-If you're developing on ABCL, you may want to use
-
-    unix$ ./build-from-lisp.bash <implementation> --clean=nil
-
-to not do a full rebuild.
-
-In case of failure in the javac stage, you might try this:
-
-    unix$ ./build-from-lisp.bash <implementation> --full=t --clean=t --batch=nil
-
-This invokes javac separately for each .java file, which avoids running
-into limitations on command line length (but is a lot slower).
-
-### Building from another Lisp manually
-
-There is also an ASDF definition in 'abcl.asd' for ABCL/BUILD
-which can be used to load the necessary Lisp definitions, after which
-
-    CL-USER> (build-abcl:build-abcl :clean t :full t)
-
-will build ABCL.  If ASDF isn't present, simply LOAD the
-'customizations.lisp' and 'build-abcl.lisp' files to achieve the same
-effect as loading the ASDF definition.
+[netbeans]: http://netbeans.org/downloads/
 
 
 BUGS
@@ -240,7 +168,7 @@ providing a compliant and practical Common Lisp implementation.
 Tests
 -----
 
-ABCL 1.4.0 now fails 47 out of 21708 total tests in the [revised and
+ABCL 1.5.0 now fails 48 out of 21708 total tests in the [revised and
 expanded ANSI CL test suite][ansi-test] (derived from the tests
 originally written for GCL).
 
@@ -253,7 +181,7 @@ more information.
 
 ### Deficiencies
 
-Many.  But Patches to address issues mentioned above will be gladly
+Many.  But patches to address issues mentioned above will be gladly
 accepted.
 
 CONTACT
@@ -276,6 +204,7 @@ On behalf of all ABCL development team and contributors,
     Alessio Stalla
     Ville Voutilainen
 
+    alan
     olof ferada
     pipping
     slyrus
