@@ -51,7 +51,7 @@ With [Docker Engine][] installed one may execute:
 to get
 
     illin:~/work/abcl$ docker run -it easye/abcl
-    Armed Bear Common Lisp 1.5.0-dev
+    Armed Bear Common Lisp 1.6.0-dev
     Java 1.8.0_111 Oracle Corporation
     OpenJDK 64-Bit Server VM
     Low-level initialization completed in 0.295 seconds.
@@ -94,7 +94,7 @@ To start ABCL, simply issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.5.0
+    Armed Bear Common Lisp 1.6.0-dev
     Java 1.8.0_131 Oracle Corporation
     Java HotSpot(TM) 64-Bit Server VM
     Low-level initialization completed in 0.324 seconds.

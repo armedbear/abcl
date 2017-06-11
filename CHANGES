@@ -1,9 +1,14 @@
-Version 1.5.0
+Version 1.6.0
 =============
 <http://abcl.org/svn/trunk/>
 <http://gitlab.common-lisp.net/abcl/abcl/>
 <http://github.com/armedbear/abcl/>
 Unreleased
+
+
+Version 1.5.0
+=============
+June 11, 2017
 
 Enhancements
 ------------

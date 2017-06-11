@@ -197,7 +197,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
             depends="abcl.init,abcl.java.warning">
       <mkdir dir="${build.dir}"/>
       <mkdir dir="${build.classes.dir}"/>
-      <!-- abcl-1.5.0: Stock build for Java 1.6 (aka Java 2) container -->
+      <!-- Stock build for Java 1.6 (aka Java 2) container -->
       <javac destdir="${build.classes.dir}"
              debug="true"
              target="1.6"

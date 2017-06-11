@@ -1,6 +1,6 @@
 ;;;; -*- Mode: LISP -*-
 (defsystem jfli
-  :long-description "<urn:abcl.org/release/1.5.0/contrib/jfli#>"
+  :long-description "<urn:abcl.org/release/1.6.0/contrib/jfli#>"
   :version "0.2.0"
   :components ((:file "jfli")))
 

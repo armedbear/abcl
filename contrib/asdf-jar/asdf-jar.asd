@@ -2,7 +2,7 @@
 (defsystem asdf-jar
   :author "Mark Evenson"
   :description "Packaging ASDF systems into jar files"
-  :long-description "<urn:abcl.org/release/1.5.0/contrib/asdf-jar#>"
+  :long-description "<urn:abcl.org/release/1.6.0/contrib/asdf-jar#>"
   :version "0.3.2"
   :components ((:module base
                         :pathname ""

@@ -2,7 +2,7 @@
 
 (defsystem abcl-asdf-tests
   :author "Mark Evenson"
-  :long-description "<urn:abcl.org/release/1.5.0/contrib/abcl-asdf/test#>"
+  :long-description "<urn:abcl.org/release/1.6.0/contrib/abcl-asdf/test#>"
   :version "2.0.0"
   :defsystem-depends-on (prove-asdf)
   :depends-on (abcl-asdf ;; our dependencies

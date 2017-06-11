@@ -16,12 +16,12 @@
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.5.0#dev> ;           
+  dc:identifier         <urn:abcl.org/1.6.0#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
   dc:modified          "11-JUN-2017" ;
-  dc:version           "abcl-1.5.0" ;
-#  dc:release           "dev" ;
+  dc:version           "abcl-1.6.0" ;
+  dc:release           "dev" ;
   abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
   abcl:svn             <http://abcl.org/trac/changeset/15075> . # UPDATE

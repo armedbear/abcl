@@ -2,7 +2,7 @@
 (defsystem abcl-asdf
   :author "Mark Evenson"
   :description "Extensions to ASDF for handling Java binary artifacts."
-  :long-description "<urn:abcl.org/release/1.5.0/contrib/abcl-asdf#>"
+  :long-description "<urn:abcl.org/release/1.6.0/contrib/abcl-asdf#>"
   :version "2.1.0"
   :depends-on (jss abcl-build)
   :components 
