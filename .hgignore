@@ -6,7 +6,7 @@
 ^nbproject/private
 ^doc/.+\.aux$
 .+\.orig$
-.+\.rej$
+#.+\.rej$
 .+\.class$
 ^ext/
 ^test/lisp/abcl/tmp

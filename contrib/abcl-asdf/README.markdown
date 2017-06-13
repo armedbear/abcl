@@ -15,7 +15,7 @@ Example 1
 ---------
 
 For the following ASDF definition stored in a file named "log4j.asd"
-that loadable by ASDF
+that can be loaded:
 
     ;;;; -*- Mode: LISP -*-
     (in-package :asdf)
@@ -25,7 +25,7 @@ that loadable by ASDF
 
 After issuing 
 
-    CL-USER> (asdf:load-system :log4j)
+    CL-USER> (asdf:make :log4j)
     
 all the Log4j libraries would be dynamically added to the classpath so
 that the following code would
@@ -33,7 +33,7 @@ that the following code would
     (let ((logger (#"getLogger" 'log4j.Logger (symbol-name (gensym)))))
       (#"trace" logger "Kilroy wuz here."))
  
-output the message "Kilroy wuz here" to the log4j logging system.
+output the message "Kilroy wuz here" to the Log4j logging system.
       
 
 API
@@ -53,16 +53,17 @@ ASDF classes derived from ASDF:COMPONENT:
     the inheritance of the MVN component while allowing other forms of
     uri-like resources to be encapsulated in the future.
 
-The MVN component should specify a [Maven URI][1] as its PATH.  A
-Maven URI has the form "GROUP-ID/ARTIFACT-ID/VERSION" which specifies
-the dependency to be satisfied for this component by resolution
-through the Maven distributed dependency graph.  The scheme (the
-initial "mvn://") is implied, usually omitted for brevity.  If a
-VERSION is not specified (i.e. by a form like "GROUP-ID/ARTIFACT-ID"),
-then the latest available version of the artifact will be retrieved
-from the network.
+The MVN component should specify a [Maven URI][mvn-uri] as its PATH.
+A Maven URI has a namestring of the form
+"GROUP-ID/ARTIFACT-ID/VERSION" which specifies the dependency to be
+satisfied for this component by resolution through the Maven
+distributed dependency graph.  The scheme (the initial "mvn://" in a
+Maven URI) is implied, and usually omitted for brevity.  If a VERSION
+is not specified (i.e. by a namestring like "GROUP-ID/ARTIFACT-ID" for
+the MVN component), then the latest available version of the artifact
+will be retrieved from the network.
 
-[1]: http://team.ops4j.org/wiki/display/paxurl/Mvn+Protocol
+[mvn-uri]: http://team.ops4j.org/wiki/display/paxurl/Mvn+Protocol
 
 The MVN component may specify a CLASSNAME which if present in the
 current jvm, inhibits further loading from the network.  This may be
@@ -81,7 +82,7 @@ into the currently executing JVM process all recursive dependencies
 annotated in the ditributed Maven pom.xml graph.
 
 One can muffle the verbosity of the Maven Aether resolver by setting
-ABCL-ASDF:*MAVEN-VERBOSE* to NIL.
+CL:*load-VERBOSE* to NIL.
 
 Example 2
 ---------
@@ -134,7 +135,7 @@ For a filesystem of jar archives:
     ./lib/ext/xsb-system/interprolog.jar
 
 The following ASDF defintion loads enough JVM artifacts to use the
-[IRIS reasoner][1]:
+[IRIS reasoner][iris-reasoner]:
 
     (defsystem :wsml2reasoner-jars
       :version "0.6.4"  ;; last sync with SVN
@@ -157,12 +158,12 @@ The following ASDF defintion loads enough JVM artifacts to use the
          :pathname "lib/ext/log4j/" :components
 	     ((:jar-file "log4j-1.2.14")))))
 
-[1]:  http://www.iris-reasoner.org/
+[iris-reasoner]:  http://www.iris-reasoner.org/
 
 #### Colophon
 
     Mark <evenson.not.org@gmail.com>
     
     Created: 2011-01-01
-    Revised: 2013-08-16
+    Revised: 2017-06-13
     

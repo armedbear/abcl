@@ -4,7 +4,8 @@
 
 <!-- XXX need way to autodetect NetBeans as installed, as this will
      probably fail otherwise.  -->
-  <import file="nbproject/build-impl.xml"/>
+  <import file="../../nbproject/build-impl.xml"/>
+
 
   <target name="-pre-compile" if="abcl.compile.lisp.skip">
     <antcall target="abcl.copy.lisp"/>

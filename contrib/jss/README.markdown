@@ -21,7 +21,6 @@ name. When ambiguous, you need to be more specific. A simple example
 from CL-USER:
 
     (require :jss)
-    (in-package :jss)
     (let ((sw (new 'StringWriter)))
        (#"write" sw "Hello ")
        (#"write" sw "World")
@@ -44,7 +43,7 @@ or
 
 The call 
 
-     (#"write" sw "Hello ")
+    (#"write" sw "Hello ")
      
 uses the code in invoke.java to call the method named "write" with
 the arguments sw and "Hello ".  JSS figures out the right java method
@@ -78,7 +77,7 @@ want to avoid the overhead of a the dynamic dispatch.
 e.g.
  
     (with-constant-signature ((tostring "toString")) 
-        (time (dotimes (i 10000) (tostring "foo"))))
+      (time (dotimes (i 10000) (tostring "foo"))))
 
 runs about three times faster than 
  
@@ -86,7 +85,8 @@ runs about three times faster than
 
 So, something like
 
-    (with-constant-signature ((tostring "toString" t)) ...) 
+    (with-constant-signature
+      ((tostring "toString" t)) ...) 
     
 will cause the toString to be a raw java call. See
 JSS::GET-ALL-JAR-CLASSNAMES for an example.
@@ -122,8 +122,7 @@ specify invocation and chains:
       .load(getClass().getClassLoader())
       .getLoaded()" 
    
-Compatibility
--------------
+# Compatibility
 
 The function ENSURE-COMPATIBILITY attempts to provide a compatibility
 mode to existing users of JSS by importing the necessary symbols into
@@ -140,17 +139,17 @@ Some notes on other compatibility issues:
 
   1.0 
     Equivalent to Alan Ruttenberg's version included with the original
-    [lsw]().  
+    [lsw2]().  
     
 [lsw]: http://mumble.net:8080/svn/lsw/trunk/
-[lsw2]: let-me-google-that-for-you    
+[lsw2]: https://github.com/alanruttenberg/lsw2
     
 
   3.0 
-     In the JSS package loaded from [abcl-contrib]() 
+     The results the of having JSS package loaded from [abcl-contrib][]
      
-abcl-contrib: http://abcl.org/svn/trunk/abcl/contrib/     
-   
+[abcl-contrib]: http://abcl.org/svn/trunk/abcl/contrib/
+
 # Colophon
 
     <> dc:created "2005" ;

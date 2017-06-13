@@ -1226,9 +1226,10 @@ user.dir
             tofile="${dist.dir}/asdf.pdf"/>
     </target>
 
-    <import file="netbeans-build.xml" optional="true"/> 
-    
-    <import file="etc/ant/build-snapshot.xml" optional="true"/>
-
-    <import file="etc/ant/build-maven.xml" optional="true"/>
+    <import file="etc/ant/netbeans-build.xml"
+            optional="true"/> 
+    <import file="etc/ant/build-snapshot.xml"
+            optional="true"/>
+    <import file="etc/ant/build-maven.xml"
+            optional="true"/>
   </project>
