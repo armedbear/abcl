@@ -1,6 +1,6 @@
 (in-package :cl-user)
 
-(prove:plan 6)
+(prove:plan 8)
 
 (prove:is
  (read-from-string "#\"{bar}.{foo}\"")
@@ -22,7 +22,16 @@
 (prove:is (#"toString"
            (find "size" (#"getMethods" (find-java-class "java.util.Collections$UnmodifiableMap"))
                  :test 'string-equal :key #"getName"))
-    (#"toString" (java::jmethod "java.util.Collections$UnmodifiableMap" "size" )))
+	  (#"toString" (java::jmethod "java.util.Collections$UnmodifiableMap" "size" )))
+
+(prove:is 
+ (jss::with-class-lookup-disambiguated (lang.object) (find-java-class 'object))
+ (find-java-class 'java.lang.object))
+
+;; Object is ambiguous in default java 
+(prove:is-error
+ (find-java-class 'object)
+ 'simple-error)
 
 ;; test that optimized jss is much faster than unoptimized
 (let ()
