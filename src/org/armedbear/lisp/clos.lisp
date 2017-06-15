@@ -2190,8 +2190,12 @@ Initialized with the true value near the end of the file.")
       (clrhash *make-instance-initargs-cache*)
       (clrhash *reinitialize-instance-initargs-cache*))
     (if gf
-        (check-method-lambda-list name method-lambda-list
-                                  (generic-function-lambda-list gf))
+	(restart-case
+	    (check-method-lambda-list name method-lambda-list
+				      (generic-function-lambda-list gf))
+	  (unbind-and-try-again () :report (lambda(s) (format s "Undefine generic function #'~a and continue" name))
+	    (fmakunbound name)
+	    (setf gf (ensure-generic-function name :lambda-list method-lambda-list))))
         (setf gf (ensure-generic-function name :lambda-list method-lambda-list)))
     (let ((method
            (if (eq (generic-function-method-class gf) +the-standard-method-class+)
@@ -4549,9 +4553,10 @@ or T when any keyword is acceptable due to presence of
                  (eq 'setf (first function-name))
                  (autoload-ref-p (second function-name))))
         (fmakunbound function-name)
-        (error 'program-error
-               :format-control "~A already names an ordinary function, macro, or special operator."
-               :format-arguments (list function-name))))
+	(progn
+	  (cerror "Redefine as generic function" "~A already names an ordinary function, macro, or special operator." function-name)
+	  (fmakunbound function-name)
+	  )))
   (apply (if (eq generic-function-class +the-standard-generic-function-class+)
              #'make-instance-standard-generic-function
              #'make-instance)
