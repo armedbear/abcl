@@ -208,7 +208,7 @@ NAME can either string or a symbol according to the usual JSS conventions."
     (unread-char char stream)
     (let ((name (read stream)))
       (if (or (find #\. name) (find #\{ name))
-          (jss-transform-to-field name)
+          (jss-transform-to-field name arg)
           (let ((object-var (gensym))
                 (args-var (gensym)))
             `(lambda (,object-var &rest ,args-var) 
