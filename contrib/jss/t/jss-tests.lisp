@@ -4,13 +4,13 @@
 
 (prove:is
  (read-from-string "#\"{bar}.{foo}\"")
- '(get-java-field bar foo t))
+ '(jss:get-java-field bar foo t))
 (prove:is
  (read-from-string "#\"q.bar.{foo}\"")
- '(get-java-field (load-time-value (find-java-class "q.bar")) foo t))
+ '(jss:get-java-field (load-time-value (jss:find-java-class "q.bar")) foo t))
 (prove:is
  (read-from-string "#\"{bar}.foo\"")
- '(get-java-field bar "foo" t))
+ '(jss:get-java-field bar "foo" t))
 (prove:is-error
  (read-from-string "#\".bar.foo\"")
  'simple-error)
@@ -20,17 +20,17 @@
    (substring "01234" 2)) "234")
 ;;; http://abcl.org/trac/ticket/229 - note: version of test for this ticket was broken in tests.lisp
 (prove:is (#"toString"
-           (find "size" (#"getMethods" (find-java-class "java.util.Collections$UnmodifiableMap"))
+           (find "size" (#"getMethods" (jss:find-java-class "java.util.Collections$UnmodifiableMap"))
                  :test 'string-equal :key #"getName"))
 	  (#"toString" (java::jmethod "java.util.Collections$UnmodifiableMap" "size" )))
 
 (prove:is 
- (jss::with-class-lookup-disambiguated (lang.object) (find-java-class 'object))
- (find-java-class 'java.lang.object))
+ (jss::with-class-lookup-disambiguated (lang.object) (jss:find-java-class 'object))
+ (jss:find-java-class 'java.lang.object))
 
 ;; Object is ambiguous in default java 
 (prove:is-error
- (find-java-class 'object)
+ (jss:find-java-class 'object)
  'simple-error)
 
 ;; test that optimized jss is much faster than unoptimized
