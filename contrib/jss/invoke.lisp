@@ -245,11 +245,28 @@ want to avoid the overhead of the dynamic dispatch."
                (with-constant-signature ,(cdr fname-jname-pairs)
                  ,@body)))))))
 
-(defun lookup-class-name (name
-                          &key
-                            (table *class-name-to-full-case-insensitive*)
-                            (muffle-warning nil)
-                            (return-ambiguous nil))
+(defvar *class-lookup-overrides*)
+
+(defmacro with-class-lookup-disambiguated (overrides &body body)
+  "Suppose you have code that references class using the symbol 'object, and this is ambiguous. E.g. in my system java.lang.Object, org.omg.CORBA.Object. Use (with-class-lookup-disambiguated (lang.object) ...). Within dynamic scope, find-java-class first sees if any of these match, and if so uses them to lookup the class."
+  `(let ((*class-lookup-overrides* ',overrides))
+     ,@body))
+
+(defun maybe-found-in-overridden (name)
+  (when (boundp '*class-lookup-overrides*)
+      (let ((found (find-if (lambda(el) (#"matches" (string el) (concatenate 'string "(?i).*" (string name) "$")))
+			    *class-lookup-overrides*)))
+	(if found
+	    (let ((*class-lookup-overrides* nil))
+	      (lookup-class-name found))))))
+
+
+(defun lookup-class-name (name &key
+                                 (table *class-name-to-full-case-insensitive*)
+                                 (muffle-warning nil)
+                                 (return-ambiguous nil))
+  (let ((overridden (maybe-found-in-overridden name)))
+    (when overridden (return-from lookup-class-name overridden)))
   (setq name (string name))
   (let* (;; cant (last-name-pattern (#"compile" '|java.util.regex.Pattern| ".*?([^.]*)$"))
          ;; reason: bootstrap - the class name would have to be looked up...
@@ -273,8 +290,7 @@ want to avoid the overhead of the dynamic dispatch."
 		       (return-from lookup-class-name choices)
 		       (error "Ambiguous class name: ~a can be ~{~a~^, ~}" name choices))))
             (if (zerop bucket-length)
-		(progn
-                  (unless muffle-warning (warn "can't find class named ~a" name)) nil)
+		(progn (unless muffle-warning (warn "can't find class named ~a" name)) nil)
                 (let ((matches (loop for el in bucket when (matches-end name el 'char=) collect el)))
                   (if (= (length matches) 1)
                       (car matches)
@@ -283,8 +299,7 @@ want to avoid the overhead of the dynamic dispatch."
                             (if (= (length matches) 1)
                                 (car matches)
                                 (if (= (length matches) 0)
-				    (progn
-                                      (unless muffle-warning (warn "can't find class named ~a" name)) nil)
+				    (progn (unless muffle-warning (warn "can't find class named ~a" name)) nil)
                                     (ambiguous matches))))
                           (ambiguous matches))))))))))
 
