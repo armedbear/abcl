@@ -141,3 +141,8 @@ iterators or a Java array."
          (coerce (#"toArray" thing) 'list))
         (t
          (error "yet another iteration type - fix it: ~a" (jclass-name (jobject-class thing))))))))
+
+(defun to-hashset (list)
+  (let ((set (new 'hashset)))
+    (loop for l in list do (#"add" set l))
+    set))
