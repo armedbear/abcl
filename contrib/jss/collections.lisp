@@ -143,6 +143,7 @@ iterators or a Java array."
          (error "yet another iteration type - fix it: ~a" (jclass-name (jobject-class thing))))))))
 
 (defun to-hashset (list)
+  "Convert LIST to the java.util.HashSet contract"
   (let ((set (new 'hashset)))
     (loop for l in list do (#"add" set l))
     set))

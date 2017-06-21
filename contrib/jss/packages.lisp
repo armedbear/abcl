@@ -26,6 +26,7 @@
    #:set-to-list
    #:vector-to-list
    #:jarray-to-list
+   #:to-hashset
 
    #:j2list
 
