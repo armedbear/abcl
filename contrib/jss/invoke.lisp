@@ -89,6 +89,7 @@
 ;;   - Maybe get rid of second " in reader macro. #"toString looks nicer, but might 
 ;;     confuse lisp mode.
 ;;   - write jmap, analogous to map, but can take java collections, java arrays etc.
+;;      In progress with jss-3.5.0's JSS:MAP
 ;;   - write loop clauses for java collections. 
 ;;   - Register classes in .class files below classpath directories (when :wild-inferiors works)
 ;;   - Make documentation like Edi Weitz
