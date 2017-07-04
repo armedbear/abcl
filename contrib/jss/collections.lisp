@@ -142,8 +142,11 @@ arguments, key and value."
         ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Dictionary"))) thing)
          (iterator-run (#"elements" thing)))
         (t
-         (let ((array (ignore-errors (#"toArray" thing))))
-           (if array
+         (let ((jarray (ignore-errors
+                        (or (and (jclass-array-p (jclass-of thing))
+                                 thing)
+                            (#"toArray" thing)))))
+           (if jarray
                (loop :for i :from 0 :below (jarray-length jarray)
                      :do (funcall function (jarray-ref jarray i)))
                (error "yet another iteration type - fix it: ~a" (jclass-name (jobject-class thing)))))))))
@@ -192,9 +195,13 @@ iterators or a Java array."
         ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Dictionary"))) thing)
          (iterator-collect (#"elements" thing)))
         (t
-         (let ((array (ignore-errors (#"toArray" thing))))
-           (if array
-               (coerce array 'list)
+         (let ((jarray (ignore-errors
+                        (or (and (jclass-array-p (jclass-of thing))
+                                 thing)
+                            (#"toArray" thing)))))
+           (if jarray
+               (loop :for i :from 0 :below (jarray-length jarray)
+                     :collect (jarray-ref jarray i))
                (error "yet another iteration type - fix it: ~a" (jclass-name (jobject-class thing))))))))))
 
 (defun to-hashset (list)
