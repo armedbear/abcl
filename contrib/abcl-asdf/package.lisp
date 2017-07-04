@@ -30,8 +30,6 @@
    #:*maven-http-proxy*
    #:make-remote-repository
    #:*maven-remote-repository*
-   #:resolve-artifact
-   #:resolve-dependencies
    #:resolve-multiple-maven-dependencies
 
    #:as-classpath

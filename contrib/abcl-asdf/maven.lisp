@@ -507,7 +507,8 @@ Returns the Maven specific string for the artifact "
 (defun resolve-dependencies (group-id artifact-id 
                              &key
                                (version "LATEST" versionp)
-                               (repository *maven-remote-repository* repository-p))
+                               (repository *maven-remote-repository* repository-p)
+                               (repositories NIL repositories-p))
   "Dynamically resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID 
 optionally with a VERSION and a REPOSITORY.  
 
@@ -529,12 +530,16 @@ in Java CLASSPATH representation."
                      artifact (java:jfield (jss:find-java-class "JavaScopes") "COMPILE")))
          (collect-request (java:jnew (jss:find-java-class "CollectRequest"))))
     (#"setRoot" collect-request dependency)
-     ;; Don't call addRepository if we explicitly specify a NIL repository
-    (unless (and repository-p (not repository))
-      (#"addRepository" collect-request 
-                        (if repository-p
-                            (ensure-remote-repository :repository repository)
-                            (ensure-remote-repository))))
+    (setf repositories-p (or repository-p repositories-p))
+    ;; Don't call addRepository if we explicitly specify a NIL repository
+    (cond
+      ((and (not repositories-p))
+       (#"addRepository" collect-request (ensure-remote-repository)))
+      (repository
+       (push repository repositories)))
+    (dolist (repository repositories)
+      (#"addRepository" collect-request
+                        (ensure-remote-repository :repository repository)))
     (let* ((node 
             (#"getRoot" (#"collectDependencies" (ensure-repository-system) (ensure-session) collect-request)))
            (dependency-request
