@@ -105,7 +105,8 @@ representation to use.
 |#
 
 (defstruct (jvm-class-name (:conc-name class-)
-                           (:constructor %make-jvm-class-name))
+                           (:constructor %make-jvm-class-name)
+                           (:print-object %print-jvm-class-name))
   "Used for class identification.
 
 The caller should instantiate only one `class-name' per class, as they are
@@ -119,6 +120,10 @@ This class is used to abstract from the difference."
   ;; keeping a reference to the associated array class allows class
   ;; name comparisons to be EQ: all classes should exist only once,
   )
+
+(defun %print-jvm-class-name (name stream)
+  (print-unreadable-object (name stream :type t)
+    (write-string (class-name-internal name) stream)))
 
 (defun make-jvm-class-name (name)
   "Creates a `class-name' structure for the class or interface `name'.
