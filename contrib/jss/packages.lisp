@@ -29,6 +29,7 @@
    #:to-hashset
 
    #:j2list
+   #:jmap
 
 ;;; XXX Necessary to work in OSGi?
    #:get-java-field ; use JAVA:JFIELD

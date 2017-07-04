@@ -96,6 +96,58 @@ If INVERT? is non-nil than reverse the keys and values in the resulting hashtabl
 ;; java.util.Enumeration)
 ;;   ("nextElement" "hasMoreElements")
 
+;; TODO: maybe do it even more MAPC-style and accept multiple sequences too?
+(defun jmap (function thing)
+  "Call FUNCTION for every element in the THING.  Returns NIL.
+
+THING may be a wide range of Java collection types, their common iterators or
+a Java array.
+
+In case the THING is a map-like object, FUNCTION will be called with two
+arguments, key and value."
+  (flet ((iterator-run (iterator)
+           (with-constant-signature ((has-next "hasNext")
+                                     (next "next"))
+             (loop :while (has-next iterator)
+                   :do (funcall function (next iterator)))))
+         (enumeration-run (enumeration)
+           (with-constant-signature ((has-next "hasMoreElements")
+                                     (next "nextElement"))
+             (loop :while (has-next enumeration)
+                   :do (funcall function (next enumeration)))))
+         (map-run (map)
+           (with-constant-signature ((has-next "hasMoreElements")
+                                     (next "nextElement"))
+             (let ((keyiterator (#"iterator" (#"keyset" map))))
+               (loop :while (has-next keyiterator)
+                     :for key = (next keyiterator)
+                     :do (funcall function key (#"get" map key)))))))
+    (let ((isinstance
+            (load-time-value (jmethod "java.lang.Class" "isInstance" "java.lang.Object"))))
+      (cond
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.AbstractCollection"))) thing)
+         (iterator-run (#"iterator" thing)))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Iterator"))) thing)
+         (iterator-run thing))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.lang.Iterable"))) thing)
+         (iterator-run (#"iterator" thing)))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Enumeration"))) thing)
+         (enumeration-run thing))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.AbstractMap"))) thing)
+         (map-run thing))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Collections"))) thing)
+         (iterator-run (#"iterator" thing)))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Spliterator"))) thing)
+         (iterator-run (#"iterator" (#"stream" 'StreamSupport thing))))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Dictionary"))) thing)
+         (iterator-run (#"elements" thing)))
+        (t
+         (let ((array (ignore-errors (#"toArray" thing))))
+           (if array
+               (loop :for i :from 0 :below (jarray-length jarray)
+                     :do (funcall function (jarray-ref jarray i)))
+               (error "yet another iteration type - fix it: ~a" (jclass-name (jobject-class thing)))))))))
+  NIL)
 
 (defun j2list (thing)
   "Attempt to construct a Lisp list out of a Java THING.
@@ -127,6 +179,8 @@ iterators or a Java array."
          (iterator-collect (#"iterator" thing)))
         ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Iterator"))) thing)
          (iterator-collect thing))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.lang.Iterable"))) thing)
+         (iterator-collect (#"iterator" thing)))
         ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Enumeration"))) thing)
          (enumeration-collect thing))
         ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.AbstractMap"))) thing)
@@ -137,10 +191,11 @@ iterators or a Java array."
          (iterator-collect (#"iterator" (#"stream" 'StreamSupport thing))))
         ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Dictionary"))) thing)
          (iterator-collect (#"elements" thing)))
-        ((ignore-errors (#"toArray" thing))
-         (coerce (#"toArray" thing) 'list))
         (t
-         (error "yet another iteration type - fix it: ~a" (jclass-name (jobject-class thing))))))))
+         (let ((array (ignore-errors (#"toArray" thing))))
+           (if array
+               (coerce array 'list)
+               (error "yet another iteration type - fix it: ~a" (jclass-name (jobject-class thing))))))))))
 
 (defun to-hashset (list)
   "Convert LIST to the java.util.HashSet contract"
