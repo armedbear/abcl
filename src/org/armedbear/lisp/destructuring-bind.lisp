@@ -343,7 +343,6 @@
 
 
 (defun push-sub-list-binding (variable path object name error-kind error-fun)
-  (cl-user::print-db error-fun)
   (let ((var (gensym "TEMP-")))
     (push `(,variable
 	    (let ((,var ,path))
