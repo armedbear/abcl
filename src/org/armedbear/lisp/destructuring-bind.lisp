@@ -69,6 +69,25 @@
          :format-control "Wrong number of arguments for ~S."
          :format-arguments (list name)))
 
+(defun bogus-sublist-error  (&key kind name object lambda-list)
+  (error 'program-error
+         :format-control "Error while parsing arguments to ~A ~S:~%Bogus sublist:~%  ~S~%to satisfy lambda-list:~%  ~:S~%"
+         :format-arguments (list kind name object lambda-list)))
+  
+(defun lambda-list-broken-key-list-error (&key kind name problem info)
+  (error 'program-error
+	 :format-control (concatenate 'string "Error while parsing arguments to ~A ~S:~%"
+				      (ecase problem
+					(:dotted-list
+					 "Keyword/value list is dotted: ~S")
+					(:odd-length
+					 "Odd number of elements in keyword/value list: ~S")
+					(:duplicate
+					 "Duplicate keyword: ~S")
+					(:unknown-keyword
+					 "~{Unknown keyword: ~S ; expected one of ~{~S~^, ~}~}")))
+	 :format-arguments (list kind name info)))
+
 ;;; Return, as multiple values, a body, possibly a DECLARE form to put
 ;;; where this code is inserted, the documentation for the parsed
 ;;; body, and bounds on the number of arguments.
@@ -308,9 +327,11 @@
                      (verify-keywords ,rest-name ',keys ',allow-other-keys-p)
                    (when ,problem
                      ,(if (eq error-fun 'error)
-                          `(error 'program-error
-                                  "Unrecognized keyword argument ~S"
-                                  (car ,info))
+			  `(lambda-list-broken-key-list-error 
+                           :kind ',error-kind
+                           ,@(when name `(:name ',name))
+                           :problem ,problem
+                           :info ,info)
                           `(,error-fun
                            'defmacro-lambda-list-broken-key-list-error
                            :kind ',error-kind
@@ -327,11 +348,17 @@
 	    (let ((,var ,path))
 	      (if (listp ,var)
 		  ,var
-		  (,error-fun 'defmacro-bogus-sublist-error
-			      :kind ',error-kind
-			      ,@(when name `(:name ',name))
-			      :object ,var
-			      :lambda-list ',object))))
+		  ,(if (eq error-fun 'error)
+		       `(bogus-sublist-error
+				    :kind ',error-kind
+				    ,@(when name `(:name ',name))
+				    :object ,var
+				    :lambda-list ',object)
+		       `(,error-fun 'defmacro-bogus-sublist-error
+				    :kind ',error-kind
+				    ,@(when name `(:name ',name))
+				    :object ,var
+				    :lambda-list ',object)))))
 	  *system-lets*)))
 
 (defun push-let-binding (variable path systemp &optional condition
@@ -380,3 +407,89 @@
          (body (parse-defmacro lambda-list form (cddr definition) name 'defmacro
                                :environment env)))
     `(lambda (,form ,env) (block ,name ,body))))
+
+#|
+These conditions might be signaled but are not defined. Probably can't define them here as clos might not be active. 
+Taken from cmucl.
+
+(define-condition defmacro-lambda-list-bind-error (program-error)
+  ((kind :reader defmacro-lambda-list-bind-error-kind
+	 :initarg :kind)
+   (name :reader defmacro-lambda-list-bind-error-name
+	 :initarg :name
+	 :initform nil)))
+
+(defun print-defmacro-ll-bind-error-intro (condition stream)
+  (if (null (defmacro-lambda-list-bind-error-name condition))
+      (format stream
+	      "Error while parsing arguments to ~A in ~S:~%"
+	      (defmacro-lambda-list-bind-error-kind condition)
+	      (condition-function-name condition))
+      (format stream
+	      "Error while parsing arguments to ~A ~S:~%"
+	      (defmacro-lambda-list-bind-error-kind condition)
+	      (defmacro-lambda-list-bind-error-name condition))))
+
+(define-condition defmacro-bogus-sublist-error
+		  (defmacro-lambda-list-bind-error)
+  ((object :reader defmacro-bogus-sublist-error-object :initarg :object)
+   (lambda-list :reader defmacro-bogus-sublist-error-lambda-list
+		:initarg :lambda-list))
+  (:report
+   (lambda (condition stream)
+     (print-defmacro-ll-bind-error-intro condition stream)
+     (format stream
+	     "Bogus sublist:~%  ~S~%to satisfy lambda-list:~%  ~:S~%"
+	     (defmacro-bogus-sublist-error-object condition)
+	     (defmacro-bogus-sublist-error-lambda-list condition)))))
+
+
+
+(define-condition arg-count-error (defmacro-lambda-list-bind-error)
+  ((argument :reader defmacro-ll-arg-count-error-argument :initarg :argument)
+   (lambda-list :reader defmacro-ll-arg-count-error-lambda-list
+		:initarg :lambda-list)
+   (minimum :reader defmacro-ll-arg-count-error-minimum :initarg :minimum)
+   (maximum :reader defmacro-ll-arg-count-error-maximum :initarg :maximum))
+  (:report
+   (lambda (condition stream)
+     (print-defmacro-ll-bind-error-intro condition stream)
+     (format stream
+	     "Invalid number of elements in:~%  ~:S~%~
+	     to satisfy lambda-list:~%  ~:S~%"
+	     (defmacro-ll-arg-count-error-argument condition)
+	     (defmacro-ll-arg-count-error-lambda-list condition))
+     (cond ((null (defmacro-ll-arg-count-error-maximum condition))
+	    (format stream "Expected at least ~D"
+		    (defmacro-ll-arg-count-error-minimum condition)))
+	   ((= (defmacro-ll-arg-count-error-minimum condition)
+	       (defmacro-ll-arg-count-error-maximum condition))
+	    (format stream "Expected exactly ~D"
+		    (defmacro-ll-arg-count-error-minimum condition)))
+	   (t
+	    (format stream "Expected between ~D and ~D"
+		    (defmacro-ll-arg-count-error-minimum condition)
+		    (defmacro-ll-arg-count-error-maximum condition))))
+     (format stream ", but got ~D."
+	     (length (defmacro-ll-arg-count-error-argument condition))))))
+
+(define-condition defmacro-lambda-list-broken-key-list-error
+		  (defmacro-lambda-list-bind-error)
+  ((problem :reader defmacro-ll-broken-key-list-error-problem
+	    :initarg :problem)
+   (info :reader defmacro-ll-broken-key-list-error-info :initarg :info))
+  (:report (lambda (condition stream)
+	     (print-defmacro-ll-bind-error-intro condition stream)
+	     (format stream
+		     (ecase
+			 (defmacro-ll-broken-key-list-error-problem condition)
+		       (:dotted-list
+			"Keyword/value list is dotted: ~S")
+		       (:odd-length
+			"Odd number of elements in keyword/value list: ~S")
+		       (:duplicate
+			"Duplicate keyword: ~S")
+		       (:unknown-keyword
+			"~{Unknown keyword: ~S; expected one of ~{~S~^, ~}~}"))
+		     (defmacro-ll-broken-key-list-error-info condition)))))
+|#
