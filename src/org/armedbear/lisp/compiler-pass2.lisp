@@ -30,7 +30,7 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
-(in-package "JVM")
+(in-package :jvm)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require "LOOP")
