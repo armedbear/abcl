@@ -901,6 +901,15 @@ Pathname has the type  ``abcl''.  These fasls are operating system neutral
 byte archives packaged by the zip compression format which contain
 artifacts whose loading \code{CL:LOAD} understands.
 
+\subsection{Compiler Diagnostics}
+
+By default, the interface to the compiler does not signal warnings
+that result in its invocation, outputing diagnostics to the standard
+reporting stream.  The generalized boolean
+\code{JVM:*RESIGNAL-COMPILER-WARNINGS*} provides the interface to
+enabling the compiler to signal all warnings.
+
+
 \section{Pathname}
 
 We implement an extension to the \code{CL:PATHNAME} that allows for

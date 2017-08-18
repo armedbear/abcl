@@ -7433,7 +7433,12 @@ generated class."
 
 
 (defvar *resignal-compiler-warnings* nil
-  "Bind this to t inside slime compilation")
+  "This generalized boolean JVM:*RESIGNAL-COMPILER-WARNINGS* controls whether the compiler signals dignaostics to the condition system or merely outputs them to the standard reporting stream.
+
+The default is to not signal.
+
+Could arguably better named as *SIGNAL-COMPILE-WARNINGS-P*.")
+
 
 (defun handle-warning (condition)
   (cond (*resignal-compiler-warnings*
