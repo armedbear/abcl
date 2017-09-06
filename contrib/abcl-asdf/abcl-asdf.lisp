@@ -14,12 +14,19 @@
 (defclass mvn (iri) 
   ((group-id :initarg :group-id :initform nil)
    (artifact-id :initarg :artifact-id :initform nil)
-   (repositories :initarg :repositories :initform nil)
+   (repositories :initarg :repositories :initform (list abcl-asdf::*default-repository*))
    (resolved-classpath :initform nil :accessor resolved-classpath)
    (classname :initarg :classname :initform nil)
    (alternate-uri :initarg :alternate-uri :initform nil)
    ;; inherited from ASDF:COMPONENT ??? what are the CL semantics on overriding -- ME 2012-04-01
    #+nil   (version :initform nil)))
+
+(defmethod shared-initialize ((mvn mvn) slot-names &rest initargs &key (repository NIL repository-p) repositories &allow-other-keys)
+  (if repository-p
+      (let ((initargs (list* :repositories (cons repository repositories)
+                             (remove-plist-keys '(:repository :repositories) initargs))))
+        (apply #'call-next-method mvn slot-names initargs))
+      (call-next-method)))
 
 ;;; We intercept compilation to ensure that load-op will succeed
 (defmethod perform ((op compile-op) (c mvn))
