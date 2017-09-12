@@ -264,7 +264,7 @@ want to avoid the overhead of the dynamic dispatch."
 
 (defun lookup-class-name (name &key
                                  (table *class-name-to-full-case-insensitive*)
-                                 (muffle-warning nil)
+                                 (muffle-warning *muffle-warnings*)
                                  (return-ambiguous nil))
   (let ((overridden (maybe-found-in-overridden name)))
     (when overridden (return-from lookup-class-name overridden)))

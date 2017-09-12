@@ -126,7 +126,8 @@ single entry denoting a remote binary artifact."
                      "LATEST")))
     (handler-case 
         (when (and classname 
-                   (jss:find-java-class classname))
+                   (let ((jss:*muffle-warnings* T))
+                     (jss:find-java-class classname)))
           (warn "Not loading ~A from the network because ~A is present in classpath."
                 name classname)
           (return-from resolve t))
