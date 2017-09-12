@@ -9,8 +9,8 @@ Note:  for users of SLIME, this will appear in the associated *inferior-lisp* bu
 
 (require :log4j)
 (#"configure" 'log4j.BasicConfigurator)
-(ok 
- (#"info" (#"getRootLogger" 'log4j.Logger) "Kilroy wuz here."))
+(#"info" (#"getRootLogger" 'log4j.Logger) "Kilroy wuz here.")
+(pass "no error occured while logging")
 
 (prove:finalize)
 
