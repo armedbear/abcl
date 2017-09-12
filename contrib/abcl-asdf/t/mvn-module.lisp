@@ -13,5 +13,8 @@
 (prove:plan 1)
 (prove:ok (asdf:load-system :test-mvn-module)
           "Testing loading of ASDF:MVN-MODULE definition…")
-
+(prove:ok (asdf:load-system :soot-only-repositories)
+          "Testing loading with only repositories list…")
+(prove:ok (asdf:load-system :soot-mixed-repositories)
+          "Testing loading with both single and list of repositories…")
 (prove:finalize)

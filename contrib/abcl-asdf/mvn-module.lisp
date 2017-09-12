@@ -28,7 +28,7 @@
   (let (aether)
     (with-aether (aether)
       (let ((collect-request (java:jnew (jss:find-java-class "CollectRequest")))
-            (exclusions-collection (jss:new 'hashset) )
+            (exclusions-collection (jss:new 'java.util.HashSet))
             (compile-scope (java:jfield (jss:find-java-class "JavaScopes") "COMPILE")))
         (loop for e  in exclusions
            for (groupid artifactid) = (abcl-build:split-string e #\:)
