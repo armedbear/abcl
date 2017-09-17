@@ -52,7 +52,7 @@
   (if (and (symbolp el) (upper-case-p (char (string el) 0)) (not (eql (search "JSS_" (string el)) 0)))
       `(find-java-class ',el)
       (if (symbolp el)
-	  (intern (string-upcase el) :jss)
+	  (intern (string-upcase el))
 	  el)))
 
 (def-java-read ObjectCreationExpr sharp-quote-expression-reader ()
@@ -65,7 +65,7 @@
 		   'jstatic
 		   'jcall)))
     (if (and (symbolp scope1) (not (null scope1)) (upper-case-p (char (string scope1) 0)))
-	(setq scope1 `',scope1))
+	(setq scope1 (find-java-class scope1)))
     `(,how ,(#"getIdentifier" (#"getName" node)) ,(or scope1 'this) ,@(mapcar 'maybe-class 
 									      (mapcar (lambda(el) (process-node obj el))
 										      (j2list (#"getArguments" node)))))
