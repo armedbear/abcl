@@ -128,9 +128,12 @@ single entry denoting a remote binary artifact."
                                      "java.lang.ClassNotFoundException")
           (error "Unexpected Java exception~&~A.~&" e))))
     (if (find-mvn)
-        (resolve-dependencies group-id artifact-id
-                              :version version
-                              :repositories repositories)
+	(if repositories 
+	    (resolve-dependencies group-id artifact-id
+				  :version version
+				  :repositories repositories)
+	    (resolve-dependencies group-id artifact-id
+                              :version version))
         (if alternate-uri
             (values (pathname alternate-uri) alternate-uri) 
             (error "Failed to resolve MVN component name ~A." name)))))

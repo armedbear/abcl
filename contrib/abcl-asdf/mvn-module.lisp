@@ -30,6 +30,7 @@
       (let ((collect-request (java:jnew (jss:find-java-class "CollectRequest")))
             (exclusions-collection (jss:new 'hashset) )
             (compile-scope (java:jfield (jss:find-java-class "JavaScopes") "COMPILE")))
+	(#"addRepository" collect-request (ensure-remote-repository))
         (loop for e  in exclusions
            for (groupid artifactid) = (abcl-build:split-string e #\:)
            ;; If i have scope be compile-scope it doesn't get excluded!!
