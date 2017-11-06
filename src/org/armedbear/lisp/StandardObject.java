@@ -34,6 +34,7 @@
 package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
+import java.util.Arrays;
 
 public class StandardObject extends LispObject
 {
@@ -560,6 +561,9 @@ public class StandardObject extends LispObject
   @Override
   public LispObject SLOT_VALUE(LispObject slotName)
   {
+    if (layout == null) {
+          throw new IllegalStateException("layout=null for: " + slotName + " " + Arrays.toString(slots));
+      }
     if (layout.isInvalid())
       {
         // Update instance.

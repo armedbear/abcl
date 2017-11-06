@@ -237,13 +237,13 @@
     ((not (and src from))
      ;; both are NIL --> TO is a wildcard which can't be matched
      ;; either is NIL --> SRC can't be fully matched against FROM, vice versa
-     (throw 'failed-match))
+     (throw 'failed-match nil))
     ((not (member (car from) '(:wild :wild-inferiors)))
      (unless (string= (casify (car src) case) (casify (car from) case))
-       (throw 'failed-match)) ;; FROM doesn't match SRC
+       (throw 'failed-match nil)) ;; FROM doesn't match SRC
      (translate-directory-components-aux (cdr src) (cdr from) to case))
     ((not (eq (car from) (car to))) ;; TO is NIL while FROM is not, or
-     (throw 'failed-match))         ;; FROM wildcard doesn't match TO wildcard
+     (throw 'failed-match nil))     ;; FROM wildcard doesn't match TO wildcard
     ((eq (car to) :wild)  ;; FROM and TO wildcards are :WILD
      (cons (casify (car src) case)
        (translate-directory-components-aux (cdr src) (cdr from) (cdr to) case)))
@@ -262,7 +262,7 @@
                   (eq (car to) :wild-inferiors))
          (return-from translate-directory-components-aux nil))
        (when (null src) ;; SRC is NIL and we're still here: error exit
-         (throw 'failed-match))))))
+         (throw 'failed-match nil))))))
 
 (defun translate-directory-components (src from to case)
   (catch 'failed-match
