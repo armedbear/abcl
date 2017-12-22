@@ -26,7 +26,7 @@
   (multiple-value-bind (bindings de-lisped) (extract-lisp-expressions string)
     (let ((read (read-java-expression (make-instance 'sharp-quote-expression-reader) de-lisped)))
       (loop for (var nil) in bindings
-	    do (setq read (cl-user::tree-replace (lambda(e) (if (equalp e (string var)) var e)) read )))
+	    do (setq read (tree-replace (lambda(e) (if (equalp e (string var)) var e)) read )))
       (if bindings
 	  `(let ,bindings ,read)
 	  read))))
@@ -34,7 +34,7 @@
 (defun extract-lisp-expressions (string)
   (let ((bindings nil))
     (let ((de-lisped
-	    (cl-user::replace-all string "\\{(.*?)\\}" 
+	    (replace-all string "\\{(.*?)\\}" 
 				  (lambda(match) 
 				    (let ((replacevar (find-symbol-not-matching string (mapcar 'car bindings))))
 				      (push (list replacevar (read-from-string match)) bindings)
@@ -65,12 +65,11 @@
 		   'jstatic
 		   'jcall)))
     (if (and (symbolp scope1) (not (null scope1)) (upper-case-p (char (string scope1) 0)))
-	(setq scope1 (find-java-class scope1)))
+	(setq scope1 `(find-java-class ',scope1)))
     `(,how ,(#"getIdentifier" (#"getName" node)) ,(or scope1 'this) ,@(mapcar 'maybe-class 
 									      (mapcar (lambda(el) (process-node obj el))
 										      (j2list (#"getArguments" node)))))
     ))
-
 
 (def-java-read FieldAccessExpr sharp-quote-expression-reader ()
   (let ((scope (process-node obj (#"getScope" node))))

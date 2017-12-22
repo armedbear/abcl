@@ -11,6 +11,7 @@
 				     (:file "optimize-java-call")
                                      (:file "classpath")
 				     (:file "transform-to-field")
-                                     (:file "compat"))))
+                                     (:file "compat")
+				     (:file "util"))))
   :perform (asdf:test-op (op c)
                          (asdf:test-system :jss-tests)))
