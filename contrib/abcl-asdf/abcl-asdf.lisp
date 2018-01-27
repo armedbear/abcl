@@ -137,6 +137,7 @@ single entry denoting a remote binary artifact."
     (if (find-mvn)
         (resolve-dependencies group-id artifact-id
                               :version version
+                              :repository NIL
                               :repositories repositories)
         (if alternate-uri
             (values (pathname alternate-uri) alternate-uri) 
