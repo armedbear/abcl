@@ -16,7 +16,7 @@
  'simple-error)
 ;;; http://abcl.org/trac/ticket/205
 (prove:is
- (with-constant-signature ((substring "substring"))
+ (jss:with-constant-signature ((substring "substring"))
    (substring "01234" 2)) "234")
 ;;; http://abcl.org/trac/ticket/229 - note: version of test for this ticket was broken in tests.lisp
 (prove:is (#"toString"
