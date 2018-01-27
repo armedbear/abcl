@@ -537,13 +537,18 @@ in Java CLASSPATH representation."
     (setf repositories-p (or repository-p repositories-p))
     ;; Don't call addRepository if we explicitly specify a NIL repository
     (cond
-      ((and (not repositories-p))
+      ((not repositories-p)
        (#"addRepository" collect-request (ensure-remote-repository)))
       (repository
-       (push repository repositories)))
+       (if (stringp repository)
+           (push repository repositories)
+           (#"addRepository" collect-request repository))))
     (dolist (repository repositories)
       (#"addRepository" collect-request
-                        (ensure-remote-repository :repository repository)))
+                        (let ((r (make-remote-repository "central" "default" repository)))
+                          (when *maven-http-proxy*
+                            (#"setProxy" r (make-proxy)))
+                          r)))
     (let* ((node 
             (#"getRoot" (#"collectDependencies" (ensure-repository-system) (ensure-session) collect-request)))
            (dependency-request
