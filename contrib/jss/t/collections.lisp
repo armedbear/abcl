@@ -5,9 +5,11 @@
   (prove:is-type (jss:to-hashset set)
                  'java:java-object
                  "Checking whether JSS:TO-HASHSET produces a Java object…")
-  (prove:ok (jss:jmap 'constantly
-                      (java:jnew-array "java.lang.Integer" 10))
-            "Checking JSS:JMAP on Java array of java.lang.Integer…")
+  (let ((result 0))
+    (jss:jmap (lambda (x)
+                (incf result))
+              (java:jnew-array "java.lang.Integer" 10))
+    (prove:is result 10 "Checking JSS:JMAP on Java array of java.lang.Integer…"))
   (prove:ok (jss:j2list (java:jnew-array "java.lang.Integer" 10))
             "Checking JSS:J2LIST on Java array of java.langInteger…")
   (prove:is (let (list)
