@@ -180,3 +180,10 @@ be in a directory named '../ansi-test/'."
   :depends-on (dexador alexandria)
   :components ((:module http :pathname "tools/"
                         :components ((:file "resource")))))
+
+(defsystem abcl/model/changes
+  :version "0.1.0"
+  :depends-on (jeannie) ;;; <https://bitbucket.org/easye/jeannie>
+  :components ((:module n3 :pathname "etc/"
+                        :components ((:static-file "changes.n3")
+                                     (:file "changes")))))

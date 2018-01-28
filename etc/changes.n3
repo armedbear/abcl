@@ -1,0 +1,20 @@
+# -*- Mode: n3 -*-
+
+@prefix :     <urn:abcl.org/etc/changes.n3> .
+@prefix cl:   <urn:common-lisp/packages/common-lisp#> .
+@prefix rdf:         <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:        <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:         <http://www.w3.org/2001/XMLSchema#> .
+
+<https://github.com/armedbear/abcl/pull/78/files>
+  :conversation cl:nil ;
+  :diff
+        [
+                 <abcl/tools/resource:retrieve> <https://github.com/armedbear/abcl/pull/78.diff> ;
+                 rdf:comment "Contains all commits collapsed into single diff." 
+        ] ;
+  :commits
+        (<https://github.com/armedbear/abcl/pull/78/commits>) ;
+  :files-changed
+        (<https://github.com/armedbear/abcl/pull/78/files>) .
+
