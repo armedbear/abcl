@@ -65,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @titlepage
 @title ASDF: Another System Definition Facility
-@subtitle Manual for Version 3.2.1
+@subtitle Manual for Version 3.3.1.3
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -82,7 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @node Top, Introduction, (dir), (dir)
 @top ASDF: Another System Definition Facility
 @ifnottex
-Manual for Version 3.2.1
+Manual for Version 3.3.1.3
 @end ifnottex
 
 
@@ -240,6 +240,7 @@ Issues with installing the proper version of ASDF
 
 * My Common Lisp implementation comes with an outdated version of ASDF. What to do?::
 * I'm a Common Lisp implementation vendor. When and how should I upgrade ASDF?::
+* After upgrading ASDF, ASDF (and Quicklisp) can't find my systems: After upgrading ASDF.
 
 Issues with configuring ASDF
 
@@ -306,16 +307,19 @@ ASDF is @emph{not} a tool for library and system @emph{installation};
 it plays a role like @code{make} or @code{ant}, not like a package manager.
 In particular, ASDF should not to be confused with Quicklisp or ASDF-Install,
 that attempt to find and download ASDF systems for you.
-Despite what the name might suggest, ASDF-Install is not part of ASDF, but a separate piece of software.
+Despite what the name might suggest,
+ASDF-Install was never a part of ASDF, it was a separate piece of software.
 ASDF-Install is also unmaintained and obsolete.
 We recommend you use Quicklisp
 (@uref{http://www.quicklisp.org/}) instead,
 a Common Lisp package manager which works well and is being actively maintained.
 If you want to download software from version control instead of tarballs,
-so you may more easily modify it, we recommend clbuild (@uref{http://common-lisp.net/project/clbuild/}).
-We recommend @file{~/common-lisp/}
-as a place into which to install Common Lisp software;
-starting with ASDF 3.1.2, it is included in the default source-registry configuration.
+so you may more easily modify it,
+we recommend clbuild (@uref{http://common-lisp.net/project/clbuild/}).
+As for where on your filesystem to install Common Lisp software,
+we recommend subdirectories of @file{~/common-lisp/}:
+starting with ASDF 3.1.2 (2014), this hierarchy is included
+in the default source-registry configuration.
 
 Finally, note that this manual is incomplete.
 All the bases are covered,
@@ -479,8 +483,9 @@ before you contact us and raise an issue.
 @c versions of ASDF down, or encapsulate it.
 
 If your implementation already provides ASDF 3 or later (and it should),
-but you want a more recent ASDF version than your implementation provides,
-then you just need to ensure the more recent ASDF is installed in a configured path, like any other system.
+but you want a more recent ASDF version than your implementation provides, then
+you just need to ensure the more recent ASDF is installed in a configured path,
+like any other system.
 We recommend you download an official tarball or checkout a release from git into
 @file{~/common-lisp/asdf/}.
 (@pxref{Configuring ASDF to find your systems}).
@@ -498,15 +503,18 @@ If your implementation fails to provide ASDF 3 or later,
 @section Replacing your implementation's ASDF
 
 All maintained implementations now provide ASDF 3 in their latest release.
-If your doesn't, we recommend you upgrade it.
+If yours doesn't, we recommend you upgrade it.
 
-Now, if you insist on using an old implementation that didn't provide ASDF or provided an old version,
+Now, if you insist on using an old implementation
+that didn't provide ASDF or provided an old version,
 we recommend installing a recent ASDF, as explained below,
 into your implementation's installation directory.
 Thus your modified implementation will now provide ASDF 3.
-This requires proper write permissions and may necessitate execution as a system administrator.
+This requires proper write permissions and
+may necessitate execution as a system administrator.
 
-The ASDF source repository contains a tool to help you upgrade your implementation's ASDF.
+The ASDF source repository contains a tool to
+help you upgrade your implementation's ASDF.
 You can invoke it from the shell command-line as
 @code{tools/asdf-tools install-asdf lispworks}
 (where you can replace @code{lispworks} by the name of the relevant implementation),
@@ -680,6 +688,8 @@ may already have configured system-managed libraries for you.
 @c should not be burdened with it. [2014/02/27:rpg]
 
 Novices may skip this section.
+Please @emph{do not} use the central-registry if you are a novice,
+and @emph{do not} instruct novices to use the central-registry.
 @c ``Experts may read it then proceed to ...''
 @c some better section explaining
 @c *central-registry* vs source-registry vs *system-definition-search-functions*,
@@ -689,12 +699,27 @@ The old way to configure ASDF to find your systems is by
 @code{push}ing directory pathnames onto the variable
 @code{asdf:*central-registry*}.
 
-You must configure this variable between the time you load ASDF
-and the time you first try to use it.
-Loading and configuring ASDF presumably happen
-as part of some initialization script that builds or starts
-your Common Lisp software system.
-(For instance, some SBCL users used to put it in their @file{~/.sbclrc}.)
+You @emph{must} configure this variable @emph{after} you load ASDF 3 or later,
+yet @emph{before} the first time you try to use it.
+This loading and configuring of ASDF must happen
+as part of some initialization script:
+typically, either a script you maintain that builds your project,
+or your implementation's initialization script
+(e.g. @file{~/.sbclrc} for SBCL).
+
+Also, if you are using an ancient ASDF 2 or earlier to load ASDF 3 or later,
+then after it loads the ancient ASDF, your script @emph{must} configure
+the central-registry a first time to tell ASDF 1 or 2 where to find ASDF 3,
+then load ASDF 3 with e.g. @code{(asdf:operate 'asdf:load-op "asdf")},
+then configure the central-registry again, because
+ASDF 3 will not preserve the central-registry from ASDF 2 when upgrading.
+You should probably be using the source-registry instead, which will be preserved
+(unless you manually called @code{asdf:initialize-source-registry} with an argument,
+in which case you will have to do it again indeed).
+However, if you are using an ancient ASDF 2 or earlier,
+we @emph{strongly} recommend that you should instead upgrade your implementation,
+or overwrite the ancient ASDF installation with a more recent one:
+@xref{Replacing your implementation's ASDF}.
 
 The @code{asdf:*central-registry*} is empty by default in ASDF 2 or ASDF 3,
 but is still supported for compatibility with ASDF 1.
@@ -741,6 +766,8 @@ is necessary to tell Lisp that you're discussing a directory
 rather than a file.  If you leave it out, ASDF is likely to look in
 @code{/home/me/src/} instead of @code{/home/me/src/foo/} as you
 intended, and fail to find your system definition.
+Modern versions of ASDF will issue an error and offer you to
+remove such entries from the central-registry.
 
 Typically there are a lot of @file{.asd} files, and
 a common idiom was to put
@@ -1463,6 +1490,12 @@ simple-component-name := string
 
 pathname-specifier := pathname | string | symbol
 
+version-specifier := string
+                     | (:read-file-form <pathname-specifier> <form-specifier>?)
+                     | (:read-file-line <pathname-specifier> <line-specifier>?)
+line-specifier := :at integer # base zero
+form-specifier := :at [ integer | ( integer+ )]
+
 method-form := (operation-name qual lambda-list @Arest{} body)
 qual := method qualifier?
 
@@ -1662,12 +1695,17 @@ Instead of a string representing the version,
 the @code{:version} argument can be an expression that is resolved to
 such a string using the following trivial domain-specific language:
 in addition to being a literal string, it can be an expression of the form
-@code{(:read-file-form <pathname-or-string> :at <access-at-specifier>)},
-which will be resolved by reading a form in the specified pathname
-(read as a subpathname of the current system if relative or a unix-namestring).
+@code{(:read-file-form <pathname-or-string> [:at <access-at-specifier]>)},
+or @code{(:read-file-line <pathname-or-string> [:at
+<access-at-specifier]?>)}.
+As the name suggests, the former will be resolved by reading a form in the specified pathname
+(read as a subpathname of the current system if relative or a
+unix-namestring), and the latter by reading a line.
 You may use a @code{uiop:access-at} specifier
-with the (optional) @code{:at} keyword,
-by default the specifier is @code{0}, meaning the first form is returned;
+with the @code{:at} keyword,
+by default the specifier is @code{0}, meaning the first form/line is
+returned.
+For @code{:read-file-form},
 subforms can also be specified, with e.g. @code{(1 2 2)} specifying
 ``the third subform (index 2) of the third subform (index 2) of the second form (index 1)''
 in the file (mind the off-by-one error in the English language).
@@ -3722,7 +3760,7 @@ The speedup will only happen if the implementation-provided ASDF is recent enoug
 since the upgrade will itself be found but
 after the old version has scanned the directories without heeding such a cache.
 To upgrade the implementation-provided ASDF,
-use our script @code{tools/install-asdf.lisp}.
+@pxref{Replacing your implementation's ASDF}.
 
 
 @node Configuration API, Introspection, Caching Results, Controlling where ASDF searches for systems
@@ -5568,18 +5606,22 @@ and XCL is more of a working demo than something you'd use seriously anyway.
 
 @item
 For the above reasons, your build and startup scripts
-should load, configure and upgrade ASDF among the very first things they do,
-and ensure that ASDF 3 or later is present indeed,
-before they start using ASDF to load anything else.
+should load ASDF 3, configure it, and upgrade it,
+among the very first things they do.
+They should ensure that only ASDF 3 or later is used indeed,
+and error out if ASDF 2 or earlier was used.
 
 @item
-Now that all implementations provide ASDF 3.1 or later (since May 2016),
+Now that (since May 2016) all maintained implementations
+(i.e. having had at least one release since 2014,
+or a commit on their public source code repository)
+provide ASDF 3.1 or later,
 the simple solution is just to use code as below in your setup,
 and when it fails, upgrade your implementation or replace its ASDF.
 (@pxref{Replacing your implementation's ASDF}):
 @example
 (require "asdf")
-#-asdf3 (error "ASDF 3 or bust")
+#-asdf3.1 (error "ASDF 3.1 or bust")
 @end example
 
 @item
@@ -5588,14 +5630,15 @@ make heroic attempts to load it the hard way if at first they don't succeed,
 see @file{tools/load-asdf.lisp} distributed with the ASDF source repository,
 or the code of @url{https://cliki.net/cl-launch,@code{cl-launch}}.
 
-@item
+@item @anchor{reinitializeASDFAfterUpgrade}
 Note that in addition to the pitfalls and constraints above,
 these heroic scripts (should you wish to write or modify one),
 must take care to configure ASDF @emph{twice}.
-A first time, right after you load the old ASDF 2 and before you upgrade to the new ASDF 3,
+A first time, right after you load the old ASDF 2 (or 1!)
+and before you upgrade to the new ASDF 3,
 so it may find where you put ASDF 3.
-A second time, because some implementations can't handle a smooth upgrade to ASDF 3,
-and lose configuration as they do.
+A second time, because most implementations can't handle a smooth upgrade from ASDF 2 to ASDF 3,
+so ASDF 3 doesn't try (anymore) and loses any configuration from ASDF 2.
 @lisp
 (ignore-errors (funcall 'require "asdf")) ;; <--- try real hard
 ;; <--- insert heroics here, if that failed to provide ASDF 2 or 3
@@ -5658,6 +5701,7 @@ Old bundle operations, and their modern equivalents are:
 @menu
 * My Common Lisp implementation comes with an outdated version of ASDF. What to do?::
 * I'm a Common Lisp implementation vendor. When and how should I upgrade ASDF?::
+* After upgrading ASDF, ASDF (and Quicklisp) can't find my systems: After upgrading ASDF.
 @end menu
 
 @node My Common Lisp implementation comes with an outdated version of ASDF. What to do?, I'm a Common Lisp implementation vendor. When and how should I upgrade ASDF?, Issues with installing the proper version of ASDF, Issues with installing the proper version of ASDF
@@ -5674,7 +5718,7 @@ we recommend you replace your implementation's ASDF.
 @xref{Replacing your implementation's ASDF}.
 
 
-@node I'm a Common Lisp implementation vendor. When and how should I upgrade ASDF?,  , My Common Lisp implementation comes with an outdated version of ASDF. What to do?, Issues with installing the proper version of ASDF
+@node I'm a Common Lisp implementation vendor. When and how should I upgrade ASDF?, After upgrading ASDF, My Common Lisp implementation comes with an outdated version of ASDF. What to do?, Issues with installing the proper version of ASDF
 @subsection ``I'm a Common Lisp implementation vendor. When and how should I upgrade ASDF?''
 
 Since ASDF 2,
@@ -5758,6 +5802,35 @@ when they upgrade to the upstream version.
 
 @end itemize
 
+@node After upgrading ASDF,  , I'm a Common Lisp implementation vendor. When and how should I upgrade ASDF?, Issues with installing the proper version of ASDF
+@subsection After upgrading ASDF, ASDF (and Quicklisp) can't find my systems
+@vindex *central-registry*
+@cindex Quicklisp
+
+When you upgrade the ASDF running in your Lisp image
+from an ancient ASDF 2 or older to ASDF 3 or newer,
+then you may have to re-configure ASDF.
+If your configuration only consists in
+using the source-registry and output-translations (as it should),
+and if you are not explicitly calling @code{asdf:initialize-source-registry}
+or @code{asdf:initialize-output-translations} with a non-nil argument,
+then ASDF will reconfigure itself.
+Otherwise, you will have to configure ASDF 2 (or older) to find ASDF 3,
+then configure ASDF 3.
+Notably, @var{*central-registry*} is not maintained across upgrades from ASDF 2.
+@xref{reinitializeASDFAfterUpgrade,note about ASDF reconfiguration after upgrade}.
+
+Problems like this may be experienced if one loads Quicklisp
+(which as of this writing bundles an obsolete ASDF version 2.26),
+upgrades ASDF, and then tries to load new systems.
+The correct solution is to load the most up-to-date ASDF you can,
+@emph{then} configure it, @emph{then} load Quicklisp and any other extension.
+Do @emph{not} try to upgrade from ASDF 2 @emph{after} loading Quicklisp,
+for it will leave both ASDF and Quicklisp badly misconfigured.
+For details see the discussion at the above cross-reference.
+
+Also, if you are experiencing such failures due to Quicklisp shipping an ancient ASDF,
+please complain to Zach Beane about it.
 
 
 @node Issues with configuring ASDF, Issues with using and extending ASDF to define systems, Issues with installing the proper version of ASDF, FAQ
@@ -6187,24 +6260,17 @@ Here's the procedure for experimenting with tests in a REPL:
 ;; Load the test script support.
 (load "script-support.lisp")
 
-;; Initialize the script support.
-;; This will also change your *package* to asdf-test.
+;; Initialize the script support for interaction.
+;; This will also change your *package* to asdf-test
+;; after frobbing the asdf-test package to make it usable.
 ;; NB: this function is also available from package cl-user,
 ;; and also available with the shorter name da in both packages.
-(asdf-test::debug-asdf)
-
-;; In case you modified ASDF since you last tested it,
-;; you need to update asdf.lisp itself by evaluating 'make' in a shell,
-;; or (require "asdf") (asdf:load-system :asdf) in another CL REPL,
-;; if not done in this REPL above.
-;; *Then*, in this REPL, you need to evaluate:
-;(asdf-test::compile-load-asdf)
+(asdf-test:debug-asdf)
 
 ;; Now, you may experiment with test code from a .script file.
 ;; See the instructions given at the end of your failing test
 ;; to identify which form is needed, e.g.
-(frob-packages)
-(asdf::with-asdf-cache () (load "test-utilities.script"))
+(run-test-script "test-utilities.script")
 @end example
 
 
@@ -6281,9 +6347,10 @@ Also, bugs are currently tracked on launchpad:
   Available in updated-for-CL form on the web at
   @url{http://nhplace.com/kent/Papers/Large-Systems.html}
 @item Dan Weinreb and David Moon:
-  ``Lisp Machine Manual'', MIT, 1981.
+  ``Lisp Machine Manual'', 3rd Edition MIT, March 1981.
   The famous CHINE NUAL describes one of the earliest variants of DEFSYSTEM.
-  @url{https://bitsavers.trailing-edge.com/pdf/mit/cadr/chinual_4thEd_Jul81.pdf}
+  (NB: Not present in the second preliminary version of January 1979)
+  @url{http://bitsavers.org/pdf/mit/cadr/chinual_3rdEd_Mar81.pdf}
 @end itemize
 
 
