@@ -1,4 +1,4 @@
-(in-package :abcl-asdf/test)
+(in-package :cl-user)
 
 (prove:plan 1)
 

@@ -1,16 +1,16 @@
-(in-package :abcl-asdf/test)
+(in-package :cl-user)
 
-(plan 5)
+(prove:plan 5)
 
-(diag "Testing local bootable Maven version.")
+(prove:diag "Testing local bootable Maven version.")
 
 (multiple-value-bind (good version)
-    (ensure-mvn-version)
-  (ok good)
-  (is-type version 'list)
-  (ok (every #'fixnump version)))
+    (abcl-asdf:ensure-mvn-version)
+  (prove:ok good)
+  (prove:is-type version 'list)
+  (prove:ok (every #'fixnump version)))
 
-(is-type (abcl-asdf:resolve-dependencies "log4j" "log4j") 'string)
-(is-type (abcl-asdf:resolve "org.abcl/abcl") 'string)
+(prove:is-type (abcl-asdf:resolve-dependencies "log4j" "log4j") 'string)
+(prove:is-type (abcl-asdf:resolve "org.abcl/abcl") 'string)
 
-(finalize)
+(prove:finalize)

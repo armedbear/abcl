@@ -10,7 +10,7 @@
 (unless (ignore-errors (asdf:find-system :test-mvn-module))
   (asdf-add-test-mvn-module))
 
-(prove:plan 1)
+(prove:plan 3)
 (prove:ok (asdf:load-system :test-mvn-module)
           "Testing loading of ASDF:MVN-MODULE definition…")
 (prove:ok (asdf:load-system :soot-only-repositories)
