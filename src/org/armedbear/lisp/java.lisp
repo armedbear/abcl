@@ -457,7 +457,9 @@ is equivalent to the following Java code:
 ;;; print-object
 
 (defmethod print-object ((obj java:java-object) stream)
-  (print-java-object-by-class (intern (jclass-name (jobject-class obj)) 'keyword) obj stream))
+  (if (jnull-ref-p obj)
+      (write-string "#<null>" stream)
+      (print-java-object-by-class (intern (jclass-name (jobject-class obj)) 'keyword) obj stream)))
 
 ;;define extensions by eql methods on class name interned in keyword package
 ;;e.g. (defmethod java::print-java-object-by-class ((class (eql ':|uk.ac.manchester.cs.owl.owlapi.concurrent.ConcurrentOWLOntologyImpl|)) obj stream) 
