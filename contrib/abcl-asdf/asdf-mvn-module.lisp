@@ -21,7 +21,7 @@
 
 ;;; ASDF problems: method is deprecated.  How do we define MVN-MODULE,
 ;;; a subclass of ASDF:COMPONENT, which has no corresponding pathname?
-(defmethod source-file-type ((c mvn-module) (system parent-component))  nil)
+(defmethod source-file-type ((c mvn-module) (system parent-component))  :directory)
 
 (defmethod perform ((op compile-op) (c mvn-module)))
 
@@ -33,3 +33,4 @@
 	do
 	   (unless (member path abcl-asdf::*added-to-classpath* :test 'equalp)
 	     (jss::add-to-classpath  path))))
+
