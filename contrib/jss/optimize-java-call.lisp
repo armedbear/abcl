@@ -23,13 +23,16 @@
 	  (if raw?
 	      `(jstatic-raw ,method ,object-as-class ,@args)
 	      `(jstatic ,method ,object-as-class ,@args))))
-      (if raw?
-	  `(if (symbolp ,object)
-	       (jstatic-raw ,method (find-java-class ,object) ,@args)
-	       (jcall-raw ,method ,object ,@args))
-	  `(if (symbolp ,object)
-	       (jstatic ,method (find-java-class ,object) ,@args)
-	       (jcall ,method ,object ,@args)))))
+      (let ((objectvar (make-symbol "INVOKE-RESTARGS-ARG1")))
+	(if raw?
+	    `(let ((,objectvar ,object))
+	       (if (symbolp ,objectvar)
+		   (jstatic-raw ,method (find-java-class ,objectvar) ,@args)
+		   (jcall-raw ,method ,objectvar ,@args)))
+	    `(let ((,objectvar ,object))
+	       (if (symbolp ,objectvar)
+		   (jstatic ,method (find-java-class ,objectvar) ,@args)
+		   (jcall ,method ,objectvar ,@args)))))))
 
 
 
