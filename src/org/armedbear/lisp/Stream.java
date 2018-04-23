@@ -1190,16 +1190,17 @@ public class Stream extends StructureObject {
                     return symbol;
 
                 // Error!
-                if (pkg.findInternalSymbol(symbolName) != null)
-                    return error(new ReaderError("The symbol \"" + symbolName +
-                                                 "\" is not external in package " +
-                                                 packageName + '.',
-                                                 this));
-                else
-                    return error(new ReaderError("The symbol \"" + symbolName +
-                                                 "\" was not found in package " +
-                                                 packageName + '.',
-                                                 this));
+                if (pkg.findInternalSymbol(symbolName) != null) {
+                    return error(new ReaderError("The symbol \"~A\" is not external in package ~A.",
+                                                 this,
+                                                 new SimpleString(symbolName),
+                                                 new SimpleString(packageName)));
+                } else {
+                    return error(new ReaderError("The symbol \"~A\" was not found in package ~A.",
+                                                 this,
+                                                 new SimpleString(symbolName),
+                                                 new SimpleString(packageName)));
+                }
             }
         } else {                // token.length == 0
             Package pkg = (Package)Symbol._PACKAGE_.symbolValue(thread);
