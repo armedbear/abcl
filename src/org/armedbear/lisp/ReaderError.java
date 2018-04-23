@@ -52,6 +52,14 @@ public final class ReaderError extends StreamError
         setStream(stream);
     }
 
+  public ReaderError(String message, Stream stream, LispObject arg1, LispObject arg2)
+  {
+        super(StandardClass.READER_ERROR);
+        setFormatControl(message);
+        setFormatArguments(list(arg1, arg2));
+        setStream(stream);
+  }
+
     public ReaderError(LispObject initArgs)
     {
         super(StandardClass.READER_ERROR);
