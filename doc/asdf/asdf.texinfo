@@ -65,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @titlepage
 @title ASDF: Another System Definition Facility
-@subtitle Manual for Version 3.3.1
+@subtitle Manual for Version 3.3.2
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -82,7 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @node Top, Introduction, (dir), (dir)
 @top ASDF: Another System Definition Facility
 @ifnottex
-Manual for Version 3.3.1
+Manual for Version 3.3.2
 @end ifnottex
 
 
@@ -6347,9 +6347,10 @@ Also, bugs are currently tracked on launchpad:
   Available in updated-for-CL form on the web at
   @url{http://nhplace.com/kent/Papers/Large-Systems.html}
 @item Dan Weinreb and David Moon:
-  ``Lisp Machine Manual'', MIT, 1981.
+  ``Lisp Machine Manual'', 3rd Edition MIT, March 1981.
   The famous CHINE NUAL describes one of the earliest variants of DEFSYSTEM.
-  @url{https://bitsavers.trailing-edge.com/pdf/mit/cadr/chinual_4thEd_Jul81.pdf}
+  (NB: Not present in the second preliminary version of January 1979)
+  @url{http://bitsavers.org/pdf/mit/cadr/chinual_3rdEd_Mar81.pdf}
 @end itemize
 
 
