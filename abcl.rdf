@@ -152,9 +152,9 @@ doap:Project rdfs:seeAlso
 ] .
 
 abcl:jna
-        dc:version "4.2.2" .
+        dc:version "4.5.1" .
 abcl:asdf
-        dc:version "3.2.1" .
+        dc:version "3.2.2" .
 
 abcl:abcl-introspect  
   rdfs:seeAlso <file:contrib/abcl-introspect/README.markdown> .                             
