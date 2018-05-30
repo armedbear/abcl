@@ -2398,7 +2398,7 @@
       (let* ((signstr (if (minusp number) "-" (if atsign "+" "")))
 	     (signlen (length signstr)))
 	(multiple-value-bind (str strlen ig2 ig3 pointplace)
-          (sys::flonum-to-string number nil d nil)
+          (sys::flonum-to-string (abs number) nil d nil)
 	  (declare (ignore ig2 ig3 strlen))
 	  (when colon
 	    (write-string signstr stream))
