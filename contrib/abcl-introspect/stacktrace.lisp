@@ -72,12 +72,14 @@
     
 (defun stackframe-head (frame &optional with-method)
   "If a lisp frame, the function (symbol or function). In a java frame the class name, with method if with-method is t"
-  (if (typep frame 'lisp-stack-frame)
-      (#"getOperator" frame)
-      (let ((frame (if (typep frame 'java-stack-frame) (javaframe frame) frame)))
-	(if with-method 
-	    (concatenate 'string (#"getClassName" frame) "." (#"getMethodName" frame))
-	    (#"getClassName" frame)))))
+  (if (null frame)
+      nil
+      (if (typep frame 'lisp-stack-frame)
+	  (#"getOperator" frame)
+	  (let ((frame (if (typep frame 'java-stack-frame) (javaframe frame) frame)))
+	    (if with-method 
+		(concatenate 'string (#"getClassName" frame) "." (#"getMethodName" frame))
+		(#"getClassName" frame))))))
 
 (defun backtrace-invoke-debugger-position (stacktrace)
   "Position of the call to invoke-debugger"
