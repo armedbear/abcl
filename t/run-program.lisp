@@ -1,10 +1,16 @@
+(in-package :cl-user)
+
 (prove:plan 2)
 
-(prove:ok
- (uiop/run-program:run-program "ls" :output t))
+(let ((program (if (uiop:os-unix-p)
+                   "ls"
+                   "dir")))
+  (prove:is 
+   (uiop/run-program:run-program program :output t)
+   nil)
 
-(prove:ok
- (uiop/run-program:run-program "ls" :output :string))
+  (prove:ok
+   (uiop/run-program:run-program program :output :string)))
 
 (prove:finalize)
 

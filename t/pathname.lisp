@@ -1,10 +1,10 @@
-(in-package abcl/test)
+(in-package :cl-user)
 
-(plan 1)
+(prove:plan 1)
 (let* ((uri #p"http://example.org/directory/name.version")
        (p (make-pathname :host nil :defaults uri)))
-  (like (namestring p) "^/directory/name.version$"))
+  (prove:like (namestring p) "^/directory/name.version$"))
 
-(finalize)
+(prove:finalize)
 
    
