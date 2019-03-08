@@ -15,8 +15,11 @@ abcl.build.incremental=true
 
 ## java.options sets the Java options in the abcl wrapper scripts
 
+# Java 11
+java.options=-XshowSettings:vm -Dfile.encoding=UTF-8
+
 # Maximum safe performance on JDK8
-java.options=-d64  -XX:+UseG1GC -XshowSettings:vm -Dfile.encoding=UTF-8 -XX:+AggressiveOpts -XX:CompileThreshold=10
+#java.options=-d64  -XX:+UseG1GC -XshowSettings:vm -Dfile.encoding=UTF-8 -XX:+AggressiveOpts -XX:CompileThreshold=10
 
 # Reasonable defaults for Java 8
 #java.options=-d64 -XshowSettings:vm -XX:+UseG1GC 

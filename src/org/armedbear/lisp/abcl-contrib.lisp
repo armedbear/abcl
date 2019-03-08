@@ -39,6 +39,7 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
   (or
    (ignore-errors
      (find-system-jar))
+   #+(or)
    (ignore-errors
      (some
       (lambda (u)
@@ -49,11 +50,54 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
    (ignore-errors
      #p"http://abcl.org/releases/current/abcl.jar")))
 
+(defun flatten (list)
+  (labels ((rflatten (list accumluator)
+	   (dolist (element list)
+	     (if (listp element)
+		 (setf accumluator (rflatten element accumluator))
+		 (push element accumluator)))
+	   accumluator))
+    (let (result)
+      (reverse (rflatten list result)))))
+
+(defun java.class.path ()
+  (let* ((separator (java:jstatic "getProperty" "java.lang.System" "path.separator"))
+	 (path (java:jcall "split"
+			   (java:jstatic "getProperty" "java.lang.System"
+					 "java.class.path")
+			   separator)))
+    (setf path (coerce path 'list))
+    (values
+     (mapcar (lambda (jar)
+	       (make-pathname :defaults jar
+			      :name nil
+			      :type nil))
+	     path)
+     path)))
+
+(defun enumerate-resource-paths ()
+  (let ((result (java.class.path)))
+    (dolist (entry (flatten (java:dump-classpath)))
+      (when (java:jinstance-of-p entry "java.net.URLClassLoader")
+	(dolist (url (coerce (java:jcall "getURLs" entry)
+			     'list))
+	  (when (probe-file (pathname url))
+	    (pushnew (pathname url) result))))
+      (when (pathnamep entry)
+	(pushnew entry result))
+      (when (and (stringp entry)
+		 (probe-file (pathname entry)))
+	(pushnew (pathname entry) result)))
+    result))
+
 (defun find-jar (predicate)
-  (dolist (loader (java:dump-classpath))
-    (let ((jar (some predicate loader)))
-      (when jar
-        (return jar)))))
+  (dolist (d (enumerate-resource-paths))
+    (let ((entries (directory (make-pathname :defaults d
+					     :name "*"
+					     :type "jar"))))
+      (let ((jar (some predicate entries)))
+	(when jar
+	  (return-from find-jar jar))))))
 
 (defun find-system-jar ()
   "Return the pathname of the system jar, one of `abcl.jar` or
@@ -158,6 +202,7 @@ returns the pathname of the contrib if it can be found."
                       :name (concatenate 'string
                                          "abcl-contrib"
                                          (subseq (pathname-name system-jar) 4)))))))
+   #+(or)
    (some
     (lambda (u)
       (probe-file (make-pathname
