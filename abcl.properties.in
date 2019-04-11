@@ -1,7 +1,5 @@
-# $Id$
-
 # XXX should be called 'build.properties' but this collides with its
-#     usage by the Eclipe IDE
+#     usage by the Eclipse IDE
 
 # Template for Ant based build process settings.
 
@@ -15,8 +13,14 @@ abcl.build.incremental=true
 
 ## java.options sets the Java options in the abcl wrapper scripts
 
+# Base JVM settings that work on all supported platforms
+java.options=-XshowSettings:vm -Dfile.encoding=UTF-8
+
+# Java 11 
+#java.options= 
+
 # Maximum safe performance on JDK8
-java.options=-d64  -XX:+UseG1GC -XshowSettings:vm -Dfile.encoding=UTF-8 -XX:+AggressiveOpts -XX:CompileThreshold=10
+#java.options=-d64  -XX:+UseG1GC -XshowSettings:vm -Dfile.encoding=UTF-8 -XX:+AggressiveOpts -XX:CompileThreshold=10
 
 # Reasonable defaults for Java 8
 #java.options=-d64 -XshowSettings:vm -XX:+UseG1GC 
