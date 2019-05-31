@@ -1167,7 +1167,7 @@ public final class Lisp
   {
     StringBuilder sb = new StringBuilder(prefix);
     final Symbol gensymCounter = Symbol.GENSYM_COUNTER;
-	SpecialBinding binding = thread.getSpecialBinding(gensymCounter);
+    SpecialBinding binding = thread.getSpecialBinding(gensymCounter);
     final LispObject oldValue;
     if (binding != null) {
         oldValue = binding.value;
