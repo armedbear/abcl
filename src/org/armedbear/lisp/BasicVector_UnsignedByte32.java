@@ -207,8 +207,17 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
   @Override
   public void fill(LispObject obj)
   {
+    if (!(obj instanceof LispInteger)) {
+      type_error(obj, Symbol.INTEGER);
+      // Not reached.
+      return;
+    }
+    if (obj.isLessThan(Fixnum.ZERO) || obj.isGreaterThan(UNSIGNED_BYTE_32_MAX_VALUE)) {
+      type_error(obj, UNSIGNED_BYTE_32);
+    }
+    long value = obj.longValue();
     for (int i = capacity; i-- > 0;)
-      elements[i] = obj.longValue();
+      elements[i] = value;
   }
 
   @Override

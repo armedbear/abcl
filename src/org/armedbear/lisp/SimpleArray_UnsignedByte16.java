@@ -285,7 +285,17 @@ public final class SimpleArray_UnsignedByte16 extends AbstractArray
     @Override
     public void fill(LispObject obj)
     {
-        int n = Fixnum.getValue(obj);
+        if (!(obj instanceof Fixnum)) {
+            type_error(obj, Symbol.FIXNUM);
+            // Not reached.
+            return;
+        }
+        int n = ((Fixnum) obj).value;
+        if (n < 0 || n > 65535) {
+            type_error(obj, UNSIGNED_BYTE_16);
+            // Not reached.
+            return;
+        }
         for (int i = totalSize; i-- > 0;)
             data[i] = n;
     }
