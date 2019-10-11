@@ -4292,21 +4292,9 @@ public final class Primitives {
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            final int start = Fixnum.getValue(second);
-            if (start < 0) {
-                StringBuilder sb = new StringBuilder("Bad start index (");
-                sb.append(start);
-                sb.append(") for SUBSEQ.");
-                error(new TypeError(sb.toString()));
-            }
-            if (first.listp())
-                return list_subseq(first, start, -1);
-            if (first instanceof AbstractVector) {
-                final AbstractVector v = (AbstractVector) first;
-                return v.subseq(start, v.length());
-            }
-            return type_error(first, Symbol.SEQUENCE);
+            return execute(first, second, NIL);
         }
+
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
@@ -4338,6 +4326,14 @@ public final class Primitives {
                 final AbstractVector v = (AbstractVector) first;
                 if (end < 0)
                     end = v.length();
+                if (start > end) {
+                    StringBuilder sb = new StringBuilder("Start index (");
+                    sb.append(start);
+                    sb.append(") is greater than length of vector (");
+                    sb.append(end);
+                    sb.append(") for SUBSEQ.");
+                    error(new TypeError(sb.toString()));
+                }
                 return v.subseq(start, end);
             }
             return type_error(first, Symbol.SEQUENCE);
