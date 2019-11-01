@@ -10,7 +10,8 @@
         (get-classloader (java:jmethod "java.lang.Class" "getClassLoader")))
     (java:jcall get-classloader boot-class)))
 
-;;; java1.[678] packages the JVM system artifacts as jar files
+;;; java[678] packages the JVM system artifacts as jar files
+;;; java11 uses the module system 
 (defun system-artifacts-are-jars-p ()
   (java:jinstance-of-p (boot-classloader) "java.net.URLClassLoader"))
 
@@ -69,19 +70,18 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
       (reverse (rflatten list result)))))
 
 (defun java.class.path ()
+  "Return a list of the directories as pathnames referenced in the JVM classpath."
   (let* ((separator (java:jstatic "getProperty" "java.lang.System" "path.separator"))
-	 (path (java:jcall "split"
+	 (paths (coerce (java:jcall "split"
 			   (java:jstatic "getProperty" "java.lang.System"
 					 "java.class.path")
-			   separator)))
-    (setf path (coerce path 'list))
-    (values
-     (mapcar (lambda (jar)
-	       (make-pathname :defaults jar
-			      :name nil
-			      :type nil))
-	     path)
-     path)))
+			   separator)
+                        'list))
+         (p (coerce paths 'list)))
+    (flet ((directory-of (p) (make-pathname :defaults p :name nil :type nil)))
+      (values
+       (mapcar #'directory-of p)
+       p))))
 
 (defun enumerate-resource-directories ()
   (flet ((directory-of (p)
@@ -104,7 +104,7 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
          (pushnew (pathname (directory-of entry)) result :test 'equal))
         (t
          (format *standard-output*
-                 "Skipping enumeration of resource ~a with type ~a"
+                 "~&Skipping enumeration of resource '~a' with type '~a'.~%"
                  entry (type-of entry)))))
       result)))
 
@@ -151,7 +151,7 @@ Initialized via SYSTEM:FIND-CONTRIB.")
   "Attempt to find the ABCL contrib jar and add its contents to ASDF.
 returns the pathname of the contrib if it can be found."
    (if *abcl-contrib*
-       (format verbose "~&; Using already initialized value of SYS:*ABCL-CONTRIB* '~A'.~%"
+       (format verbose "~&; Finding contribs utilizing previously initialized value of SYS:*ABCL-CONTRIB* '~A'.~%"
                *abcl-contrib*)
        (progn
          (let ((contrib (find-contrib)))
@@ -230,6 +230,8 @@ returns the pathname of the contrib if it can be found."
 
 (export '(find-system
           find-contrib
+          system-artifacts-are-jars-p
+          java.class.path
           *abcl-contrib*)
         :system)
 

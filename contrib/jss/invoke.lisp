@@ -420,7 +420,6 @@ associated is used to look up the static FIELD."
 (defun (setf get-java-field) (value object field &optional (try-harder *running-in-osgi*))
   (set-java-field object field value try-harder))
 
-
 (defconstant +for-name+ 
   (jmethod "java.lang.Class" "forName" "java.lang.String" "boolean" "java.lang.ClassLoader"))
 
@@ -438,6 +437,45 @@ associated is used to look up the static FIELD."
     (format stream "method ~a" (#"toString" obj))))
 
 (defun do-auto-imports ()
+  (if (sys::system-artifacts-are-jars-p)
+      (do-auto-imports-from-jars)
+      (progn
+        ;;; First, import all the classes available from the module system
+        (do-auto-imports-from-modules)
+        ;;; Then, introspect any jars that appear on the classpath
+        (loop :for entry :in (second (multiple-value-list (sys::java.class.path)))
+             :doing (let ((p (pathname entry)))
+                      (when (string-equal (pathname-type p) "jar")
+                        (jar-import p)))))))
+
+(defun do-auto-imports-from-modules ()
+  (loop :for (name . full-class-name) :in (all-class-names-from-modules)
+     :doing
+       (pushnew full-class-name (gethash name *class-name-to-full-case-insensitive*) 
+                :test 'equal)))
+
+(defun all-class-names-from-modules ()
+  (let ((class-pattern (jstatic "compile" "java.util.regex.Pattern" ".*\\.class$"))
+        (name-pattern (jstatic "compile" "java.util.regex.Pattern" ".*?([^.]*)$")))
+    (loop
+       :for module :across (chain (jstatic "boot" "java.lang.ModuleLayer")
+                                  "configuration" "modules" "stream" "toArray")
+       :appending
+         (loop
+            :for class-as-path :across (chain module "reference" "open" "list" "toArray")
+            :when
+              (jcall "matches" (jcall "matcher" class-pattern class-as-path))
+            :collect
+              (let* ((full-name (jcall "substring" (jcall "replace" class-as-path #\/ #\.)
+                                           0
+                                           (- (jcall "length" class-as-path) (jcall "length" ".class"))))
+                     (matcher (jcall "matcher" name-pattern full-name))
+                     (name (progn
+                             (jcall "matches" matcher)
+                             (jcall "group" matcher 1))))
+                (cons name full-name))))))
+
+(defun do-auto-imports-from-jars ()
   (labels ((expand-paths (cp)
              (loop :for s :in cp
                 :appending (loop :for entry 
