@@ -272,9 +272,19 @@ public final class SimpleArray_UnsignedByte8 extends AbstractArray
     @Override
     public void fill(LispObject obj)
     {
-        byte b = coerceLispObjectToJavaByte(obj);
+        if (!(obj instanceof Fixnum)) {
+            type_error(obj, Symbol.FIXNUM);
+            // Not reached.
+            return;
+        }
+        int n = ((Fixnum) obj).value;
+        if (n < 0 || n > 255) {
+            type_error(obj, UNSIGNED_BYTE_8);
+            // Not reached.
+            return;
+        }
         for (int i = totalSize; i-- > 0;)
-            data[i] = b;
+            data[i] = (byte) n;
     }
 
     @Override
