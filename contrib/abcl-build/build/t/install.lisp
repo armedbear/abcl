@@ -6,7 +6,7 @@
 
 (prove:plan 2)
 (let ((path (ext:make-temp-directory))
-      (uri #p"http://www-eu.apache.org/dist/ant/binaries/apache-ant-1.10.1-bin.zip"))
+      (uri #p"http://www-eu.apache.org/dist/ant/binaries/apache-ant-1.10.7-bin.zip"))
   (prove:diag
    (format nil "Testing binary unzip installation of~%~,2t<~a>~%to~%~,2t '~a'." uri path))
   (multiple-value-bind (root contents)
