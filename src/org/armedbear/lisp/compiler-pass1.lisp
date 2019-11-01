@@ -673,12 +673,27 @@ where each of the vars returned is a list with these elements:
       ;; need to copy the forms to create a second copy.
       (let* ((block (make-unwind-protect-node))
              (*block* block)
-             ;; a bit of jumping through hoops...
-             (unwinding-forms (p1-body (copy-tree (cddr form))))
-             (unprotected-forms (p1-body (cddr form)))
+
+             ;; i believe this comment is misleading...
+             ;;   - from an /opstack/ safety perspective, all forms (including cleanup) can have non-local returns
+             ;; original comment: (and unwinding-forms and unprotected-forms were above this line previously, meaning they
+             ;;                    did not fall under an unwind-protect /block/ and hence lead to stack inconsistency problems)
              ;; ... because only the protected form is
              ;; protected by the UNWIND-PROTECT block
              (*blocks* (cons block *blocks*))
+
+             ;; this may be ok to have /above/ the blocks decl, since these should not be present inside the
+             ;; exception handler and are therefore opstack safe
+             ;;   my little test case passes either way (whether this is here or above)
+             ;;  /but/ if the protected-form is marked as opstack unsafe, this should be too
+             ;;     why is the protected form marked opstack unsafe?
+             (unwinding-forms (p1-body (copy-tree (cddr form))))
+
+             ;; the unprotected-forms actually end up inside an exception handler and as such, /do/ need
+             ;; to be marked opstack unsafe (so this is now below the *blocks* decl)
+             ;;   (this name is now misleading from an opstack safety perspective)
+             (unprotected-forms (p1-body (cddr form)))
+
              (protected-form (p1 (cadr form))))
         (setf (unwind-protect-form block)
               `(unwind-protect ,protected-form

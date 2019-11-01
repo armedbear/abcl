@@ -502,31 +502,59 @@
   (and instruction
        (= (the fixnum (instruction-opcode (the instruction instruction))) 202)))
 
+(defun constant-pool-index (instruction)
+  "If an instruction references an item in the constant pool, return
+   the index, otherwise return nil."
+  ;; 1 byte index
+  ;; 18 ldc
+  ;;
+  ;; 2 byte index
+  ;; 178 getstatic
+  ;; 179 putstatic
+  ;; 180 getfield
+  ;; 181 putfield
+  ;; 182 invokevirtual
+  ;; 183 invokespecial
+  ;; 184 invokestatic
+  ;; 185 invokeinterface
+  ;; 187 new
+  ;; 192 checkcast
+  ;; 193 instanceof
+  (when instruction
+    (case (instruction-opcode instruction)
+      (18 (first (instruction-args instruction)))
+      ((19 20 178 179 180 181 182 183 184 185 187 192 193)
+       (logior
+        (ash (first (instruction-args instruction)) 8)
+        (second (instruction-args instruction)))))))
+
 (defun format-instruction-args (instruction pool)
-  (if (memql (instruction-opcode instruction) '(18 19 20
-                                                178 179 180 181 182 183 184 185
-                                                187
-                                                192 193))
-      (let ((*print-readably* nil)
-            (*print-escape* nil))
+  (let* ((*print-readably* nil)
+         (*print-escape* nil)
+         (pool-index (constant-pool-index instruction))
+         (entry (when pool-index
+                  (find-pool-entry pool pool-index))))
+    (when entry
+      (return-from
+       format-instruction-args
         (with-output-to-string (s)
           (print-pool-constant pool
-                               (find-pool-entry pool
-                                                (car (instruction-args instruction))) s
-                               :package "org/armedbear/lisp")))
-      (when (instruction-args instruction)
-        (format nil "~S" (instruction-args instruction)))))
+                               entry
+                               s
+                               :package "org/armedbear/lisp")))))
+  (when (instruction-args instruction)
+    (format nil "~S" (instruction-args instruction))))
 
 (defun print-code (code pool)
   (declare (ignorable pool))
   (dotimes (i (length code))
     (let ((instruction (elt code i)))
-      (format t "~3D ~A ~19T~A ~A ~A~%"
+      (format t "~3D ~A ~19T~A ~@[IStack: ~A~] ~@[IDepth: ~A~]~%"
                     i
                     (opcode-name (instruction-opcode instruction))
                     (or (format-instruction-args instruction pool) "")
-                    (or (instruction-stack instruction) "")
-                    (or (instruction-depth instruction) "")))))
+                    (instruction-stack instruction)
+                    (instruction-depth instruction)))))
 
 (defun print-code2 (code pool)
   (declare (ignorable pool))
@@ -858,6 +886,7 @@
 (declaim (ftype (function (t) t) analyze-stack))
 (defun analyze-stack (code exception-entry-points)
   (declare (optimize speed))
+  ;;(print-code code *pool*)
   (let* ((code-length (length code)))
     (declare (type vector code))
     (dotimes (i code-length)
