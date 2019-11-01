@@ -156,9 +156,13 @@
                                 ((:end2 source-end)))
   "The target sequence is destructively modified by copying successive
 elements into it from the source sequence."
+  (check-type target-start (integer 0 #.array-total-size-limit))
+  (check-type source-start (integer 0 #.array-total-size-limit))
+  (check-type target-end (or null (integer 0 #.array-total-size-limit)))
+  (check-type source-end (or null (integer 0 #.array-total-size-limit)))
   (let ((target-end (or target-end (length target-sequence)))
 	(source-end (or source-end (length source-sequence))))
-    (declare (type (integer 0 #.most-positive-fixnum) target-start target-end source-start source-end))
+    (declare (type (integer 0 #.array-total-size-limit) target-start target-end source-start source-end))
     (sequence::seq-dispatch target-sequence
       (sequence::seq-dispatch source-sequence
         (list-replace-from-list)
