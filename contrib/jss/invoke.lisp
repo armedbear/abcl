@@ -464,8 +464,11 @@ associated is used to look up the static FIELD."
               'cons))
            (do-imports (cp)
              (import-classpath (expand-paths (split-classpath cp)))))
-    (do-imports (jcall "getClassPath" (jstatic "getRuntimeMXBean" '|java.lang.management.ManagementFactory|)))
-    (do-imports (jcall "getBootClassPath" (jstatic "getRuntimeMXBean" '|java.lang.management.ManagementFactory|)))))
+
+    (let ((mx-bean (jstatic "getRuntimeMXBean"
+                            '|java.lang.management.ManagementFactory|)))
+      (do-imports (jcall "getClassPath" mx-bean))
+      (do-imports (jcall "getBootClassPath" mx-bean)))))
 
 (eval-when (:load-toplevel :execute)
   (when *do-auto-imports* 
