@@ -1,11 +1,11 @@
 # TODO optimize me for space
-FROM easye/openjdk8
+FROM openjdk:8
 
 RUN export DEBIAN_FRONTEND='noninteractive' && \
     apt-get update  && \
     apt-get upgrade -y && \
     apt-get install -y \
-      libffi-dev
+      libffi-dev ant maven
 
 USER root
 RUN useradd -ms /bin/bash abcl
