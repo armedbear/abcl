@@ -206,6 +206,6 @@ iterators or a Java array."
 
 (defun to-hashset (list)
   "Convert LIST to the java.util.HashSet contract"
-  (let ((set (new 'hashset)))
+  (let ((set (new 'java.util.hashset)))
     (loop for l in list do (#"add" set l))
     set))
