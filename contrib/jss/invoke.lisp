@@ -256,10 +256,10 @@ want to avoid the overhead of the dynamic dispatch."
 (defun maybe-found-in-overridden (name)
   (when (boundp '*class-lookup-overrides*)
       (let ((found (find-if (lambda(el) (#"matches" (string el) (concatenate 'string "(?i).*" (string name) "$")))
-			    *class-lookup-overrides*)))
-	(if found
-	    (let ((*class-lookup-overrides* nil))
-	      (lookup-class-name found))))))
+                            *class-lookup-overrides*)))
+        (if found
+            (let ((*class-lookup-overrides* nil))
+              (lookup-class-name found))))))
 
 
 (defun lookup-class-name (name &key
@@ -287,11 +287,11 @@ want to avoid the overhead of the dynamic dispatch."
                          (length end))
                       (length full)))
                  (ambiguous (choices)
-		   (if return-ambiguous 
-		       (return-from lookup-class-name choices)
-		       (error "Ambiguous class name: ~a can be ~{~a~^, ~}" name choices))))
+                   (if return-ambiguous 
+                       (return-from lookup-class-name choices)
+                       (error "Ambiguous class name: ~a can be ~{~a~^, ~}" name choices))))
             (if (zerop bucket-length)
-		(progn (unless muffle-warning (warn "can't find class named ~a" name)) nil)
+                (progn (unless muffle-warning (warn "can't find class named ~a" name)) nil)
                 (let ((matches (loop for el in bucket when (matches-end name el 'char=) collect el)))
                   (if (= (length matches) 1)
                       (car matches)
@@ -300,7 +300,7 @@ want to avoid the overhead of the dynamic dispatch."
                             (if (= (length matches) 1)
                                 (car matches)
                                 (if (= (length matches) 0)
-				    (progn (unless muffle-warning (warn "can't find class named ~a" name)) nil)
+                                    (progn (unless muffle-warning (warn "can't find class named ~a" name)) nil)
                                     (ambiguous matches))))
                           (ambiguous matches))))))))))
 
