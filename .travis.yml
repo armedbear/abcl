@@ -19,7 +19,6 @@ jdk:
 install:
   - echo $(pwd)
   - ant abcl
-  - ln -s /home/travis/build/easye/abcl/dist /usr/local/bin/abcl
   - mkdir -p ~/quicklisp/local-projects && cd ~/quicklisp/local-projects && git clone https://github.com/cffi/cffi && cd cffi && git show-ref && git rev-parse
   - mkdir -p ../ansi-test && cd .. && git clone https://gitlab.common-lisp.net/ansi-test/ansi-test && cd ansi-test && git show-ref && git rev-parse
 
