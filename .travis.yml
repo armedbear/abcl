@@ -12,10 +12,14 @@ jdk:
 
 install:
   - ant abcl
+# Hopefully use cffi master from Quicklisp
+  - mkdir -p ~/quicklisp/local-projects && cd ~/quicklisp/local-projects && git clone https://github.com/cffi/cffi && cd git && git show-ref && git rev-parse
+# Speculatively fetch the ANSI-TEST master
+  - mkdir -p ../ansi-test && cd .. && git clone https://gitlab.common-lisp.net/ansi-test/ansi-test && cd ansi-test && git show-ref && git rev-parse
 
 script:
   - ./abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cl+ssl.test)' --eval '(fiveam:run-all-tests)' --eval '(ext:quit)'
-  - ./abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cffi-tests)' --eval '(asdf:test-system :cffi)' --eval '(ext:quit)'
+  - ./abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cffi-tests)' --eval --eval '(asdf:test-system :cffi)' --eval '(ext:quit)'
 
   
 
