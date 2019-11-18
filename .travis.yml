@@ -4,8 +4,10 @@ jdk:
   - openjdk8
 
 os:
-  - osx
   - linux
+# -osx
+
+dist: xenial
 
 install:
   - ant abcl
