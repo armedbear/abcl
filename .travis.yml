@@ -14,7 +14,8 @@ install:
   - ant abcl
 
 script:
-  ./abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cl+ssl.test)' --eval '(fiveam:run-all-tests)' --eval '(ext:quit)'
+  - ./abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cl+ssl.test)' --eval '(fiveam:run-all-tests)' --eval '(ext:quit)'
+  - ./abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cffi-tests)' --eval '(asdf:test-system :cffi)' --eval '(ext:quit)'
 
   
 
