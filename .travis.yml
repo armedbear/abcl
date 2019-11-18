@@ -1,0 +1,19 @@
+language: java
+
+jdk:
+  - openjdk8
+
+os:
+  - osx
+  - linux
+
+install:
+  - ant abcl
+
+script:
+  ./abcl --eval '(require :abcl)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)'
+
+  
+
+
+  
