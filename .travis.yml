@@ -23,9 +23,11 @@ install:
   - mkdir -p ~/quicklisp/local-projects && cd ~/quicklisp/local-projects && git clone https://github.com/cffi/cffi && cd cffi && git show-ref && git rev-parse
   - mkdir -p ../ansi-test && cd .. && git clone https://gitlab.common-lisp.net/ansi-test/ansi-test && cd ansi-test && git show-ref && git rev-parse
 
+# TODO: figure out how to add abcl to out path
+  
 script:
-  - abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cl+ssl.test)' --eval '(fiveam:run-all-tests)' --eval '(ext:quit)'
-  - abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cffi-tests)' --eval --eval '(asdf:test-system :cffi)' --eval '(ext:quit)'
+  - /home/travis/build/easye/abcl/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cl+ssl.test)' --eval '(fiveam:run-all-tests)' --eval '(ext:quit)'
+  - /home/travis/build/easye/abcl/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cffi-tests)' --eval --eval '(asdf:test-system :cffi)' --eval '(ext:quit)'
 
   
 
