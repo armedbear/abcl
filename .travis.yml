@@ -17,7 +17,7 @@ jdk:
 # 3. Speculatively fetch the ANSI-TEST master
 
 install:
-  - echo $(cwd)
+  - echo $(pwd)
   - ant abcl
   - mkdir -p ~/quicklisp/local-projects && cd ~/quicklisp/local-projects && git clone https://github.com/cffi/cffi && cd cffi && git show-ref && git rev-parse
 
