@@ -2,6 +2,7 @@ language: java
 
 os:
   - linux
+
 # -osx # Doesn't have a lot of JDK choice, so get to it later
 
 dist: xenial
@@ -10,11 +11,15 @@ jdk:
   - openjdk8
   - openjdk11
 
+# WARN Don't mix comments with nested YML, as it gets confused easily (or I do…)
+# 1. Compile ABCL
+# 2. Hopefully use cffi master from Quicklisp
+# 3. Speculatively fetch the ANSI-TEST master
+
 install:
   - ant abcl
-# Hopefully use cffi master from Quicklisp
-  - mkdir -p ~/quicklisp/local-projects && cd ~/quicklisp/local-projects && git clone https://github.com/cffi/cffi && cd git && git show-ref && git rev-parse
-# Speculatively fetch the ANSI-TEST master
+  - mkdir -p ~/quicklisp/local-projects && cd ~/quicklisp/local-projects && git clone https://github.com/cffi/cffi && cd cffi && git show-ref && git rev-parse
+
   - mkdir -p ../ansi-test && cd .. && git clone https://gitlab.common-lisp.net/ansi-test/ansi-test && cd ansi-test && git show-ref && git rev-parse
 
 script:
