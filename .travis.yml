@@ -17,14 +17,15 @@ jdk:
 # 3. Speculatively fetch the ANSI-TEST master
 
 install:
+  - echo $(cwd)
   - ant abcl
   - mkdir -p ~/quicklisp/local-projects && cd ~/quicklisp/local-projects && git clone https://github.com/cffi/cffi && cd cffi && git show-ref && git rev-parse
 
   - mkdir -p ../ansi-test && cd .. && git clone https://gitlab.common-lisp.net/ansi-test/ansi-test && cd ansi-test && git show-ref && git rev-parse
 
 script:
-  - ./abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cl+ssl.test)' --eval '(fiveam:run-all-tests)' --eval '(ext:quit)'
-  - ./abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cffi-tests)' --eval --eval '(asdf:test-system :cffi)' --eval '(ext:quit)'
+  - cd && ./abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cl+ssl.test)' --eval '(fiveam:run-all-tests)' --eval '(ext:quit)'
+  - cd && ./abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cffi-tests)' --eval --eval '(asdf:test-system :cffi)' --eval '(ext:quit)'
 
   
 
