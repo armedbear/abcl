@@ -2,10 +2,15 @@ language: java
 
 os:
   - linux
+  - osx
 
-# -osx # Doesn't have a lot of JDK choice, so get to it later
+# Linux system
+# 'bionic' is latest Ubuntu LTS available on Travis
+dist: bionic
 
-dist: xenial
+# macOS system
+# 'xcode11.2' is macOS 10.14 xcode 11B41
+osx_image: xcode11.2
 
 jdk:
   - openjdk8
@@ -18,8 +23,13 @@ jdk:
 
 install:
   - echo $(pwd)
+  # Build ABCL
   - ant abcl
+  # Install Quicklisp
+  - /home/travis/build/easye/abcl/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)'
+  # Install CFFI from master
   - mkdir -p ~/quicklisp/local-projects && cd ~/quicklisp/local-projects && git clone https://github.com/cffi/cffi && cd cffi && git show-ref && git rev-parse
+  # Install ANSI tests
   - mkdir -p ../ansi-test && cd .. && git clone https://gitlab.common-lisp.net/ansi-test/ansi-test && cd ansi-test && git show-ref && git rev-parse
 
 # TODO: figure out how to add abcl to out path
@@ -27,8 +37,9 @@ install:
 # 1. Test CFFI
 # 2. Test CL+SSL
 script:
-  - /home/travis/build/easye/abcl/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cffi-tests)' --eval '(asdf:test-system :cffi)' --eval '(ext:quit)'
-  - /home/travis/build/easye/abcl/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ql:quickload :cl+ssl.test)' --eval '(fiveam:run-all-tests)' --eval '(ext:quit)'
+  - /home/travis/build/easye/abcl/abcl --batch ${TRAVIS_BUILD_DIR}/ci/test-cffi.lisp
+  - /home/travis/build/easye/abcl/abcl --batch ${TRAVIS_BUILD_DIR}/ci/test-cl+ssl.lisp
+  - /home/travis/build/easye/abcl/abcl --batch ${TRAVIS_BUILD_DIR}/ci/test-ansi.lisp
 
   
 
