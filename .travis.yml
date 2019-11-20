@@ -5,8 +5,7 @@ os:
   - osx
 
 # Linux system
-# 'bionic' is latest Ubuntu LTS available on Travis
-dist: bionic
+dist: xenial
 
 # macOS system
 # 'xcode11.2' is macOS 10.14 xcode 11B41
