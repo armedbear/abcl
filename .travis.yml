@@ -26,7 +26,7 @@ install:
   # Build ABCL
   - ant abcl
   # Install Quicklisp
-  - /home/travis/build/easye/abcl/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)'
+  - /home/travis/build/easye/abcl/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(ext:quit)'
   # Install CFFI from master
   - mkdir -p ~/quicklisp/local-projects && cd ~/quicklisp/local-projects && git clone https://github.com/cffi/cffi && cd cffi && git show-ref && git rev-parse
   # Install ANSI tests
