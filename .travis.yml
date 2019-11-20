@@ -36,9 +36,9 @@ install:
 # 1. Test CFFI
 # 2. Test CL+SSL
 script:
-  - /home/travis/build/easye/abcl/abcl --batch ${TRAVIS_BUILD_DIR}/ci/test-cffi.lisp
-  - /home/travis/build/easye/abcl/abcl --batch ${TRAVIS_BUILD_DIR}/ci/test-cl+ssl.lisp
-  - /home/travis/build/easye/abcl/abcl --batch ${TRAVIS_BUILD_DIR}/ci/test-ansi.lisp
+  - /home/travis/build/easye/abcl/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-cffi.lisp
+  - /home/travis/build/easye/abcl/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-cl+ssl.lisp
+  - /home/travis/build/easye/abcl/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-ansi.lisp
 
   
 
