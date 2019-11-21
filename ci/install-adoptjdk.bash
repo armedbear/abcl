@@ -64,7 +64,19 @@ function add_jdk() {
     esac
 }
 
+function set_jdk() {
+    pushd ${TRAVIS_BUILD_DIR}
+
+    # ideally, this should be enough
+    jenv version ${ABCL_JDK}
+    # but practically we guard every invocation of jenv this way
+    jenv global ${ABCL_JDK}
+
+    popd
+}
+
 determine_adoptjdk
 download_and_extract
 add_jdk
+set_jdk
 

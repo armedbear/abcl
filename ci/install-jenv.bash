@@ -12,6 +12,9 @@ echo 'export PATH="$HOME/.jenv/bin:$PATH"' >> ${profile}
 echo 'eval "$(jenv init -)"' >> ${profile}
 . ${profile}
 
+jenv enable-plugin ant
+jenv enanle-plugin maven
+
 jenv doctor
 
 
