@@ -163,6 +163,9 @@ Enhancements
 
 * Consolidated RUN-PROGRAM fixes (ferada, pipping)
 
+  In support of getting a more universal UIOP:RUN-PROGAM across all
+  contemporary Lisp implementations.
+
 * Upstream consolidated patchset (ferada)
 
 ** [r14857] Support `FILE-POSITION` on string streams.
@@ -173,16 +176,16 @@ Enhancements
 * [r14840-2] (Scott L. Burson) Introduced "time of time" semantics for
   {encode,decode}-universal time.
 
-* EXTENSIONS:MAKE-TEMP-FILE now takes keyword arguments to specify
-  values of the prefix and suffix strings to the underlying JVM
-  implementation of java.io.File.createTempFile().
+* EXTENSIONS:MAKE-TEMP-FILE now takes keyword arguments to
+  specify values of the prefix and suffix strings to the underlying
+  JVM implementation of java.io.File.createTempFile().
 
 * [r14849] EXT:OS-{UNIX,WINDOWS}-P now provide a pre-ASDF runtime check on hosting platform
 
 Fixes
 -----
 
-* [r14863] RandomCharacterFile et. al.
+* [r14863] RandomCharacterFile (vibhu)
 
 * [r14839] (JSS) Ensure the interpolation of Java symbol names as strings (alan ruttenberg)
 
@@ -191,9 +194,9 @@ Fixes
 Updates
 ------
 
-* asdf-3.1.7.26
+* [r14883] asdf-3.1.7.27
 
-* jna-4.2.2
+* [r14849] jna-4.2.2
 
 Removed
 -------

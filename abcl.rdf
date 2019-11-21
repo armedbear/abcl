@@ -71,8 +71,9 @@
     rdf:_8 _:dmiles ; 
     rdf:_9 _:alanr ;
     rdf:_9 "Alan Ruttenberg" ; 
-    rdf:_10 _:pipping ;
-    rdf:_10 "Elias Pipping" ;
+    rdf:_10 _:pipping ; 
+    rdf:_10 "Elias Pipping" ; 
+    rdf:_12 _:vibhu ;
     rdf:_12 "Vibhu Mohindra" ;
 ] .
 
