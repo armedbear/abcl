@@ -1,12 +1,9 @@
 # get the default java environment from Travis container
 language: java
 
-jobs:
-  include:
-    - env: ABCL_JDK=openjdk8
-    - os: linux
-    - env: ABCL_JDK=openjdk11
-    - os: osx
+os:
+  - linux
+  - osx
 
 # Linux system
 dist: xenial
@@ -14,6 +11,10 @@ dist: xenial
 # macOS system
 # 'xcode11.2' is macOS 10.14 xcode 11B41
 osx_image: xcode11.2
+
+env:
+  - ABCL_JDK=openjdk8
+  - ABCL_JDK=openjdk11
 
 install:
   - echo $(pwd)
