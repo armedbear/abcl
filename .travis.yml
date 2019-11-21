@@ -1,0 +1,46 @@
+language: java
+
+os:
+  - linux
+  - osx
+
+# Linux system
+dist: xenial
+
+# macOS system
+# 'xcode11.2' is macOS 10.14 xcode 11B41
+osx_image: xcode11.2
+
+jdk:
+  - openjdk8
+  - openjdk11
+
+# WARN Don't mix comments with nested YML, as it gets confused easily (or I do…)
+# 1. Compile ABCL
+# 2. Hopefully use cffi master from Quicklisp
+# 3. Speculatively fetch the ANSI-TEST master
+
+install:
+  - echo $(pwd)
+  # Build ABCL
+  - ant abcl
+  # Install Quicklisp
+  - /home/travis/build/easye/abcl/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(progn (setf ql-util::*do-not-prompt* t)(ql:add-to-init-file))' --eval '(ext:quit)'
+  # Install CFFI from master
+  - mkdir -p ~/quicklisp/local-projects && cd ~/quicklisp/local-projects && git clone https://github.com/cffi/cffi && cd cffi && git show-ref && git rev-parse
+  # Install ANSI tests
+  - mkdir -p ../ansi-test && cd .. && git clone https://gitlab.common-lisp.net/ansi-test/ansi-test && cd ansi-test && git show-ref && git rev-parse
+
+# TODO: figure out how to add abcl to out path
+
+# 1. Test CFFI
+# 2. Test CL+SSL
+script:
+  - /home/travis/build/easye/abcl/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-cffi.lisp
+  - /home/travis/build/easye/abcl/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-cl+ssl.lisp
+  - /home/travis/build/easye/abcl/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-ansi.lisp
+
+  
+
+
+  
