@@ -3,12 +3,69 @@ JARs and JAR entries in ABCL
 
     Mark Evenson
     Created:  09 JAN 2010
-    Modified: 21 JUN 2011
+    Modified: 02 NOV 2019
 
 Notes towards an implementation of "jar:" references to be contained
 in Common Lisp `PATHNAME`s within ABCL.
 
-Goals
+Broken implementation
+---------------------
+
+abcl-1.5.0 was discovered to be broken with respect to nested jar
+entries in November 2019.  This is evidenced by the tests invoked via
+
+    (asdf:test-system :abcl)
+    
+failing with 
+
+    Failed to parse URL 'jar:jar:file:a/baz.jar!/b/c/foo.abcl!/'Nested JAR URLs are not supported
+    
+In researching where to fix, a flaw in the reasoning about nesting jar
+pathnames emerged.  The current implementation uses the device as a
+CONS for storing the results of the hacky processing around the `jar`
+scheme.  This was reasoned to be "good enough" in that it kept the
+pathnames referencing pathnames to a minimum and no suitable case had
+been meaningful forwarded.  In the days of Überjars, where it is
+perfectly accepable to have jars within jars, here is a counter-example:
+
+    The jar containing the jar containing the abcl fasl
+    
+We need to name all possible locations of ABCL fasl files.
+
+To fix this, we need to allow the following structure for 
+
+    #p"jar:jar:jar:file:abcl.jar!/b/c/foo.abcl!/foo.cls"
+
+resolve to linked PATHNAME-DEVICE references:
+
+    "foo.cls"  --device--> "foo.abcl" --device--> "abcl.jar"
+    
+Towards Fixing
+==============
+
+It would be better to reflect the pathname hierarchy as Java classes.
+Although hooking up things is gonna take some elbow grease, being to
+cleanly separate the logic for our schemas like "jar", and the special
+handling that should happen with all pathnames whose namestring starts
+with a schema we handle (like HTML encoding into/out of expression)
+would be helpful.
+
+We make a breaking change with how we abstract the notion of "Archive"
+and "Archive Entries".
+
+Pathname DEVICE fields currently contain either
+
++ a single digit denoting a UNC drive (Windows)
+
++ a list containing one or two pathnames denoting paths within archives
+
+It is conceptually much more correct to only have a single Pathname in
+a file to denote the source of an archive.
+
+
+
+
+Goals 
 -----
 
 1.  Use Common Lisp pathnames to refer to entries in a jar file.
