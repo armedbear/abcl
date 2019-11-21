@@ -27,7 +27,7 @@ install:
   # Install CFFI from master
   - mkdir -p ~/quicklisp/local-projects && cd ~/quicklisp/local-projects && git clone https://github.com/cffi/cffi && cd cffi && git show-ref && git rev-parse
   # Install ANSI tests
-  - mkdir -p ../ansi-test && cd .. && git clone https://gitlab.common-lisp.net/ansi-test/ansi-test && cd ansi-test && git show-ref && git rev-parse
+  - bash -x ${TRAVIS_BUILD_DIR}/ci/sync-ansi-test.bash
 
 # TODO: figure out how to add abcl to our path
 
