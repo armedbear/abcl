@@ -1,5 +1,3 @@
-language: java
-
 os:
   - linux
   - osx
@@ -11,17 +9,17 @@ dist: xenial
 # 'xcode11.2' is macOS 10.14 xcode 11B41
 osx_image: xcode11.2
 
-jdk:
-  - openjdk8
-  - openjdk11
+# get the default java environment from Travis container
+language: java
 
-# WARN Don't mix comments with nested YML, as it gets confused easily (or I do…)
-# 1. Compile ABCL
-# 2. Hopefully use cffi master from Quicklisp
-# 3. Speculatively fetch the ANSI-TEST master
+jobs:
+  include:
+    - env: ABCL_JDK=openjdk8
+    - env: ABCL_JDK=openjdk11
 
 install:
   - echo $(pwd)
+  - bash -x ${TRAVIS_BUILD_DIR}/install-adoptjdk.bash ${ABCL_JDK}
   # Build ABCL
   - ant abcl
   # Configure finding abcl build source via ASDF
@@ -33,10 +31,8 @@ install:
   # Install ANSI tests
   - mkdir -p ../ansi-test && cd .. && git clone https://gitlab.common-lisp.net/ansi-test/ansi-test && cd ansi-test && git show-ref && git rev-parse
 
-# TODO: figure out how to add abcl to out path
+# TODO: figure out how to add abcl to our path
 
-# 1. Test CFFI
-# 2. Test CL+SSL
 script:
   - ${TRAVIS_BUILD_DIR}/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-cffi.lisp
   - ${TRAVIS_BUILD_DIR}/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-cl+ssl.lisp
