@@ -19,11 +19,11 @@ jobs:
 
 install:
   - echo $(pwd)
-  - bash -x ${TRAVIS_BUILD_DIR}/install-adoptjdk.bash ${ABCL_JDK}
+  - bash -x ${TRAVIS_BUILD_DIR}/ci/install-adoptjdk.bash ${ABCL_JDK}
   # Build ABCL
   - ant abcl
   # Configure finding abcl build source via ASDF
-  - bash -x ci/asdf-finds-abcl.bash
+  - bash -x ${TRAVIS_BUILD_DIR}/ci/asdf-finds-abcl.bash
   # Install Quicklisp
   - ${TRAVIS_BUILD_DIR}/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(progn (setf ql-util::*do-not-prompt* t)(ql:add-to-init-file))' --eval '(ext:quit)'
   # Install CFFI from master
