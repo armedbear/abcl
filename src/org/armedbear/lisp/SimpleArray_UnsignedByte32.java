@@ -276,6 +276,14 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
     @Override
     public void fill(LispObject obj)
     {
+        if (!(obj instanceof LispInteger)) {
+            type_error(obj, Symbol.INTEGER);
+            // Not reached.
+            return;
+        }
+        if (obj.isLessThan(Fixnum.ZERO) || obj.isGreaterThan(UNSIGNED_BYTE_32_MAX_VALUE)) {
+            type_error(obj, UNSIGNED_BYTE_32);
+        }
         for (int i = totalSize; i-- > 0;)
             data[i] = obj;
     }

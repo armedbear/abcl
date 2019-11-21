@@ -130,7 +130,11 @@ public final class ConcatenatedStream extends Stream
         if (streams == NIL)
             return NIL;
         Stream stream = (Stream)streams.car();
-        return stream.listen();
+        if (stream.listen() == NIL) {
+            streams = streams.cdr();
+            return listen();
+        }
+        return T;
     }
 
     // Returns -1 at end of file.

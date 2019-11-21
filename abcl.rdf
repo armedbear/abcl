@@ -19,7 +19,7 @@
   dc:identifier         <urn:abcl.org/1.6.0#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "11-JUN-2017" ;
+  dc:modified          "01-NOV-2019" ;
   dc:version           "abcl-1.6.0" ;
   dc:release           "dev" ;
   abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
@@ -152,9 +152,9 @@ doap:Project rdfs:seeAlso
 ] .
 
 abcl:jna
-        dc:version "4.5.1" .
+        dc:version "5.5.0" .
 abcl:asdf
-        dc:version "3.2.2" .
+        dc:version "3.3.3" .
 
 abcl:abcl-introspect  
   rdfs:seeAlso <file:contrib/abcl-introspect/README.markdown> .                             

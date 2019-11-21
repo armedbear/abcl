@@ -1,13 +1,19 @@
-(in-package :system)
-
+;;;; Mechanisms for finding loadable artifacts from the environment,
+;;;; which are then used to locate the Common Lisp systems included as
+;;;; `abcl-contrib`.
 (require :asdf)
 
-(defconstant +get-classloader+
-  (java:jmethod "java.lang.Class" "getClassLoader"))
+(in-package :system)
 
 (defun boot-classloader ()
-  (let ((boot-class (java:jclass "org.armedbear.lisp.Main")))
-    (java:jcall +get-classloader+ boot-class)))
+  (let ((boot-class (java:jclass "org.armedbear.lisp.Main"))
+        (get-classloader (java:jmethod "java.lang.Class" "getClassLoader")))
+    (java:jcall get-classloader boot-class)))
+
+;;; java[678] packages the JVM system artifacts as jar files
+;;; java11 uses the module system 
+(defun system-artifacts-are-jars-p ()
+  (java:jinstance-of-p (boot-classloader) "java.net.URLClassLoader"))
 
 (defun system-jar-p (p)
   (or (named-jar-p "abcl" p)
@@ -40,20 +46,76 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
    (ignore-errors
      (find-system-jar))
    (ignore-errors
-     (some
-      (lambda (u)
-        (probe-file (make-pathname
-                     :defaults (java:jcall "toString" u)
-                     :name "abcl")))
-      (java:jcall "getURLs" (boot-classloader))))
+     (when (system-artifacts-are-jars-p)
+       (some
+        (lambda (u)
+          (probe-file (make-pathname
+                       :defaults (java:jcall "toString" u)
+                       :name "abcl")))
+        (java:jcall "getURLs" (boot-classloader)))))
+   #+(or)
+   ;; Need to test locating the system boot jar over the network, and
+   ;; it would minimally need to check version information.
    (ignore-errors
      #p"http://abcl.org/releases/current/abcl.jar")))
 
+(defun flatten (list)
+  (labels ((rflatten (list accumluator)
+	   (dolist (element list)
+	     (if (listp element)
+		 (setf accumluator (rflatten element accumluator))
+		 (push element accumluator)))
+	   accumluator))
+    (let (result)
+      (reverse (rflatten list result)))))
+
+(defun java.class.path ()
+  "Return a list of the directories as pathnames referenced in the JVM classpath."
+  (let* ((separator (java:jstatic "getProperty" "java.lang.System" "path.separator"))
+	 (paths (coerce (java:jcall "split"
+			   (java:jstatic "getProperty" "java.lang.System"
+					 "java.class.path")
+			   separator)
+                        'list))
+         (p (coerce paths 'list)))
+    (flet ((directory-of (p) (make-pathname :defaults p :name nil :type nil)))
+      (values
+       (mapcar #'directory-of p)
+       p))))
+
+(defun enumerate-resource-directories ()
+  (flet ((directory-of (p)
+           (make-pathname :defaults p
+                          :name nil
+                          :type nil)))
+    (let ((result (java.class.path)))
+      (dolist (entry (flatten (java:dump-classpath)))
+        (cond
+          ((java:jinstance-of-p entry "java.net.URLClassLoader") ;; java1.[678]
+	   (dolist (url (coerce (java:jcall "getURLs" entry)
+			        'list))
+             (let ((p (directory-of (pathname (java:jcall "toString" url)))))
+	       (when (probe-file p)
+	         (pushnew p result :test 'equal)))))
+        ((pathnamep entry)
+         (pushnew (directory-of entry) result :test 'equal))
+        ((and (stringp entry)
+	      (probe-file (pathname (directory-of entry))))
+         (pushnew (pathname (directory-of entry)) result :test 'equal))
+        (t
+         (format *standard-output*
+                 "~&Skipping enumeration of resource '~a' with type '~a'.~%"
+                 entry (type-of entry)))))
+      result)))
+
 (defun find-jar (predicate)
-  (dolist (loader (java:dump-classpath))
-    (let ((jar (some predicate loader)))
-      (when jar
-        (return jar)))))
+  (dolist (d (enumerate-resource-directories))
+    (let ((entries (directory (make-pathname :defaults d
+					     :name "*"
+					     :type "jar"))))
+      (let ((jar (some predicate entries)))
+	(when jar
+	  (return-from find-jar jar))))))
 
 (defun find-system-jar ()
   "Return the pathname of the system jar, one of `abcl.jar` or
@@ -83,18 +145,18 @@ Initialized via SYSTEM:FIND-CONTRIB.")
       (let ((asdf-directory (make-pathname :defaults asdf-file :name nil :type nil)))
         (unless (find asdf-directory asdf:*central-registry* :test #'equal)
           (push asdf-directory asdf:*central-registry*)
-          (format verbose "~&; abcl-contrib; Added ~A to ASDF.~&" asdf-directory))))))
+          (format verbose "~&; Added ~A to ASDF.~%" asdf-directory))))))
 
 (defun find-and-add-contrib (&key (verbose cl:*load-verbose*))
   "Attempt to find the ABCL contrib jar and add its contents to ASDF.
 returns the pathname of the contrib if it can be found."
    (if *abcl-contrib*
-       (format verbose "~&; abcl-contrib; Using already initialized value of SYS:*ABCL-CONTRIB* '~A'.~%"
+       (format verbose "~&; Finding contribs utilizing previously initialized value of SYS:*ABCL-CONTRIB* '~A'.~%"
                *abcl-contrib*)
        (progn
          (let ((contrib (find-contrib)))
            (when contrib
-             (format verbose "~&; abcl-contrib; Using probed value of SYS:*ABCL-CONTRIB* '~A'.~%"
+             (format verbose "~&; Using probed value of SYS:*ABCL-CONTRIB* '~A'.~%"
                      contrib)
              (setf *abcl-contrib* contrib)))))
    (when *abcl-contrib*  ;; For bootstrap compile there will be no contrib
@@ -158,15 +220,18 @@ returns the pathname of the contrib if it can be found."
                       :name (concatenate 'string
                                          "abcl-contrib"
                                          (subseq (pathname-name system-jar) 4)))))))
-   (some
-    (lambda (u)
-      (probe-file (make-pathname
-                   :defaults (java:jcall "toString" u)
-                   :name "abcl-contrib")))
-    (java:jcall "getURLs" (boot-classloader)))))
+   (when (java:jinstance-of-p (boot-classloader) "java.net.URLClassLoader")
+     (some
+      (lambda (u)
+        (probe-file (make-pathname
+                     :defaults (java:jcall "toString" u)
+                     :name "abcl-contrib")))
+      (java:jcall "getURLs" (boot-classloader))))))
 
 (export '(find-system
           find-contrib
+          system-artifacts-are-jars-p
+          java.class.path
           *abcl-contrib*)
         :system)
 

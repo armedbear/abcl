@@ -1166,28 +1166,31 @@ public final class Lisp
 
   {
     StringBuilder sb = new StringBuilder(prefix);
-    SpecialBinding binding = thread.getSpecialBinding(Symbol.GENSYM_COUNTER);
+    final Symbol gensymCounter = Symbol.GENSYM_COUNTER;
+    SpecialBinding binding = thread.getSpecialBinding(gensymCounter);
     final LispObject oldValue;
     if (binding != null) {
         oldValue = binding.value;
-        if (oldValue instanceof Fixnum
-                || oldValue instanceof Bignum)
-          binding.value = oldValue.incr();
+        if ((oldValue instanceof Fixnum
+                || oldValue instanceof Bignum) && Fixnum.ZERO.isLessThanOrEqualTo(oldValue)) {
+            binding.value = oldValue.incr();
+        }
         else {
-           Symbol.GENSYM_COUNTER.setSymbolValue(Fixnum.ZERO);
+           binding.value = Fixnum.ZERO;
            error(new TypeError("The value of *GENSYM-COUNTER* was not a nonnegative integer. Old value: " +
                                 oldValue.princToString() + " New value: 0"));
         }
     } else {
         // we're manipulating a global resource
         // make sure we operate thread-safely
-        synchronized (Symbol.GENSYM_COUNTER) {
-            oldValue = Symbol.GENSYM_COUNTER.getSymbolValue();
-            if (oldValue instanceof Fixnum
-                    || oldValue instanceof Bignum)
-                Symbol.GENSYM_COUNTER.setSymbolValue(oldValue.incr());
+        synchronized (gensymCounter) {
+            oldValue = gensymCounter.getSymbolValue();
+            if ((oldValue instanceof Fixnum
+                    || oldValue instanceof Bignum) && Fixnum.ZERO.isLessThanOrEqualTo(oldValue))  {
+                gensymCounter.setSymbolValue(oldValue.incr());
+            }
             else {
-               Symbol.GENSYM_COUNTER.setSymbolValue(Fixnum.ZERO);
+               gensymCounter.setSymbolValue(Fixnum.ZERO);
                error(new TypeError("The value of *GENSYM-COUNTER* was not a nonnegative integer. Old value: " +
                                     oldValue.princToString() + " New value: 0"));
             }

@@ -86,7 +86,7 @@ public final class StringOutputStream extends Stream
     {
         if (elementType == NIL)
             return 0;
-        return offset;
+        return stringWriter.getOffset();
     }
 
     @Override
@@ -108,6 +108,7 @@ public final class StringOutputStream extends Stream
 
             stringWriter.seek(offset);
 
+            // FixME super.offset needs to be maintained differently?
             this.offset = offset;
         }
         catch (IllegalArgumentException e) {

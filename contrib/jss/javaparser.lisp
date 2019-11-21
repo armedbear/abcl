@@ -9,9 +9,9 @@
     `(progn
        (setf (gethash ,jclass *class-to-last-component*) ',ast-class)
        (defmethod ,ast-class ((obj ,class) node &optional
-			      ,@(loop for field in fields
-				      collect `(,(intern (string-upcase field)) (get-java-field node ,field t))))
-	   ,@body))))
+                              ,@(loop for field in fields
+                                      collect `(,(intern (string-upcase field)) (get-java-field node ,field t))))
+           ,@body))))
 
 (defvar *object-for-this* (new 'lang.object))
 
@@ -44,10 +44,10 @@
   (let ((raw (#"getValue" node)))
     (setq raw (#"replaceAll" raw "_" ""))
     (if (#"matches" raw ".*[dD]$")
-	(read-from-string (#"replaceFirst" (subseq raw 0 (1- (length raw))) "e" "d"))
-	(if (#"matches" raw ".*[fF]$")
-	    (read-from-string (subseq raw 0 (1- (length raw))))
-	    (read-from-string raw)))))
+        (read-from-string (#"replaceFirst" (subseq raw 0 (1- (length raw))) "e" "d"))
+        (if (#"matches" raw ".*[fF]$")
+            (read-from-string (subseq raw 0 (1- (length raw))))
+            (read-from-string raw)))))
 
 (def-java-read CharLiteralExpr javaparser nil
   (#"getValue" node))
