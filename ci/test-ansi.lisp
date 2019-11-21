@@ -1,6 +1,8 @@
 (require :asdf)
 
-;;; Won't work without configuring the ASDF registry?
+(ql:quickload :prove) ;; FIXME
+(ql:quickload :abcl)
+
 (asdf:load-system :abcl)
 
 (asdf:test-system :abcl/test/ansi/compiled)
