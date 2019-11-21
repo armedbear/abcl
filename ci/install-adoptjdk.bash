@@ -65,12 +65,22 @@ function add_jdk() {
 }
 
 function set_jdk() {
+    jenv versions
+
+    case ${ABCL_JDK} in
+        openjdk8)
+            version=$(jenv versions | grep openjdk | grep 1.8 | tail -1 | sed s/*//)
+            ;;
+        openjdk11)
+            version=$(jenv versions | grep openjdk | grep 11.0 | tail -1 | sed s/*//)
+            ;;
+    esac
+
     pushd ${TRAVIS_BUILD_DIR}
 
-    # ideally, this should be enough
-    jenv version ${ABCL_JDK}
+    jenv local ${version}
     # but practically we guard every invocation of jenv this way
-    jenv global ${ABCL_JDK}
+    jenv global ${version}
 
     popd
 }
@@ -79,4 +89,7 @@ determine_adoptjdk
 download_and_extract
 add_jdk
 set_jdk
+
+
+
 
