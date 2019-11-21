@@ -1,0 +1,66 @@
+* ABCL Pathname refactoring
+
+##  Use Builder pattern 
+
+Implement setter/getters for internal state.  
+
+Move to the use of Pathname.create() to create new underlying
+pathnames.  Thunk on the need to create either
+
+ | Pathname        | a file                                |
+ | LogicalPathname | a logical pathname                    |
+ | ArchivePathname | an archive containing other pathnames |
+
+Do we need an ArchivePathnameEntry?  "regular" pathnames with a proper
+DEVICE for their containing archive should be sufficient.
+  
+
+
+## Java Object Hierarchy
+
+
+#+BEGIN_SRC n3
+@prefix : "org.armedbear.lisp" .
+<> :in-package "org.armedbear.lisp" .
+
+#PathnameBase -- keep as Pathname for initial refactoring
+Pathname
+  rdfs:subClassOf LispObject ;
+  rdfs:comment "has methods make() and makeFrom() that returns the appropiate subtype."
+LogicalPathname 
+  rdfs:subClassOf Pathname .
+#Pathname 
+#  rdfs:subClassOf AbstractPathname .
+PathnameURI 
+  rdfs:subClassOf Pathname .
+PathnameArchive
+  rdfs:subClassOf PathnameURI  .
+PathnameArchiveEntry
+  rdfs:subClassOf PathnameURI  .
+PathnameJarArchive
+  rdfs:subClassOf PathnameArchive  .
+PathnameFile
+  rdfs:subClassOf PathnameURI  .
+#+END_SRC
+
+
+#+BEGIN_SRC n3
+@prefix protocol: "org.armedbear.lisp.protocol" .
+
+Pathname rdfs:comment "Encapsultes
+
+#+END_SRC
+
+
+* Historical
+
+** Archived <2019-11-12 Tue> Working through mq 
+
+
+| patch                      | Contents                                       | status  | notes |
+|----------------------------+------------------------------------------------+---------+-------|
+| pathname-refactor.diff     | getter/setter; object hierarchy skeleton       | Removed |       |
+| refactor-pathname.diff     | getter/setter                                  | removed |       |
+| abcl-asdf-mvn-version.diff | previous work subsumed via abcl-1.5.0          | removed |       |
+| abstract-pathname.diff     | Have AbstractPathname rdfs:subClassOf Pathname | removed |       |
+| build-version.diff         | problems with abcl.version ant target          | removed |       |

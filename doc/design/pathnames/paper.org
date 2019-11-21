@@ -1,0 +1,43 @@
+* "Write a paper on the ABCL Pathname implementation"
+
+** Needs within ABCL
+
+*** Pathname refactoring
+"vaguely", I want to replace org.lisp.armedbear.Pathname with some
+sort of abstraction that allows easier maintainence and understanding of the code.
+
+cl:logical-pathname a cl:pathname
+
+ext:uri-pathname a cl:pathname
+
+ext:jar-pathname a ext:uri-pathname
+
+We naively begin by attempting to outline reasons one can't replace with an interface.
+
+**** constructors
+
+#+BEGIN_SRC java
+     new Pathname(namestring)
+#+#END_SRC
+
+#+BEGIN_SRC java
+    Pathname Pathname.create(namestring)
+#+END_SRC
+
+Use Builder or Factory?
+<http://stackoverflow.com/questions/757743/what-is-the-difference-between-builder-design-pattern-and-factory-design-pattern>
+
+Try Builder so we can do stuff like
+
+#+BEGIN_SRC java
+      Pathname result = new PathnameBuilder()
+        .setDirectory("/foo/bar/")
+        .setName("baz")
+        .setType("bat").build();
+
+
+**** Encapsulate fields with getter/setters
+
+**** TODO cache result of calling Namestring
+
+
