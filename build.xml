@@ -773,6 +773,10 @@ will compile (if necessary) and load JSS.
 
       <include name="etc/ant/*.xml"/>
 
+      <include name="doc/**/*"/>
+
+      <!-- FIXME:  currently necessary to build from our source archives -->
+      <include name="nbproject/**/*"/>
     </patternset>
 
     <!-- TODO merge with artifacts from 'abcl.stage' -->
