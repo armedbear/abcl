@@ -16,15 +16,16 @@
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.6.0#release> ;           
+  dc:identifier         <urn:abcl.org/1.6.1#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
   dc:modified          "22-NOV-2019" ;
-  dc:version           "abcl-1.6.0" ;
-  dc:release           "release" ;
+  dc:version           "abcl-1.6.1" ;
+  dc:release           "dev" ;
   abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
-  abcl:svn             <http://abcl.org/trac/changeset/15185> . # UPDATE
+
+  abcl:svn                 <https://abcl.org/trac/changeset/15198> . # releng UPDATE
  
 <> 
   rdfs:seeAlso <file:README> ;
@@ -115,6 +116,7 @@ doap:Project rdfs:seeAlso [
      rdf:_8 <http://abcl.org/releases/1.3.3/abcl-1.3.3.jar> ;
      rdf:_9 <http://abcl.org/releases/1.4.0/abcl-1.4.0.jar> ;
      rdf:_10 <http://abcl.org/releases/1.5.0/abcl-1.5.0.jar> ;
+     rdf:_10 <http://abcl.org/releases/1.6.0/abcl-1.6.0.jar> ;
   ] ;
 ] .
 
