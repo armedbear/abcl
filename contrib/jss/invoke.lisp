@@ -122,11 +122,11 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defvar *do-auto-imports* t 
-    "Whether to automatically introspect all Java classes on the classpath when JSS is loaded."))
-
-(defvar *muffle-warnings* t)
-
-(defvar *imports-resolved-classes* (make-hash-table :test 'equalp))
+    "Whether to automatically introspect all Java classes on the classpath when JSS is loaded.")
+  (defvar *muffle-warnings* t
+    "Attempt to make JSS less chatting about how things are going.")
+  (defvar *imports-resolved-classes* (make-hash-table :test 'equalp)
+    "Hashtable of all resolved imports by the current process."))
 
 (defun find-java-class (name)
   "Returns the java.lang.Class representation of NAME.

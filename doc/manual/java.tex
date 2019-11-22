@@ -172,7 +172,7 @@ Returns the length of a Java primitive array.
 --- Function: \textbf{jarray-ref} [\textbf{java}] \textit{java-array \&rest indices}
 
 \begin{adjustwidth}{5em}{5em}
-Dereferences the Java array JAVA-ARRAY using the given INDICIES, coercing the result into a Lisp object, if possible.
+Dereferences the Java array JAVA-ARRAY using the given INDICES, coercing the result into a Lisp object, if possible.
 \end{adjustwidth}
 
 \paragraph{}
@@ -181,7 +181,7 @@ Dereferences the Java array JAVA-ARRAY using the given INDICIES, coercing the re
 --- Function: \textbf{jarray-ref-raw} [\textbf{java}] \textit{java-array \&rest indices}
 
 \begin{adjustwidth}{5em}{5em}
-Dereference the Java array JAVA-ARRAY using the given INDICIES. Does not attempt to coerce the result into a Lisp object.
+Dereference the Java array JAVA-ARRAY using the given INDICES. Does not attempt to coerce the result into a Lisp object.
 \end{adjustwidth}
 
 \paragraph{}
@@ -190,7 +190,7 @@ Dereference the Java array JAVA-ARRAY using the given INDICIES. Does not attempt
 --- Function: \textbf{jarray-set} [\textbf{java}] \textit{java-array new-value \&rest indices}
 
 \begin{adjustwidth}{5em}{5em}
-Stores NEW-VALUE at the given index in JAVA-ARRAY.
+Stores NEW-VALUE at the given INDICES in JAVA-ARRAY.
 \end{adjustwidth}
 
 \paragraph{}
@@ -217,8 +217,7 @@ not-documented
 --- Function: \textbf{java-exception-cause} [\textbf{java}] \textit{java-exception}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the cause of JAVA-EXCEPTION. (The cause is the Java Throwable
-  object that caused JAVA-EXCEPTION to be signalled.)
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
