@@ -147,7 +147,8 @@ be in a directory named '../ansi-test/'."
                         ((:file "wrapper")))))
 (defsystem abcl/documentation
   :description "Tools to generate LaTeX source from docstrings."
-  :depends-on (swank)
+  :depends-on (swank
+               jss) ;; provided by abcl-contrib
   :components
   ((:module package
             :pathname "doc/manual/" :components ((:file "package")))

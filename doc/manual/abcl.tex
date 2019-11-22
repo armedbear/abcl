@@ -9,15 +9,29 @@
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.6.0-dev\\
+\date{Version 1.6.0\\
 \smallskip
-June 2017}
+November 2019}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
 \maketitle
 
 \tableofcontents
+%%Preface to the Seventh edition, abcl-1.6.0
+\subsection{Preface to the Seventh Edition}
+
+Long overdue, we turn our Java to 11.
+
+Reflecting the management's best estimates as to implementation most
+easily available to the potential \textsc{ABCL} 1.6 User, the
+implementation for this edition works best with Java 8 or Java 11
+runtimes.  Since freely available implementations of jdk6 and jdk7
+exist, we still strive to maintain compatibility with the Java 6 and
+Java 7 runtime environments but those environments are less tested.
+The User may need to use the facilities of the ABCL-BUILD contrib to
+recompile the implementation locally in more exotic runtimes.
+
 %%Preface to the Sixth edition, abcl-1.5.0
 \subsection{Preface to the Sixth Edition}
 
@@ -35,7 +49,7 @@ Java 6, Java 7 and Java 8 runtimes.
 %%Preface to the Fifth edition, abcl-1.4.0
 \subsection{Preface to the Fifth Edition}
 
-\textsc{ABCL} 1.4 consolidates eighteen months of production bugfixes,
+\textsc{ABCL} 1.4 consolidates eighteen months of production bug-fixes,
 and substantially improves the support for invoking external
 processes via \code{SYS:RUN-PROGRAM}.
 
@@ -63,10 +77,10 @@ test suite.
 Armed Bear Common Lisp (\textsc{ABCL}) is an implementation of
 \textsc{Common Lisp} that runs on the Java Virtual Machine
 (\textsc{JVM}).  \textsc{ABCL} compiles \textsc{Common Lisp} to
-\textsc{Java} bytecode\footnote{The class file version is ``49.0''.},
-with an efficiency that varies on the hosting JVM implementation.
-\textsc{ABCL} supports running on the Java 6, Java 7, and Java 8
-\textsc{JVM} implementations.
+\textsc{Java} byte-code\footnote{The class file version is ``49.0''.},
+with an efficiency that varies upon the hosting JVM implementation.
+\textsc{ABCL} supports running on the Java 6, Java 7, Java 8, and Java
+11 \textsc{JVM} implementations.
 
 Armed Bear provides the following integration methods for interfacing
 with Java code and libraries:
@@ -162,7 +176,7 @@ contemporary Common Lisp.
 \textsc{ABCL} is licensed under the terms of the \textsc{GPL} v2 of
 June 1991 with an added ``classpath-exception'' clause (see the file
 \texttt{COPYING} in the source distribution\footnote{See
-  \url{http://abcl.org/svn/trunk/tags/1.5.0/COPYING}} for the license,
+  \url{http://abcl.org/svn/trunk/tags/1.6.0/COPYING}} for the license,
 term 13 in the same file for the classpath exception).  This license
 broadly means that you must distribute the sources to \textsc{ABCL},
 including any changes you make, together with a program that includes
@@ -188,7 +202,7 @@ course.
 
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-\texttt{abcl.jar} or possibly something like \texttt{abcl-1.5.0.jar} if
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.6.0.jar} if
 using a versioned package on the local filesystem from your system
 vendor.  This jar file can be executed from the command line to obtain a
 \textsc{REPL}\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
@@ -223,14 +237,15 @@ ABCL supports the following command line options:
 \index{Command Line Options}
 
 \begin{description}
-\item[\texttt{  --help}] displays a help message.
-\item[\texttt{  --noinform}] Suppresses the printing of startup information and banner.
-\item[\texttt{  --noinit}] suppresses the loading of the \verb+~/.abclrc+ startup file.
-\item[\texttt{  --nosystem}] suppresses loading the \texttt{system.lisp} customization file. 
-\item[\texttt{  --eval FORM}] evaluates FORM before initializing the REPL.
-\item[\texttt{  --load FILE}] loads the file FILE before initializing the REPL.
-\item[\texttt{  --load-system-file FILE}] loads the system file FILE before initializing the REPL.
-\item[\texttt{  --batch}] evaluates forms specified by arguments and in
+  % FIXME move this fuggliness to our macros.  sigh. 
+\item \code{\textendash\textendash help} displays a help message.
+\item \code{\textendash\textendash noinform} Suppresses the printing of startup information and banner.
+\item \code{\textendash\textendash noinit} suppresses the loading of the \verb+~/.abclrc+ startup file.
+\item \code{\textendash\textendash nosystem} suppresses loading the \texttt{system.lisp} customization file. 
+\item \code{\textendash\textendash eval FORM} evaluates FORM before initializing the REPL.
+\item \code{\textendash\textendash load FILE} loads the file FILE before initializing the REPL.
+\item \code{\textendash\textendash load-system-file FILE} loads the system file FILE before initializing the REPL.
+\item \code{\textendash\textendash batch} evaluates forms specified by arguments and in
   the initialization file \verb+~/.abclrc+, and then exits without
   starting a \textsc{REPL}.
 \end{description}
@@ -241,9 +256,10 @@ variable \code{EXT:*COMMAND-LINE-ARGUMENT-LIST*} from within ABCL.
 
 \section{Initialization}
 
-If the \textsc{ABCL} process is started without the \code{--noinit}
-flag, it attempts to load a file named \code{.abclrc} in the user's home
-directory and then interpret its contents.
+If the \textsc{ABCL} process is started without the
+\code{\textendash\textendash noinit} flag, it attempts to load a file
+named \code{.abclrc} in the user's home directory and then interpret
+its contents.
 
 The user's home directory is determined by the value of the JVM system
 property \texttt{user.home}.  This value may or may not correspond
@@ -273,7 +289,7 @@ of Java objects, manipulation of instance and static fields on Java
 objects, and construction of new Java objects.
 
 When calling Java routines, some values will automatically be
-converted by the FFI\footnote{Foreign Function Interface, is the term
+converted by the FFI\footnote{Foreign Function Interface is the term
   of art for the part of a \textsc{Lisp} implementation which implements
   calling code written in other languages, typically normalized to the
   local C compiler calling conventions.}  from \textsc{Lisp} values to Java
@@ -290,7 +306,7 @@ FFI functions and are recognizable by their name ending with
 
 This subsection covers the low-level API available after evaluating
 \code{(require :java)}.  A higher level \textsc{Java} API, developed by Alan
-Ruttenberg, is available in the \code{contrib/} directory and described
+Ruttenberg, is available in the \code{contrib/jss} directory and described
 later in this document, see Section~\ref{section:jss} on page
 \pageref{section:jss}.
 
@@ -915,7 +931,7 @@ enabling the compiler to signal all warnings.
 We implement an extension to the \code{CL:PATHNAME} that allows for
 the description and retrieval of resources named in a
 \textsc{URI} \footnote{A \textsc{URI} is essentially a superset of
-  what is commonly understood as a \textsc{URL} We sometime suse the
+  what is commonly understood as a \textsc{URL} We sometimes use the
   term URL as shorthand in describing the URL Pathnames, even though
   the corresponding encoding is more akin to a URI as described in
   RFC3986 \cite{rfc3986}.}  scheme that the \textsc{JVM}
@@ -1251,7 +1267,7 @@ classloader as an optional third argument.
 
 We implement a special hexadecimal escape sequence for specifying 32
 bit characters to the Lisp reader\footnote{This represents a
-  compromise with contemporary in 2011 32bit hosting architecures for
+  compromise with contemporary in 2011 32bit hosting architectures for
   which we wish to make text processing efficient.  Should the User
   require more control over \textsc{UNICODE} processing we recommend Edi Weisz'
   excellent work with \textsc|{FLEXI-STREAMS}  which we fully support}, namely we
@@ -1297,7 +1313,7 @@ semantics to the execution of \code{REQUIRE} on the following symbols:
       :cl-ppcre)}.
 
   \item{\code{ABCL-CONTRIB}} 
-    Locates and pushes the toplevel contents of
+    Locates and pushes the top-level contents of
     ``abcl-contrib.jar'' into the \textsc{ASDF} central registry.  
 
     \begin{enumerate}
@@ -1313,15 +1329,15 @@ semantics to the execution of \code{REQUIRE} on the following symbols:
         the distributed pom.xml graph of Maven Aether:
         \begin{enumerate}
           \item \code{jna} 
-            Dynamically load 'jna.jar' version 4.2.2
+            Dynamically load 'jna.jar' version 5.5.0
             from the network \footnote{This loading can be inhibited
               if, at runtime, the Java class corresponding
-              ``:classname'' clause of the system defition is present.}
+              ``:classname'' clause of the system definition is present.}
         \end{enumerate}
       \item \code{quicklisp-abcl} Boot a local Quicklisp installation
         via the ASDF:IRI type introduced via ABCL-ASDF.
 
-      \item \code{jfli} A descendent of Rich Hickey's pre-Clojure work
+      \item \code{jfli} A descendant of Rich Hickey's pre-Clojure work
         on the JVM.
       \item \code{jss} Introduces dynamic inspection of present
         symbols via the \code{SHARPSIGN-QUOTATION\_MARK} macros as Java Syntax
@@ -1344,14 +1360,14 @@ can successful resolve the symbol.
 
 \section{JSS extension of the Reader by SHARPSIGN-DOUBLE-QUOTE}
 
-The JSS contrib consitutes an additional, optional extension to the
+The JSS contrib constitutes an additional, optional extension to the
 reader in the definition of the \code{SHARPSIGN-DOUBLE-QUOTE}
 (``\#\"'') reader macro.  See section \ref{section:jss} on page
 \pageref{section:jss} for more information.
 
 \section{ASDF}
 
-asdf-3.2.2 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
+asdf-3.3.3 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
 but not initialized by default, as it relies on the \textsc{CLOS} subsystem
 which can take a bit of time to start \footnote{While this time is
   ``merely'' on the order of seconds for contemporary 2011 machines,
@@ -1368,8 +1384,8 @@ CL-USER> (require :asdf)
 
 The \textsc{ABCL} contrib is packaged as a separate jar archive usually named
 \code{abcl-contrib.jar} or possibly something like
-\code{abcl-contrib-1.5.0.jar}.  The contrib jar is not loaded by the
-implementation by default, and must be first intialized by the
+\code{abcl-contrib-1.6.0.jar}.  The contrib jar is not loaded by the
+implementation by default, and must be first initialized by the
 \code{REQUIRE} mechanism before using any specific contrib:
 
 \begin{listing-lisp}
@@ -1457,7 +1473,7 @@ Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
 More extensive documentations and examples can be found at
-\url{http://abcl.org/svn/tags/1.5.0/contrib/abcl-asdf/README.markdown}.
+\url{http://abcl.org/svn/tags/1.6.0/contrib/abcl-asdf/README.markdown}.
 
 \section{asdf-jar}
 
@@ -1468,7 +1484,7 @@ this package will recursively package all the required source and
 fasls in a jar archive.
 
 The documentation for this contrib can be found at
-\url{http://abcl.org/svn/tags/1.5.0/contrib/asdf-jar/README.markdown}.
+\url{http://abcl.org/svn/tags/1.6.0/contrib/asdf-jar/README.markdown}.
 
 \section{jss}
 \label{section:jss}
@@ -1503,20 +1519,20 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp} %$ <-- un-confuse Emacs font-lock
 
 Some more information on jss can be found in its documentation at
-\url{http://abcl.org/svn/tags/1.5.0/contrib/jss/README.markdown}
+\url{http://abcl.org/svn/tags/1.6.0/contrib/jss/README.markdown}
 
 \section{jfli}
 \label{section:jfli}
 
 The contrib contains a pure-Java version of JFLI. 
 
-\url{http://abcl.org/svn/tags/1.5.0/contrib/jfli/README}.
+\url{http://abcl.org/svn/tags/1.6.0/contrib/jfli/README}.
 
 \section{abcl-introspect}
 
 \textsc{ABCL-INTROSPECT} offers more extensive systems for inspecting the state
 of the implementation, most notably in integration with SLIME, where
-the backtrace mechanism is augmented to the poiont that local
+the backtrace mechanism is augmented to the point that local
 variables are inspectable.
 
 A compiled function is an instance of a class - This class has
@@ -1555,7 +1571,7 @@ to to take them into account as they are discovered.
 ABCL-INTROSPECT does not depend on jss, but provides a bit of
 jss-specific functionality if jss *is* loaded.
 
-\url{http://abcl.org/svn/tags/1.5.0/contrib/abcl-introspect/}.
+\url{http://abcl.org/svn/tags/1.6.0/contrib/abcl-introspect/}.
 
 \section{abcl-build}
 
@@ -1572,16 +1588,16 @@ for system construction, namely
 \item The ability to introspect the invocation of given executable in
   the current implementation process PATH.
 
-\item Downloading and unpackages selected JVM artifacts, namely the
+\item Downloading and unpackaging selected JVM artifacts, namely the
   Ant and Maven build tools.  The \code{ABCL-BUILD:WITH-ANT} and
   \code{ABCL-BUILD:WITH-MVN} macros abstracts this installation
   procedure conveniently away from the User.
 
-\item The beginings of a generic framework to download arbitrary
+\item The beginnings of a generic framework to download arbitrary
     archives from the network.
 \end{itemize}
 
-\url{http://abcl.org/svn/tags/1.5.0/contrib/abcl-build/}.
+\url{http://abcl.org/svn/tags/1.6.0/contrib/abcl-build/}.
 
 \section{named-readtables}
 
@@ -1589,14 +1605,14 @@ for system construction, namely
 readtables akin to the already-existing namespace of packages.
 
 \url{https://github.com/melisgl/named-readtables/}.
-\url{http://abcl.org/svn/tags/1.5.0/contrib/named-readtables/}.
+\url{http://abcl.org/svn/tags/1.6.0/contrib/named-readtables/}.
 
 \chapter{History}
 \index{History}
 
 \textsc{ABCL} was originally the extension language for the J editor, which was
 started in 1998 by Peter Graves.  Sometime in 2003, a whole lot of
-code that had previously not been released publically was suddenly
+code that had previously not been released publicly was suddenly
 committed that enabled ABCL to be plausibly termed an emergent ANSI
 Common Lisp implementation candidate.
 
@@ -1610,19 +1626,19 @@ contemporary Common Lisp implementation.
 
 On October 22, 2011, with the publication of this Manual explicitly
 stating the conformance of Armed Bear Common Lisp to \textsc{ANSI}, we
-released abcl-1.0.0.  We released abcl-1.0.1 as a maintainence release
+released abcl-1.0.0.  We released abcl-1.0.1 as a maintenance release
 on January 10, 2012.
 
 In December 2012, we revised the implementation by adding
 \textsc{(A)MOP} with the release of abcl-1.1.0.  We released
-abcl-1.1.1 as a maintainence release on Feburary 14, 2013.
+abcl-1.1.1 as a maintenance release on February 14, 2013.
 
 At the beginning of June 2013, we enhanced the stability of the
 implementation with the release of abcl-1.2.1.
 
 In March 2014, we introduced the Fourth Edition of the implementation
 with abcl-1.3.0.  At the end of April 2014, we released abcl-1.3.1 as
-a maintainence release.
+a maintenance release.
 
 In October 2016 we blessed the current \textsc{svn} trunk
 \url{http://abcl.org/svn/trunk/} as 1.4.0, which includes the
@@ -1634,8 +1650,11 @@ bridges to the source repository at
 requests for enhancements to the implementation many be more easily
 facilitated.
 
-In June 2017, we released ABCL 1.5.0 which dropped support for running
+In June 2017, we released ABCL 1.6.0 which dropped support for running
 upon Java 5.
+
+Against the falling canvas of 2019 we released ABCL 1.6.0 which
+provided compatibility with Java 11 while skipping Java 9 and 10.
 
 \appendix 
 
