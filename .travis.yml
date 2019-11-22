@@ -35,6 +35,7 @@ install:
 script:
   - ${TRAVIS_BUILD_DIR}/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-cffi.lisp
   - ${TRAVIS_BUILD_DIR}/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-cl+ssl.lisp
+  - ${TRAVIS_BUILD_DIR}/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-abcl.lisp
   - ${TRAVIS_BUILD_DIR}/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-ansi.lisp
 
   
