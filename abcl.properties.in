@@ -8,6 +8,12 @@
 # Attempt to perform incremental compilation? 
 abcl.build.incremental=true
 
+## javac compiler options for ABCL build
+# generate class files for this target JVM
+abcl.javac.target=1.8
+# specify Java source compatiblity level
+abcl.javac.source=1.6
+
 # Additional site specific startup code to be merged in 'system.lisp' at build time
 #abcl.startup.file=${basedir}/startup.lisp
 
