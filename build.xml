@@ -193,15 +193,20 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       </echo>
     </target>
 
+    <!-- For compiling beyond openjdk11, one needs to increment these values in <file:abcl.properties> -->
+    <property name="abcl.javac.target"
+              value="1.6"/>
+    <property name="abcl.javac.source"
+              value="1.6"/>
+
     <target name="abcl.compile.java" 
             depends="abcl.init,abcl.java.warning">
       <mkdir dir="${build.dir}"/>
       <mkdir dir="${build.classes.dir}"/>
-      <!-- Stock build for Java 1.6 (aka Java 2) container -->
       <javac destdir="${build.classes.dir}"
              debug="true"
-             target="1.6"
-             source="1.6"
+             target="${abcl.javac.target}"
+             source="${abcl.javac.source}"
              includeantruntime="false"
              failonerror="true">
         <src path="${src.dir}"/>
