@@ -49,10 +49,10 @@ With [Docker Engine][] installed one may execute:
     docker build -t YOURID/abcl .
     docker run -it YOURID/abcl
 
-to get
+to get something like
 
     illin:~/work/abcl$ docker run -it YOURID/abcl
-    Armed Bear Common Lisp 1.6.0-dev
+    Armed Bear Common Lisp 1.6.0
     Java 1.8.0_111 Oracle Corporation
     OpenJDK 64-Bit Server VM
     Low-level initialization completed in 0.295 seconds.
@@ -87,15 +87,14 @@ To start ABCL, simply issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.6.0                                                                                   
-    Java 1.8.0_232 AdoptOpenJDK                                                                                        
-    OpenJDK 64-Bit Server VM                                                                                           
-    Low-level initialization completed in 0.356 seconds.                                                               
-    Startup completed in 2.055 seconds.                                                                                
-    Loading /home/evenson_not_org/.abclrc completed in 13.669 seconds.                                                 
-    Type ":help" for a list of available commands.                                                                     
+    Armed Bear Common Lisp 1.6.0
+    Java 1.8.0_232 AdoptOpenJDK
+    OpenJDK 64-Bit Server VM
+    Low-level initialization completed in 0.356 seconds.
+    Startup completed in 2.055 seconds.
+    Loading /home/evenson_not_org/.abclrc completed in 13.669 seconds.
+    Type ":help" for a list of available commands.
     CL-USER(1):
-
 
 Yer now at the interactive ABCL "Read Eval Print Loop" (REPL): hacks
 'n glory await.
@@ -219,6 +218,3 @@ On behalf of all ABCL development team and contributors,
     dmiles
 
 November 2019
-
-
-
