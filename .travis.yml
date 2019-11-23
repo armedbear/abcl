@@ -1,16 +1,29 @@
-# get the default java environment from Travis container
-language: java
-
 os:
   - linux
   - osx
 
 # Linux system
-dist: xenial
+# 'bionic' is latest Ubuntu LTS available on Travis
+dist: bionic
 
 # macOS system
 # 'xcode11.2' is macOS 10.14 xcode 11B41
 osx_image: xcode11.2
+
+# get the default java environment from Travis container
+language: java
+
+# N.b. this will possibly pull in additional Java runtimes
+addons:
+  apt:
+    packages:
+      - ant
+      - maven
+  homebrew:
+    update: true
+    packages:
+      - ant
+      - maven
 
 env:
   - ABCL_JDK=openjdk8

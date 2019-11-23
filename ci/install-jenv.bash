@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 target=~/.jenv
 
@@ -11,6 +12,8 @@ profile=~/.bash_profile
 echo 'export PATH="$HOME/.jenv/bin:$PATH"' >> ${profile}
 echo 'eval "$(jenv init -)"' >> ${profile}
 . ${profile}
+
+. ${DIR}/ensure-jenv-is-present.bash
 
 jenv enable-plugin ant
 jenv enable-plugin maven

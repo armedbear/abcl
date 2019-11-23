@@ -40,7 +40,6 @@ function determine_adoptjdk() {
     esac
 }
 
-
 tmpdir=/var/tmp
 
 function download_and_extract() {
@@ -65,6 +64,7 @@ function add_jdk() {
 }
 
 function set_jdk() {
+    . ${DIR}/ensure-jenv-is-present.bash
     jenv versions
 
     case ${ABCL_JDK} in
