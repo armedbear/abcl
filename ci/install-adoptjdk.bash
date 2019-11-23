@@ -69,9 +69,12 @@ function add_jdk() {
 determine_adoptjdk
 download_and_extract
 add_jdk
-jenv
 
 . ${DIR}/set_jdk.bash
+
+jenv doctor
+
+
 
 
 
