@@ -16,15 +16,16 @@
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.6.0#dev> ;           
+  dc:identifier         <urn:abcl.org/1.6.1#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "01-NOV-2019" ;
-  dc:version           "abcl-1.6.0" ;
+  dc:modified          "22-NOV-2019" ;
+  dc:version           "abcl-1.6.1" ;
   dc:release           "dev" ;
   abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
-  abcl:svn             <http://abcl.org/trac/changeset/15075> . # UPDATE
+
+  abcl:svn                 <https://abcl.org/trac/changeset/15198> . # releng UPDATE
  
 <> 
   rdfs:seeAlso <file:README> ;
@@ -91,15 +92,15 @@ _:user dc:identifier <http://ville.not.org/#me>  ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2> ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
      dc:licenseDocument 
-       <http://abcl.org/svn/tags/1.5.0/src/org/armedbear/COPYING> ;
+       <http://abcl.org/svn/tags/1.6.0/src/org/armedbear/COPYING> ;
 ] .
 
 doap:Project rdfs:seeAlso [
   a rdf:Bag;
-  rdf:_0 <http://abcl.org/releases/1.5.0/abcl-1.5.0.jar> ;
+  rdf:_0 <http://abcl.org/releases/1.6.0/abcl-1.6.0.jar> ;
   rdf:_1 <http://abcl.org/trac/timeline> ;
   rdf:_2 <http://abcl.org/trac/wiki> ;
-  rdf:_4 <https://github.com/easye/abcl/> ;
+  rdf:_4 <https://github.com/armedbear/abcl/> ;
   rdf:_5 <https://gitlab.common-lisp.net/abcl/abcl/> ;
   dc:source   abcl:tag ;
   dc:Software [ 
@@ -114,6 +115,8 @@ doap:Project rdfs:seeAlso [
      rdf:_7 <http://abcl.org/releases/1.3.2/abcl-1.3.2.jar> ;
      rdf:_8 <http://abcl.org/releases/1.3.3/abcl-1.3.3.jar> ;
      rdf:_9 <http://abcl.org/releases/1.4.0/abcl-1.4.0.jar> ;
+     rdf:_10 <http://abcl.org/releases/1.5.0/abcl-1.5.0.jar> ;
+     rdf:_10 <http://abcl.org/releases/1.6.0/abcl-1.6.0.jar> ;
   ] ;
 ] .
 
@@ -171,4 +174,26 @@ abcl:jfli
 abcl:jss
   rdfs:seeAlso <file:contrib/jss/README.markdown> .                             
 
+@prefix java:            <https://rdf.not.org/java#> .
 
+[abcl:run _:supported]
+  a rdf:Bag ;
+  rdf:_6   java:6 ;
+  rdf:_7   java:7 ;
+  rdf:_8   java:8 ;
+  rdf:_11  java:11 ;
+
+rdfs:comment """
+Compatible Java runtimes.
+""" .
+
+[abcl:build _:supported]
+  a rdf:Bag ;
+  rdf:_8   java:8 ;
+  rdf:_11  java:11 ;
+
+rdfs:comment """
+Platforms on which building is most supported.  
+""" .
+
+  

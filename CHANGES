@@ -1,16 +1,115 @@
+Version 1.6.1
+=============
+unreleased
+
 Version 1.6.0
 =============
-<http://abcl.org/svn/trunk/>
-<http://gitlab.common-lisp.net/abcl/abcl/>
+November 22, 2019
+
 <http://github.com/armedbear/abcl/>
+<http://gitlab.common-lisp.net/abcl/abcl/>
+<http://abcl.org/svn/trunk/>
 
-Unreleased
+Compatiblity
+------------
 
+ABCL 1.6.0 supports building and running on openjdk6, openjdk7,
+openjdk8, and openjdk11.
+
+Enhancements
+-----------
+
+* [r15085] Add a restart for generics defined over functions or macros
+  when arguments don't match (Alan).
+
+* [r15086] jss: Disambiguate java class lookup in dynamic scope
+  (Alan).
+
+* [r15087] jss: Optimizations for jss field accessors (Alan).
+
+* [r15089] [r15090] jss: JSS:TO-HASHSET converts java.util.List
+  references to java.util.Hashset (Alan).
+
+* [r15091] jss: Improve JSS:J2LIST, add JSS:JMAP (Olof).
+
+* [r15092] Make JVM class names more intelligible (Olof).
+
+* [r15093] abcl-asdf: Support multiple Maven repositories (Olof).
+
+* [r15101] [r15102] [r15103] abcl-asdf: add test cases for multiple
+  repositories (Olof).
+
+* [r15095] Define undefined conditions and handler functions following
+  error-fun='error pattern (Alan).
+
+* [r15105] jss: make use of warning muffling (Olof).
+
+* [r15133] [r15134] Support building and running in openjdk11.
+
+* [r15142] Signal better error for out-of-bounds CL:REPLACE (Olof).
+
+* [r15148] docker: use the now standardized openjdk8 container,
+  install ant and maven dependencies.
+
+Fixes
+-----
+
+* [r15096] Fix and check array types for JSS:JMAP/J2LIST (Olof).
+
+* [r15097] abcl-asdf: compatiblity with maven-3.5.0.
+
+* [r15099] Export the JVM:*RESIGNAL-COMPILER-WARNINGS* interface.
+
+* [r15100] Fix ASDF usage of MVN module (Olof).
+
+* [r15107] Fix translate-directory-components-aux: throw takes 2
+  arguments (metawilm).
+
+* [r15114] Intern SYSTEM:AVAILABLE-ENCODINGS symbols (Robert Dodier).
+
+* [r15115] abcl-asdf: fix ABCL-ASDF:MVN-MODULE collect request (Alan).
+
+* [r15116] Fix CL:PRINT-OBJECT of null pointer (Alan).
+
+* [r15117] The compiled version of JSS:INVOKE-RESTARGS was evaluating
+  the first argument twice (Alan).
+
+* [r15118] abcl-asdf: stop complaining about not loading a file named
+  the module name (Alan).
+
+* [r15120] Don't evaluate format control string in ReaderError (Javier
+  Olaechea).
+
+* [r15124] Fix monetary floating-point formatted output (Scott
+  Burson).
+
+* [r15125] Stackframe head edge case fix (Alan).
+
+* [r15137] Fix ANSI-TESTS GENSYM.ERROR.10 and GENSYM.ERROR.11 (Douglas
+    Miles).
+
+* [r15138] Fix ANSI-TEST MAKE-CONCATENATED-STREAM.30 failure (Douglas
+    Miles).
+
+* [r15139] Fix ANSI-TESTS FILE-POSITION.10 (Douglas Miles).
+
+* [r15141] compiler: fix stack inconsistency errors
+  (somewhat-functional-programmer).
+
+* [r15143] Check for element type before filling vectors (Olof).
+
+* [r15144] Fix high start index for CL:SUBSEQ (Olof).
+
+* [r15146] JSS read sharp expression bugfixes (Alan).
+
+* [r15149] jss: explicitly scope JSS:TO-HASHSET.
 
 Updates
 -------
 
-* ASDF 3.2.2
+* ASDF 3.3.3
+
+* JNA 5.5.0
 
 
 Version 1.5.0

@@ -3,7 +3,7 @@ ABCL-INTROSPECT
 
 ABCL-INTROSPECT offers more extensive systems for inspecting the state
 of the implementation, most notably in integration with SLIME, where
-the backtrace mechanism is augmented to the poiont that local
+the back-trace mechanism is augmented to the point that local
 variables are inspectable.
 
 See <https://github.com/easye/slime/tree/evenson-merge-20170529a> for

@@ -18,7 +18,7 @@ License with a classpath exception (see "Classpath Exception" below).
 A copy of GNU General Public License (GPLv2) is included in this
 distribution, in <file:COPYING>.
 
-We have modfied our GPLv2 license section 13 to read:
+We have modified our GPLv2 license section 13 to read:
 
      13. Linking this library statically or dynamically with other
      modules is making a combined work based on this library. Thus, the
@@ -46,12 +46,13 @@ RUNNING FROM DOCKER
 
 With [Docker Engine][] installed one may execute:
 
-    docker run -it easye/abcl
+    docker build -t YOURID/abcl .
+    docker run -it YOURID/abcl
 
-to get
+to get something like
 
-    illin:~/work/abcl$ docker run -it easye/abcl
-    Armed Bear Common Lisp 1.6.0-dev
+    illin:~/work/abcl$ docker run -it YOURID/abcl
+    Armed Bear Common Lisp 1.6.0
     Java 1.8.0_111 Oracle Corporation
     OpenJDK 64-Bit Server VM
     Low-level initialization completed in 0.295 seconds.
@@ -60,19 +61,10 @@ to get
     CL-USER(1): 23
     23
 
+See <file:Dockerfile> for the build instructions.
 
 [Docker Engine]: https://www.docker.com/products/docker-engine
 
-
-Building a Docker Image With Modifications
-------------------------------------------
-
-Get the source (see below); make yer mods; use the Dockerfile to build.
-
-        docker build -t YOURID/abcl .
-        docker run -it YOURID/abcl 
-
-See <file:Dockerfile> for the build instructions.
 
 
 RUNNING FROM BINARY RELEASE
@@ -82,11 +74,12 @@ After you have downloaded a binary release from either [the
 distributed Maven POM graph][maven-abcl] or from
 [abcl.org][abcl.org-release] archive unpack it into its own
 directory. To run ABCL directly from this directory, make sure Java
-(version 1.6 or up) is in your shell's path.
+(Java 6, 7, 8, and 11 are supported by ABCL 1.6.0) is in your shell's
+path.
 
-[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.5.0>
-[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.5.0>
-[abcl.org-release]:    <http://abcl.org/releases/1.5.0/>
+[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.6.0>
+[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.6.0>
+[abcl.org-release]:    <http://abcl.org/releases/1.6.0/>
 
 To start ABCL, simply issue the following command:
 
@@ -94,16 +87,27 @@ To start ABCL, simply issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.6.0-dev
-    Java 1.8.0_131 Oracle Corporation
-    Java HotSpot(TM) 64-Bit Server VM
-    Low-level initialization completed in 0.324 seconds.
-    Startup completed in 1.892 seconds.
+    Armed Bear Common Lisp 1.6.0
+    Java 1.8.0_232 AdoptOpenJDK
+    OpenJDK 64-Bit Server VM
+    Low-level initialization completed in 0.356 seconds.
+    Startup completed in 2.055 seconds.
+    Loading /home/evenson_not_org/.abclrc completed in 13.669 seconds.
     Type ":help" for a list of available commands.
     CL-USER(1):
 
 Yer now at the interactive ABCL "Read Eval Print Loop" (REPL): hacks
 'n glory await.
+
+SWANK
+-----
+
+One may easily start a swank listener via
+
+    (require :asdf)
+    (require :abcl-contrib)
+    (asdf:load-system :quicklisp-abcl :force t)
+    (ql:quickload :swank)                     
 
 
 BUILDING FROM SOURCE RELEASE
@@ -113,8 +117,8 @@ ABCL may be built from its source code by executing the build
 instructions <file:build.xml> expressed by the venerable Apache Ant
 tool.
 
-To build, one must have a Java 6, 7 or 8 Java Development Kit (JDK)
-installed locally. Just the Java Runtime Environment (JRE) isn't
+To build, one must have a Java 6, 7, 8 or 11 Java Development Kit
+(JDK) installed locally. Just the Java Runtime Environment (JRE) isn't
 enough, as you need the Java compiler ('javac') to compile the Java
 source of the ABCL implementation.
 
@@ -135,8 +139,9 @@ Windows).  Use this wrapper to start ABCL.
 The build may be customized by copying <file:abcl.properties.in> to
 <file:abcl.properties>, which will cause Ant to attempt to build
 incrementally as well as optimizing the runtime for a contemporary
-64bit desktop/server machine running Java 8.  The file may be edited
-for further customization.
+64bit desktop/server machine running Java 8 or 11.  The file contains
+incomplete documentation on how it may be edited for subsequent
+customization.
 
 
 Using NetBeans
@@ -168,9 +173,10 @@ providing a compliant and practical Common Lisp implementation.
 Tests
 -----
 
-ABCL 1.5.0 now fails 48 out of 21708 total tests in the [revised and
-expanded ANSI CL test suite][ansi-test] (derived from the tests
-originally written for GCL).
+ABCL 1.6.0 currently fails 46 out of 21835 total tests, whereas ABCL
+1.5.0 failed 48 out of 21708 total tests in the [revised and expanded
+ANSI CL test suite][ansi-test] (derived from the tests originally
+written for GCL).
 
 [ansi-test]: git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git
 
@@ -211,6 +217,4 @@ On behalf of all ABCL development team and contributors,
     vibhu
     dmiles
 
-June 2017
-
-
+November 2019

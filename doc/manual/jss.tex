@@ -22,7 +22,7 @@ Whether to automatically introspect all Java classes on the classpath when JSS i
 --- Variable: \textbf{*muffle-warnings*} [\textbf{jss}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Attempt to make JSS less chatting about how things are going.
 \end{adjustwidth}
 
 \paragraph{}
@@ -111,7 +111,10 @@ Return the items contained the java.lang.Iterable ITERABLE as a list.
 --- Function: \textbf{j2list} [\textbf{jss}] \textit{thing}
 
 \begin{adjustwidth}{5em}{5em}
-Attempt to construct a Lisp list out of a Java THING
+Attempt to construct a Lisp list out of a Java THING.
+
+THING may be a wide range of Java collection types, their common
+iterators or a Java array.
 \end{adjustwidth}
 
 \paragraph{}
@@ -190,6 +193,21 @@ Convert a LIST implementing java.util.List to a Lisp list.
 \end{adjustwidth}
 
 \paragraph{}
+\label{JSS:JMAP}
+\index{JMAP}
+--- Function: \textbf{jmap} [\textbf{jss}] \textit{function thing}
+
+\begin{adjustwidth}{5em}{5em}
+Call FUNCTION for every element in the THING.  Returns NIL.
+
+THING may be a wide range of Java collection types, their common iterators or
+a Java array.
+
+In case the THING is a map-like object, FUNCTION will be called with two
+arguments, key and value.
+\end{adjustwidth}
+
+\paragraph{}
 \label{JSS:LIST-TO-LIST}
 \index{LIST-TO-LIST}
 --- Function: \textbf{list-to-list} [\textbf{jss}] \textit{list}
@@ -228,6 +246,15 @@ associated is used to look up the static FIELD.
 
 \begin{adjustwidth}{5em}{5em}
 Convert the java.util.Set named in SET to a Lisp list.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JSS:TO-HASHSET}
+\index{TO-HASHSET}
+--- Function: \textbf{to-hashset} [\textbf{jss}] \textit{list}
+
+\begin{adjustwidth}{5em}{5em}
+Convert LIST to the java.util.HashSet contract
 \end{adjustwidth}
 
 \paragraph{}

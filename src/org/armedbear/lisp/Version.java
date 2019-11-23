@@ -41,7 +41,7 @@ public final class Version
 {
   private Version() {}
   
-  static final String baseVersion = "1.6.0-dev";
+  static final String baseVersion = "1.6.1-dev";
   
   static void init() {
     try {
