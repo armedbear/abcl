@@ -5,7 +5,7 @@ function set_jdk() {
     fi
 
     dir=$1
-    if [[ -z $dir ]]; then
+    if [[ -z ${dir} ]]; then
         dir=${TRAVIS_BUILD_DIR}
     fi
 
@@ -23,7 +23,7 @@ function set_jdk() {
     esac
 
     if [[ -z ${version} ]]; then
-        version=${jenv versions | tail -1 | sed s/*//)
+        version=$(jenv versions | tail -1 | sed s/*//)
     fi
 
     if [[ -z ${version} ]]; then
