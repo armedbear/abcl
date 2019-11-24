@@ -63,14 +63,11 @@ function add_jdk() {
     esac
 }
 
-# grab the set_jdk routine
-. set-jdk.bash
-
 determine_adoptjdk
 download_and_extract
 add_jdk
 
-. ${DIR}/set_jdk.bash
+. ${DIR}/set-jdk.bash
 
 jenv doctor
 
