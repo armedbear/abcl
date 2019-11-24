@@ -4,6 +4,9 @@ DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . ${DIR}/install-jenv.bash
 
 jdk=$1
+if [[ -z $jdk ]]; then
+    jdk=openjdk8
+fi
 
 # empty variables are not necessary, but a hint that these are not
 # lexically scoped in their modification.

@@ -1,8 +1,19 @@
 function set_jdk() {
+    abcl_jdk=$1
+    if [[ -z ${abcl_jdk} ]]; then
+        abcl_jdk=openjdk8
+    fi
+
+    dir=$1
+    if [[ -z $dir ]]; then
+        dir=${TRAVIS_BUILD_DIR}
+    fi
+
     . ${DIR}/ensure-jenv-is-present.bash
+
     jenv versions
 
-    case ${ABCL_JDK} in
+    case ${abcl_jdk} in
         openjdk8)
             version=$(jenv versions | grep openjdk | grep 1.8 | tail -1 | sed s/*//)
             ;;
@@ -15,7 +26,11 @@ function set_jdk() {
         version=${jenv versions | tail -1 | sed s/*//)
     fi
 
-    pushd ${TRAVIS_BUILD_DIR}
+    if [[ -z ${version} ]]; then
+        version=1.8
+    fi
+    
+    pushd ${dir}
 
     jenv local ${version}
     # but practically we guard every invocation of jenv this way
@@ -26,4 +41,4 @@ function set_jdk() {
     popd
 }
 
-set_jdk
+set_jdk ${ABCL_JDK} ${TRAVIS_BUILD_DIR}
