@@ -1,17 +1,29 @@
-# get the default java environment from Travis container
-language: java
-
 os:
   - linux
   - osx
 
 # Linux system
-dist: xenial
+# 'bionic' is latest Ubuntu LTS available on Travis
+dist: bionic
 
 # macOS system
 # 'xcode11.2' is macOS 10.14 xcode 11B41
 osx_image: xcode11.2
 
+# get the default java environment from Travis container
+language: java
+
+# N.b. this will possibly pull in additional Java runtimes
+addons:
+  apt:
+    packages:
+      - ant
+      - maven
+  homebrew:
+    update: true
+    packages:
+      - ant
+      - maven
 env:
   - ABCL_JDK=openjdk8
   - ABCL_JDK=openjdk11
@@ -20,7 +32,7 @@ install:
   - echo $(pwd)
   - bash -x ${TRAVIS_BUILD_DIR}/ci/install-adoptjdk.bash ${ABCL_JDK}
   # Build ABCL
-  - ant abcl
+  - . ${TRAVIS_BUILD_DIR}/ci/ensure-jenv-is-present.bash && ant abcl
   # Configure finding abcl build source via ASDF
   - bash -x ${TRAVIS_BUILD_DIR}/ci/asdf-finds-abcl.bash
   # Install Quicklisp
