@@ -4,7 +4,7 @@ function set_jdk() {
         abcl_jdk=openjdk8
     fi
 
-    dir=$1
+    dir=$2
     if [[ -z ${dir} ]]; then
         dir=${TRAVIS_BUILD_DIR}
     fi
