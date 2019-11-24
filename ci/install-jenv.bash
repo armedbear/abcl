@@ -11,6 +11,7 @@ fi
 
 jenv enable-plugin ant
 jenv enable-plugin maven
+jenv enable-plugin export 
 
 jenv doctor
 

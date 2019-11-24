@@ -24,7 +24,6 @@ addons:
     packages:
       - ant
       - maven
-
 env:
   - ABCL_JDK=openjdk8
   - ABCL_JDK=openjdk11
