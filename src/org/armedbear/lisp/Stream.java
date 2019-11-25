@@ -515,6 +515,7 @@ public class Stream extends StructureObject {
                 return error(new StreamError(this, e));
             }
         }
+        if (!eofError && result == eofValue) return result;
         if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
             return NIL;
         else
@@ -855,7 +856,7 @@ public class Stream extends StructureObject {
         StringBuilder sb = new StringBuilder();
         try 
             {
-		while (true) {
+                while (true) {
                     int ch = _readChar();
                     if (ch < 0)
                         break;
@@ -876,13 +877,13 @@ public class Stream extends StructureObject {
                                                   this));
                         }
                     }
-		}
+                }
             }
         catch (java.io.IOException e)
             {
-		error(new ReaderError("IO error: ",
-				      this));
-		return NIL;
+                error(new ReaderError("IO error: ",
+                                      this));
+                return NIL;
             }
         
         if (suppress)
@@ -2666,19 +2667,19 @@ public class Stream extends StructureObject {
     };
 
     public InputStream getWrappedInputStream() {
-	return in;
+        return in;
     }
 
     public OutputStream getWrappedOutputStream() {
-	return out;
+        return out;
     }
 
     public Writer getWrappedWriter() {
-	return writer;
+        return writer;
     }
 
     public PushbackReader getWrappedReader() {
-	return reader;
+        return reader;
     }
 
 }
