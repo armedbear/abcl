@@ -1,0 +1,113 @@
+#+TITLE: Notes Packaging ABCL for Distribution
+
+
+* abcl-aio
+
+The standard ABCL build process as described in the ~build.xml~ file
+and executed by the Ant build tool results in two artifacts:
+~abcl.jar~ and ~abcl-contrib.jar~.  ~abcl.jar~ contains all the Java
+and Common Lisp code necessary that constitute the ANSI conforming
+implementation runtime. The ~abcl-contrib.jar~ (aka "contrib")
+artifact contains additional Common Lisp-only code that extends the
+implementation in useful manners.  
+
+We create two separate jar artifacts in order to:
+
+1. To place an upper bound of size of ~abcl.jar~ regardless of what we
+   package in ~abcl-contrib.jar~.
+
+2. Clearly mark which parts of the code-base are covered under
+   GPLv2+classpath from those that may have other licensing terms.  By
+   making the loading of "contrib" a dynamic operation, we defer
+   possible infringement to the User who redistributes the resulting
+   jar artifact.  
+
+Users often want to simply package both artifacts in a single jar for
+deployment convenience.  abcl-1.5.0 introduced the build machinery to
+create such an "all-in-one" artifact via the [[https://github.com/armedbear/abcl/blob/master/build.xml#L517][~abcl-aio.jar~]] target.
+Upon invoking the ~abcl-aio.jar~ target
+
+#+begin_src shell
+ant -f build.xml abcl-aio.jar
+#+end_src
+
+the resulting artifact contains both the core implementation and the
+ABCL contrib which may be run as usual via
+#+begin_src shell
+java -jar dist/abcl-aio.jar
+#+end_src
+
+* abcl-jar contrib
+
+The ABCL-JAR contrib provides a mechanism for package ASDF systems and
+their recursive dependencies in a jar archive.  
+
+An example of using this to package the CL-PPCRE system from Quicklisp
+
+#+begin_src lisp
+;; 
+(require :abcl-contrib)
+(require :quicklisp-abcl)
+(ql:quickload :cl-ppcre)
+
+(require :asdf-jar)
+(asdf-jar:package :cl-ppcre)
+#+end_src
+
+results in a jar archive at something like
+~#P"/var/tmp/cl-ppcre-all-2.1.1.jar"~.
+
+This jar archive may be loaded in a version of the implementation via
+
+#+begin_src lisp
+(require :abcl-contrib)
+(require :asdf-jar)
+(setf *load-verbose* t) ;; so we can verify where the load is coming from
+(asdf-jar:add-to-asdf #P"/var/tmp/cl-ppcre-all-2.1.1.jar")
+(asdf:load-system :cl-ppcre)
+#+end_src
+
+=asdf-jar= uses all items declared in the ASDF definitions so it won't
+work well for:
+
+1. An ASDF system which depends on artifacts that are not declared as
+   existing on the file-system via an explicit reference within the
+   ASDF source reference mechanism.
+
+2. Libraries such as CFFI which depend on items to be have been make
+   available via an operating system packaging mechanism.
+
+* Current hack
+
+Ideally, we would like allow the AIO mechanism to include additional
+ASDF systems in the single jar artifact.  
+
+Currently one can hack this together by:
+
+1.  Manually extracting the ~abcl-aio.jar~ artifact to a file-system.
+
+2.  Placing the necessary ASDF systems in the resulting "contrib"
+   directory.
+
+3.  Recreating the single archive from the file-system contents.
+
+* TODO Future directions
+
+Obviously, we could packaging ABCL applications as single archives
+much more convenient.  Rather than mucking around in the Ant build
+system, I would rather that we add the necessary machinery
+=ABCL-BUILD= contrib as it will make customization much easier for
+those who know Common Lisp.
+
+
+
+
+* Colophon
+  #+begin_example
+  Mark <evenson.not.org@gmail.com>
+  Created: <2019-11-25 Mon>
+  Revised: <2019-11-25 Mon 14:07>
+  #+end_example
+
+  
+
