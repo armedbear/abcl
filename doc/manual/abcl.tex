@@ -77,10 +77,11 @@ test suite.
 Armed Bear Common Lisp (\textsc{ABCL}) is an implementation of
 \textsc{Common Lisp} that runs on the Java Virtual Machine
 (\textsc{JVM}).  \textsc{ABCL} compiles \textsc{Common Lisp} to
-\textsc{Java} byte-code\footnote{The class file version is ``49.0''.},
-with an efficiency that varies upon the hosting JVM implementation.
-\textsc{ABCL} supports running on the Java 6, Java 7, Java 8, and Java
-11 \textsc{JVM} implementations.
+\textsc{Java} byte-code\footnote{The class files produced by the
+compiler have a bytecode version of ``49.0''.}, with an efficiency
+that varies upon the hosting JVM implementation.  \textsc{ABCL}
+supports running on the Java 6, Java 7, Java 8, and Java 11
+\textsc{JVM} implementations.
 
 Armed Bear provides the following integration methods for interfacing
 with Java code and libraries:
@@ -910,12 +911,20 @@ implementation, \textsc{ABCL} endeavors to include extensions beyond the ANSI
 specification which are either widely adopted or are especially useful
 in working with the hosting \textsc{JVM}.
 
-\section{Compiler to Java 5 Bytecode}
+\section{Compiler to Java Virtual Machine Bytecode}
 
-The \code{CL:COMPILE-FILE} interface emits a packed fasl format whose
-Pathname has the type  ``abcl''.  These fasls are operating system neutral
-byte archives packaged by the zip compression format which contain
-artifacts whose loading \code{CL:LOAD} understands.
+The \code{CL:COMPILE-FILE} interface emits a packed fasl\footnote{The
+term ``fasl'' is short for ``fast loader'', which in \textsc{Common
+  Lisp} implementations refers} format whose \code{CL:PATHNAME} has
+the \code{TYPE} ``abcl''.  Structurally, \textsc{ABCL}'s fasls are an
+operating system neutral byte archives packaged in the zip compression
+format which contain artifacts whose loading \code{CL:LOAD}
+understands.  Internally, our fasls contain a piece of Lisp that
+\code{CL:LOAD} interprets as instructions to load the Java classes
+emitted by the \textsc{ABCL} Lisp compiler.  These ``synthetic''
+classes have a JVM class file version of ``49.0''.
+
+% TODO check on what the compiler is currently emitting
 
 \subsection{Compiler Diagnostics}
 
