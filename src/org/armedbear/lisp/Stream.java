@@ -515,6 +515,7 @@ public class Stream extends StructureObject {
                 return error(new StreamError(this, e));
             }
         }
+	if (!eofError && result == eofValue) return result;
         if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
             return NIL;
         else
