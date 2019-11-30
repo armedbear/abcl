@@ -1,10 +1,10 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP -*-
 (defsystem abcl
-  :version "1.5.0"
+  :version "1.6.1"
   :in-order-to ((test-op (test-op "abcl/test/lisp"))))
 
 (defsystem abcl/test/lisp
-  :version "1.5.0"
+  :version "1.6.1"
   :description "Test ABCL with the its own collection of unit tests."
   :perform  (test-op (o s)
                      (uiop:symbol-call :abcl.test.lisp '#:run))
@@ -62,25 +62,13 @@
 ;;; FIXME Currently requires ACBL-CONTRIB and QUICKLISP-ABCL to be
 ;;; loaded, but can't seem to put in the :defsystem-depends-on stanza
 (defsystem abcl/t
-  :description "Tests for ABCL via PROVE."
-  :defsystem-depends-on (prove-asdf)
-  :depends-on (abcl
-               prove)
-  :perform (asdf:test-op (op c)
-                         (uiop:symbol-call :prove-asdf :run-test-system c))
-  :components ((:module package
-                        :pathname "t/"
-                        :components ((:file "package")))
-               (:module java6
-                        :depends-on (package)
-                        :pathname "t/"
-                        :components ((:test-file "run-program")))
-               (:module build
-                        :depends-on (package)
-                        :pathname "t/"
-                        :components ((:test-file "resolve-multiple-maven-dependencies")
-                                     (:test-file "disassemble")
-                                     (:test-file "pathname")))))
+  :description "DEPRECATED tests for ABCL via PROVE see ABCL-PROVE."
+  :version "1.6.1"
+  :perform
+    (asdf:test-op (op c)
+       (ql:quickload :abcl-prove)
+       (asdf:load-system :abcl-prove)
+       (asdf:test-system :abcl-prove/t)))
 
 ;;;
 ;;; ASDF definitions and the ANSI-TEST suite
