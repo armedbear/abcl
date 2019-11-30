@@ -9,10 +9,11 @@
   :perform
   (asdf:test-op (op c)
      ;; (ignore c) ;;; any reference triggers all source artifacts           
-     (dolist (p (directory
-                 (merge-pathnames "*.lisp"
-                                  (asdf:system-relative-pathname :abcl "t/"))))
-       (uiop:symbol-call :prove :run p))))
+    (ignore-errors
+      (dolist (p (directory
+        (merge-pathnames "*.lisp"
+                         (asdf:system-relative-pathname :abcl "t/"))))
+        (uiop:symbol-call :prove :run p)))))
 
 
 
