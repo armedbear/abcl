@@ -200,7 +200,14 @@ public final class LispCharacter extends LispObject
   @Override
   public Object javaInstance(Class c)
   {
-    return javaInstance();
+    if (Integer.class.equals(c) || int.class.equals(c))
+      return (int) Character.valueOf(value);
+    if (Long.class.equals(c) || long.class.equals(c))
+      return (long) Character.valueOf(value);
+    if (Character.class.equals(c) || char.class.equals(c))
+      return Character.valueOf(value);
+
+    return error(new TypeError("Cannot convert LispCharacter to " + c.getName()));
   }
 
   @Override

@@ -57,7 +57,9 @@ public final class JavaObject extends LispObject {
     /**
      * Constructs a Java Object with the given intended class, used to access
      * the object reflectively. If the class represents a primitive type,
-     * the corresponding wrapper type is used instead.
+     * the corresponding wrapper type is used instead (and a narrowing conversion
+     * done if necessary).
+     *
      * @throws ClassCastException if the object is not an instance of the
      *                            intended class.
      */
@@ -65,18 +67,47 @@ public final class JavaObject extends LispObject {
         if(obj != null && intendedClass == null) {
             intendedClass = obj.getClass();
         }
-        if(intendedClass != null) {
+        if(obj != null && !intendedClass.equals(obj.getClass())) {
             intendedClass = Java.maybeBoxClass(intendedClass);
             if(!intendedClass.isInstance(obj)) {
-                if (intendedClass.equals(java.lang.Byte.class)
-                    && obj instanceof java.lang.Number) {
-                    // Maps any number to two's complement 8bit byte representation
-                    // ??? Is this a reasonable thing?
-                    this.obj = ((java.lang.Number)obj).byteValue();
-                    this.intendedClass = intendedClass;
-                    return;
+                if (obj instanceof Number) {
+                    if (intendedClass.equals(Byte.class)) {
+                        obj = ((Number) obj).byteValue();
+                    } else if (intendedClass.equals(Short.class)) {
+                        obj = ((Number) obj).shortValue();
+                    } else if (intendedClass.equals(Integer.class)) {
+                        obj = ((Number) obj).intValue();
+                    } else if (intendedClass.equals(Long.class)) {
+                        obj = ((Number) obj).longValue();
+                    } else if (intendedClass.equals(Character.class)) {
+                        obj = Character.valueOf((char) ((Number) obj).intValue());
+                    } else if (intendedClass.equals(Float.class)) {
+                        obj = ((Number) obj).floatValue();
+                    } else if (intendedClass.equals(Double.class)) {
+                        obj = ((Number) obj).doubleValue();
+                    } else {
+                        throw new ClassCastException(obj + " can not be cast to " + intendedClass);
+                    }
+                } else if (obj instanceof Character) {
+                    char c = ((Character) obj).charValue();
+                    if (intendedClass.equals(Byte.class)) {
+                        obj = (byte) c;
+                    } else if (intendedClass.equals(Short.class)) {
+                        obj = (short) c;
+                    } else if (intendedClass.equals(Integer.class)) {
+                        obj = (int) c;
+                    } else if (intendedClass.equals(Long.class)) {
+                        obj = (long) c;
+                    }  else if (intendedClass.equals(Float.class)) {
+                        obj = (float) c;
+                    } else if (intendedClass.equals(Double.class)) {
+                        obj = (double) c;
+                    } else {
+                        throw new ClassCastException(obj + " can not be cast to " + intendedClass);
+                    }
+                } else {
+                    throw new ClassCastException(obj + " can not be cast to " + intendedClass);
                 }
-                throw new ClassCastException(obj + " can not be cast to " + intendedClass);
             }
         }
         this.obj = obj;
@@ -278,6 +309,9 @@ public final class JavaObject extends LispObject {
         } else {
             c = Java.maybeBoxClass(c);
             if (c.isAssignableFrom(intendedClass) || c.isInstance(obj)) {
+              // By using isAssignableFrom() we are assured that we don't do any narrowing
+              // here (use (jcoerce) for that, or from java .getInstance(obj, class))
+
               // XXX In the case that c.isInstance(obj) should we then
               // "fix" the intendedClass field with the (presumably)
               // narrower type of 'obj'?
@@ -289,6 +323,61 @@ public final class JavaObject extends LispObject {
               // representations.  
                 return obj;
             } else {
+                // Still need to do widening conversions here...
+                if (obj instanceof Byte) {
+                    if (c.equals(Short.class)) {
+                        return ((Byte) obj).shortValue();
+                    } else if (c.equals(Integer.class)) {
+                        return ((Byte) obj).intValue();
+                    } else if (c.equals(Long.class)) {
+                        return ((Byte) obj).longValue();
+                    } else if (c.equals(Float.class)) {
+                        return ((Byte) obj).floatValue();
+                    } else if (c.equals(Double.class)) {
+                        return ((Byte) obj).doubleValue();
+                    }
+                } else if (obj instanceof Short) {
+                    if (c.equals(Integer.class)) {
+                        return ((Short) obj).intValue();
+                    } else if (c.equals(Long.class)) {
+                        return ((Short) obj).longValue();
+                    } else if (c.equals(Float.class)) {
+                        return ((Short) obj).floatValue();
+                    } else if (c.equals(Double.class)) {
+                        return ((Short) obj).doubleValue();
+                    }
+                } else if (obj instanceof Integer) {
+                    if (c.equals(Long.class)) {
+                        return ((Integer) obj).longValue();
+                    } else if (c.equals(Float.class)) {
+                        return ((Integer) obj).floatValue();
+                    } else if (c.equals(Double.class)) {
+                        return ((Integer) obj).doubleValue();
+                    }
+                } else if (obj instanceof Long) {
+                    if (c.equals(Float.class)) {
+                        return ((Long) obj).floatValue();
+                    } else if (c.equals(Double.class)) {
+                        return ((Long) obj).doubleValue();
+                    }
+                } else if (obj instanceof Float) {
+                    if (c.equals(Double.class)) {
+                        return ((Float) obj).doubleValue();
+                    }
+                // nothing that doesn't potentially narrow for double
+                // } else if (obj instanceof Double) {
+                } else if (obj instanceof Character) {
+                    if (c.equals(Integer.class)) {
+                        return (int) ((Character) obj).charValue();
+                    } else if (c.equals(Long.class)) {
+                        return (long) ((Character) obj).charValue();
+                    } else if (c.equals(Float.class)) {
+                        return (float) ((Character) obj).charValue();
+                    } else if (c.equals(Double.class)) {
+                        return (double) ((Character) obj).charValue();
+                    }
+                }
+
                 return error(new TypeError(intendedClass.getName() + " is not assignable to " + c.getName()));
             }
         }
