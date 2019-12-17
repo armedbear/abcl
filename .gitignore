@@ -1,3 +1,8 @@
 build
 dist
 abcl
+abcl-test*log
+ext
+scratch
+\#*\#
+\.\#*
