@@ -125,14 +125,22 @@
     "Whether to automatically introspect all Java classes on the classpath when JSS is loaded.")
   (defvar *muffle-warnings* t
     "Attempt to make JSS less chatting about how things are going.")
+  (defvar *loaded-osgi-bundles* nil)
   (defvar *imports-resolved-classes* (make-hash-table :test 'equalp)
     "Hashtable of all resolved imports by the current process."))
 
 (defun find-java-class (name)
-  "Returns the java.lang.Class representation of NAME.
-
-NAME can either string or a symbol according to the usual JSS conventions."
-  (jclass (maybe-resolve-class-against-imports name)))
+  (if (consp name) ;; invoke-restargs first calls maybe-resolve-class-against-imports, and this on the result.
+      (jcall "loadClass" (car name) (second name))
+      (let ((maybe (maybe-resolve-class-against-imports name)))
+	(or (and (atom maybe) (not (null maybe))
+		 (jstatic +for-name+ "java.lang.Class" maybe +true+ java::*classloader*))
+	    (ignore-errors
+	     (let ((resolved (maybe-resolve-class-against-imports name)))
+	       (if (consp resolved)
+		   (jcall "loadClass" (car resolved) (second resolved)) 
+		   (jclass resolved))))
+	    ))))
 
 (defmacro invoke-add-imports (&rest imports)
   "Push these imports onto the search path. If multiple, earlier in list take precedence"
@@ -145,14 +153,28 @@ NAME can either string or a symbol according to the usual JSS conventions."
 (defun clear-invoke-imports ()
   (clrhash *imports-resolved-classes*))
 
+;; Check against *imports-resolved-classes*. If there's a class or a bundle class that wins.
+;; Otherwise look through the bundles and if unique win
+;; Otherwise complain ambiguous
+
 (defun maybe-resolve-class-against-imports (classname)
-  (or (gethash (string classname) *imports-resolved-classes*)
-      (let ((found (lookup-class-name classname)))
-        (if found
-            (progn 
-              (setf (gethash classname *imports-resolved-classes*) found)
-              found)
-            (string classname)))))
+   (or (gethash (string classname) *imports-resolved-classes*)
+       (let ((found (lookup-class-name classname :muffle-warning t)))
+	 (if found
+	     (progn 
+	       (setf (gethash classname *imports-resolved-classes*) found)
+	       found)
+	     (let ((choices
+		     (loop for bundle-entry in *loaded-osgi-bundles*
+			   for found = (lookup-class-name classname :table (third bundle-entry) :muffle-warning  t)
+			   when found collect (list bundle-entry found))))
+	       (cond ((zerop (length choices)) (string classname))
+		     ((= (length choices) 1)
+		      (unless (gethash classname *imports-resolved-classes*)
+			(setf (gethash classname *imports-resolved-classes*) (list (second (caar choices)) (second (car choices)))))
+		      (list (second (caar choices)) (second (car choices))))
+		     (t (error "Ambiguous class name: ~{~a~^, ~}"  
+			       (mapcar (lambda(el) (format "~a in bundle ~a" (second el) (caar el))) choices)))))))))
 
 (defvar *class-name-to-full-case-insensitive* (make-hash-table :test 'equalp))
 
@@ -172,7 +194,7 @@ NAME can either string or a symbol according to the usual JSS conventions."
          (object-as-class 
           (if object-as-class-name (find-java-class object-as-class-name))))
     (if (eq method 'new)
-        (apply #'jnew (or object-as-class-name object) args)
+        (apply #'jnew (or object-as-class object-as-class-name object) args)
         (if raw?
             (if (symbolp object)
                 (apply #'jstatic-raw method object-as-class  args)
@@ -205,15 +227,19 @@ NAME can either string or a symbol according to the usual JSS conventions."
 ;; a regular Lisp string as ABCL converts the Java string to a Lisp string.
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun read-invoke (stream char arg) 
-    (unread-char char stream)
-    (let ((name (read stream)))
-      (if (or (find #\. name) (find #\{ name))
-          (jss-transform-to-field name arg)
-          (let ((object-var (gensym))
-                (args-var (gensym)))
-            `(lambda (,object-var &rest ,args-var) 
-               (invoke-restargs ,name  ,object-var ,args-var ,(eql arg 0)))))))
+  (defun read-invoke (stream char arg)
+    (if (eql arg 1)
+        (progn (require 'javaparser)
+               (read-sharp-java-expression stream))
+        (progn
+          (unread-char char stream)
+          (let ((name (read stream)))
+            (if (or (find #\. name) (find #\{ name))
+                (jss-transform-to-field name arg)
+                (let ((object-var (gensym))
+                      (args-var (gensym)))
+                  `(lambda (,object-var &rest ,args-var) 
+                     (invoke-restargs ,name  ,object-var ,args-var ,(eql arg 0)))))))))
   (set-dispatch-macro-character #\# #\" 'read-invoke))
 
 (defmacro with-constant-signature (fname-jname-pairs &body body)
@@ -263,9 +289,10 @@ want to avoid the overhead of the dynamic dispatch."
 
 
 (defun lookup-class-name (name &key
-                                 (table *class-name-to-full-case-insensitive*)
+                                 (table  *class-name-to-full-case-insensitive*)
                                  (muffle-warning *muffle-warnings*)
-                                 (return-ambiguous nil))
+                                 (return-ambiguous nil)
+                               &aux (symbol? (symbolp name)))
   (let ((overridden (maybe-found-in-overridden name)))
     (when overridden (return-from lookup-class-name overridden)))
   (setq name (string name))
@@ -279,7 +306,7 @@ want to avoid the overhead of the dynamic dispatch."
           (let ((matcher (#0"matcher" last-name-pattern name)))
             (#"matches" matcher)
             (#"group" matcher 1))))
-    (let* ((bucket (gethash last-name *class-name-to-full-case-insensitive*))
+    (let* ((bucket (gethash last-name table))
            (bucket-length (length bucket)))
       (or (find name bucket :test 'equalp)
           (flet ((matches-end (end full test)
@@ -292,7 +319,7 @@ want to avoid the overhead of the dynamic dispatch."
                        (error "Ambiguous class name: ~a can be ~{~a~^, ~}" name choices))))
             (if (zerop bucket-length)
                 (progn (unless muffle-warning (warn "can't find class named ~a" name)) nil)
-                (let ((matches (loop for el in bucket when (matches-end name el 'char=) collect el)))
+                (let ((matches (loop for el in bucket when (matches-end name el (if symbol? 'char-equal 'char=)) collect el)))
                   (if (= (length matches) 1)
                       (car matches)
                       (if (= (length matches) 0)
@@ -303,6 +330,15 @@ want to avoid the overhead of the dynamic dispatch."
                                     (progn (unless muffle-warning (warn "can't find class named ~a" name)) nil)
                                     (ambiguous matches))))
                           (ambiguous matches))))))))))
+
+;; Interactive use: Give a full class name as a string, return the shortest unique abbreviation
+(defun shortest-unambiguous-java-class-abbreviation(name &optional as-string?)
+  (let ((components (mapcar (if as-string? 'identity 'string-upcase) (split-at-char name #\.))))
+    (loop for size from 1 to (length components)
+	  for abbreviation = (funcall (if as-string? 'identity (lambda(e) (intern (string-upcase e))))
+				      (format nil "~{~a~^.~}" (subseq components (- (length components) size) (length components))))
+	  for possible = (jss::lookup-class-name abbreviation :return-ambiguous t)
+	  when (not (listp possible)) do (return-from shortest-unambiguous-java-class-abbreviation abbreviation))))
 
 (defun get-all-jar-classnames (jar-file-name)
   (let* ((jar (jnew (jconstructor "java.util.jar.JarFile" (jclass "java.lang.String")) (namestring (truename jar-file-name))))
@@ -324,13 +360,27 @@ want to avoid the overhead of the dynamic dispatch."
              (cons name fullname))
            ))))
 
+(defun index-class-names (names &key (table (make-hash-table :test 'equalp)))
+  (with-constant-signature ((matcher "matcher" t) (substring "substring")
+			    (jreplace "replace" t) (jlength "length")
+			    (matches "matches") 
+			    (group "group"))
+    (loop for name in names
+	  with class-pattern = (jstatic "compile" "java.util.regex.Pattern" ".*\\.class{0,1}$")
+	  with name-pattern = (jstatic "compile" "java.util.regex.Pattern" ".*?([^.]*)$")
+	  when (matches (matcher class-pattern name))
+	    do
+	       (let* ((fullname (substring (jreplace name #\/ #\.) 0 (- (jlength name) 6)))
+		      (matcher (matcher name-pattern fullname))
+		      (name (progn (matches matcher) (group matcher 1))))
+		 (pushnew fullname (gethash name table) 
+			  :test 'equal))))
+  table)
+
 (defun jar-import (file)
   "Import all the Java classes contained in the pathname FILE into the JSS dynamic lookup cache."
   (when (probe-file file)
-    (loop for (name . full-class-name) in (get-all-jar-classnames file)
-       do 
-         (pushnew full-class-name (gethash name *class-name-to-full-case-insensitive*) 
-                  :test 'equal))))
+    (index-class-names (get-all-jar-classnames file) :table *class-name-to-full-case-insensitive*)))
 
 (defun new (class-name &rest args)
   "Invoke the Java constructor for CLASS-NAME with ARGS.
@@ -423,10 +473,7 @@ associated is used to look up the static FIELD."
 (defconstant +for-name+ 
   (jmethod "java.lang.Class" "forName" "java.lang.String" "boolean" "java.lang.ClassLoader"))
 
-(defun find-java-class (name)
-  (or (jstatic +for-name+ "java.lang.Class" 
-               (maybe-resolve-class-against-imports name) +true+ java::*classloader*)
-      (ignore-errors (jclass (maybe-resolve-class-against-imports name)))))
+
 
 (defmethod print-object ((obj (jclass "java.lang.Class")) stream) 
   (print-unreadable-object (obj stream :identity nil)
@@ -512,28 +559,33 @@ associated is used to look up the static FIELD."
   (when *do-auto-imports* 
     (do-auto-imports)))
 
-(defun japropos (string)
+(defun japropos (string &optional (fn (lambda(match type bundle?) (format t "~a: ~a~a~%" match type bundle?))))
   "Output the names of all Java class names loaded in the current process which match STRING.."
-  (setq string (string string))
-  (let ((matches nil))
-    (maphash (lambda(key value) 
-               (declare (ignore key))
-               (loop for class in value
-                  when (search string class :test 'string-equal)
-                  do (pushnew (list class "Java Class") matches :test 'equal)))
-             *class-name-to-full-case-insensitive*)
-    (loop for (match type) in (sort matches 'string-lessp :key 'car)
-       do (format t "~a: ~a~%" match type))
-    ))
+  (flet ((searchit (table &optional bundle-name)
+	   (let ((bundle? (if bundle-name (format nil ", Bundle: ~a" bundle-name) "")))
+	     (setq string (string string))
+	     (let ((matches nil))
+	       (maphash (lambda(key value) 
+			  (declare (ignore key))
+			  (loop for class in value
+				when (search string class :test 'string-equal)
+				  do (pushnew (list class "Java Class") matches :test 'equal)))
+			table)
+	       (loop for (match type) in (sort matches 'string-lessp :key 'car)
+		     do (funcall fn  match type bundle?))))))
+    (searchit *class-name-to-full-case-insensitive*)
+    (loop for (name nil table) in *loaded-osgi-bundles*
+	  do (searchit table name))))
 
 (defun jclass-method-names (class &optional full)
   (if (java-object-p class)
       (if (equal (jclass-name (jobject-class class)) "java.lang.Class")
-          (setq class (jclass-name class))
-          (setq class (jclass-name (jobject-class class)))))
+	  nil
+          (setq class (jobject-class class)))
+      (setq class (find-java-class class)))
   (union
-   (remove-duplicates (map 'list (if full #"toString" 'jmethod-name) (#"getMethods" (find-java-class class))) :test 'equal)
-   (ignore-errors (remove-duplicates (map 'list (if full #"toString" 'jmethod-name) (#"getConstructors" (find-java-class class))) :test 'equal))))
+   (remove-duplicates (map 'list (if full #"toString" 'jmethod-name) (#"getMethods" class)) :test 'equal)
+   (ignore-errors (remove-duplicates (map 'list (if full #"toString" 'jmethod-name) (#"getConstructors" class)) :test 'equal))))
 
 (defun java-class-method-names (class &optional stream)
   "Return a list of the public methods encapsulated by the JVM CLASS.
