@@ -367,6 +367,7 @@ hint."
 
 (defun make-session (repository-system)
   "Construct a new aether.RepositorySystemSession from the specified REPOSITORY-SYSTEM."
+  (unless *init* (init))
   (with-aether ()
     (let ((session
            (or 

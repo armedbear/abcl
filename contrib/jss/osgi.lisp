@@ -226,6 +226,25 @@
 ;	(force-unpack-native-libraries bundle jar)
 	bundle))))
 
+(defun index-class-names (names &key (table (make-hash-table :test 'equalp)))
+  (with-constant-signature ((matcher "matcher" t) (substring "substring")
+			    (jreplace "replace" t) (jlength "length")
+			    (matches "matches") 
+			    (group "group"))
+    (loop for name in names
+	  with class-pattern = (jstatic "compile" "java.util.regex.Pattern" ".*\\.class{0,1}$")
+	  with name-pattern = (jstatic "compile" "java.util.regex.Pattern" ".*?([^.]*)$")
+	  when (matches (matcher class-pattern name))
+	    do
+	       (let* ((fullname (substring (jreplace name #\/ #\.) 0 (- (jlength name) 6)))
+		      (matcher (matcher name-pattern fullname))
+		      (name (progn (matches matcher) (group matcher 1))))
+		 (pushnew fullname (gethash name table) 
+			  :test 'equal))))
+  table)
+
+
+
 (defun bundle-headers (bundle)
   (loop with headers = (#"getHeaders" bundle)
 	for key in (j2list (#"keys" headers))

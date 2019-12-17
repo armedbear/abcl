@@ -360,27 +360,13 @@ want to avoid the overhead of the dynamic dispatch."
              (cons name fullname))
            ))))
 
-(defun index-class-names (names &key (table (make-hash-table :test 'equalp)))
-  (with-constant-signature ((matcher "matcher" t) (substring "substring")
-			    (jreplace "replace" t) (jlength "length")
-			    (matches "matches") 
-			    (group "group"))
-    (loop for name in names
-	  with class-pattern = (jstatic "compile" "java.util.regex.Pattern" ".*\\.class{0,1}$")
-	  with name-pattern = (jstatic "compile" "java.util.regex.Pattern" ".*?([^.]*)$")
-	  when (matches (matcher class-pattern name))
-	    do
-	       (let* ((fullname (substring (jreplace name #\/ #\.) 0 (- (jlength name) 6)))
-		      (matcher (matcher name-pattern fullname))
-		      (name (progn (matches matcher) (group matcher 1))))
-		 (pushnew fullname (gethash name table) 
-			  :test 'equal))))
-  table)
-
 (defun jar-import (file)
   "Import all the Java classes contained in the pathname FILE into the JSS dynamic lookup cache."
   (when (probe-file file)
-    (index-class-names (get-all-jar-classnames file) :table *class-name-to-full-case-insensitive*)))
+    (loop for (name . full-class-name) in (get-all-jar-classnames file)
+       do 
+         (pushnew full-class-name (gethash name *class-name-to-full-case-insensitive*) 
+                  :test 'equal))))
 
 (defun new (class-name &rest args)
   "Invoke the Java constructor for CLASS-NAME with ARGS.
