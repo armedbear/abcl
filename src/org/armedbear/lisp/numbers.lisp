@@ -153,11 +153,34 @@
              :format-arguments (list float))))
 
 (defun decode-float (float)
-  (multiple-value-bind (significand exponent sign)
-      (integer-decode-float float)
-    (values (coerce (/ significand (expt 2 53)) 'float)
-            (+ exponent 53)
-            (if (minusp sign) -1.0 1.0))))
+  (cond
+    ((typep float 'single-float)
+     (decode-float-single float))
+    ((typep float 'double-float)
+     (decode-float-double float))
+    (t
+      (error 'simple-type-error
+             :format-control "~S is neither SINGLE-FLOAT nor DOUBLE-FLOAT."
+             :format-arguments (list float)))))
+
+(defun decode-float-single (float)
+  ;; TODO memoize
+  (let ((float-precision-single (float-precision 1f0)))
+    (multiple-value-bind (significand exponent sign)
+        (integer-decode-float float)
+      (values (coerce (/ significand (expt 2 float-precision-single)) 'single-float)
+              (+ exponent float-precision-single)
+              (if (minusp sign) -1f0 1f0)))))
+
+
+(defun decode-float-double (float)
+  ;; TODO memoize
+  (let ((float-precision-double (float-precision 1d0)))
+    (multiple-value-bind (significand exponent sign)
+        (integer-decode-float float)
+      (values (coerce (/ significand (expt 2 float-precision-double)) 'double-float)
+              (+ exponent float-precision-double)
+              (if (minusp sign) -1d0 1d0)))))
 
 (defun conjugate (number)
   (etypecase number

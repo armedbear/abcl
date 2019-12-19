@@ -1,7 +1,8 @@
 (in-package :cl-user)
 
 ;;; <https://github.com/armedbear/abcl/issues/93>
-(let ((floats `(1f6
+(let ((floats `(1f0
+                1f6
                 1f-6
                 ,least-positive-normalized-single-float
                 ,least-positive-single-float)))
@@ -41,5 +42,12 @@
     (prove:is-type float 'double-float)
     (let ((result (decode-float float)))
       (prove:is-type result 'double-float))))
+
+;;; additional things along the way…
+
+#|
+Should fail, as you shouldn't be able to 
+(decode-float single-float-positive-infinity)
+|# 
 
 (prove:finalize)
