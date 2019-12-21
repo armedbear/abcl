@@ -1,5 +1,6 @@
-(defvar cl-user::*before-osgi-starting-hooks* nil)
-(export 'cl-user::*before-osgi-starting-hooks* 'cl-user)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar cl-user::*before-osgi-starting-hooks* nil)
+  (export 'cl-user::*before-osgi-starting-hooks* 'cl-user))
 (defpackage :jss
   (:nicknames "java-simple-syntax" "java-syntax-sucks")
   (:use :common-lisp :extensions :java)
