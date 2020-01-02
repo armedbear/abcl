@@ -85,11 +85,15 @@ public final class Bignum extends LispInteger
 
   @Override
   public Object javaInstance(Class c) {
-    if (BigInteger.class.equals(c)) {
-      return value;
-    }
-
-    return error(new TypeError("Cannot convert Bignum to " + c.getName()));
+    if (c == Byte.class || c == byte.class)
+      return Byte.valueOf((byte)value.intValue());
+    if (c == Short.class || c == short.class)
+      return Short.valueOf((short)value.intValue());
+    if (c == Integer.class || c == int.class)
+      return Integer.valueOf(value.intValue());
+    if (c == Long.class || c == long.class)
+      return Long.valueOf((long)value.longValue());
+    return javaInstance();
   }
 
 

@@ -236,11 +236,9 @@ public final class DoubleFloat extends LispObject
     @Override
     public Object javaInstance(Class c)
     {
-        if (Double.class.equals(c) || double.class.equals(c)) {
-            return Double.valueOf(value);
-        }
-
-        return error(new TypeError("Cannot convert DoubleFloat to " + c.getName()));
+        if (c == Float.class || c == float.class)
+            return Float.valueOf((float)value);
+        return javaInstance();
     }
 
     @Override
