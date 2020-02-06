@@ -487,14 +487,17 @@ Returns the Maven specific string for the artifact "
    (ignore-errors
      (jss:new 'aether.repository.RemoteRepository id type url))))
 
-(defparameter *default-repository* 
-  "http://repo1.maven.org/maven2/")
+(defvar *default-repository* 
+  "https://repo1.maven.org/maven2/"
+  "URI of default remote Maven repository")
 
 (defun add-repository (repository)
   (ensure-remote-repository :repository repository))
 
 (defparameter *maven-remote-repository*  nil
-  "The remote repository used by the Maven Aether embedder.")
+  "Reference to remote repository used by the Maven Aether
+  embedder.")
+
 (defun ensure-remote-repository (&key 
                                    (force nil)
                                    (repository *default-repository* repository-p))
@@ -549,8 +552,10 @@ in Java CLASSPATH representation."
                           (when *maven-http-proxy*
                             (#"setProxy" r (make-proxy)))
                           r)))
-    (let* ((node 
-            (#"getRoot" (#"collectDependencies" (ensure-repository-system) (ensure-session) collect-request)))
+    (let* ((collect-result (#"collectDependencies" (ensure-repository-system)
+                                                   (ensure-session) collect-request))
+           (node 
+            (#"getRoot" collect-result))
            (dependency-request
             ;;; pre Maven-3.3.x
             #+nil
