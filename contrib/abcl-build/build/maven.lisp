@@ -1,7 +1,7 @@
 (in-package :abcl/build)
 
 (defun maven-zip-uri ()
-  #p"http://www-eu.apache.org/dist/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.zip")
+  #p"https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip")
 
 (defun xdg/mvn-executable ()
   (xdg/executable (maven-zip-uri) "bin/mvn"))
