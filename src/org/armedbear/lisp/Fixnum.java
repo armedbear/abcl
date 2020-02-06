@@ -76,12 +76,13 @@ public final class Fixnum extends LispInteger
   @Override
   public Object javaInstance(Class c)
   {
-    if (Long.class.equals(c) || long.class.equals(c))
+    if (c == Byte.class || c == byte.class)
+      return Byte.valueOf((byte)value);
+    if (c == Short.class || c == short.class)
+      return Short.valueOf((short)value);
+    if (c == Long.class || c == long.class)
       return Long.valueOf((long)value);
-    if (Integer.class.equals(c) || int.class.equals(c))
-      return Integer.valueOf(value);
-
-    return error(new TypeError("Cannot convert Fixnum to " + c.getName()));
+    return javaInstance();
   }
 
   @Override

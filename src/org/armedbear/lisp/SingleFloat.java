@@ -241,12 +241,9 @@ public final class SingleFloat extends LispObject
     @Override
     public Object javaInstance(Class c)
     {
-        if (Float.class.equals(c) || float.class.equals(c))
+        if (c == Float.class || c == float.class)
             return Float.valueOf(value);
-        if (Double.class.equals(c) || double.class.equals(c))
-            return Double.valueOf(value);
-
-        return error(new TypeError("Cannot convert SingleFloat to " + c.getName()));
+        return javaInstance();
     }
 
     @Override
