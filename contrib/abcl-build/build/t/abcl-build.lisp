@@ -1,4 +1,4 @@
-(in-package :abcl/build/t)
+(in-package :cl-user)
 
 (if (not (ignore-errors (asdf:find-system :abcl)))
     (prove:diag "Unable to find 'abcl.asd'.~&Enable ASDF to find 'abcl.asd' by adding symlink to ~~/common-lisp/ to ABCL source directory.")
