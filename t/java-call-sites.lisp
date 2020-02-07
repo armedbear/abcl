@@ -9,6 +9,14 @@
  nil
  "Calling java.lang.Short.reverseBytes(short)")
 
+(prove:plan 1)
+(prove:isnt
+ (handler-case 
+     (java:jstatic-raw "valueOf" "java.lang.Byte" #x7f)
+   (error (e) (format *standard-output* "error: ~a~%" e)))
+ nil
+ "Calling java.lang.Byte.valueOf(byte)")
+
 ;; <http://trac.common-lisp.net/armedbear/ticket/259>
 (prove:plan 1)
 (prove:isnt
