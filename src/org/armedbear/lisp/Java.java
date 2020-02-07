@@ -470,7 +470,12 @@ public final class Java
                 }
             }
             m.setAccessible(true);
-            Object result = m.invoke(null, methodArgs);
+            Object result = null;
+            if (!m.isVarArgs()) {
+              result = m.invoke(null, methodArgs);
+            } else {
+              result = m.invoke(null, (Object)methodArgs);
+            }
 	    return JavaObject.getInstance(result, translate, m.getReturnType());
         }
         catch (ControlTransfer c) {
@@ -1064,6 +1069,12 @@ public final class Java
             return Float.class.equals(to) || Double.class.equals(to);
         } else if (Float.class.equals(from)) {
             return Double.class.equals(to);
+        } else if (from.isArray() && to.isArray()) {
+            // for now just indicate that anything is assignable to an
+            // java.lang.Object[], as this is the most common case
+            if (to.getComponentType().equals(java.lang.Object.class)) {
+                return true;
+            }
         }
         return false;
     }
