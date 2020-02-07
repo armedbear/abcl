@@ -1075,11 +1075,37 @@ public final class Java
             Object arg = args[i];
             if (arg == null) {
                 return !methodType.isPrimitive();
-            } else if (!isAssignable(arg.getClass(), methodType)) {
+            } else if (!isAssignableWithValue(arg.getClass(), methodType, arg)) {
                 return false;
             }
         }
         return true;
+    }
+
+    private static boolean isAssignableWithValue(Class<?> from, Class<?> to, Object value) {
+        if (isAssignable(from, to)) {
+            return true;
+        }
+        if (!(value instanceof Number)) {
+            return false;
+        }
+        from = maybeBoxClass(from);
+        to = maybeBoxClass(to);
+        if (Integer.class.equals(from)) {
+            int v = ((java.lang.Number)value).intValue();
+
+            if (Short.class.equals(to)
+                && Short.MAX_VALUE >= v
+                && v >= Short.MIN_VALUE) {
+                return true;
+            }
+            if (Byte.class.equals(to)
+                && Byte.MAX_VALUE >= v
+                && v >= Byte.MIN_VALUE) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isMoreSpecialized(Class<?>[] xtypes, Class<?>[] ytypes) {
