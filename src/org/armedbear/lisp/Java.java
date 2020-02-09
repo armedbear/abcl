@@ -470,7 +470,12 @@ public final class Java
                 }
             }
             m.setAccessible(true);
-            Object result = m.invoke(null, methodArgs);
+            Object result = null;
+            if (!m.isVarArgs()) {
+              result = m.invoke(null, methodArgs);
+            } else {
+              result = m.invoke(null, (Object)methodArgs);
+            }
 	    return JavaObject.getInstance(result, translate, m.getReturnType());
         }
         catch (ControlTransfer c) {
@@ -1064,6 +1069,12 @@ public final class Java
             return Float.class.equals(to) || Double.class.equals(to);
         } else if (Float.class.equals(from)) {
             return Double.class.equals(to);
+        } else if (from.isArray() && to.isArray()) {
+            // for now just indicate that anything is assignable to an
+            // java.lang.Object[], as this is the most common case
+            if (to.getComponentType().equals(java.lang.Object.class)) {
+                return true;
+            }
         }
         return false;
     }
@@ -1075,11 +1086,37 @@ public final class Java
             Object arg = args[i];
             if (arg == null) {
                 return !methodType.isPrimitive();
-            } else if (!isAssignable(arg.getClass(), methodType)) {
+            } else if (!isAssignableWithValue(arg.getClass(), methodType, arg)) {
                 return false;
             }
         }
         return true;
+    }
+
+    private static boolean isAssignableWithValue(Class<?> from, Class<?> to, Object value) {
+        if (isAssignable(from, to)) {
+            return true;
+        }
+        if (!(value instanceof Number)) {
+            return false;
+        }
+        from = maybeBoxClass(from);
+        to = maybeBoxClass(to);
+        if (Integer.class.equals(from)) {
+            int v = ((java.lang.Number)value).intValue();
+
+            if (Short.class.equals(to)
+                && Short.MAX_VALUE >= v
+                && v >= Short.MIN_VALUE) {
+                return true;
+            }
+            if (Byte.class.equals(to)
+                && Byte.MAX_VALUE >= v
+                && v >= Byte.MIN_VALUE) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isMoreSpecialized(Class<?>[] xtypes, Class<?>[] ytypes) {

@@ -288,6 +288,11 @@ public final class JavaObject extends LispObject {
               // primitive types relate to their boxed
               // representations.  
                 return obj;
+            } else if (c.isArray() && obj.getClass().isArray()) {
+                       // ??? only supports conversions to java.lang.Object[]
+                       //                       && c.getComponentType().equals(obj.getClass().getComponentType())) {
+                       
+              return obj;
             } else {
                 return error(new TypeError(intendedClass.getName() + " is not assignable to " + c.getName()));
             }
