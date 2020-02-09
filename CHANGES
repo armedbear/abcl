@@ -1,6 +1,67 @@
 Version 1.6.1
 =============
-unreleased
+April 24, 2020
+
+Enhancements
+------------
+
+* [r15223] Fix compiler for java.lang.VerifyError with PROGN
+  (somewhat-functional-programmer)
+
+* [r15250] ABCL now builds and runs across openjdk{6,7,8,11,13,14}
+
+* [r15256] Build autoconfiguration via ci/create-build-properties.bash 
+
+* [r15252] Provide accessor in URL-STREAM for underlying java.io.InputStream
+
+* [r15226] [INCOMPLETE] Address problems with DECODE-FLOAT
+  (Robert Dodier)
+
+
+Fixes
+-----
+
+* [r15229] Maven central repository now requires TLS
+
+* [r15242] jstatic: check narrowing for explicit method reference 
+
+* [r15232] [r15233] [r15241] Reworking DWIM on java call sites
+
+   The FFI will now find Java call sites whose types are Short or Byte
+   with integers if they can be narrowed without losing information.
+   This work should be considered provisional, subject to possible
+   revision.
+
+* [r15234] Fix calling Java methods with varargs parameters
+
+* [r15233] Fix calling Java methods with short and byte parameters
+
+* [r15231] abcl-build: test the install of maven-3.6.3
+
+* [r15238] build: ensure javac compiles with UTF-8 encoding
+
+* [r15243] abcl-asdf: rework Maven usage strategy
+
+* [r15245] abcl-asdf: use WITH-AETHER macro to ensure Maven Aether is loaded
+
+* [r15251] abcl-asdf:  assume that either 'which' or 'where' works
+
+Updates
+-------
+
+* [r15240] Use ASDF-3.3.4
+
+
+Tests
+-----
+
+* [r15239] ci: now use latest CFFI distributed with Quicklisp
+
+* [r15247] t/format-dollar: correction for CL:FORMAT dollar usage
+
+* [r15248] t/jcoerce-numerics: JCOERCE across numerics without losing information
+
+* [r15249] t/decode-float: tests for currently broken handling of CL:DECODE-FLOAT
 
 Version 1.6.0
 =============

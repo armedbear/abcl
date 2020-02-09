@@ -52,8 +52,8 @@ With [Docker Engine][] installed one may execute:
 to get something like
 
     illin:~/work/abcl$ docker run -it YOURID/abcl
-    Armed Bear Common Lisp 1.6.0
-    Java 1.8.0_111 Oracle Corporation
+    Armed Bear Common Lisp 1.6.1
+    Java 1.8.0_252 Oracle Corporation
     OpenJDK 64-Bit Server VM
     Low-level initialization completed in 0.295 seconds.
     Startup completed in 1.425 seconds.
@@ -74,12 +74,12 @@ After you have downloaded a binary release from either [the
 distributed Maven POM graph][maven-abcl] or from
 [abcl.org][abcl.org-release] archive unpack it into its own
 directory. To run ABCL directly from this directory, make sure Java
-(Java 6, 7, 8, and 11 are supported by ABCL 1.6.0) is in your shell's
+(Java 6, 7, 8, and 11 are supported by ABCL 1.6.1) is in your shell's
 path.
 
-[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.6.0>
-[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.6.0>
-[abcl.org-release]:    <http://abcl.org/releases/1.6.0/>
+[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.6.1>
+[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.6.1>
+[abcl.org-release]:    <http://abcl.org/releases/1.6.1/>
 
 To start ABCL, simply issue the following command:
 
@@ -87,8 +87,8 @@ To start ABCL, simply issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.6.0
-    Java 1.8.0_232 AdoptOpenJDK
+    Armed Bear Common Lisp 1.6.1
+    Java 1.8.0_242 AdoptOpenJDK
     OpenJDK 64-Bit Server VM
     Low-level initialization completed in 0.356 seconds.
     Startup completed in 2.055 seconds.
@@ -183,7 +183,7 @@ providing a compliant and practical Common Lisp implementation.
 Tests
 -----
 
-ABCL 1.6.0 currently fails 46 out of 21835 total tests, whereas ABCL
+ABCL 1.6.1 currently fails 45 out of 21848 total tests, whereas ABCL
 1.5.0 failed 48 out of 21708 total tests in the [revised and expanded
 ANSI CL test suite][ansi-test] (derived from the tests originally
 written for GCL).
@@ -227,4 +227,4 @@ On behalf of all ABCL development team and contributors,
     vibhu
     dmiles
 
-November 2019
+April 2020
