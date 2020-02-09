@@ -16,10 +16,10 @@
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.6.1#dev> ;           
+  dc:identifier         <urn:abcl.org/1.6.1#rc-0> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "22-NOV-2019" ;
+  dc:modified          "24-APR-2020" ;
   dc:version           "abcl-1.6.1" ;
   dc:release           "dev" ;
   abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
@@ -92,12 +92,12 @@ _:user dc:identifier <http://ville.not.org/#me>  ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2> ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
      dc:licenseDocument 
-       <http://abcl.org/svn/tags/1.6.0/src/org/armedbear/COPYING> ;
+       <http://abcl.org/svn/tags/1.6.1/src/org/armedbear/COPYING> ;
 ] .
 
 doap:Project rdfs:seeAlso [
   a rdf:Bag;
-  rdf:_0 <http://abcl.org/releases/1.6.0/abcl-1.6.0.jar> ;
+  rdf:_0 <http://abcl.org/releases/1.6.1/abcl-1.6.1.jar> ;
   rdf:_1 <http://abcl.org/trac/timeline> ;
   rdf:_2 <http://abcl.org/trac/wiki> ;
   rdf:_4 <https://github.com/armedbear/abcl/> ;
@@ -111,7 +111,7 @@ doap:Project rdfs:seeAlso [
      rdf:_4 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.1.jar> ;
      rdf:_5 <http://abcl.org/releases/1.2.1/abcl-1.2.1.jar> ;
      rdf:_6 <http://abcl.org/releases/1.3.0/abcl-1.3.0.jar> ;
-    rdf:_14 <http://abcl.org/releases/1.3.2/abcl-1.3.1.jar> ;
+     rdf:_14 <http://abcl.org/releases/1.3.2/abcl-1.3.1.jar> ;
      rdf:_7 <http://abcl.org/releases/1.3.2/abcl-1.3.2.jar> ;
      rdf:_8 <http://abcl.org/releases/1.3.3/abcl-1.3.3.jar> ;
      rdf:_9 <http://abcl.org/releases/1.4.0/abcl-1.4.0.jar> ;
