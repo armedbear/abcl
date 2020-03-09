@@ -208,6 +208,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
              target="${abcl.javac.target}"
              source="${abcl.javac.source}"
              includeantruntime="false"
+             encoding="UTF-8"
              failonerror="true">
         <src path="${src.dir}"/>
         <patternset refid="abcl.source.java"/>
