@@ -4,10 +4,10 @@
   (require :abcl-asdf))
 
 (prove:plan 1)
-(let (ignorable)
-  (abcl-asdf:with-aether (ignorable)
-    (prove:ok
-     (abcl-asdf:ensure-mvn-version))))
+(abcl-asdf:with-aether ()
+  (prove:ok
+   (abcl-asdf:ensure-mvn-version)))
+
 
 (prove:finalize)
 

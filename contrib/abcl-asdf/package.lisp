@@ -16,6 +16,7 @@
    #:ensure-mvn-version
    
    #:find-mvn
+   #:mvn-version
 
    #:*mvn-directory*
 

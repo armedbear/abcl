@@ -42,6 +42,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
+import java.math.BigInteger;
 import java.util.*;
 
 public final class Java
@@ -427,36 +428,46 @@ public final class Java
     static final LispObject jstatic(Primitive fun, LispObject[] args, boolean translate)
 
     {
-        if (args.length < 2)
+        if (args.length < 2) {
             error(new WrongNumberOfArgumentsException(fun, 2, -1));
+        }
         try {
             Method m = null;
             LispObject methodRef = args[0];
+            List<Method> staticMethods = new ArrayList<Method>();
+            String methodName = null;
+        
             if (methodRef instanceof JavaObject) {
                 Object obj = ((JavaObject)methodRef).getObject();
-                if (obj instanceof Method)
-                    m = (Method) obj;
+                if (obj instanceof Method) {
+                    staticMethods.add((Method) obj);
+                    methodName = ((Method)obj).getName();
+                } else {
+                    error(new LispError(methodRef +  "is not a valid reference to a Method"));
+                }
             } else if (methodRef instanceof AbstractString) {
                 Class c = javaClass(args[1]);
                 if (c != null) {
-                    String methodName = methodRef.getStringValue();
+                    methodName = methodRef.getStringValue();
                     Method[] methods = c.getMethods();
-                    List<Method> staticMethods = new ArrayList<Method>();
                     int argCount = args.length - 2;
                     for(Method m1 : methods) {
                         if(Modifier.isStatic(m1.getModifiers())) {
                             staticMethods.add(m1);
                         }
                     }
-                    if(staticMethods.size() > 0) {
-                        m = findMethod(staticMethods.toArray(new Method[staticMethods.size()]), methodName, args, 2);
-                    }
-                    if (m == null)
-                        error(new LispError("no such method"));
                 }
             } else {
-              type_error(methodRef, Symbol.STRING);
+                type_error(methodRef, Symbol.STRING);
             }
+
+            if (staticMethods.size() > 0) {
+                m = findMethod(staticMethods.toArray(new Method[staticMethods.size()]),
+                               methodName, args, 2);
+            }
+            if (m == null)
+                error(new LispError("no such method"));
+
             Object[] methodArgs = new Object[args.length-2];
             Class[] argTypes = m.getParameterTypes();
             for (int i = 2; i < args.length; i++) {
@@ -1115,7 +1126,21 @@ public final class Java
                 && v >= Byte.MIN_VALUE) {
                 return true;
             }
+        // Java 8 introduces BigInteger.longValueExact() which will make the following much easier
+        } else if (BigInteger.class.equals(from)) {
+            // ??? should only need to check for possible conversion to longs
+            BigInteger v = (java.math.BigInteger) value;
+            final BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
+            final BigInteger minLong = BigInteger.valueOf(Long.MIN_VALUE);
+            if (Long.class.equals(to)
+                && ((v.compareTo(maxLong) == -1)
+                    || (v.compareTo(maxLong) == 0))
+                && ((v.compareTo(minLong) == 1)
+                    || (v.compareTo(minLong) == 0))) {
+                return true;
+            }
         }
+
         return false;
     }
 

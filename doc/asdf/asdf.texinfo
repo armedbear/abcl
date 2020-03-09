@@ -65,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @titlepage
 @title ASDF: Another System Definition Facility
-@subtitle Manual for Version 3.3.3
+@subtitle Manual for Version 3.3.4
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -82,7 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @node Top, Introduction, (dir), (dir)
 @top ASDF: Another System Definition Facility
 @ifnottex
-Manual for Version 3.3.3
+Manual for Version 3.3.4
 @end ifnottex
 
 
@@ -246,6 +246,7 @@ Issues with configuring ASDF
 
 * How can I customize where fasl files are stored?::
 * How can I wholly disable the compiler output cache?::
+* How can I debug problems finding ASDF systems::
 
 Issues with using and extending ASDF to define systems
 
@@ -1003,8 +1004,6 @@ compiling, loading and testing.
 @c FIXME: the following is too complicated for here, especially since
 @c :force hasn't been defined yet.  Move it. [2014/02/27:rpg]
 
-@findex already-loaded-systems
-
 @defun load-system system @Arest{} keys @Akey{} force force-not verbose version @AallowOtherKeys{}
 Apply @code{operate} with the operation @code{load-op}, the
 @var{system}, and any provided keyword arguments.  Calling
@@ -1079,6 +1078,13 @@ and transitively re-build the modified files and everything that depends on them
 ASDF itself never builds anything unless
 it's an explicitly requested system or the dependencies thereof).
 @end defun
+
+@defun already-loaded-systems
+Returns a list of names of the systems that have been successfully
+loaded so far.
+@end defun
+
+
 
 
 @node Moving on,  , Convenience Functions, Using ASDF
@@ -1416,104 +1422,126 @@ Presumably, the 4th form looks like @code{(defparameter *foo-version* "5.6.7")}.
 @findex defsystem
 @cindex DEFSYSTEM grammar
 
-@c FIXME: @var typesetting not consistently used here.  We should either expand
-@c its use to everywhere, or we should kill it everywhere.
+@macro defrule {NAME}
+@anchor{rule-\NAME\}\NAME\ :=
+@end macro
 
+@ifhtml
+@macro refrule {NAME}
+@ref{rule-\NAME\,\NAME\}
+@end macro
+@end ifhtml
+
+@ifinfo
+@macro refrule {NAME}
+@ref{rule-\NAME\,\NAME\,\NAME\,\NAME\}
+@end macro
+@end ifinfo
+
+@ifnothtml
+@ifnotinfo
+@macro refrule {NAME}
+\NAME\
+@end macro
+@end ifnotinfo
+@end ifnothtml
 
 @example
-system-definition := ( defsystem system-designator @var{system-option}*)
+@defrule{system-definition} ( defsystem @refrule{system-designator} @refrule{system-option}* )
 
-system-designator := simple-component-name | complex-component-name
+@defrule{system-designator} @refrule{simple-component-name}
+                   | @refrule{complex-component-name}
 
-simple-component-name := lower-case string  | symbol
-           NOTE: Underscores are not permitted.  See below.
+# NOTE: Underscores are not permitted.
+# @pxref{Simple component names,Simple component names,Simple component names}
+@defrule{simple-component-name} @var{lower-case string} | @var{symbol}
 
-complex-component-name := string | symbol
-            See below.
+# @pxref{Complex component names,Complex component names,Complex component names}
+@defrule{complex-component-name} @var{string} | @var{symbol}
 
-system-option := :defsystem-depends-on system-list
-                 | :weakly-depends-on @var{system-list}
-                 | :class class-name # @pxref{System class names}
-                 | :build-operation @var{operation-name}
-                 | system-option
-                 | module-option
-                 | option
+@defrule{system-option} :defsystem-depends-on @refrule{system-list}
+               | :weakly-depends-on @refrule{system-list}
+               | :class @var{class-name} # @pxref{System class names}
+               | :build-pathname @refrule{pathname-specifier}
+               | :build-operation @refrule{operation-name}
+               | @refrule{system-option/asdf3}
+               | @refrule{module-option}
+               | @refrule{option}
 
-# These are only available since ASDF 3 (actually its alpha release 2.27)
-system-option := :homepage string
-                 | :bug-tracker string
-                 | :mailto string
-                 | :long-name string
-                 | :source-control source-control
-                 | :version version-specifier
-                 | :entry-point object # @pxref{Entry point}
+# These are only available since ASDF 3 (actually its alpha release
+# 2.27)
+@defrule{system-option/asdf3} :homepage @var{string}
+                     | :bug-tracker @var{string}
+                     | :mailto @var{string}
+                     | :long-name @var{string}
+                     | :source-control @refrule{source-control}
+                     | :version @refrule{version-specifier}
+                     | :entry-point @var{object} # @pxref{Entry point}
 
-source-control := (keyword string)
+@defrule{source-control} ( @var{keyword} @var{string} )
 
-module-option := :components component-list
-                 | :serial [ t | nil ]
+@defrule{module-option} :components @refrule{component-list}
+               | :serial [ t | nil ]
 
-option :=
-        | :pathname pathname-specifier
-        | :default-component-class class-name
-        | :perform method-form
-        | :explain method-form
-        | :output-files method-form
-        | :operation-done-p method-form
-        | :if-feature feature-expression
-        | :depends-on ( @var{dependency-def}* )
-        | :in-order-to ( @var{dependency}+ )
+@defrule{option} :description @var{string}
+        | :long-description @var{string}
+        | :author @refrule{person-or-persons}
+        | :maintainer @refrule{person-or-persons}
+        | :pathname @refrule{pathname-specifier}
+        | :default-component-class @var{class-name}
+        | :perform @refrule{method-form}
+        | :explain @refrule{method-form}
+        | :output-files @refrule{method-form}
+        | :operation-done-p @refrule{method-form}
+        | :if-feature @refrule{feature-expression}
+        | :depends-on ( @refrule{dependency-def}* )
+        | :in-order-to ( @refrule{dependency}+ )
 
+@defrule{person-or-persons} @var{string} | ( @var{string}+ )
 
-system-list := ( @var{simple-component-name}* )
+@defrule{system-list} ( @refrule{simple-component-name}* )
 
-component-list := ( @var{component-def}* )
+@defrule{component-list} ( @refrule{component-def}* )
 
-component-def  := ( component-type simple-component-name @var{option}* )
+@defrule{component-def} ( @refrule{component-type} @refrule{simple-component-name} @refrule{option}* )
 
-component-type := :module | :file | :static-file | other-component-type
+@defrule{component-type} :module | :file | :static-file | @refrule{other-component-type}
 
-other-component-type := symbol-by-name
-                        # @pxref{Component types}
+@defrule{other-component-type} symbol-by-name # @pxref{Component types}
 
-# This is used in :depends-on, as opposed to ``dependency,''
-# which is used in :in-order-to
-dependency-def := simple-component-name
-               | ( :feature @var{feature-expression} dependency-def )
-                 # @pxref{Feature dependencies}
-               | ( :version simple-component-name version-specifier )
-               | ( :require module-name )
+# This is used in :depends-on, as opposed to "dependency", which is used
+# in :in-order-to
+@defrule{dependency-def} @refrule{simple-component-name}
+                | ( :feature @refrule{feature-expression} @refrule{dependency-def} ) # @pxref{Feature dependencies}
+                | ( :version @refrule{simple-component-name} @refrule{version-specifier} )
+                | ( :require @var{module-name} )
 
-# ``dependency'' is used in :in-order-to, as opposed to
-# ``dependency-def''
-dependency := (dependent-op @var{requirement}+)
-requirement := (required-op @var{required-component}+)
-dependent-op := operation-name
-required-op := operation-name
+# "dependency" is used in :in-order-to, as opposed to "dependency-def"
+@defrule{dependency} ( @refrule{dependent-op} @refrule{requirement}+ )
+@defrule{requirement} ( @refrule{required-op} @var{required-component}+ )
+@defrule{dependent-op} @refrule{operation-name}
+@defrule{required-op} @refrule{operation-name}
 
-simple-component-name := string
-                      |  symbol
+# NOTE: pathnames should be all lower case, and have no underscores,
+# although hyphens are permitted.
+@defrule{pathname-specifier} @var{pathname} | @var{string} | @var{symbol}
 
-pathname-specifier := pathname | string | symbol
-                   NOTE: pathnames should be all lower case, and have no
-                   underscores, although hyphens are permitted.
+@defrule{version-specifier} @var{string}
+                   | ( :read-file-form @refrule{pathname-specifier} @refrule{form-specifier}? )
+                   | ( :read-file-line @refrule{pathname-specifier} @refrule{line-specifier}? )
+@defrule{line-specifier} :at @var{integer} # base zero
+@defrule{form-specifier} :at [ @var{integer} | ( @var{integer}+ ) ]
 
+@defrule{method-form} ( @refrule{operation-name} @refrule{qual} @var{lambda-list} @Arest{} @var{body} )
+@defrule{qual} @refrule{method-qualifier}?
+@defrule{method-qualifier} :before | :after | :around
 
+@defrule{feature-expression} @var{keyword}
+                    | ( :and @refrule{feature-expression}* )
+                    | ( :or @refrule{feature-expression}* )
+                    | ( :not @refrule{feature-expression} )
 
-version-specifier := string
-                     | (:read-file-form <pathname-specifier> <form-specifier>?)
-                     | (:read-file-line <pathname-specifier> <line-specifier>?)
-line-specifier := :at integer # base zero
-form-specifier := :at [ integer | ( integer+ )]
-
-method-form := (operation-name qual lambda-list @Arest{} body)
-qual := method-qualifier?
-method-qualifier = :before | :after | :around
-
-feature-expression := keyword
-                      | (:and @var{feature-expression}*)
-                      | (:or @var{feature-expression}*)
-                      | (:not @var{feature-expression})
+@defrule{operation-name} @var{symbol}
 @end example
 
 @subsection System designators
@@ -1522,6 +1550,7 @@ System designators are either simple component names, or
 complex (``slashy'') component names.
 
 @subsection Simple component names (@code{simple-component-name})
+@anchor{Simple component names}
 
 Simple component names may be written as either strings or symbols.
 
@@ -1546,6 +1575,7 @@ problems will @emph{definitely} occur for users who have configured ASDF
 using logical pathnames.
 
 @subsection Complex component names
+@anchor{Complex component names}
 
 A complex component name is a master name followed by a slash, followed
 by a subsidiary name.  This allows programmers to put multiple system
@@ -1574,7 +1604,7 @@ the current package @code{my-system-asd} can be specified as
 allowed as component types for such children components.
 
 @subsection System class names
-@anchor {System class names}
+@anchor{System class names}
 
 A system class name will be looked up
 in the same way as a Component type (see above),
@@ -5232,8 +5262,11 @@ mailing list (@pxref{Mailing list}).
 @node Where do I report a bug?, Mailing list, FAQ, FAQ
 @section  ``Where do I report a bug?''
 @cindex bug tracker
+@cindex gitlab
 @cindex launchpad
-ASDF bugs are tracked on launchpad: @url{https://launchpad.net/asdf}.
+ASDF bugs are tracked on common-lisp.net's gitlab:: @url{https://gitlab.common-lisp.net/asdf/asdf/issues}.
+Previously, we had done bug-tracking on @code{launchpad.net}, but we are
+now consolidating project management on @code{common-lisp.net}.
 
 If you're unsure about whether something is a bug, or for general discussion,
 use the asdf-devel mailing list (@pxref{Mailing list}).
@@ -5970,6 +6003,7 @@ please complain to Zach Beane about it.
 @menu
 * How can I customize where fasl files are stored?::
 * How can I wholly disable the compiler output cache?::
+* How can I debug problems finding ASDF systems::
 @end menu
 
 @node How can I customize where fasl files are stored?, How can I wholly disable the compiler output cache?, Issues with configuring ASDF, Issues with configuring ASDF
@@ -5993,7 +6027,7 @@ in the source directory of some system, and
 use @code{asdf:apply-output-translations} to locate a file
 whose pathname has been translated by the facility.
 
-@node How can I wholly disable the compiler output cache?,  , How can I customize where fasl files are stored?, Issues with configuring ASDF
+@node How can I wholly disable the compiler output cache?, How can I debug problems finding ASDF systems, How can I customize where fasl files are stored?, Issues with configuring ASDF
 @subsection ``How can I wholly disable the compiler output cache?''
 
 To permanently disable the compiler output cache
@@ -6029,6 +6063,47 @@ use (after loading ASDF but before using it):
 Note that this does @emph{NOT} belong in a @file{.asd} file.
 Please do not tamper with ASDF configuration from a @file{.asd} file,
 and only do this from your personal configuration or build scripts.
+
+@node How can I debug problems finding ASDF systems,  , How can I wholly disable the compiler output cache?, Issues with configuring ASDF
+@comment  node-name,  next,  previous,  up
+@subsection How can I debug problems finding ASDF systems?
+
+Sometimes ASDF will be unable to find and load your systems, although
+you believe that it should be able to.  There are a number of things you
+can do to debug such issues.
+
+@vindex *central-registry*
+If you are using @code{asdf:*central-registry*} (@pxref{Configuring ASDF to find your systems --- old style}),
+you can
+simply look at the pathnames and namestrings in this variable, and use
+conventional tools such as @code{cl:probe-file} and @code{cl:directory}
+to poke around and see why your systems are not being found.
+
+If you are using one of the newer methods for configuring ASDF's system
+finding (@pxref{Controlling where ASDF searches for systems}), you can try:
+
+@vindex *source-registry*
+@example
+(alexandria:hash-table-alist asdf/source-registry::*source-registry*)
+@end example
+
+(alphabetizing the results here may be helpful). Or for a higher-level
+view:
+
+@findex flatten-source-registry
+@example
+(asdf/source-registry:flatten-source-registry)
+@end example
+
+Finally, if you use the source registry cache (@pxref{Caching Results}), you can:
+@example
+find ~/common-lisp -name .cl-source-registry.cache
+@end example
+at the shell.
+
+It is still, unfortunately, an open question how to monitor ASDF's
+interpretation of its source configuration as it happens.
+
 
 @node Issues with using and extending ASDF to define systems, ASDF development FAQs, Issues with configuring ASDF, FAQ
 @section Issues with using and extending ASDF to define systems
@@ -6421,9 +6496,10 @@ Also, bugs are currently tracked on launchpad:
 
 @itemize
 @item Andrey Mokhov, Neil Mitchell and Simon Peyton Jones:
-``Build Systems à la Carte'', 2018.
+  ``Build Systems à la Carte'',
+  International Conference on Functional Programming, 2018.
   @url{https://www.microsoft.com/en-us/research/uploads/prod/2018/03/build-systems-final.pdf}
-  This article provides axes along which to describe build systems in general;
+  This influential article provides axes along which to describe build systems in general;
   ASDF, in addition to being in-image (an axis not considered by these authors),
   has the following characteristics:
   ASDF's persistent build information is file modification times
@@ -6439,20 +6515,28 @@ Also, bugs are currently tracked on launchpad:
   in ``dynamic'' dependencies with a ``suspending'' scheduler.
   The rebuilder essentially uses a ``dirty bit'', except that the in-image model
   and the multiple phase support mean that's actually more than a bit:
-  instead three bits, the timestamp and a phase depth level.
+  instead it's three bits plus the timestamp plus a phase depth level.
   The build is guaranteed ``minimal'' in number of steps computed.
-  It is local; it assumes but does not enforce determinism;
-  it does not assume early cutoff of the build when rebuild dependencies didn't change.
+  It is local. It assumes but does not enforce determinism.
+  It does not assume early cutoff of the build when rebuild dependencies didn't change.
+@item Robert Goldman, Elias Pipping, and François-René Rideau:
+  ``Delivering Common Lisp Applications with ASDF 3.3'',
+  European Lisp Symposium, 2017.
+  @url{https://github.com/fare/asdf2017}
+  This short article gives an overview of the changes in ASDF 3.2 and 3.3, including
+  improved application delivery, asynchronous subprocess management,
+  correct support for multi-phase builds, and enhanced source location configuration.
 @item Francois-Rene Rideau:
-  ``ASDF 3, or Why Lisp is Now an Acceptable Scripting Language'', 2014.
+  ``ASDF 3, or Why Lisp is Now an Acceptable Scripting Language'',
+  European Lisp Symposium, 2014.
+  @url{https://github.com/fare/asdf3-2013}
   This article describes the innovations in ASDF 3 and 3.1,
   as well as historical information on previous versions.
-  @url{https://github.com/fare/asdf3-2013}
 @item Alastair Bridgewater:
   ``Quick-build'' (private communication), 2012.
   @code{quick-build} is a simple and robust one file, one package build system,
   similar to @code{faslpath}, in 182 lines of code
-  (117 of which are not blank, not comments, not docstrings).
+  (117 of which are neither blank nor comments nor docstrings).
   Unhappily, it remains unpublished and its IP status is unclear as of April 2014.
   @code{asdf/package-system} is mostly compatible with it,
   modulo a different setup for toplevel hierarchies.
@@ -6463,13 +6547,15 @@ Also, bugs are currently tracked on launchpad:
   @url{http://lispblog.xach.com/} (new)
   @url{http://xach.livejournal.com/} (old)
 @item Francois-Rene Rideau and Robert Goldman:
-  ``Evolving ASDF: More Cooperation, Less Coordination'', 2010.
+  ``Evolving ASDF: More Cooperation, Less Coordination'',
+  International Lisp Conference, 2010.
   This article describes the main issues solved by ASDF 2,
   and exposes its design principles.
   @url{https://common-lisp.net/project/asdf/ilc2010draft.pdf}
   @url{http://rpgoldman.goldman-tribe.org/papers/ilc2010-asdf.pdf}
 @item Francois-Rene Rideau and Spencer Brody:
-  ``XCVB: an eXtensible Component Verifier and Builder for Common Lisp'', 2009.
+  ``XCVB: an eXtensible Component Verifier and Builder for Common Lisp'',
+  International Lisp Conference, 2009.
   This article describes XCVB, a proposed competitor for ASDF;
   many of its ideas have been incorporated into ASDF 2 and 3,
   though many other ideas still haven't.
@@ -6482,7 +6568,7 @@ Also, bugs are currently tracked on launchpad:
   @url{https://code.google.com/p/faslpath/}
 @item Drew McDermott:
   ``A Framework for Maintaining the Coherence of a Running Lisp,''
-  International Lisp Conference, 2005, available in pre-print form at
+  International Lisp Conference, 2005.
   @url{http://www.cs.yale.edu/homes/dvm/papers/lisp05.pdf}
 @item Dan Barlow: ``ASDF Manual'', 2004.
   Older versions of this document from the days of ASDF 1;
@@ -6492,7 +6578,8 @@ Also, bugs are currently tracked on launchpad:
 @item Marco Antoniotti and Peter Van Eynde:
  ``@code{DEFSYSTEM}: A @code{make} for Common Lisp, A Thoughtful Re-Implementation of an Old Idea'', 2002.
   The @file{defsystem-4} proposal available in the CLOCC repository.
-@item Mark Kantrovitz: ``Defsystem: A Portable Make Facility for Common Lisp'', 1990.
+@item Mark Kantrovitz:
+  ``Defsystem: A Portable Make Facility for Common Lisp'', 1990.
   The classic @file{mk-defsystem}, later variants of which
   are available in the CLOCC repository as @code{defsystem-3.x}.
 @item Richard Elliot Robbins:
