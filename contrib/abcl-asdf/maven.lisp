@@ -305,13 +305,21 @@ of the mvn executable with an explicit value."
   (add-directory-jars-to-class-path *mvn-libs-directory* nil)
   (setf *init-p* t))
 
+;;; The AETHER-DIRECTORY parameter is conceptually a little broken:
+;;; because we can't "unload" jar files, we can't easily switch
+;;; between Maven implementation at runtime.  Maybe this would be
+;;; possible with some sort of classloader chaining, but such effort
+;;; is not currently deemed as worthwhile.  Instead, to change Aether
+;;; libraries, you'll have to restart ABCL.
 (defmacro with-aether ((&optional aether-directory) &body body)
-  "Ensure that the code in BODY is executed with the Maven Aether libraries on the classpath."
-  `(progn
-     (declare (ignore aether-directory)) ;;; FIXME
-     (unless abcl-asdf::*init-p*
-       (abcl-asdf::init))
-     ,@body))
+  "Ensure that the code in BODY is executed with the Maven Aether libraries on the classpath"
+  (if aether-directory
+      `(let ((*mvn-libs-directory* ,aether-directory))
+         (init :force t)
+         ,@body)
+      `(progn (unless *init-p*
+                (init))
+              ,@body)))
 
 (defun find-http-wagon ()
   "Find an implementation of the object that provides access to http and https resources.
@@ -326,7 +334,7 @@ maso2000 in the Manual.)"
       (java:jnew  "org.apache.maven.wagon.providers.http.LightweightHttpWagon"))))
 
 (defun make-wagon-provider ()
-  "Returns an implementation of the org.sonatype.aether.connector.wagon.WagonProvider contract.
+  "Returns an implementation of the org.sonatype.aether.connector.wagon.WagonProvider contract
 
 The implementation is specified as Lisp closures.  Currently, it only
 specializes the lookup() method if passed an 'http' or an 'https' role
