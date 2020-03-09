@@ -1,5 +1,5 @@
 ;;; -*- mode: Lisp; Base: 10 ; Syntax: ANSI-Common-Lisp ; buffer-read-only: t; -*-
-;;; This is ASDF 3.3.3: Another System Definition Facility.
+;;; This is ASDF 3.3.4: Another System Definition Facility.
 ;;;
 ;;; Feedback, bug reports, and patches are all welcome:
 ;;; please mail to <asdf-devel@common-lisp.net>.
@@ -1697,7 +1697,7 @@ form suitable for testing with #+."
 (in-package :uiop/version)
 
 (with-upgradability ()
-  (defparameter *uiop-version* "3.3.3")
+  (defparameter *uiop-version* "3.3.4")
 
   (defun unparse-version (version-list)
     "From a parsed version (a list of natural numbers), compute the version string"
@@ -1987,16 +1987,17 @@ use getenvp to return NIL in such a case."
 
   (defsetf getenv (x) (val)
     "Set an environment variable."
-      (declare (ignorable x val))
+    (declare (ignorable x val))
     #+allegro `(setf (sys:getenv ,x) ,val)
+    #+clasp `(ext:setenv ,x ,val)
     #+clisp `(system::setenv ,x ,val)
     #+clozure `(ccl:setenv ,x ,val)
     #+cmucl `(unix:unix-setenv ,x ,val 1)
-    #+ecl `(ext:setenv ,x ,val)
-    #+lispworks `(hcl:setenv ,x ,val)
+    #+(or ecl clasp) `(ext:setenv ,x ,val)
+    #+lispworks `(setf (lispworks:environment-variable ,x) ,val)
     #+mkcl `(mkcl:setenv ,x ,val)
     #+sbcl `(progn (require :sb-posix) (symbol-call :sb-posix :setenv ,x ,val 1))
-    #-(or allegro clisp clozure cmucl ecl lispworks mkcl sbcl)
+    #-(or allegro clasp clisp clozure cmucl ecl lispworks mkcl sbcl)
     '(not-implemented-error '(setf getenv)))
 
   (defun getenvp (x)
@@ -2175,7 +2176,8 @@ suitable for use as a directory name to segregate Lisp FASLs, C dynamic librarie
       #+(or cmucl scl) (unix:unix-chdir (ext:unix-namestring x))
       #+cormanlisp (unless (zerop (win32::_chdir (namestring x)))
                      (error "Could not set current directory to ~A" x))
-      #+(or clasp ecl) (ext:chdir x)
+      #+ecl (ext:chdir x)
+      #+clasp (ext:chdir x t)
       #+gcl (system:chdir x)
       #+lispworks (hcl:change-directory x)
       #+mkcl (mk-ext:chdir x)
@@ -3226,7 +3228,7 @@ Subdirectories should NOT be returned.
 override the default at your own risk.
   DIRECTORY-FILES tries NOT to resolve symlinks if the implementation permits this,
 but the behavior in presence of symlinks is not portable. Use IOlib to handle such situations."
-    (let ((dir (pathname directory)))
+    (let ((dir (ensure-directory-pathname directory)))
       (when (logical-pathname-p dir)
         ;; Because of the filtering we do below,
         ;; logical pathnames have restrictions on wild patterns.
@@ -3507,7 +3509,10 @@ resolving them with respect to GETCWD if the DEFAULTS were relative"
     "call the THUNK in a context where the current directory was changed to DIR, if not NIL.
 Note that this operation is usually NOT thread-safe."
     (if dir
-        (let* ((dir (resolve-symlinks* (get-pathname-defaults (pathname-directory-pathname dir))))
+        (let* ((dir (resolve-symlinks*
+                     (get-pathname-defaults
+                      (ensure-directory-pathname
+                       dir))))
                (cwd (getcwd))
                (*default-pathname-defaults* dir))
           (chdir dir)
@@ -3662,11 +3667,10 @@ the validation function designated (as per ENSURE-FUNCTION) by the VALIDATE keyw
 which in practice is thus compulsory, and validates by returning a non-NIL result.
 If you're suicidal or extremely confident, just use :VALIDATE T."
     (check-type if-does-not-exist (member :error :ignore))
+    (setf directory-pathname (ensure-pathname directory-pathname
+                                              :want-pathname t :want-non-wild t
+                                              :want-physical t :want-directory t))
     (cond
-      ((not (and (pathnamep directory-pathname) (directory-pathname-p directory-pathname)
-                 (physical-pathname-p directory-pathname) (not (wild-pathname-p directory-pathname))))
-       (parameter-error "~S was asked to delete ~S but it is not a physical non-wildcard directory pathname"
-              'delete-directory-tree directory-pathname))
       ((not validatep)
        (parameter-error "~S was asked to delete ~S but was not provided a validation predicate"
               'delete-directory-tree directory-pathname))
@@ -4166,6 +4170,8 @@ BEWARE: be sure to use WITH-SAFE-IO-SYNTAX, or some variant thereof"
   (defun read-file-forms (file &rest keys &key count &allow-other-keys)
     "Open input FILE with option KEYS (except COUNT),
 and read its contents as per SLURP-STREAM-FORMS with given COUNT.
+If COUNT is null, read to the end of the stream;
+if COUNT is an integer, stop after COUNT forms were read.
 BEWARE: be sure to use WITH-SAFE-IO-SYNTAX, or some variant thereof"
     (apply 'call-with-input-file file
            #'(lambda (input) (slurp-stream-forms input :count count))
@@ -4970,7 +4976,7 @@ This can help you produce more deterministic output for FASLs."))
         #+clozure '(ccl::*nx-speed* ccl::*nx-space* ccl::*nx-safety*
                     ccl::*nx-debug* ccl::*nx-cspeed*)
         #+(or cmucl scl) '(c::*default-cookie*)
-        #+clasp '()
+        #+clasp nil
         #+ecl (unless (use-ecl-byte-compiler-p) '(c::*speed* c::*space* c::*safety* c::*debug*))
         #+gcl '(compiler::*speed* compiler::*space* compiler::*compiler-new-safety* compiler::*debug*)
         #+lispworks '(compiler::*optimization-level*)
@@ -4981,7 +4987,8 @@ This can help you produce more deterministic output for FASLs."))
     #-(or abcl allegro clasp clisp clozure cmucl ecl lispworks mkcl sbcl scl xcl)
     (warn "~S does not support ~S. Please help me fix that."
           'get-optimization-settings (implementation-type))
-    #+(or abcl allegro clasp clisp clozure cmucl ecl lispworks mkcl sbcl scl xcl)
+    #+clasp (cleavir-env:optimize (cleavir-env:optimize-info CLASP-CLEAVIR:*CLASP-ENV*))
+    #+(or abcl allegro clisp clozure cmucl ecl lispworks mkcl sbcl scl xcl)
     (let ((settings '(speed space safety debug compilation-speed #+(or cmucl scl) c::brevity)))
       #.`(loop #+(or allegro clozure)
                ,@'(:with info = #+allegro (sys:declaration-information 'optimize)
@@ -4990,7 +4997,7 @@ This can help you produce more deterministic output for FASLs."))
                ,@(or #+(or abcl clasp ecl gcl mkcl xcl) '(:for v :in +optimization-variables+))
                :for y = (or #+(or allegro clozure) (second (assoc x info)) ; normalize order
                             #+clisp (gethash x system::*optimize* 1)
-                            #+(or abcl clasp ecl mkcl xcl) (symbol-value v)
+                            #+(or abcl ecl mkcl xcl) (symbol-value v)
                             #+(or cmucl scl) (slot-value c::*default-cookie*
                                                        (case x (compilation-speed 'c::cspeed)
                                                              (otherwise x)))
@@ -5004,13 +5011,15 @@ This can help you produce more deterministic output for FASLs."))
       (unless (equal *previous-optimization-settings* settings)
         (setf *previous-optimization-settings* settings))))
   (defmacro with-optimization-settings ((&optional (settings *optimization-settings*)) &body body)
-    #+(or allegro clisp)
-    (let ((previous-settings (gensym "PREVIOUS-SETTINGS")))
-      `(let ((,previous-settings (get-optimization-settings)))
+    #+(or allegro clasp clisp)
+    (let ((previous-settings (gensym "PREVIOUS-SETTINGS"))
+          (reset-settings (gensym "RESET-SETTINGS")))
+      `(let* ((,previous-settings (get-optimization-settings))
+              (,reset-settings #+clasp (reverse ,previous-settings) #-clasp ,previous-settings))
          ,@(when settings `((proclaim `(optimize ,@,settings))))
          (unwind-protect (progn ,@body)
-           (proclaim `(optimize ,@,previous-settings)))))
-    #-(or allegro clisp)
+           (proclaim `(optimize ,@,reset-settings)))))
+    #-(or allegro clasp clisp)
     `(let ,(loop :for v :in +optimization-variables+ :collect `(,v ,v))
        ,@(when settings `((proclaim `(optimize ,@,settings))))
        ,@body)))
@@ -5039,7 +5048,6 @@ This can help you produce more deterministic output for FASLs."))
      #+sbcl
      '(sb-c::simple-compiler-note
        "&OPTIONAL and &KEY found in the same lambda list: ~S"
-       #+sb-eval sb-kernel:lexical-environment-too-complex
        sb-kernel:undefined-alien-style-warning
        sb-grovel-unknown-constant-condition ; defined above.
        sb-ext:implicit-generic-function-warning ;; Controversial.
@@ -5050,6 +5058,10 @@ This can help you produce more deterministic output for FASLs."))
        sb-kernel:redefinition-with-defgeneric
        sb-kernel:redefinition-with-defmethod
        sb-kernel::redefinition-with-defmacro) ; not exported by old SBCLs
+     #+sbcl
+     (let ((condition (find-symbol* '#:lexical-environment-too-complex :sb-kernel nil)))
+       (when condition
+         (list condition)))
      '("No generic function ~S present when encountering macroexpansion of defmethod. Assuming it will be an instance of standard-generic-function.")) ;; from closer2mop
     "A suggested value to which to set or bind *uninteresting-conditions*.")
 
@@ -5524,7 +5536,8 @@ possibly in a different process. Otherwise just call THUNK."
     (or *compile-file-pathname* *load-pathname*))
 
   (defun load-pathname ()
-    "Portably return the LOAD-PATHNAME of the current source file or fasl"
+    "Portably return the LOAD-PATHNAME of the current source file or fasl.
+    May return a relative pathname."
     *load-pathname*) ;; magic no longer needed for GCL.
 
   (defun lispize-pathname (input-file)
@@ -5603,6 +5616,8 @@ it will filter them appropriately."
              (or object-file
                  (compile-file-pathname output-file :fasl-p nil)))
            (tmp-file (tmpize-pathname physical-output-file))
+           #+clasp
+           (tmp-object-file (compile-file-pathname tmp-file :output-type :object))
            #+sbcl
            (cfasl-file (etypecase emit-cfasl
                          (null nil)
@@ -5628,7 +5643,7 @@ it will filter them appropriately."
                                     (list* tmp-file keywords)))
                     #+clasp (apply 'compile-file input-file :output-file
                                   (if object-file
-                                      (list* object-file :output-type :object #|:system-p t|# keywords)
+                                      (list* tmp-object-file :output-type :object #|:system-p t|# keywords)
                                       (list* tmp-file keywords)))
                     #+mkcl (apply 'compile-file input-file
                                   :output-file object-file :fasl-p nil keywords)))))
@@ -5643,14 +5658,13 @@ it will filter them appropriately."
                   (when (and #+(or clasp ecl) object-file)
                     (setf output-truename
                           (compiler::build-fasl tmp-file
-                           #+(or clasp ecl) :lisp-files #+mkcl :lisp-object-files (list object-file))))
+                           #+(or clasp ecl) :lisp-files #+mkcl :lisp-object-files (list #+clasp tmp-object-file #-clasp object-file))))
                   (or (not compile-check)
                       (apply compile-check input-file
                              :output-file output-truename
                              keywords))))
            (delete-file-if-exists physical-output-file)
            (when output-truename
-             #+clasp (when output-truename (rename-file-overwriting-target tmp-file output-truename))
              ;; see CLISP bug 677
              #+clisp
              (progn
@@ -5658,6 +5672,21 @@ it will filter them appropriately."
                (unless lib-file (setf lib-file (make-pathname :type "lib" :defaults physical-output-file)))
                (rename-file-overwriting-target tmp-lib lib-file))
              #+sbcl (when cfasl-file (rename-file-overwriting-target tmp-cfasl cfasl-file))
+             #+clasp
+             (progn
+               ;;; the following 4 rename-file-overwriting-target better be atomic, but we can't implement this right now
+               #+:target-os-darwin
+               (let ((temp-dwarf (pathname (strcat (namestring output-truename) ".dwarf")))
+                     (target-dwarf (pathname (strcat (namestring physical-output-file) ".dwarf"))))
+                 (when (probe-file temp-dwarf)
+                   (rename-file-overwriting-target temp-dwarf target-dwarf)))
+               ;;; need to rename the bc or ll file as well or test-bundle.script fails
+               ;;; They might not exist with parallel compilation
+               (let ((bitcode-src (compile-file-pathname tmp-file :output-type :bitcode))
+                     (bitcode-target (compile-file-pathname physical-output-file :output-type :bitcode)))
+                 (when (probe-file bitcode-src)
+                   (rename-file-overwriting-target bitcode-src bitcode-target)))
+               (rename-file-overwriting-target tmp-object-file object-file))
              (rename-file-overwriting-target output-truename physical-output-file)
              (setf output-truename (truename physical-output-file)))
            #+clasp (delete-file-if-exists tmp-file)
@@ -7185,7 +7214,7 @@ directive.")
             (if wilden (wilden p) p))))
        ((eql :home) (user-homedir-pathname))
        ((eql :here) (resolve-absolute-location
-                     (or *here-directory* (pathname-directory-pathname (load-pathname)))
+                     (or *here-directory* (pathname-directory-pathname (truename (load-pathname))))
                      :ensure-directory t :wilden nil))
        ((eql :user-cache) (resolve-absolute-location
                            *user-cache* :ensure-directory t :wilden nil)))
@@ -7599,7 +7628,7 @@ previously-loaded version of ASDF."
          ;; "3.4.5.67" would be a development version in the official branch, on top of 3.4.5.
          ;; "3.4.5.0.8" would be your eighth local modification of official release 3.4.5
          ;; "3.4.5.67.8" would be your eighth local modification of development version 3.4.5.67
-         (asdf-version "3.3.3")
+         (asdf-version "3.3.4")
          (existing-version (asdf-version)))
     (setf *asdf-version* asdf-version)
     (when (and existing-version (not (equal asdf-version existing-version)))
@@ -11408,8 +11437,10 @@ system names contained using COERCE-NAME. Return the result."
            (coerce-name (component-system component))))
         component)))
 
+  ;; the following are all systems that Stas Boukarev maintains and refuses to fix,
+  ;; hoping instead to make my life miserable. Instead, I just make ASDF ignore them.
   (defparameter* *known-systems-with-bad-secondary-system-names*
-    (list-to-hash-set '("cl-ppcre")))
+    (list-to-hash-set '("cl-ppcre" "cl-interpol")))
   (defun known-system-with-bad-secondary-system-names-p (asd-name)
     ;; Does .asd file with name ASD-NAME contain known exceptions
     ;; that should be screened out of checking for BAD-SYSTEM-NAME?
@@ -11724,7 +11755,7 @@ for all the linkable object files associated with the system or its dependencies
                                      "--all-systems"
                                      ;; These use a different type .fasb or .a instead of .fasl
                                      #-(or clasp ecl mkcl) "--system"))))
-                          (format nil "~A~@[~A~]" (component-name c) suffix))))
+                          (format nil "~A~@[~A~]" (coerce-filename (component-name c)) suffix))))
               (type (bundle-pathname-type bundle-type)))
           (values (list (subpathname (component-pathname c) name :type type))
                   (eq (class-of o) (coerce-class (component-build-operation c)
@@ -11895,14 +11926,23 @@ or of opaque libraries shipped along the source code."))
 ;;;
 (with-upgradability ()
   (defmethod output-files ((o deliver-asd-op) (s system))
-    (list (make-pathname :name (component-name s) :type "asd"
+    (list (make-pathname :name (coerce-filename (component-name s)) :type "asd"
                          :defaults (component-pathname s))))
 
+  ;; because of name collisions between the output files of different
+  ;; subclasses of DELIVER-ASD-OP, we cannot trust the file system to
+  ;; tell us if the output file is up-to-date, so just treat the
+  ;; operation as never being done.
+  (defmethod operation-done-p ((o deliver-asd-op) (s system))
+    (declare (ignorable o s))
+    nil)
+
   (defmethod perform ((o deliver-asd-op) (s system))
+    "Write an ASDF system definition for loading S as a delivered system."
     (let* ((inputs (input-files o s))
            (fasl (first inputs))
            (library (second inputs))
-           (asd (first (output-files o s)))
+           (asd (output-file o s))
            (name (if (and fasl asd) (pathname-name asd) (return-from perform)))
            (version (component-version s))
            (dependencies
@@ -11914,7 +11954,7 @@ or of opaque libraries shipped along the source code."))
                                                        :keep-operation 'basic-load-op))
                  (while-collecting (x) ;; resolve the sideway-dependencies of s
                    (map-direct-dependencies
-                    'load-op s
+                    'prepare-op s
                     #'(lambda (o c)
                         (when (and (typep o 'load-op) (typep c 'system))
                           (x c)))))))
@@ -11928,12 +11968,17 @@ which is probably not what you want; you probably need to tweak your output tran
                              :if-does-not-exist :create)
         (format s ";;; Prebuilt~:[~; monolithic~] ASDF definition for system ~A~%"
                 (operation-monolithic-p o) name)
-        (format s ";;; Built for ~A ~A on a ~A/~A ~A~%"
-                (lisp-implementation-type)
-                (lisp-implementation-version)
-                (software-type)
-                (machine-type)
-                (software-version))
+        ;; this can cause bugs in cases where one of the functions returns a multi-line
+        ;; string
+        (let ((description-string (format nil ";;; Built for ~A ~A on a ~A/~A ~A"
+                    (lisp-implementation-type)
+                    (lisp-implementation-version)
+                    (software-type)
+                    (machine-type)
+                    (software-version))))
+          ;; ensure the whole thing is on one line
+          (print (remove-if #'(lambda (x) (member x (list #\newline #\return))) description-string) s)
+          (terpri s))
         (let ((*package* (find-package :asdf-user)))
           (pprint `(defsystem ,name
                      :class prebuilt-system
@@ -11949,7 +11994,7 @@ which is probably not what you want; you probably need to tweak your output tran
     (let* ((input-files (input-files o c))
            (fasl-files (remove (compile-file-type) input-files :key #'pathname-type :test-not #'equalp))
            (non-fasl-files (remove (compile-file-type) input-files :key #'pathname-type :test #'equalp))
-           (output-files (output-files o c))
+           (output-files (output-files o c)) ; can't use OUTPUT-FILE fn because possibility it's NIL
            (output-file (first output-files)))
       (assert (eq (not input-files) (not output-files)))
       (when input-files
@@ -12232,6 +12277,10 @@ the DEFPACKAGE-FORM uses it or imports a symbol from it."
                  (dolist (p arguments) (dep (string p))))
                 ((:import-from :shadowing-import-from)
                  (dep (string (first arguments))))
+                #+sbcl
+                ((:local-nicknames)
+                 (loop* :for (local-nickname actual-package-name) :in arguments :do
+                      (dep (string actual-package-name))))
                 ((:nicknames :documentation :shadow :export :intern :unintern :recycle)))))
      :from-end t :test 'equal))
 
