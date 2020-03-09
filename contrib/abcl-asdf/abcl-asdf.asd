@@ -13,11 +13,11 @@
             :pathname "" 
             :components ((:file "abcl-asdf")
                          (:file "asdf-jar" :depends-on ("abcl-asdf")))
-            :depends-on (package))
+            :depends-on (package maven))
    (:module maven
             :pathname "" 
             :components ((:file "maven")
                          (:file "mvn-module"))
-            :depends-on (base)))
+            :depends-on (package)))
   :in-order-to ((test-op (test-op abcl-asdf-tests))))
 

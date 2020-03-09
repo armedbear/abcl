@@ -135,7 +135,12 @@ single entry denoting a remote binary artifact."
         (unless (java:jinstance-of-p (java:java-exception-cause e)
                                      "java.lang.ClassNotFoundException")
           (error "Unexpected Java exception~&~A.~&" e))))
-    (if (find-mvn)
+    (if (ignore-errors 
+          (progn
+            ;;; TODO: clean this up 
+            (unless *init-p*
+              (init))
+            (ensure-mvn-version)))
         (resolve-dependencies group-id artifact-id
                               :version version
                               :repository NIL
