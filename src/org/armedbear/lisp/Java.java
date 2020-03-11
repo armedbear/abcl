@@ -1122,8 +1122,8 @@ public final class Java
                 return true;
             }
             if (Byte.class.equals(to)
-                && Byte.MAX_VALUE >= v
-                && v >= Byte.MIN_VALUE) {
+                && 255 >= v
+                && v >= 0) {
                 return true;
             }
         // Java 8 introduces BigInteger.longValueExact() which will make the following much easier
