@@ -54,11 +54,11 @@
 (prove:plan 1)
 (prove:is
  (handler-case
-     (let ((buffer (jstatic-raw "allocate" "java.nio.ByteBuffer" 1024))
+     (let ((buffer (jstatic-raw "allocate" "java.nio.ByteBuffer" 1))
            (value #xf0)) ;; a "byte" between 127 and 255
        (jcall "put" buffer value)
        (= value
-          (jcall "get" buffer)))
+          (+ 256 (jcall "get" buffer 0))))
    (error (e)
      nil))
  t
