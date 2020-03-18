@@ -561,6 +561,11 @@ public class Symbol extends LispObject implements java.io.Serializable
       return symbolName;
     if (currentPackage.findInternalSymbol(name) == this)
       return symbolName;
+    // Is this symbol exported from a used package?
+    if (currentPackage.occursAsExternalInUsedPackages(symbolName) != null) {
+      return symbolName;
+    }
+
     // Package prefix is necessary.
     String packageName = ((Package)pkg).getName();
     if (currentPackage.getLocallyNicknamedPackages().contains(pkg)) {

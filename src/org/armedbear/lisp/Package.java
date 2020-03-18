@@ -251,6 +251,25 @@ public final class Package extends LispObject implements java.io.Serializable
         return findAccessibleSymbol(new SimpleString(name));
     }
 
+    public Symbol occursAsExternalInUsedPackages(String name) {
+        return occursAsExternalInUsedPackages(new SimpleString(name));
+    }
+
+    public Symbol occursAsExternalInUsedPackages(SimpleString name) {
+        if (useList instanceof Cons) {
+            LispObject usedPackages = useList;
+            while (usedPackages != NIL) {
+                Package pkg = (Package) usedPackages.car();
+                Symbol symbol = pkg.findExternalSymbol(name);
+                if (symbol != null) {
+                    return symbol;
+                }
+                usedPackages = usedPackages.cdr();
+            }
+        }
+        return null;
+    }
+
     // Returns null if symbol is not accessible in this package.
     public Symbol findAccessibleSymbol(SimpleString name)
 
@@ -263,15 +282,9 @@ public final class Package extends LispObject implements java.io.Serializable
         if (symbol != null)
             return symbol;
         // Look in external symbols of used packages.
-        if (useList instanceof Cons) {
-            LispObject usedPackages = useList;
-            while (usedPackages != NIL) {
-                Package pkg = (Package) usedPackages.car();
-                symbol = pkg.findExternalSymbol(name);
-                if (symbol != null)
-                    return symbol;
-                usedPackages = usedPackages.cdr();
-            }
+        symbol = occursAsExternalInUsedPackages(name);
+        if (symbol != null) {
+            return symbol;
         }
         // Not found.
         return null;
@@ -290,16 +303,9 @@ public final class Package extends LispObject implements java.io.Serializable
         if (symbol != null)
             return thread.setValues(symbol, Keyword.INTERNAL);
         // Look in external symbols of used packages.
-        if (useList instanceof Cons) {
-            LispObject usedPackages = useList;
-            while (usedPackages != NIL) {
-                Package pkg = (Package) usedPackages.car();
-                symbol = pkg.findExternalSymbol(s);
-                if (symbol != null)
-                    return thread.setValues(symbol, Keyword.INHERITED);
-                usedPackages = usedPackages.cdr();
-            }
-        }
+        symbol = occursAsExternalInUsedPackages(name);
+        if (symbol != null)
+            return thread.setValues(symbol, Keyword.INHERITED);
         // Not found.
         return thread.setValues(NIL, NIL);
     }
