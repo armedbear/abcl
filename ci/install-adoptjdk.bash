@@ -17,24 +17,24 @@ function determine_adoptjdk() {
         Darwin)
             case $jdk in
                 openjdk8)
-                    topdir=jdk8u232-b09
-                    dist="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u232-b09/OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
+                    topdir=jdk8u242-b08
+                    dist="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u242-b08/OpenJDK8U-jdk_x64_mac_hotspot_8u242b08.tar.gz"
                     ;;
                 openjdk11)
-                    topdir=jdk-11.0.5+10
-                    dist="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.5%2B10/OpenJDK11U-jdk_x64_mac_hotspot_11.0.5_10.tar.gz"
+                    topdir=jdk-11.0.6+10
+                    dist="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.6%2B10/OpenJDK11U-jdk_x64_mac_hotspot_11.0.6_10.tar.gz"
                     ;;
             esac
             ;;
         Linux)
             case $jdk in
                 openjdk8)
-                    topdir=jdk8u232-b09
-                    dist="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/${topdir}/OpenJDK8U-jdk_x64_linux_hotspot_8u232b09.tar.gz"
+                    topdir=jdk8u242-b08
+                    dist="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u242-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u242b08.tar.gz"
                     ;;
                 openjdk11)
-                    topdir=jdk-11.0.5+10
-                    dist="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.5%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.5_10.tar.gz"
+                    topdir=jdk-11.0.6+10
+                    dist="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.6%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.6_10.tar.gz"
                     ;;
             esac
             ;;
