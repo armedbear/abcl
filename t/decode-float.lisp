@@ -13,9 +13,9 @@
       (let ((radix (float-radix float)))
         (let ((lower (/ 1 radix)))
           (prove:ok
-           (and (>= quotient lower)
-                (< quotient 1))
-           (format nil "Whether ~a is between ~a and 1…" quotient lower)))))))
+           (and (< quotient 1)
+                (>= quotient lower))
+           (format nil "Whether ~a lies within (1 ~a]" quotient lower)))))))
 
 ;;; <https://github.com/armedbear/abcl/issues/94>
 (let ((floats `(,least-positive-normalized-double-float
@@ -31,9 +31,9 @@
       (let ((radix (float-radix float)))
         (let ((lower (/ 1 radix)))
           (prove:ok
-           (and (>= quotient lower)
-                (< quotient 1))
-           (format nil "Whether ~a is between ~a and 1…" quotient lower)))))))
+           (and (< quotient 1)
+                (>= quotient lower))
+           (format nil "Whether ~a lies within  (1 ~a]" quotient lower)))))))
 
 ;;; <https://github.com/armedbear/abcl/issues/95>
 (let ((floats `(1d0 ,most-positive-double-float ,least-positive-double-float)))
