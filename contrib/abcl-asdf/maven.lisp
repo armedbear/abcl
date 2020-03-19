@@ -97,35 +97,26 @@ Emits warnings if not able to find a suitable executable."
                     (ensure-mvn-version))
             (warn "M2 was set to '~A' in the process environment but '~A' doesn't exist." 
                   m2 mvn-path))))
-    (let* ((which-cmd 
+    (let ((which-cmd 
             (if (find :unix *features*)
                 "which" 
                 ;; Starting with Windows Server 2003
-                "where.exe"))
-           (which-cmd-p 
-            (handler-case
-                (multiple-value-bind (output error)
-                    (uiop:run-program which-cmd :output :string :error-output :string :ignore-error-status t)
-                  (if (> (length error) 0)
-                      t
-                      nil))
-              (t () nil))))
-      (when which-cmd-p
-        (dolist (mvn-path *mavens*)
-          (let ((mvn 
-                 (handler-case
-                     (truename 
-                      (string-trim
-                       '(#\space #\newline #\return #\tab)
-                       (uiop:run-program
-                        (format nil "~a ~a" which-cmd mvn-path)
-                        :output :string)))
-                   (t (e) 
-                     (format cl:*load-verbose*
-                             "~&; abcl-asdf; Failed to find Maven executable '~a' in PATH because~%~a" 
-                             mvn-path e)))))
-            (when mvn
-              (return-from find-mvn mvn))))))
+                "where.exe")))
+      (dolist (mvn-path *mavens*)
+	(let ((mvn 
+	       (handler-case
+		   (truename 
+		    (string-trim
+		     '(#\space #\newline #\return #\tab)
+		     (uiop:run-program
+		      (format nil "~a ~a" which-cmd mvn-path)
+		      :output :string)))
+		 (t (e) 
+		   (format cl:*load-verbose*
+			   "~&; abcl-asdf; Failed to find Maven executable '~a' in PATH because~%~a" 
+			   mvn-path e)))))
+	  (when mvn
+	    (return-from find-mvn mvn)))))
   (warn "Unable to locate Maven executable to find Maven Aether adaptors.")))
 
 (defun find-mvn-libs ()
