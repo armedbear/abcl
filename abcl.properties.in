@@ -22,8 +22,10 @@ abcl.javac.source=1.6
 # Base JVM settings that work on all supported platforms
 java.options=-XshowSettings:vm -Dfile.encoding=UTF-8
 
-# Java 11 
-#java.options= 
+# Java 11
+# Java 11
+# <https://blog.gceasy.io/2020/03/18/7-jvm-arguments-of-highly-effective-applications/>
+#java.options=${java.options} -XX:+UseZGC
 
 # Maximum safe performance on JDK8
 #java.options=-d64  -XX:+UseG1GC -XshowSettings:vm -Dfile.encoding=UTF-8 -XX:+AggressiveOpts -XX:CompileThreshold=10
