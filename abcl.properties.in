@@ -27,6 +27,9 @@ java.options=-XshowSettings:vm -Dfile.encoding=UTF-8
 # <https://blog.gceasy.io/2020/03/18/7-jvm-arguments-of-highly-effective-applications/>
 #java.options=${java.options} -XX:+UseZGC
 
+# Verbose Garbage Collection
+#java.options=${java.options} -verbose:gc
+
 # Maximum safe performance on JDK8
 #java.options=-d64  -XX:+UseG1GC -XshowSettings:vm -Dfile.encoding=UTF-8 -XX:+AggressiveOpts -XX:CompileThreshold=10
 
