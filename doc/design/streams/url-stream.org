@@ -1,0 +1,25 @@
+#+TITLE Notes on the implementation org.armedbear.lisp.URLStream
+
+* Working with URLStream 
+
+#+BEGIN_SRC n3
+<urn:abcl.org/java/src/org/armedbear/lisp/URLStream.java> :extends CL:STREAM .
+#+END_SRC
+
+* Test
+
+#+BEGIN_SRC lisp
+  (ql:quickload :prove)
+  (prove:run (asdf:system-relative-pathname :abcl "t/url-stream.lisp"))
+#+END_SRC
+
+* Changes
+
+** <2020-04-18 Sat> Added accessors to underlying data
+
+Used by Jeannie <https://gitlab.common-lisp.net/mevenson/jeannie/> to
+get an InputStream from a URI.
+
+
+
+

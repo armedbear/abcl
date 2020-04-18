@@ -46,7 +46,7 @@ import java.io.BufferedReader;
 /** 
  * Stream interface for a URL.
  * 
- * This only supports reading from the stream.
+ * Currently only supports reading from the stream.
  */
 public final class URLStream extends Stream
 {
@@ -117,6 +117,29 @@ public final class URLStream extends Stream
         return pathname;
     }
 
+    // unused 20200418 ME
+    public Reader getReader()
+    {
+        return reader;
+    }
+
+    /**
+     * Accessing the underlying java.io.InputStream can be helpful
+     * when utlizing Java-side frameworks like Apache Jena built on
+     * the java.io abstractions.  State should only be mutated if you
+     * know what you are doing.
+     * 
+     * c.f. <https://gitlab.common-lisp.net/mevenson/jeannie/>
+     **/
+    public InputStream getInputStream()
+    {
+        return input;
+    }
+
+    // unused 20200418 ME
+    public int getBytesPerUnit() {
+        return bytesPerUnit;
+    }
     @Override
     public void _close()
     {
