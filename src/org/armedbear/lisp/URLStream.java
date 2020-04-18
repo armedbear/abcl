@@ -117,6 +117,14 @@ public final class URLStream extends Stream
         return pathname;
     }
 
+    // accessing the underlying java.io.InputStream can be helpful
+    // when utlizing Java-side frameworks like Apache Jena built on
+    // the java.io abstractions.
+    public InputStream getInputStream()
+    {
+        return input;
+    }
+
     @Override
     public void _close()
     {
