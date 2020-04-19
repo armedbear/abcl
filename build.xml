@@ -1193,17 +1193,25 @@ user.dir
 -->
 
 <target name="abcl.build.diagnostic" description="Emit diagnostics describing available hosting JVM properties.">
-  <echo>:java.version    ${java.version}</echo>
-  <echo>:java.vendor     ${java.vendor}</echo>
-  <echo>:java.vm.vendor  ${java.vm.vendor}</echo>
-  <echo>:java.vm.name    ${java.vm.name}</echo>
+  <echo>
+JVM System Properties
+=====================
+:java.version    ${java.version}
+:java.vendor     ${java.vendor}
+:java.vm.vendor  ${java.vm.vendor}
+:java.vm.name    ${java.vm.name}
 
-  <echo>:os.name    ${os.name}</echo>
-  <echo>:os.arch    ${os.arch}</echo>
-  <echo>:os.version ${os.version}</echo>
+:os.name         ${os.name}
+:os.arch         ${os.arch}
+:os.version      ${os.version}
   
-  <echo>:java.specification.version       ${java.specification.version}</echo>
-  <echo>:java.vm.specification.version    ${java.vm.specification.version}</echo>
+:java.specification.version
+                 ${java.specification.version}
+:java.vm.specification.version
+                 ${java.vm.specification.version}
+  </echo>
+
+  <echoproperties/>
 </target>
 
     <target name="abcl.release" 
