@@ -33,6 +33,8 @@ install:
   - bash -x ${TRAVIS_BUILD_DIR}/ci/install-adoptjdk.bash ${ABCL_JDK}
   # Ensure we can invoke ant
   - . ${TRAVIS_BUILD_DIR}/ci/ensure-jenv-is-present.bash && ant abcl.diagnostic
+  # Set build and runtime options for the JVM hosting ABCL
+  - bash -x ./ci/create-abcl-properties.bash ${ABCL_JDK}
   # Build ABCL
   - . ${TRAVIS_BUILD_DIR}/ci/ensure-jenv-is-present.bash && ant abcl
   # Configure finding abcl build source via ASDF
