@@ -27,6 +27,7 @@ addons:
 env:
   - ABCL_JDK=openjdk8
   - ABCL_JDK=openjdk11
+  - ABCL_JDK=openjdk14
 
 install:
   - echo $(pwd)

@@ -1244,6 +1244,15 @@ JVM System Properties
             tofile="${dist.dir}/asdf.pdf"/>
     </target>
 
+    <target name="abcl.properties.autoconfigure.openjdk.11">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        
+        <arg value="openjdk11"/>
+      </exec>
+    </target>
+          
     <import file="etc/ant/netbeans-build.xml"
             optional="true"/> 
     <import file="etc/ant/build-snapshot.xml"
