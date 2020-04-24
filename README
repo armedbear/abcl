@@ -141,7 +141,17 @@ The build may be customized by copying <file:abcl.properties.in> to
 incrementally as well as optimizing the runtime for a contemporary
 64bit desktop/server machine running Java 8 or 11.  The file contains
 incomplete documentation on how it may be edited for subsequent
-customization.
+customization.  As an alternative to copying the prototype, if one has
+a version of bash locally, one may issue via Ant
+
+    ant abcl.properties.autoconfigure.openjdk.11
+
+or from the shell as
+
+    bash ci/create-abcl-properties.bash openjdk11
+
+Currently upported platforms are 'openjdk6', 'openjdk7', 'openjdk8',
+'openjdk11', 'openjdk13', and 'openjdk14'.
 
 
 Using NetBeans
