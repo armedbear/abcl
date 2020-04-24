@@ -26,9 +26,14 @@ java.options=-XshowSettings:vm -Dfile.encoding=UTF-8
 ## will NOT work.  Instead one has to "manually" create lines
 
 #<>
+# <java/runtime> ( openjdk11, openjdk13, openjdk14 ) ;
+#
+#java.options=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -Xmx<size> -Xlog:gc
+
+#<>
 #  <java/runtime> openjdk11 ;
 #  rdfs:seeAlso <https://blog.gceasy.io/2020/03/18/7-jvm-arguments-of-highly-effective-applications/> ;
-#java.options=-XX:+UseZGC
+#java.options=-XX:CompileThreshold=10
 
 #<>
 #  <java/runtime> openjdk8 ;
