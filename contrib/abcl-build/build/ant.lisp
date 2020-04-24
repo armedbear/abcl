@@ -74,11 +74,15 @@
      ,@body))
 
 (defun ant/call (ant-file target-or-targets)
-  (let (ant)
+  (let ((ant-file-pathname (if (typep ant-file 'pathname)
+                               ant-file
+                               (merge-pathnames ant-file)))
+        ant)
     (with-ensured-ant (ant)
+      (warn "About to invoke synchronous call to run external proccess…")
       (uiop:run-program
        `(,ant "-buildfile"
-              ,(stringify ant-file)
+              ,(stringify ant-file-pathname)
               ,@(listify target-or-targets))
        :output :string))))
 
