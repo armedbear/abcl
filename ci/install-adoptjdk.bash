@@ -17,12 +17,12 @@ function determine_adoptjdk() {
         Darwin)
             case $jdk in
                 openjdk8)
-                    topdir=jdk8u242-b08
-                    dist="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u242-b08/OpenJDK8U-jdk_x64_mac_hotspot_8u242b08.tar.gz"
+                    topdir=jdk8u252-b09
+                    dist="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u252-b09/OpenJDK8U-jdk_x64_mac_hotspot_8u252b09.tar.gz"
                     ;;
                 openjdk11)
-                    topdir=jdk-11.0.6+10
-                    dist="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.6%2B10/OpenJDK11U-jdk_x64_mac_hotspot_11.0.6_10.tar.gz"
+                    topdir=jdk-11.0.7+10
+                    dist="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10/OpenJDK11U-jdk_x64_mac_hotspot_11.0.7_10.tar.gz"
                     ;;
                 openjdk14)
                     topdir=jdk-14.0.1+7
@@ -33,12 +33,12 @@ function determine_adoptjdk() {
         Linux)
             case $jdk in
                 openjdk8)
-                    topdir=jdk8u242-b08
-                    dist="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u242-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u242b08.tar.gz"
+                    topdir=jdk8u252-b09
+                    dist="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u252-b09/OpenJDK8U-jdk_x64_linux_hotspot_8u252b09.tar.gz"
                     ;;
                 openjdk11)
-                    topdir=jdk-11.0.6+10
-                    dist="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.6%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.6_10.tar.gz"
+                    topdir=jdk-11.0.7+10
+                    dist="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.7_10.tar.gz"
                     ;;
                 openjdk14)
                     topdir=jdk-14.0.1+7
