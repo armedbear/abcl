@@ -74,8 +74,8 @@ After you have downloaded a binary release from either [the
 distributed Maven POM graph][maven-abcl] or from
 [abcl.org][abcl.org-release] archive unpack it into its own
 directory. To run ABCL directly from this directory, make sure Java
-(Java 6, 7, 8, and 11 are supported by ABCL 1.6.1) is in your shell's
-path.
+(Java 6, 7, 8, 11, 13, and 14 are supported by ABCL 1.6.1) is in your
+shell's path.
 
 [maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.6.1>
 [maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.6.1>
@@ -117,10 +117,10 @@ ABCL may be built from its source code by executing the build
 instructions <file:build.xml> expressed by the venerable Apache Ant
 tool.
 
-To build, one must have a Java 6, 7, 8 or 11 Java Development Kit
-(JDK) installed locally. Just the Java Runtime Environment (JRE) isn't
-enough, as you need the Java compiler ('javac') to compile the Java
-source of the ABCL implementation.
+To build, one must have a Java 6, 7, 8, 11, 13 or 14 Java Development
+Kit (JDK) installed locally. Just the Java Runtime Environment (JRE)
+isn't enough, as you need the Java compiler ('javac') to compile the
+Java source of the ABCL implementation.
 
 Download a binary distribution [Ant version 1.7.1 or greater][ant].
 Unpack the files somewhere convenient, ensuring that the 'ant' (or
