@@ -51,6 +51,7 @@
 
 ;; TODO after this routines executes *ANT-EXECUTABLE-DIRECTORY* and XDG/ANT-EXECUTABLE will work
 (defun ensure-ant (&key (ant-home nil ant-home-p))
+  "Ensure that Apache Ant may be invoked, installing one if necessary"
   (cond
     ((and (null ant-home) ant-home-p)
      (warn "Unimplemented explicit auto-configuration run."))
@@ -74,6 +75,7 @@
      ,@body))
 
 (defun ant/call (ant-file target-or-targets)
+  "Synchronously invoke external Apache Ant on ANT-FILE with TARGET-OR-TARGETS"
   (let ((ant-file-pathname (if (typep ant-file 'pathname)
                                ant-file
                                (merge-pathnames ant-file)))
@@ -84,9 +86,6 @@
        `(,ant "-buildfile"
               ,(stringify ant-file-pathname)
               ,@(listify target-or-targets))
+       :ignore-error-status t
+       :error-output :string
        :output :string))))
-
-
-
-
-    
