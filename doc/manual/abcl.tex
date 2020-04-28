@@ -11,7 +11,7 @@
 \title{Armed Bear Common Lisp User Manual}
 \date{Version 1.6.1\\
 \smallskip
-Unreleased}
+April 2020}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -24,13 +24,14 @@ Unreleased}
 Long overdue, we turn our Java to 11.
 
 Reflecting the management's best estimates as to implementation most
-easily available to the potential \textsc{ABCL} 1.6 User, the
-implementation for this edition works best with Java 8 or Java 11
-runtimes.  Since freely available implementations of jdk6 and jdk7
-exist, we still strive to maintain compatibility with the Java 6 and
-Java 7 runtime environments but those environments are less tested.
-The User may need to use the facilities of the ABCL-BUILD contrib to
-recompile the implementation locally in more exotic runtimes.
+easily available to the potential \textsc{ABCL} 1.6 User, the Seventh
+release implementation works best with Java 8 or Java 11 runtimes.
+Since freely available implementations of jdk6 and jdk7 exist, we
+still strive to maintain compatibility with the Java 6 and Java 7
+runtime environments but those environments are less tested.  The User
+may need to use the facilities of the ABCL-BUILD contrib to recompile
+the implementation locally in more exotic runtimes (see
+Section~\ref{sec:abcl-build} page~\pageref{sec:abcl-build}).
 
 %%Preface to the Sixth edition, abcl-1.5.0
 \subsection{Preface to the Sixth Edition}
@@ -42,9 +43,6 @@ possible open access to the sources from with an JDK may both be built
 and run upon.  This requirement is no longer met by Java 5, so
 henceforth with the release of \textsc{ABCL} 1.5, we will support
 Java 6, Java 7 and Java 8 runtimes.
-
-%% We should probably not release a 1.5.0, go straight for abcl-1.6.0?
-%% Not worth the effort: Java 9 is the current abcl-1.6.0 release driver.
 
 %%Preface to the Fifth edition, abcl-1.4.0
 \subsection{Preface to the Fifth Edition}
@@ -80,8 +78,11 @@ Armed Bear Common Lisp (\textsc{ABCL}) is an implementation of
 \textsc{Java} byte-code\footnote{The class files produced by the
 compiler have a bytecode version of ``49.0''.}, with an efficiency
 that varies upon the hosting JVM implementation.  \textsc{ABCL}
-supports running on the Java 6, Java 7, Java 8, and Java 11
-\textsc{JVM} implementations.
+supports running on the Java 6, Java 7, Java 8, Java 11, Java 13, and
+Java 14 openjdk \textsc{JVM} implementations\footnote{As of April
+2020, the AdoptOpenJDK.net community \url{https://adoptopenjdk.net/}
+provides perhaps the easiest installation of unencumbered openjdk
+implementations}.
 
 Armed Bear provides the following integration methods for interfacing
 with Java code and libraries:
@@ -177,7 +178,7 @@ contemporary Common Lisp.
 \textsc{ABCL} is licensed under the terms of the \textsc{GPL} v2 of
 June 1991 with an added ``classpath-exception'' clause (see the file
 \texttt{COPYING} in the source distribution\footnote{See
-  \url{http://abcl.org/svn/trunk/tags/1.6.0/COPYING}} for the license,
+  \url{http://abcl.org/svn/trunk/tags/1.6.1/COPYING}} for the license,
 term 13 in the same file for the classpath exception).  This license
 broadly means that you must distribute the sources to \textsc{ABCL},
 including any changes you make, together with a program that includes
@@ -203,7 +204,7 @@ course.
 
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-\texttt{abcl.jar} or possibly something like \texttt{abcl-1.6.0.jar} if
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.6.1.jar} if
 using a versioned package on the local filesystem from your system
 vendor.  This jar file can be executed from the command line to obtain a
 \textsc{REPL}\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
@@ -1393,7 +1394,7 @@ CL-USER> (require :asdf)
 
 The \textsc{ABCL} contrib is packaged as a separate jar archive usually named
 \code{abcl-contrib.jar} or possibly something like
-\code{abcl-contrib-1.6.0.jar}.  The contrib jar is not loaded by the
+\code{abcl-contrib-1.6.1.jar}.  The contrib jar is not loaded by the
 implementation by default, and must be first initialized by the
 \code{REQUIRE} mechanism before using any specific contrib:
 
@@ -1482,7 +1483,7 @@ Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
 More extensive documentations and examples can be found at
-\url{http://abcl.org/svn/tags/1.6.0/contrib/abcl-asdf/README.markdown}.
+\url{http://abcl.org/svn/tags/1.6.1/contrib/abcl-asdf/README.markdown}.
 
 \section{asdf-jar}
 
@@ -1493,7 +1494,7 @@ this package will recursively package all the required source and
 fasls in a jar archive.
 
 The documentation for this contrib can be found at
-\url{http://abcl.org/svn/tags/1.6.0/contrib/asdf-jar/README.markdown}.
+\url{http://abcl.org/svn/tags/1.6.1/contrib/asdf-jar/README.markdown}.
 
 \section{jss}
 \label{section:jss}
@@ -1528,14 +1529,14 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp} %$ <-- un-confuse Emacs font-lock
 
 Some more information on jss can be found in its documentation at
-\url{http://abcl.org/svn/tags/1.6.0/contrib/jss/README.markdown}
+\url{http://abcl.org/svn/tags/1.6.1/contrib/jss/README.markdown}
 
 \section{jfli}
 \label{section:jfli}
 
 The contrib contains a pure-Java version of JFLI. 
 
-\url{http://abcl.org/svn/tags/1.6.0/contrib/jfli/README}.
+\url{http://abcl.org/svn/tags/1.6.1/contrib/jfli/README}.
 
 \section{abcl-introspect}
 
@@ -1580,9 +1581,10 @@ to to take them into account as they are discovered.
 ABCL-INTROSPECT does not depend on jss, but provides a bit of
 jss-specific functionality if jss *is* loaded.
 
-\url{http://abcl.org/svn/tags/1.6.0/contrib/abcl-introspect/}.
+\url{http://abcl.org/svn/tags/1.6.1/contrib/abcl-introspect/}.
 
 \section{abcl-build}
+\label{sec:abcl-build}
 
 \textsc{ABCL-BUILD} constitutes a new implementation for the original
 Lisp-hosted ABCL build system API in the package \code{ABCL-BUILD}
@@ -1606,7 +1608,7 @@ for system construction, namely
     archives from the network.
 \end{itemize}
 
-\url{http://abcl.org/svn/tags/1.6.0/contrib/abcl-build/}.
+\url{http://abcl.org/svn/tags/1.6.1/contrib/abcl-build/}.
 
 \section{named-readtables}
 
@@ -1614,7 +1616,7 @@ for system construction, namely
 readtables akin to the already-existing namespace of packages.
 
 \url{https://github.com/melisgl/named-readtables/}.
-\url{http://abcl.org/svn/tags/1.6.0/contrib/named-readtables/}.
+\url{http://abcl.org/svn/tags/1.6.1/contrib/named-readtables/}.
 
 \chapter{History}
 \index{History}
@@ -1653,17 +1655,19 @@ In October 2016 we blessed the current \textsc{svn} trunk
 \url{http://abcl.org/svn/trunk/} as 1.4.0, which includes the
 community contributions from Vihbu, Olof, Pipping, and Cyrus.  We
 gingerly stepped into current century by establishing \textsc{git}
-bridges to the source repository at
-\url{https://github.com/easye/abcl/} and
-\url{https://gitlab.common-lisp.net/abcl/abcl/} so that pull
-requests for enhancements to the implementation many be more easily
+bridges to the source repositories avaiable via the URIs
+\url{https://github.com/armedbear/abcl/} and
+\url{https://gitlab.common-lisp.net/abcl/abcl/} so that pull requests
+for enhancements to the implementation many be more easily
 facilitated.
 
-In June 2017, we released ABCL 1.6.0 which dropped support for running
+In June 2017, we released ABCL 1.5.0 which dropped support for running
 upon Java 5.
 
 Against the falling canvas of 2019 we released ABCL 1.6.0 which
-provided compatibility with Java 11 while skipping Java 9 and 10.
+provided compatibility with Java 11 while skipping Java 9 and 10.  In
+April 2020, we offered abcl-1.6.1 as a maintenance release for usage
+around ELS2020.
 
 \appendix 
 

@@ -19,39 +19,60 @@ addons:
     packages:
       - ant
       - maven
+      # Needed for rendering the User Manual
+      # Unfortunately, installing TeX from scratch is judged too expensive computationally. 
+      # - texlive-full
   homebrew:
     update: true
     packages:
       - ant
       - maven
+      # Needed for rendering the User Manual
+      # Unfortunately, installing TeX from scratch is judged too expensive computationally.
+      # - mactex
 env:
-  - ABCL_JDK=openjdk8
-  - ABCL_JDK=openjdk11
+  - ABCL_JDK=openjdk8  ABCL_ROOT=${TRAVIS_BUILD_DIR}
+  - ABCL_JDK=openjdk11 ABCL_ROOT=${TRAVIS_BUILD_DIR}
+  - ABCL_JDK=openjdk14 ABCL_ROOT=${TRAVIS_BUILD_DIR}
 
 install:
-  - echo $(pwd)
-  - bash -x ${TRAVIS_BUILD_DIR}/ci/install-adoptjdk.bash ${ABCL_JDK}
+  - echo PWD=$(pwd) && echo ABCL_ROOT=${ABCL_ROOT}
+  - bash -x ${ABCL_ROOT}/ci/install-adoptjdk.bash ${ABCL_JDK}
+
   # Ensure we can invoke ant
-  - . ${TRAVIS_BUILD_DIR}/ci/ensure-jenv-is-present.bash && ant abcl.diagnostic
+  - . ${ABCL_ROOT}/ci/ensure-jenv-is-present.bash && ant abcl.diagnostic
+
   # Set build and runtime options for the JVM hosting ABCL
   - bash -x ./ci/create-abcl-properties.bash ${ABCL_JDK}
+
   # Build ABCL
-  - . ${TRAVIS_BUILD_DIR}/ci/ensure-jenv-is-present.bash && ant abcl
+  - . ${ABCL_ROOT}/ci/ensure-jenv-is-present.bash && ant abcl
+
   # Configure finding abcl build source via ASDF
-  - bash -x ${TRAVIS_BUILD_DIR}/ci/asdf-finds-abcl.bash
+  - bash -x ${ABCL_ROOT}/ci/asdf-finds-abcl.bash
+
   # Install Quicklisp
-  - ${TRAVIS_BUILD_DIR}/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(progn (setf ql-util::*do-not-prompt* t)(ql:add-to-init-file))' --eval '(ext:quit)'
-  # Install ANSI tests
-  - bash -x ${TRAVIS_BUILD_DIR}/ci/sync-ansi-test.bash
+  - ${ABCL_ROOT}/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(progn (setf ql-util::*do-not-prompt* t)(ql:add-to-init-file))' --eval '(ext:quit)'
+
+  # Install the ANSI-TEST suite
+  - bash -x ${ABCL_ROOT}/ci/sync-ansi-test.bash
 
 # TODO: figure out how to add abcl to our path
 
 script:
-  - ${TRAVIS_BUILD_DIR}/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-cffi.lisp
-  - ${TRAVIS_BUILD_DIR}/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-cl+ssl.lisp
-  - ${TRAVIS_BUILD_DIR}/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-abcl.lisp
-  - ${TRAVIS_BUILD_DIR}/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/abcl-prove.lisp
-  - ${TRAVIS_BUILD_DIR}/abcl --batch --load ${TRAVIS_BUILD_DIR}/ci/test-ansi.lisp
+  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-cffi.lisp
+  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-cl+ssl.lisp
+  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-abcl.lisp
+  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/abcl-prove.lisp
+  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-ansi.lisp
+  
+  # This would build a release, which needs an installed TeX which is judged too
+  # "expensive" to leave as the standard CI process
+  # - pushd ${ABCL_ROOT} && ant abcl.release abcl.wrapper && popd
+  
+  # Print the hashes and sizes of build artifacts
+  - pushd ${ABCL_ROOT} && ./abcl --batch --load ./ci/release.lisp  && popd
+  
 
   
 

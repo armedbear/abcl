@@ -2,7 +2,7 @@
 ;;; instructions with the canonical build system in <file:build.xml>
 ;;; Works for: abcl, sbcl, clisp, cmu, lispworks, allegro, openmcl
 (defsystem abcl-build
-  :version "2.0.0"
+  :version "2.1.0"
   :description "Build ABCL from a Lisp.  Downloads necessary build-time tools to local cache if not available on system."
   :in-order-to ((test-op (test-op abcl-build-tests)))
   :components ((:module package
@@ -11,7 +11,8 @@
                (:module util
                         :pathname "build/"
                         :depends-on (package)
-                        :components ((:file "util")))
+                        :components ((:file "util")
+                                     (:file "report")))
                (:module build
                         :pathname "build/"
                         :depends-on (util)

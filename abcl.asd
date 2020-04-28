@@ -176,3 +176,4 @@ be in a directory named '../ansi-test/'."
   :components ((:module n3 :pathname "etc/"
                         :components ((:static-file "changes.n3")
                                      (:file "changes")))))
+
