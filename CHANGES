@@ -1,6 +1,20 @@
+Version 1.6.2
+=============
+Unreleased
+
+<https://github.com/armedbear/abcl/>
+<https://gitlab.common-lisp.net/abcl/abcl/>
+<https://abcl.org/svn/trunk/abcl/>
+
+
 Version 1.6.1
 =============
 April 24, 2020
+
+<https://abcl.org/svn/tags/1.6.1/>
+<https://abcl.org/trac/changeset/15270>
+<https://github.com/armedbear/abcl/commit/cef85a7f5573733d08117f04295a744f9f986c6a>
+<https://gitlab.common-lisp.net/abcl/abcl/-/commit/1d237263a7a0cda49bf1b21a8cd586642aca99e4>
 
 Enhancements
 ------------
@@ -63,13 +77,12 @@ Tests
 
 * [r15249] t/decode-float: tests for currently broken handling of CL:DECODE-FLOAT
 
+
 Version 1.6.0
 =============
 November 22, 2019
 
-<http://github.com/armedbear/abcl/>
-<http://gitlab.common-lisp.net/abcl/abcl/>
-<http://abcl.org/svn/trunk/>
+<https://abcl.org/svn/tags/1.6.0>
 
 Compatiblity
 ------------
@@ -314,9 +327,10 @@ Updates
 
 Version 1.4.0
 =============
-<http://abcl.org/svn/tags/1.4.0/>
-<http://abcl.org/trac/changeset/14888>
 08-OCT-2016
+
+<https://abcl.org/svn/tags/1.4.0/>
+<https://abcl.org/trac/changeset/14888>
 
 Enhancements
 ============
@@ -366,8 +380,10 @@ Removed
 
 Version 1.3.3
 =============
-http://abcl.org/svn/tags/1.3.3/
 18-SEP-2015
+
+<https://abcl.org/svn/tags/1.3.3/>
+
 
 Enhancements
 ------------
@@ -422,8 +438,10 @@ Fixes
 
 Version 1.3.2
 =============
-http://abcl.org/svn/tags/1.3.2/
 19-APR-2015
+
+<https://abcl.org/svn/tags/1.3.2/>
+
 
 Enhancements
 ------------
@@ -482,8 +500,9 @@ Contrib
 
 Version 1.3.1
 =============
-http://abcl.org/svn/tags/1.3.1/
 30-APR-2014
+
+<https://abcl.org/svn/tags/1.3.1/>
 
 ## Fixed
 
@@ -541,8 +560,10 @@ http://abcl.org/svn/tags/1.3.1/
 
 Version 1.3.0
 =============
-http://abcl.org/svn/tags/1.3.0/
 15-MAR-2014
+
+<https://abcl.org/svn/tags/1.3.0/>
+
 
 ## Features
 
@@ -663,9 +684,10 @@ http://abcl.org/svn/tags/1.3.0/
 
 Version 1.2.1
 =============
-http//abcl.org/svn/tags/1.2.1/abcl/CHANGES
-27 June 2013
-http://abcl.org/releases/1.2.1
+27-JUN-2013
+
+<http//abcl.org/svn/tags/1.2.1/abcl/CHANGES>
+<http://abcl.org/releases/1.2.1>
 
 *  Tested:  orcl-jdk-1.7.0_25 orcl-jdk-1.6.0_43
 
@@ -679,9 +701,13 @@ http://abcl.org/releases/1.2.1
 
 Version 1.2.0
 =============
-svn.uri=:"http//abcl.org/svn/tags/1.2.0/"
-http//abcl.org/svn/tags/1.2.0/abcl/CHANGES
-released at ECLM 2013 Madrid, ES // 01 June 2013 
+01-JUN-2013
+
+<https://abcl.org/svn/tags/1.2.0/>
+<https//abcl.org/svn/tags/1.2.0/abcl/CHANGES>
+
+
+Released at ECLM 2013 Madrid, ES // 01 June 2013 
 
    * Package local nicknames to behave like SBCL
 
@@ -699,8 +725,10 @@ released at ECLM 2013 Madrid, ES // 01 June 2013
 
 Version 1.1.1
 =============
-svn.uri=:"http://abcl.org/svn/tags/abcl/1.1.1/CHANGES"
-(14 Feburary 2013)
+14-FEB-2013
+
+<https://abcl.org/svn/tags/abcl/1.1.1/CHANGES>
+
 
   * All reported errors with the MOP implementation have been addressed.
 
@@ -729,8 +757,10 @@ Issues Resolved
 
 Version 1.1.0
 =============
-svn.uri=:"http://abcl.org/svn/tags/1.1.0/abcl/"
-(07 December 2012)
+07-DEC-2012
+
+<https://abcl.org/svn/tags/1.1.0/abcl/>
+
 
 Features
 --------
@@ -907,8 +937,10 @@ Issues Resolved
 
 Version 1.0.1
 ==============
-svn.uri=:"http://abcl.org/svn/tags/1.0.1/abcl/"
-(09 January 2012)
+09-JAN-2012
+
+<https://abcl.org/svn/tags/1.0.1/abcl/>
+
 
 Changes
 -------
@@ -947,9 +979,11 @@ Fixes
 
 Version 1.0.0
 ==============
-svn.uri=:"http://abcl.org/svn/tags/1.0.0/abcl/"
-released at the European Common Lisp Meeting Amsterdam 2011
-(22 October 2011)
+22-OCT-2011
+
+<https://abcl.org/svn/tags/1.0.0/abcl/>
+
+Released at the European Common Lisp Meeting Amsterdam 2011
 
 
 Features
@@ -975,7 +1009,8 @@ Fixes
 
 Version 0.27.0
 ==============
-svn.uri="http://abcl.org/svn/tags/0.27.0/"
+
+<https://abcl.org/svn/tags/0.27.0/>
 
 
 Features
@@ -1060,8 +1095,9 @@ Fixes
 
 Version 0.26.2
 ==============
-http://abcl.org/svn/tags/0.26.2/abcl
-(14 August 2011)
+14-AUG-2011
+
+<http://abcl.org/svn/tags/0.26.2/abcl>
 
 Features
 --------
@@ -1084,8 +1120,9 @@ Fixes
 
 Version 0.26.1
 ==============
-http://abcl.org/svn/tags/0.26.1/abcl
-(27 July 2011)
+27-JUL-2011
+
+<https://abcl.org/svn/tags/0.26.1/abcl>
 
 Features
 --------
@@ -1113,8 +1150,9 @@ Fixes
 
 Version 0.26.0
 ==============
-http://abcl.org/svn/tags/0.26.0/abcl
-(10 July 2011)
+10-JUL-2011
+
+<https://abcl.org/svn/tags/0.26.0/abcl>
 
 Features
 --------
@@ -1201,8 +1239,10 @@ Fixes
 
 Version 0.25.0
 ==============
-http://abcl.org/svn/tags/0.25.0/abcl
-(10 March 2011)
+10-MAR-2011
+
+<https://abcl.org/svn/tags/0.25.0/abcl>
+
 
 Features
 --------
@@ -1270,8 +1310,9 @@ Changes
 
 Version 0.24.0
 ==============
-http://abcl.org/svn/tags/0.24.0/abcl
-(22 January 2011)
+22-JAN-2011
+
+<https://abcl.org/svn/tags/0.24.0/abcl>
 
 Features
 --------
@@ -1344,8 +1385,10 @@ Changes
 
 Version 0.23.1
 ==============
-http://abcl.org/svn/tags/0.23.1/abcl
-(01 December 2010)
+01-DEC-2010
+
+<https://abcl.org/svn/tags/0.23.1/abcl>
+
 
 Fixes
 -----
@@ -1363,8 +1406,10 @@ Fixes
 
 Version 0.23
 ============
-http://abcl.org/svn/tags/0.23.0/abcl
-(25 November, 2010)
+25-NOV-2010
+
+<https://abcl.org/svn/tags/0.23.0/abcl>
+
 
 Features
 --------
@@ -1434,8 +1479,9 @@ Other
 
 Version 0.22
 ============
-http://abcl.org/svn/tags/0.22.0/abcl
-(September 24, 2010)
+24-SEP-2010
+
+<https://abcl.org/svn/tags/0.22.0/abcl>
 
 Fixes
 -----
@@ -1456,8 +1502,9 @@ Other
 
 Version 0.21
 ============
-http://abcl.org/svn/tags/0.21.0/abcl
-(July 24, 2010)
+24-JUL-2010
+
+<https://abcl.org/svn/tags/0.21.0/abcl>
 
 
 Features
@@ -1503,8 +1550,9 @@ Other
 
 Version 0.20
 ============
-http://abcl.org/svn/tags/0.20.0/abcl
-(24 May, 2010)
+24-MAY-2010
+
+<https://abcl.org/svn/tags/0.20.0/abcl>
 
 
 Features
@@ -1591,8 +1639,10 @@ Other
 
 Version 0.19
 ============
-http://abcl.org/svn/trunk/abcl
-(14 Mar, 2010)
+14-MAR-2010
+
+<https://abcl.org/svn/tags/0.19/abcl>
+
 
 Features
 --------
@@ -1796,8 +1846,10 @@ Other
 
 Version 0.18.1
 ==============
-http://abcl.org/svn/tags/0.18.1/abcl
-(17 Jan, 2010)
+17-JAN-2010
+
+<https://abcl.org/svn/tags/0.18.1/abcl>
+
 
 Features:
 
@@ -1810,9 +1862,9 @@ Bugs fixed:
 
 Version 0.18.0
 ==============
-http://abcl.org/svn/tags/0.18.0/abcl
-(12 Jan, 2010)
+12-JAN-2010
 
+<https://abcl.org/svn/tags/0.18.0/abcl>
 
 Features:
 
@@ -1848,8 +1900,9 @@ Other changes
 
 Version 0.17.0
 ==============
-http://abcl.org/svn/tags/0.17.0/abcl
-(07 Nov, 2009)
+07-NOV-2009
+
+<https://abcl.org/svn/tags/0.17.0/abcl>
 
 
 Features:
@@ -1894,8 +1947,9 @@ Bugs fixed:
 
 Version 0.16.1
 ==============
-http://abcl.org/svn/tags/0.16.1/abcl
-(17 Oct, 2009)
+17-OCT-2009
+
+<https://abcl.org/svn/tags/0.16.1/abcl>
 
 Bugs fixed:
 
@@ -1906,8 +1960,9 @@ Bugs fixed:
 
 Version 0.16.0
 ==============
-(06 SEP 2009)
-http://abcl.org/svn/tags/0.16.0/abcl
+06-SEP-2009
+
+<https://abcl.org/svn/tags/0.16.0/abcl>
 
   Summary of changes:
   ------------------
@@ -1963,8 +2018,10 @@ http://abcl.org/svn/tags/0.16.0/abcl
 
 Version 0.15.0
 ==============
-http://abcl.org/svn/tags/0.15.0/abcl
-(07 Jun, 2009)
+07-Jun-2009
+
+<https://abcl.org/svn/tags/0.15.0/abcl>
+
 
  Summary of changes:
  -------------------
@@ -2004,18 +2061,21 @@ http://abcl.org/svn/tags/0.15.0/abcl
 
 Version 0.14.1
 ==============
-(5 Apr, 2009)
-http://abcl.org/svn/tags/0.14.1/abcl
+05-Apr-2009
 
- Summary of changes:
- -------------------
-  * Include this CHANGES file and scripting files in the tar and zip files
+<https://abcl.org/svn/tags/0.14.1/abcl>
+
+
+Summary of changes:
+-------------------
+ * Include this CHANGES file and scripting files in the tar and zip files
 
 
 Version 0.14.0
 ==============
-(5 Apr, 2009)
-http://abcl.org/svn/tags/0.14.0/abcl
+05-APR-2009
+
+<https://abcl.org/svn/tags/0.14.0/abcl>
 
  Summary of changes:
  -------------------
@@ -2045,8 +2105,9 @@ http://abcl.org/svn/tags/0.14.0/abcl
 
 Version 0.13.0
 ==============
-(28 Feb, 2009)
-http://abcl.org/svn/tags/0.13.0/abcl
+28-FEB-2009
+
+<https://abcl.org/svn/tags/0.13.0/abcl>
 
  Summary of changes:
  -------------------
