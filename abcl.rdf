@@ -16,16 +16,15 @@
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.6.1#rc-1> ;           
+  dc:identifier         <urn:abcl.org/1.6.2#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "26-APR-2020" ;
-  dc:version           "abcl-1.6.1" ;
-  dc:release           "rc-1" ;
-  abcl:git             <https://github.com/easye/abcl/tree/abcl/1.6.1> ;
-  abcl:git             <https://github.com/armedbear/abcl/pull/172> ;
+  dc:modified          "29-APR-2020" ;
+  dc:version           "abcl-1.6.2" ;
+  dc:release           "dev" ;
+  abcl:git             <https://github.com/armedbear/abcl/> ;
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
-  abcl:svn             <https://abcl.org/trac/changeset/15266> . # releng UPDATE
+  abcl:svn             <https://abcl.org/svn/trunk/abcl/> . 
  
 <> 
   rdfs:seeAlso <file:README> ;
@@ -176,7 +175,10 @@ abcl:jfli
 abcl:jss
   rdfs:seeAlso <file:contrib/jss/README.markdown> .                             
 
+# FIXME: figure out the right way to specify these values ontologically
 @prefix java:            <https://rdf.not.org/java#> .
+@prefix openjdk:         <https://rdf.not.org/java/openjdk#> .
+@prefix not.org:         <https://rdf.not.org#> .
 
 [abcl:run _:supported]
   a rdf:Bag ;
@@ -189,33 +191,33 @@ abcl:jss
   rdfs:comment "Compatible Java runtimes" .
 
 [abcl:run _:options]
-  :base "-XShowSettings:vm -DFile.encoding="UTF-8";
-  openjdk:6 "-XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g -XX:+UseConcMarkSweepGC" ;
-  openjdk:8 "-XX:+AggressiveOpts" ;
-  openjdk:11 "-XX:CompileThreshold=10" ;
-  openjdk:13 "-XX:CompileThreshold=10" ;
-  openjdk:14 "-XX:CompileThreshold=10" ;
-  rdfs:comment "Java platform runtime options" .
+    not.org:base "-XShowSettings:vm -DFile.encoding=UTF-8" ;
+    openjdk:6 "-XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g -XX:+UseConcMarkSweepGC" ;
+    openjdk:8 "-XX:+AggressiveOpts" ;
+    openjdk:11 "-XX:CompileThreshold=10" ;
+    openjdk:13 "-XX:CompileThreshold=10" ;
+    openjdk:14 "-XX:CompileThreshold=10" ;
+    rdfs:comment "Java platform runtime options" .
 
 [abcl:build _:options]
-   :target "1.8" ;
-   :source "1.6" ;
-   :encoding "UTF-8" ;
-   :debug "true" ;
-   rdfs:comment "Java build options" .
+    not.org:target "1.8" ;
+    not.org:source "1.6" ;
+    not.org:encoding "UTF-8" ;
+    not.org:debug "true" ;
+    rdfs:comment "Java build options" .
 
-[abcl:build _:supported]
-  a rdf:Bag ;
-  rdf:_6   openjdk:6 ;
-  rdf:_6     :deprecated ;        
-  rdf:_7   openjdk:7 ;
-  rdf:_7     :deprecated ;        
-  rdf:_8   openjdk:8 ;
-  rdf:_8     :deprecated ;        
-  rdf:_11  openjdk:11 ;
-  rdf:_13  openjdk:13 ;
-  rdf:_14  openjdk:14 ;
-  rdfs:comment "Supported build platforms" .
+ [abcl:build _:supported]
+   a rdf:Bag ;
+   rdf:_6   openjdk:6 ;
+   rdf:_6     not.org:deprecated ;        
+   rdf:_7   openjdk:7 ;
+   rdf:_7     not.org:deprecated ;        
+   rdf:_8   openjdk:8 ;
+   rdf:_8     not.org:deprecated ;        
+   rdf:_11  openjdk:11 ;
+   rdf:_13  openjdk:13 ;
+   rdf:_14  openjdk:14 ;
+   rdfs:comment "Supported build platforms" .
 
 
   
