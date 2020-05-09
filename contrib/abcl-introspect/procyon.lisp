@@ -23,7 +23,8 @@ catch (final IOException e) {
     // handle error
 }
 
-|# 
+|#
+(in-package :abcl-introspect/jvm/tools/procyon)
 
 (in-package :abcl-introspect/jvm/tools/procyon)
 (defun disassemble-class-bytes (object)
