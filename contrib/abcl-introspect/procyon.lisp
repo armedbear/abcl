@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage :abcl/build/jvm/tools/procyon
+(defpackage :abcl-introspect/jvm/tools/procyon
     (:use :cl)
     (:export
      #:disassemble-class-bytes))

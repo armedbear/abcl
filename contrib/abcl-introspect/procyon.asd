@@ -1,7 +1,15 @@
 (defsystem procyon
-    :homepage https://bitbucket.org/mstrobel/procyon/wiki/Java%20Decompiler
-    ((:module maven
-              :components
-              ((:mvn "org.jboss.windup.decompiler/decompile-procyon/4.3.1.Final")))))
+  :version "4.3.1"
+  :homepage "https://bitbucket.org/mstrobel/procyon/wiki/Java%20Decompiler"
+  :components
+  ((:module mvn-libs
+    :components
+    ((:mvn "org.jboss.windup.decompiler/decompile-procyon/4.3.1.Final")))
+   (:module source
+    :depends-on (mvn-libs))
+   :components
+   ((:file "procyon")))))
+
+
 
 
