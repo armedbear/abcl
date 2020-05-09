@@ -27,15 +27,15 @@ catch (final IOException e) {
 }
 
   |#
-  (with-temp-file (p)
+  (let ((p (ext:make-temp-file)))
     (alexandria:with-output-to-file (o p)
-      (write (get-bytes object) :stream o)
+      (write object :stream o))
     (let* ((settings
-             (#"javaDefaults" 'DecompilerSettings))
+            (#"javaDefaults" 'DecompilerSettings))
            (stream
-             (jss:new 'FileOutputStream (namestring p)))
+            (jss:new 'FileOutputStream (namestring p)))
            (writer
-             (jss:new 'OutputStreamWriter stream)))
+            (jss:new 'OutputStreamWriter stream)))
       (#"decompile" 'Decompiler
                     "java/lang/String"
                     (jss:new 'PlainTextOutput writer)
