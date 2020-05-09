@@ -4,7 +4,10 @@
     (:export
      #:disassemble-class-bytes))
 
-#|
+(in-package :abcl-introspect/jvm/tools/procyon)
+
+(defun disassemble-class-bytes (object)
+  #|
   
   <https://bitbucket.org/mstrobel/procyon/wiki/Decompiler%20API> 
 
@@ -23,9 +26,21 @@ catch (final IOException e) {
     // handle error
 }
 
-|#
-(in-package :abcl-introspect/jvm/tools/procyon)
+  |#
+  (with-temp-file (p)
+    (alexandria:with-output-to-file (o p)
+      (write (get-bytes object) :stream o)
+    (let* ((settings
+             (#"javaDefaults" 'DecompilerSettings))
+           (stream
+             (jss:new 'FileOutputStream (namestring p)))
+           (writer
+             (jss:new 'OutputStreamWriter stream)))
+      (#"decompile" 'Decompiler
+                    "java/lang/String"
+                    (jss:new 'PlainTextOutput writer)
+                    settings))))
 
-(in-package :abcl-introspect/jvm/tools/procyon)
-(defun disassemble-class-bytes (object)
+                    
   (error "Unimplemented use of procyon dissassembler."))
+
