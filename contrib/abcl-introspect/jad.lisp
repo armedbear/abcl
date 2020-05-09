@@ -35,7 +35,7 @@
                 (progn
                   (install-jad-returning-path (introspect-jad-uri))
                   (setf *working-jad-executable* jad-path))))
-          (unless (working-jad-p)
+          (unless (working-jad-p *working-jad-executable*)
             (setf *working-jad-executable*
                   (install-jad-returning-path (introspect-jad-uri)))))))
           
