@@ -25,5 +25,6 @@ catch (final IOException e) {
 
 |# 
 
+(in-package :abcl-introspect/jvm/tools/procyon)
 (defun disassemble-class-bytes (object)
   (error "Unimplemented use of procyon dissassembler."))
