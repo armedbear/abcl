@@ -41,6 +41,6 @@
           
 (defun disassemble-class-bytes (object)
   (ensure-jad)
-  (let ((sys:::*disassembler*
-          (format nil "~s -a -p" *working-jad-path*)))
+  (let ((sys::*disassembler*
+          (format nil "~s -a -p" *working-jad-executable*)))
     (cl:disassemble object)))
