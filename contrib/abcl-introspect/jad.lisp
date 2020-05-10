@@ -43,4 +43,5 @@
   (ensure-jad)
   (let ((sys::*disassembler*
           (format nil "~s -a -p" *working-jad-executable*)))
-    (cl:disassemble object)))
+    (sys:disassemble-class-bytes object)))
+

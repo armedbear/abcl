@@ -3,20 +3,17 @@
   (:export
    #:disassemble-class-bytes))
 
-;; use javap
+;;;; JDK javap <https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javap.html>
 #|
 (let ((sys::*disassembler* "javap -c -verbose"))
   (disassemble 'cons))
 |#
 
-
 (in-package :abcl-introspect/jvm/tools/javap)
-
 
 (defun disassemble-class-bytes (object)
   (let ((sys::*disassembler* "javap -c -verbose"))
-    (disassemble object)))
-
+    (sys:disassemble-class-bytes object)))
 
 (eval-when (:load-toplevel :execute)
   (pushnew `(:javap . abcl-introspect/jvm/tools/javap::disassemble-class-bytes)
