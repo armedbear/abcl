@@ -9,8 +9,10 @@ of the implementation, most notably in integration with SLIME, where
 the back-trace mechanism is augmented to the point that local
 variables are inspectable.
 
-See <https://github.com/easye/slime/tree/evenson-merge-20170529a> for
-the changes to SLIME that were working well at the time of release.
+Version of SLIME 2.25 dramatically increases the utility of the
+available inspectors under ABCL.  Unfortunately, this version of SLIME
+is unreleased, so please use something post
+<https://github.com/slime/slime/commit/6f06402595df0ec6b305fc5a13e18f48e8989c64>.
 
 ** CL:DISASSEMBLE
 
@@ -38,6 +40,7 @@ SYS:*DISASSEMBLERS* variable.
 For example, to use the javap command-line tool included with the Java
 Development Kit:
 
+#+begin_src lisp
     (require :abcl-contrib)
     (asdf:load-system :javap)
     (sys:choose-disassembler :javap)
@@ -127,7 +130,7 @@ Development Kit:
     ;             0      10     2 second   Lorg/armedbear/lisp/LispObject;
     ; }
     ; SourceFile: "Primitives.java"
-    
+#+end_src    
     
 # Colophon
 
