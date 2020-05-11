@@ -41,7 +41,7 @@ Development Kit:
     (require :abcl-contrib)
     (asdf:load-system :javap)
     (sys:choose-disassembler :javap)
-    (cl:disassembler 'cons)
+    (cl:disassemble 'cons)
     ; Classfile /var/folders/yb/xlwjwjfs3l73n3vrcjwqwqs40000gn/T/abcl3108750031103632433.class
     ;   Last modified May 11, 2020; size 910 bytes
     ;   MD5 checksum fec1c72a76ccbb35e17be8c2de9b315e

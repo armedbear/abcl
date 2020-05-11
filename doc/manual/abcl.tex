@@ -11,7 +11,7 @@
 \title{Armed Bear Common Lisp User Manual}
 \date{Version 1.6.2\\
 \smallskip
-Unreleased
+Unreleased}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -935,6 +935,20 @@ reporting stream.  The generalized boolean
 \code{JVM:*RESIGNAL-COMPILER-WARNINGS*} provides the interface to
 enabling the compiler to signal all warnings.
 
+\subsection{Decompilation}
+
+\label{CL:DISASSEMBLE}
+Since \textsc{ABCL} compiles to JVM bytecode, the
+\code{CL:DISASSEMBLE} function provides introspection for the result
+of that compilation.  By default the implementation attempts to find
+and use the \code{javap} command line tool shipped as part of the Java
+Development Kit to disassemble the results.  Code for the use of
+additional JVM bytecode introspection tools is packaged as part of the
+ABCL-INTROSPECT contrib.  After loading one of these tools via ASDF,
+the \code{SYS:CHOOSE-DISASSEMBLER} function can be used to select the
+tool used by \code{CL:DISASSEMBLE}.  See
+\ref{abcl-introspect-disassemblers}
+on \pageref{abcl-introspect-disassemblers} for further details.
 
 \section{Pathname}
 
@@ -1087,7 +1101,7 @@ expect the following:
 \end{itemize}
 
 \section{Package-Local Nicknames}
-\label{sec:pack-local-nickn}
+\label{sec:package-local-nicknames}
 
 ABCL allows giving packages local nicknames: they allow short and
 easy-to-use names to be used without fear of name conflict associated
@@ -1346,14 +1360,15 @@ semantics to the execution of \code{REQUIRE} on the following symbols:
         \end{enumerate}
       \item \code{quicklisp-abcl} Boot a local Quicklisp installation
         via the ASDF:IRI type introduced via ABCL-ASDF.
-
       \item \code{jfli} A descendant of Rich Hickey's pre-Clojure work
         on the JVM.
       \item \code{jss} Introduces dynamic inspection of present
         symbols via the \code{SHARPSIGN-QUOTATION\_MARK} macros as Java Syntax
         Sucks
       \item \code{abcl-introspect} Provides a framework for
-        introspecting runtime Java and Lisp object values.
+        introspecting runtime Java and Lisp object values.  Include
+        packaging for installing and using java decompilation tools
+        for use with \code{CL:DISASSEMBLE}.
       \item \code{abcl-build} Provides a toolkit for building ABCL
         from source, as well as installing the necessary tools for
         such builds.
@@ -1534,16 +1549,18 @@ Some more information on jss can be found in its documentation at
 \section{jfli}
 \label{section:jfli}
 
-The contrib contains a pure-Java version of JFLI. 
+The contrib contains a pure-Java version of \textsc{JFLI}, apparently
+a descendent of Rich Hickey's early experimentations with using Java
+from Common Lisp.
 
 \url{http://abcl.org/svn/tags/1.6.1/contrib/jfli/README}.
 
 \section{abcl-introspect}
 
-\textsc{ABCL-INTROSPECT} offers more extensive systems for inspecting the state
-of the implementation, most notably in integration with SLIME, where
-the backtrace mechanism is augmented to the point that local
-variables are inspectable.
+\textsc{ABCL-INTROSPECT} offers more extensive functionality for
+inspecting the state of the implementation, most notably in
+integration with SLIME, where the backtrace mechanism is augmented to
+the point that local variables are inspectable.
 
 A compiled function is an instance of a class - This class has
 multiple instances if it represents a closure, or a single instance if
@@ -1556,7 +1573,7 @@ function, locally-defined functions (such as via \code{LABEL} or
 \textsc{ABCL-INTROSPECT} implements a ``do what I mean'' API for
 introspecting these constants.
 
-ABCL-INTROSPECT provides access to those internal values, and
+\textsc{ABCL-INTROSPECT} provides access to those internal values, and
 uses them in at least two ways. First, to annotate locally defined
 functions with the top-level function they are defined within, and
 second to search for callers of a give function \footnote{ Since java
@@ -1570,16 +1587,76 @@ useful. The second use to to find source locations for frames in the
 debugger. If the source location for a local function is asked for the
 location of its 'owner' is instead returns.
 
-In order to record information about local functions, ABCL defines a
-function-plist, which is for the most part unused, but is used here
-with set of keys indicating where the local function was defined and
-in what manner, i.e. as normal local function, as a method function,
-or as an initarg function. There may be other places functions are
-stashed away (defstructs come to mind) and this file should be added
-to to take them into account as they are discovered.
+In order to record information about local functions, \textsc{ABCL}
+defines a function-plist, which is for the most part unused, but is
+used here with set of keys indicating where the local function was
+defined and in what manner, i.e. as normal local function, as a method
+function, or as an initarg function. There may be other places
+functions are stashed away (defstructs come to mind) and this file
+should be added to to take them into account as they are discovered.
 
-ABCL-INTROSPECT does not depend on jss, but provides a bit of
-jss-specific functionality if jss *is* loaded.
+\textsc{ABCL-INTROSPECT} does not depend on \textsc{JSS}, but provides
+  a bit of jss-specific functionality if \textsc{JSS} *is* loaded.
+
+\subsection{Implementations for CL:DISASSEMBLE}
+\label{abcl-introspect-disassemblers}
+
+The following ASDF systems packages various external tools that may be
+selected by the \code{SYS:CHOOSE-DISASSEMBLER} interface:
+
+\begin{enumerate}
+\item \code{objectweb}
+\item \code{jad}
+\item \code{javap}
+\item \code{fernweb}
+\item \code{cfr}
+\item \code{procyon}
+\end{enumerate}
+
+To use one of these tools, first load the system via \textsc{ASDF}
+(and/or \textsc{Quicklisp}), then use the
+\code{SYS:CHOOSE-DISASSEMBLER} function to select the keyword that
+appears in \code{SYS:*DISASSEMBLERS*}.
+\begin{listing-lisp}
+CL-USER> (require :abcl-contrib)(asdf:load-system :objectweb)
+CL-USER> sys:*disassemblers*
+((:OBJECTWEB
+  . ABCL-INTROSPECT/JVM/TOOLS/OBJECTWEB:DISASSEMBLE-CLASS-BYTES)
+ (:SYSTEM-JAVAP . SYSTEM:DISASSEMBLE-CLASS-BYTES))
+CL-USER> (sys:choose-disassembler :objectweb)
+ABCL-INTROSPECT/JVM/TOOLS/OBJECTWEB:DISASSEMBLE-CLASS-BYTES
+CL-USER> (disassemble 'cons)
+; // class version 52.0 (52)
+; // access flags 0x30
+; final class org/armedbear/lisp/Primitives$pf_cons extends org/armedbear/lisp/Primitive  {
+; 
+;   // access flags 0x1A
+;   private final static INNERCLASS org/armedbear/lisp/Primitives$pf_cons org/armedbear/lisp/Primitives pf_cons
+; 
+;   // access flags 0x0
+;   <init>()V
+;     ALOAD 0
+;     GETSTATIC org/armedbear/lisp/Symbol.CONS : Lorg/armedbear/lisp/Symbol;
+;     LDC "object-1 object-2"
+;     INVOKESPECIAL org/armedbear/lisp/Primitive.<init> (Lorg/armedbear/lisp/Symbol;Ljava/lang/String;)V
+;     RETURN
+;     MAXSTACK = 3
+;     MAXLOCALS = 1
+; 
+;   // access flags 0x1
+;   public execute(Lorg/armedbear/lisp/LispObject;Lorg/armedbear/lisp/LispObject;)Lorg/armedbear/lisp/LispObject;
+;     NEW org/armedbear/lisp/Cons
+;     DUP
+;     ALOAD 1
+;     ALOAD 2
+;     INVOKESPECIAL org/armedbear/lisp/Cons.<init> (Lorg/armedbear/lisp/LispObject;Lorg/armedbear/lisp/LispObject;)V
+;     ARETURN
+;     MAXSTACK = 4
+;     MAXLOCALS = 3
+; }
+NIL
+\end{listing-lisp}
+  
 
 \url{http://abcl.org/svn/tags/1.6.1/contrib/abcl-introspect/}.
 
