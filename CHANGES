@@ -6,6 +6,11 @@ Unreleased
 <https://gitlab.common-lisp.net/abcl/abcl/>
 <https://abcl.org/svn/trunk/abcl/>
 
+Enhancements
+============
+
+* [] Fix and extend SYS:CHOOSE-ASSEMBLER functionality for CL:DISASSEMBLE
+
 
 Version 1.6.1
 =============

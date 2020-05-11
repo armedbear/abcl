@@ -1,5 +1,8 @@
-ABCL-INTROSPECT
-===============
+#+TITLE: ABCL-INTROSPECT
+
+* ABCL-INTROSPECT
+
+** Introduction
 
 ABCL-INTROSPECT offers more extensive systems for inspecting the state
 of the implementation, most notably in integration with SLIME, where
@@ -9,25 +12,22 @@ variables are inspectable.
 See <https://github.com/easye/slime/tree/evenson-merge-20170529a> for
 the changes to SLIME that were working well at the time of release.
 
-
-CL:DISASSEMBLE
---------------
+** CL:DISASSEMBLE
 
 ABCL-INTROSPECT also contains a number of ASDF systems which provide
-modules to install as implementations for JVM code analysis provided
-by CL:DISASSEMBLE.
+modules to install as implementations for the JVM code analysis
+provided by CL:DISASSEMBLE.
 
-objectweb
-  
-javap
-
-jad
-
-procyon 
-
-cfr
-
-fernflower
+#+TABLE: Currently available decompilers as ASDF systems 
+|------------+--------------------------+-----------------------------------------------------------------------------|
+| ASDF       | status                   | URI                                                                         |
+|------------+--------------------------+-----------------------------------------------------------------------------|
+| objectweb  | working                  | <http://asm.ow2.org>                                                        |
+| javap      | working                  | <<https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javap.html> |
+| cfr        | working                  | <https://www.benf.org/other/cfr>                                            |
+| jad        | fails ABCL-BUILD/install | <http://www.javadecompilers.com/jad/>                                       |
+| procyon    | loading                  | <https://bitbucket.org/mstrobel/procyon/wiki/Java%20Decompiler>             |
+| fernflower | loading                  | <https://github.com/fesh0r/fernflower>                                      |
 
 
 These systems may be used by first loading the appropiate ASDF
@@ -41,7 +41,7 @@ Development Kit:
     (require :abcl-contrib)
     (asdf:load-system :javap)
     (sys:choose-disassembler :javap)
-    (cl:disassemble 'cons)
+    (cl:disassemble #'cons)
     ; Classfile /var/folders/yb/xlwjwjfs3l73n3vrcjwqwqs40000gn/T/abcl3108750031103632433.class
     ;   Last modified May 11, 2020; size 910 bytes
     ;   MD5 checksum fec1c72a76ccbb35e17be8c2de9b315e
@@ -127,6 +127,12 @@ Development Kit:
     ;             0      10     2 second   Lorg/armedbear/lisp/LispObject;
     ; }
     ; SourceFile: "Primitives.java"
+    
+    
+# Colophon
+
+<> <https://abcl.org/svn/trunk/abcl/contrib/abcl-introspect/README.org> ;
+:supersedes <https://abcl.org/svn/trunk/abcl/contrib/abcl-introspect/README.markdown> .
 
 
 
