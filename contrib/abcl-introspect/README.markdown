@@ -9,9 +9,130 @@ variables are inspectable.
 See <https://github.com/easye/slime/tree/evenson-merge-20170529a> for
 the changes to SLIME that were working well at the time of release.
 
-ObjectWeb
----------
 
-The ObjectWeb JVM bytecode assembler may be used via loading the
-'objectweb.asd' definition.
+CL:DISASSEMBLE
+--------------
+
+ABCL-INTROSPECT also contains a number of ASDF systems which provide
+modules to install as implementations for JVM code analysis provided
+by CL:DISASSEMBLE.
+
+objectweb
+  
+javap
+
+jad
+
+procyon 
+
+cfr
+
+fernflower
+
+
+These systems may be used by first loading the appropiate ASDF
+definition then using the SYS:CHOOSE-DISASSEMBLER function to select.
+Currently available disassemblers are contained in the
+SYS:*DISASSEMBLERS* variable.
+
+For example, to use the javap command-line tool included with the Java
+Development Kit:
+
+    (require :abcl-contrib)
+    (asdf:load-system :javap)
+    (sys:choose-disassembler :javap)
+    (cl:disassembler 'cons)
+    ; Classfile /var/folders/yb/xlwjwjfs3l73n3vrcjwqwqs40000gn/T/abcl3108750031103632433.class
+    ;   Last modified May 11, 2020; size 910 bytes
+    ;   MD5 checksum fec1c72a76ccbb35e17be8c2de9b315e
+    ;   Compiled from "Primitives.java"
+    ; final class org.armedbear.lisp.Primitives$pf_cons extends org.armedbear.lisp.Primitive
+    ;   minor version: 0
+    ;   major version: 52
+    ;   flags: ACC_FINAL, ACC_SUPER
+    ; Constant pool:
+    ;    #1 = Fieldref           #24.#25        // org/armedbear/lisp/Symbol.CONS:Lorg/armedbear/lisp/Symbol;
+    ;    #2 = String             #26            // object-1 object-2
+    ;    #3 = Methodref          #7.#27         // org/armedbear/lisp/Primitive."<init>":(Lorg/armedbear/lisp/Symbol;Ljava/lang/String;)V
+    ;    #4 = Class              #28            // org/armedbear/lisp/Cons
+    ;    #5 = Methodref          #4.#29         // org/armedbear/lisp/Cons."<init>":(Lorg/armedbear/lisp/LispObject;Lorg/armedbear/lisp/LispObject;)V
+    ;    #6 = Class              #31            // org/armedbear/lisp/Primitives$pf_cons
+    ;    #7 = Class              #32            // org/armedbear/lisp/Primitive
+    ;    #8 = Utf8               <init>
+    ;    #9 = Utf8               ()V
+    ;   #10 = Utf8               Code
+    ;   #11 = Utf8               LineNumberTable
+    ;   #12 = Utf8               LocalVariableTable
+    ;   #13 = Utf8               this
+    ;   #14 = Utf8               pf_cons
+    ;   #15 = Utf8               InnerClasses
+    ;   #16 = Utf8               Lorg/armedbear/lisp/Primitives$pf_cons;
+    ;   #17 = Utf8               execute
+    ;   #18 = Utf8               (Lorg/armedbear/lisp/LispObject;Lorg/armedbear/lisp/LispObject;)Lorg/armedbear/lisp/LispObject;
+    ;   #19 = Utf8               first
+    ;   #20 = Utf8               Lorg/armedbear/lisp/LispObject;
+    ;   #21 = Utf8               second
+    ;   #22 = Utf8               SourceFile
+    ;   #23 = Utf8               Primitives.java
+    ;   #24 = Class              #33            // org/armedbear/lisp/Symbol
+    ;   #25 = NameAndType        #34:#35        // CONS:Lorg/armedbear/lisp/Symbol;
+    ;   #26 = Utf8               object-1 object-2
+    ;   #27 = NameAndType        #8:#36         // "<init>":(Lorg/armedbear/lisp/Symbol;Ljava/lang/String;)V
+    ;   #28 = Utf8               org/armedbear/lisp/Cons
+    ;   #29 = NameAndType        #8:#37         // "<init>":(Lorg/armedbear/lisp/LispObject;Lorg/armedbear/lisp/LispObject;)V
+    ;   #30 = Class              #38            // org/armedbear/lisp/Primitives
+    ;   #31 = Utf8               org/armedbear/lisp/Primitives$pf_cons
+    ;   #32 = Utf8               org/armedbear/lisp/Primitive
+    ;   #33 = Utf8               org/armedbear/lisp/Symbol
+    ;   #34 = Utf8               CONS
+    ;   #35 = Utf8               Lorg/armedbear/lisp/Symbol;
+    ;   #36 = Utf8               (Lorg/armedbear/lisp/Symbol;Ljava/lang/String;)V
+    ;   #37 = Utf8               (Lorg/armedbear/lisp/LispObject;Lorg/armedbear/lisp/LispObject;)V
+    ;   #38 = Utf8               org/armedbear/lisp/Primitives
+    ; {
+    ;   org.armedbear.lisp.Primitives$pf_cons();
+    ;     descriptor: ()V
+    ;     flags:
+    ;     Code:
+    ;       stack=3, locals=1, args_size=1
+    ;          0: aload_0
+    ;          1: getstatic     #1                  // Field org/armedbear/lisp/Symbol.CONS:Lorg/armedbear/lisp/Symbol;
+    ;          4: ldc           #2                  // String object-1 object-2
+    ;          6: invokespecial #3                  // Method org/armedbear/lisp/Primitive."<init>":(Lorg/armedbear/lisp/Symbol;Ljava/lang/String;)V
+    ;          9: return
+    ;       LineNumberTable:
+    ;         line 467: 0
+    ;         line 468: 9
+    ;       LocalVariableTable:
+    ;         Start  Length  Slot  Name   Signature
+    ;             0      10     0  this   Lorg/armedbear/lisp/Primitives$pf_cons;
+    ; 
+    ;   public org.armedbear.lisp.LispObject execute(org.armedbear.lisp.LispObject, org.armedbear.lisp.LispObject);
+    ;     descriptor: (Lorg/armedbear/lisp/LispObject;Lorg/armedbear/lisp/LispObject;)Lorg/armedbear/lisp/LispObject;
+    ;     flags: ACC_PUBLIC
+    ;     Code:
+    ;       stack=4, locals=3, args_size=3
+    ;          0: new           #4                  // class org/armedbear/lisp/Cons
+    ;          3: dup
+    ;          4: aload_1
+    ;          5: aload_2
+    ;          6: invokespecial #5                  // Method org/armedbear/lisp/Cons."<init>":(Lorg/armedbear/lisp/LispObject;Lorg/armedbear/lisp/LispObject;)V
+    ;          9: areturn
+    ;       LineNumberTable:
+    ;         line 474: 0
+    ;       LocalVariableTable:
+    ;         Start  Length  Slot  Name   Signature
+    ;             0      10     0  this   Lorg/armedbear/lisp/Primitives$pf_cons;
+    ;             0      10     1 first   Lorg/armedbear/lisp/LispObject;
+    ;             0      10     2 second   Lorg/armedbear/lisp/LispObject;
+    ; }
+    ; SourceFile: "Primitives.java"
+
+
+
+
+
+
+
+
 

@@ -2698,7 +2698,7 @@ public final class Lisp
   // ### *disassembler*
   public static final Symbol _DISASSEMBLER_ =
     exportSpecial("*DISASSEMBLER*", PACKAGE_EXT,
-                  new SimpleString("jad -a -p")); // or "jad -dis -p"
+                  new SimpleString("javap -c -verbose")); // or "jad -dis -p"
 
   // ### *speed* compiler policy
   public static final Symbol _SPEED_ =

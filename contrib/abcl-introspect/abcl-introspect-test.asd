@@ -1,6 +1,6 @@
 ;;;; -*- Mode: LISP -*-
 
-(defsystem abcl-introspect-tests
+(defsystem abcl-introspect-test
   :author "Mark Evenson"
   :long-description "<urn:abcl.org/release/1.6.1/contrib/abcl-introspect/test#>"
   :version "2.0.0"

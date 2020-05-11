@@ -7,5 +7,5 @@
   :depends-on (jss)
   :components ((:file "abcl-introspect")
 	       (:file "stacktrace"))
-  :in-order-to ((test-op (test-op abcl-introspect-tests))))
+  :in-order-to ((test-op (test-op abcl-introspect-test))))
 

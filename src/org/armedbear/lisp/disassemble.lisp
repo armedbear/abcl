@@ -40,29 +40,43 @@ Available disassemblers are configured by pushing a strategy to SYSTEM:*DISASSEM
 SYSTEM:CHOOSE-DISASSEMBLER selects a current strategy from this list .")
 
 (defvar *disassemblers*
-  `((:jad . disassemble-class-bytes))
-  "Methods of invoking CL:DISASSEMBLE consisting of a pushable list of (name function), where function takes a object to disassemble, returns the results as a string.
+  `((:system-javap . disassemble-class-bytes))
+  "Methods of invoking CL:DISASSEMBLE consisting of a enumeration of (keyword function) pairs
 
-The system is :jad using the venerable-but-still-works JAD. 
+The pairs (keyword function) contain a keyword identifying this
+particulat disassembler, and a symbol designating function takes a
+object to disassemble.
+
+Use SYS:CHOOSE-DISASSEMBLER to install a given disassembler as the one
+used by CL:DISASSEMBLE.  Additional disassemblers/decompilers are
+packaged in the ABCL-INTROSPECT contrib.
+
+The intial default is :javap using the javap command line tool which
+is part of the Java Developement Kit.
 ")
 
 (defun choose-disassembler (&optional name)
-  "Hook to choose invoked behavior of CL:DISASSEMBLE by using one of the methods registered in SYSTEM:*DISASSEMBLERS*. 
+  "Report current disassembler that would be used by CL:DISASSEMBLE
 
-Optionally, prefer the strategy named NAME if one exists."
+With optional keyword NAME, select the associated disassembler from
+SYS:*DISASSEMBLERS*."
+  (flet ((sane-disassembler-p (disassembler)
+           (and disassembler
+                (fboundp disassembler))))
     (setf *disassembler-function*
           (if name
               (let ((disassembler (cdr (assoc name *disassemblers*))))
-                (if (and disassembler
-                         (fboundp disassembler))
+                (if (sane-disassembler-p disassembler)
                     disassembler
                     (error "Disassembler ~a doesn't appear to work." name)))
-              (loop
-                 :for (nil . disassembler) in *disassemblers*
-                 :when (and disassembler
-                            (fboundp disassembler))
-                 :do (return disassembler)
-                 finally (warn "Can't find suitable disassembler.")))))
+              (if (sane-disassembler-p *disassembler-function*)
+                  *disassembler-function*
+                  ;; simplest strategy: choose the first working one
+                  (loop
+                    :for (nil . disassembler) in *disassemblers*
+                    :when (sane-disassembler-p disassembler)
+                      :do (return disassembler)
+                    :finally (warn "Can't find suitable disassembler.")))))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defmacro with-open ((name value) &body body)
