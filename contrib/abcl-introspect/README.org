@@ -1,7 +1,4 @@
-#+TITLE: ABCL-INTROSPECT
-
 * ABCL-INTROSPECT
-
 ** Introduction
 
 ABCL-INTROSPECT offers more extensive systems for inspecting the state
@@ -33,13 +30,11 @@ provided by CL:DISASSEMBLE.
 
 
 These systems may be used by first loading the appropiate ASDF
-definition then using the SYS:CHOOSE-DISASSEMBLER function to select.
-Currently available disassemblers are contained in the
-SYS:*DISASSEMBLERS* variable.
+definition then using the SYS:CHOOSE-DISASSEMBLER function to select
+the loaded system.  Currently available disassemblers are contained in
+the SYS:*DISASSEMBLERS* variable.
 
-For example, to use the javap command-line tool included with the Java
-Development Kit:
-
+#+caption: Using the ~javap~ Tool to Disassemble a Function
 #+begin_src lisp
     (require :abcl-contrib)
     (asdf:load-system :javap)
@@ -132,16 +127,11 @@ Development Kit:
     ; SourceFile: "Primitives.java"
 #+end_src    
     
-# Colophon
+* Colophon
 
-<> <https://abcl.org/svn/trunk/abcl/contrib/abcl-introspect/README.org> ;
-:supersedes <https://abcl.org/svn/trunk/abcl/contrib/abcl-introspect/README.markdown> .
-
-
-
-
-
-
-
-
-
+#+caption: Metadata Colophon
+#+begin_src n3
+<> dc:source   <https://abcl.org/svn/trunk/abcl/contrib/abcl-introspect/README.org> ;
+   dc:replaces <https://abcl.org/svn/trunk/abcl/contrib/abcl-introspect/README.markdown> ;
+   dc:modified "<2020-05-12 Tue 10:21>" .
+#+end_src
