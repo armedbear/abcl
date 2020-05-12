@@ -1,9 +1,8 @@
-(in-package :cl-user)
-(defpackage :abcl/build/jvm/tools/objectweb
+(defpackage :abcl-introspect/jvm/tools/objectweb
   (:use :cl)
   (:export
    #:disassemble-class-bytes))
-(in-package :abcl/build/jvm/tools/objectweb)
+(in-package :abcl-introspect/jvm/tools/objectweb)
 
 (defun disassemble-class-bytes (object)
   (let* ((reader (java:jnew "org.objectweb.asm.ClassReader" object))
@@ -16,7 +15,7 @@
     (java:jcall "toString" writer)))
 
 (eval-when (:load-toplevel :execute)
-  (pushnew `(:objectweb . abcl/build/jvm/tools/objectweb::disassemble-class-bytes)
+  (pushnew `(:objectweb . abcl-introspect/jvm/tools/objectweb::disassemble-class-bytes)
            sys::*disassemblers*)
   (format cl:*load-verbose* "~&; ~a ; Successfully added Objectweb disassembler.~%" *package*))
 
