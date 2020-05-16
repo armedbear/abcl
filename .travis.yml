@@ -54,6 +54,9 @@ install:
   # Install Quicklisp
   - ${ABCL_ROOT}/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(progn (setf ql-util::*do-not-prompt* t)(ql:add-to-init-file))' --eval '(ext:quit)'
 
+  # Install the patched version of cl+ssl
+  - bash -x ${ABCL_ROOT}/ci/install-patched-cl+ssl.bash
+
   # Install the ANSI-TEST suite
   - bash -x ${ABCL_ROOT}/ci/sync-ansi-test.bash
 
