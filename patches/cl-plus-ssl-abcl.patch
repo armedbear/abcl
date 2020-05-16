@@ -1,0 +1,49 @@
+# HG changeset patch
+# Parent  97a70ad89e9799a7cfb1c794095bf372522c8f81
+Implement stream-fd for ABCL
+
+This fixes for broken BIO on OpenSSL 1.1.1 ff. which causes ABCL to
+segfault.
+
+This hack allows ABCL to get at the underlying file descriptor using
+undocumented portions of the JVM that are not guaranteed to be stable.
+
+Tested under openjdk8 and openjdk11.
+
+c.f. <https://github.com/cl-plus-ssl/cl-plus-ssl/issues/72>,
+<https://abcl.org/trac/ticket/464>.
+
+diff -r 97a70ad89e97 src/streams.lisp
+--- a/src/streams.lisp	Sat Mar 14 15:07:32 2020 +0300
++++ b/src/streams.lisp	Fri May 15 21:34:28 2020 +0200
+@@ -208,7 +208,7 @@
+   (when unwrap-stream-p
+     (let ((fd (stream-fd socket)))
+       (when fd
+-  (setf socket fd))))
++        (setf socket fd))))
+   (etypecase socket
+     (integer
+      (install-nonblock-flag socket)
+@@ -486,3 +486,21 @@
+ #+lispworks
+ (defmethod stream-fd ((stream comm::socket-stream))
+   (comm:socket-stream-socket stream))
++
++#+abcl
++(progn
++  (require :abcl-contrib)
++  (require :jss)
++
++  (defmethod stream-fd ((stream system::socket-stream))
++    ;;; Don't ask...
++    (let* ((s0
++             (#"getWrappedInputStream" (two-way-stream-input-stream stream)))
++           (s1
++             (jss:get-java-field s0 "in" t))
++           (s2
++             (jss:get-java-field s1 "ch" t)))
++      (jss:get-java-field s2 "fdVal" t))))
++    
++
++

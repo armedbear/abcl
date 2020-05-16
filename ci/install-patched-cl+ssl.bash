@@ -3,14 +3,26 @@
 # Until <https://github.com/cl-plus-ssl/cl-plus-ssl/pull/97> is
 # resolved, we need to use our patched version.
 
-mkdir -p ${HOME}/quicklisp/local-projects
-pushd ${HOME}/quicklisp/local-projects
+root="${HOME}/quicklisp/local-projects"
+dir="cl-plus-ssl"
+tag="easye/stream-fd"
 
-git clone https://github.com/armedbear/cl-plus-ssl
+mkdir -p ${root}
+pushd ${root}
 
-pushd cl-plus-ssl
-git show-ref
-git rev-parse
+if [[ ! -d ${dir} ]]; then 
+    git clone https://github.com/armedbear/cl-plus-ssl ${dir}
+fi
+
+pushd ${dir}
+if [[ -d .hg ]]; then
+    hg update -r $tag
+    hg sum -v
+else
+    git checkout $tag
+    git show-ref
+    git rev-parse
+fi
 popd
 
 popd
