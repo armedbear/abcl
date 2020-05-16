@@ -6,6 +6,7 @@
   :version "2.0.0"
   :depends-on (jss)
   :components ((:file "abcl-introspect")
-	       (:file "stacktrace"))
+	       (:file "stacktrace")
+               (:file "util"))
   :in-order-to ((test-op (test-op abcl-introspect-test))))
 

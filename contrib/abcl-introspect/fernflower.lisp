@@ -10,16 +10,24 @@
               'asdf/interface::resolved-classpath))
 
 (defun disassemble-class-bytes (object)
-  (let ((sys::*disassembler*
-          ;; FIXME: use same java that is hosting ABCL
-          ;; !!! unclear options; wants to write output to filesystem
-          (format nil "java -cp ~a org.jetbrains.java.decompiler.main.decompiler.BaseDecompiler"
-                  (fernflower-classpath))))
-    (sys:disassemble-class-bytes object)))
+  (uiop/stream::with-temporary-file (:pathname p :type "class")
+    (ext::write-class object p)
+    (let* ((directory
+             (namestring (truename (make-pathname :directory (pathname-directory p)))))
+	   (path
+             (namestring (truename p)))
+           (command 
+	     (format nil "java -cp ~a org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler ~a ~a"
+                     (fernflower-classpath) p directory))
+           (output
+             (namestring (make-pathname :defaults p :type "java"))))
+      (uiop:run-program command)
+      (let ((result (alexandria:read-file-into-string output)))
+        (sys::print-lines-with-prefix result)))))
 
 (eval-when (:load-toplevel :execute)
   (pushnew `(:fernflower . abcl-introspect/jvm/tools/fernflower::disassemble-class-bytes)
            sys::*disassemblers*)
-  (format cl:*load-verbose* "~&; ~a: Successfully added fernflower disassembler.~%" *package*))
+  (format cl:*load-verbose* "~&; ~a: Successfully added fernflower decompiler.~%" *package*))
 
 
