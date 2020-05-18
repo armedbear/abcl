@@ -124,6 +124,7 @@ Optionally the file to parse may be specified by the FILE argument."
   (gethash version (get-hash-table test)))
 
 (defun difference (failures-1 failures-2)
+  "Report the set-difference between the lists of FAILURES-1 and FAILURES-2"
   (list 
    (list (length failures-1)
          (set-difference failures-1 failures-2))

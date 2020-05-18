@@ -1,7 +1,9 @@
 (defpackage #:abcl.test.ansi
   (:use :cl :cl-user)
-  (:nicknames #:ansi-tests #:abcl-ansi-tests #:gcl-ansi)
-  (:export #:run 
+  (:nicknames #:ansi-tests #:abcl-ansi-tests #:gcl-ansi
+              #:abcl/test/ansi)
+  (:export #:run
+           #:difference
            #:verify-ansi-tests
            #:do-tests-matching
            #:load-tests
