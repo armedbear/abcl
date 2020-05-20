@@ -279,7 +279,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     public LispObject reverse()
     {
         int length = length();
-        BasicVector_UnsignedByte8 result = new BasicVector_UnsignedByte8(length);
+        BasicVector_ByteBuffer result = new BasicVector_ByteBuffer(length);
         int i, j;
         for (i = 0, j = length - 1; i < length; i++, j--)
             result.aset(i, AREF(j));

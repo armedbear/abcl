@@ -163,7 +163,7 @@ public final class make_array extends Primitive
             if (fillPointer != NIL || adjustable != NIL)
               v = new ComplexVector_UnsignedByte8(size);
             else
-              v = new BasicVector_UnsignedByte8(size);
+              v = new BasicVector_ByteBuffer(size);
             defaultInitialElement = Fixnum.ZERO;
           }
         else if (upgradedType.equal(UNSIGNED_BYTE_16) &&
