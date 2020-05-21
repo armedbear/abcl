@@ -100,8 +100,8 @@ public final class make_array extends Primitive
             else if (arrayElementType == Symbol.BIT)
               v = new ComplexBitVector(dimv[0], array, displacement);
             else if (arrayElementType.equal(UNSIGNED_BYTE_8))
+              //              v = new ComplexVector_UnsignedByte8(dimv[0], array, displacement);
               v = new ComplexVector_ByteBuffer(dimv[0], array, displacement);
-                //              v = new ComplexVector_UnsignedByte8(dimv[0], array, displacement);
             else if (arrayElementType.equal(UNSIGNED_BYTE_32))
               v = new ComplexVector_UnsignedByte32(dimv[0], array, displacement);
             else
