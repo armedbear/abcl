@@ -135,7 +135,7 @@ public final class ByteArrayOutputStream extends Stream
         public LispObject execute(LispObject arg)
         {
             if (arg instanceof ByteArrayOutputStream)
-                return new BasicVector_UnsignedByte8(((ByteArrayOutputStream)arg).getByteArray());
+                return new BasicVector_ByteBuffer(((ByteArrayOutputStream)arg).getByteArray());
 
             return type_error(this, Symbol.STREAM); // TODO
         }
