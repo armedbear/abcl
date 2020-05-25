@@ -1,5 +1,7 @@
-(require :asdf)
-(require :abcl-contrib)
+#+abcl
+(progn 
+  (require :asdf)
+  (require :abcl-contrib))
 
 (ql:quickload :cl+ssl)
 (ql:quickload :cl+ssl.test)
