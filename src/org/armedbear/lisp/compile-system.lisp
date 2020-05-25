@@ -329,6 +329,7 @@
                            "aver.lisp"
                            "bit-array-ops.lisp"
                            "boole.lisp"
+                           "buffers.lisp"
                            "butlast.lisp"
                            "byte-io.lisp"
                            "case.lisp"
