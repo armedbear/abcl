@@ -69,4 +69,6 @@ public final class gc extends Primitive
     }
 
     private static final Primitive GC = new gc();
+
+  // Optionally insert BufferAllocation code in here ???
 }
