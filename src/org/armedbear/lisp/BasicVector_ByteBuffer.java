@@ -37,13 +37,13 @@ import static org.armedbear.lisp.Lisp.*;
 import java.nio.ByteBuffer;
 import java.nio.BufferOverflowException;
 
-
 // A basic vector is a specialized vector that is not displaced to another
 // array, has no fill pointer, and is not expressly adjustable.
-public final class BasicVector_ByteBuffer extends AbstractVector
-{
-  private ByteBuffer elements;
+public final class BasicVector_ByteBuffer
+  extends AbstractVector {
 
+  private ByteBuffer elements;
+  
   public BasicVector_ByteBuffer(int capacity) {
     elements = ByteBuffer.allocate(capacity);
   }
@@ -51,7 +51,25 @@ public final class BasicVector_ByteBuffer extends AbstractVector
   public BasicVector_ByteBuffer(byte[] array) {
     elements = ByteBuffer.wrap(array);
   }
-  
+
+  // ### ext:make-bytebuffer-byte-vector BYTEBUFFER
+  // Construct a simple vector from a bytebuffer
+  public static final Primitive MAKE_BYTEBUFFER_BYTE_VECTOR = new pf_make_bytebuffer_byte_vector();
+  private static final class pf_make_bytebuffer_byte_vector extends Primitive {
+    pf_make_bytebuffer_byte_vector() {
+      super(Symbol.MAKE_BYTEBUFFER_BYTE_VECTOR, "bytebuffer");
+    }
+    @Override
+    public LispObject execute(LispObject arg) {
+      return new BasicVector_ByteBuffer(coerceToByteBuffer(arg));
+    }
+  }
+
+  static public ByteBuffer coerceToByteBuffer(LispObject arg) {
+    JavaObject obj = (JavaObject) arg;
+    return (ByteBuffer)obj.getObject();
+  }
+    
   public BasicVector_ByteBuffer(ByteBuffer buffer) {
     elements = buffer;
   }
