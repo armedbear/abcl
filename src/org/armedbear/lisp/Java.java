@@ -1420,4 +1420,12 @@ public final class Java
             message = t.getClass().getName();
         return message;
     }
+
+  // FIXME: better handled as a Lisp symbol?  With a Java enum, the
+  // compiler probably has a better chance to optimize.
+  public static class Buffers {
+    public enum AllocationPolicy { PRIMITIVE_ARRAY, NIO; };
+    public static AllocationPolicy active = AllocationPolicy.NIO;
+  }
+  
 }
