@@ -66,6 +66,31 @@ public final class BasicVector_CharBuffer
     capacity = buffer.limit();
   }
 
+  // ### ext:make-charbuffer-byte-vector BYTEBUFFER
+  public static final Primitive MAKE_CHARBUFFER_BYTE_VECTOR
+    = new pf_make_charbuffer_byte_vector();
+  private static final class pf_make_charbuffer_byte_vector extends Primitive {
+    pf_make_charbuffer_byte_vector() {
+      super(Symbol.MAKE_CHARBUFFER_BYTE_VECTOR, "bytebuffer",
+            "Construct a simple vector with element type (unsigned 16) from a java.nio BYTEBUFFER");
+    }
+    @Override
+    public LispObject execute(LispObject arg) {
+      return new BasicVector_CharBuffer(coerceToCharBuffer(arg));
+    }
+  }
+
+  static public CharBuffer coerceToCharBuffer(LispObject arg) {
+    JavaObject javaObject = (JavaObject) arg;
+    Object o = javaObject.getObject();
+    if (o instanceof ByteBuffer) {
+      return ((ByteBuffer)o).asCharBuffer();
+    } else {
+      return (CharBuffer) o;
+    }
+  }
+
+
   @Override
   public LispObject typeOf() {
     return list(Symbol.SIMPLE_ARRAY, UNSIGNED_BYTE_16,
