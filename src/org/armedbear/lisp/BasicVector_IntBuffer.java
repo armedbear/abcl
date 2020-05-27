@@ -2,6 +2,7 @@
  * BasicVector_IntBuffer.java
  *
  * Copyright (C) 2020 @easye
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -33,25 +34,28 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.ByteBuffer;
 
-public final class BasicVector_IntBuffer 
+// A basic vector is a specialized vector that is not displaced to another
+// array, has no fill pointer, and is not expressly adjustable.
+public final class BasicVector_IntBuffer
   extends AbstractVector
 {
   private int capacity;
+
   private IntBuffer elements;
 
   public BasicVector_IntBuffer(int capacity) {
     elements = IntBuffer.allocate(capacity);
-    this.capacity = capacity;  // TODO use elements.limit()?
+    this.capacity = capacity;
   }
 
   public BasicVector_IntBuffer(LispObject[] array) {
     capacity = array.length;
     elements = IntBuffer.allocate(capacity);
     for (int i = array.length; i-- > 0;) {
-      elements.put(i, Fixnum.getValue(array[i])); // FIXME bulk copy
+      elements.put(i, (int)(array[i].longValue() & 0xffff)); 
     }
   }
 
@@ -67,7 +71,7 @@ public final class BasicVector_IntBuffer
 
   @Override
   public LispObject typeOf() {
-    return list(Symbol.SIMPLE_ARRAY, UNSIGNED_BYTE_16,
+    return list(Symbol.SIMPLE_ARRAY, UNSIGNED_BYTE_32,
                 new Cons(Fixnum.getInstance(capacity)));
   }
 
@@ -87,7 +91,7 @@ public final class BasicVector_IntBuffer
 
   @Override
   public LispObject getElementType() {
-    return UNSIGNED_BYTE_16;
+    return UNSIGNED_BYTE_32;
   }
 
   @Override
@@ -118,55 +122,49 @@ public final class BasicVector_IntBuffer
   @Override
   public LispObject elt(int index) {
     try {
-      return Fixnum.getInstance(elements.get(index));
+      return number(elements.get(index));
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, capacity);
       return NIL; // Not reached.
     }
   }
 
-  // Ignores fill pointer.
   @Override
   public int aref(int index) {
     try {
-      return elements.get(index);
-    } catch (ArrayIndexOutOfBoundsException e) {
-      badIndex(index, elements.limit()); // FIXME should implement method for length() contract
-      // Not reached.
-      return 0;
+      return (int) elements.get(index);
+    } catch (IndexOutOfBoundsException e) {
+      badIndex(index, elements.limit()); 
+      return -1; // Not reached.
     }
   }
 
-  // Ignores fill pointer.
+  @Override
+  public long aref_long(int index) {
+    try {
+      return elements.get(index);
+    } catch (IndexOutOfBoundsException e) {
+      badIndex(index, elements.limit());
+      return -1; // Not reached.
+    }
+  }
+
   @Override
   public LispObject AREF(int index) {
     try {
-      return Fixnum.getInstance(elements.get(index));
+      return number(elements.get(index));
     } catch (IndexOutOfBoundsException e) {
-      badIndex(index, elements.limit());  // FIXME limit() --> capacity?
+      badIndex(index, elements.limit());
       return NIL; // Not reached.
     }
   }
 
   @Override
-  public void aset(int index, int n) {
+  public void aset(int index, LispObject newValue) {
     try {
-      elements.put(index, n);
+      elements.put(index, (int)(newValue.longValue() & 0xffff));
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, capacity);
-    }
-  }
-
-  @Override
-  public void aset(int index, LispObject obj) {
-    if (obj instanceof Fixnum) {
-      try {
-        elements.put(index, ((Fixnum)obj).value);
-      } catch (ArrayIndexOutOfBoundsException e) {
-        badIndex(index, capacity);
-      }
-    } else {
-      type_error(obj, UNSIGNED_BYTE_16);
     }
   }
 
@@ -180,48 +178,48 @@ public final class BasicVector_IntBuffer
       }
       return v;
     } catch (IndexOutOfBoundsException e) {
+      // FIXME
       return error(new TypeError("Array index out of bounds: " + i + "."));
     }
   }
 
   @Override
   public void fill(LispObject obj) {
-    if (!(obj instanceof Fixnum)) {
-      type_error(obj, Symbol.FIXNUM);
+    if (!(obj instanceof LispInteger)) {
+      type_error(obj, Symbol.INTEGER);
       // Not reached.
       return;
     }
-    int n = ((Fixnum) obj).value;
-    if (n < 0 || n > 65535) {
-      type_error(obj, UNSIGNED_BYTE_16);
-      // Not reached.
-      return;
+    if (obj.isLessThan(Fixnum.ZERO) || obj.isGreaterThan(UNSIGNED_BYTE_32_MAX_VALUE)) {
+      type_error(obj, UNSIGNED_BYTE_32);
     }
+    int value = (int) (obj.longValue() & 0xffff);
     for (int i = capacity; i-- > 0;) {
-      elements.put(i, n); // FASTER!!!
+      elements.put(i, value);
     }
   }
 
   @Override
   public void shrink(int n) {
     if (n < capacity) {
-      IntBuffer newIntBuffer = IntBuffer.allocate(n);
-      newIntBuffer.put(elements.array(), 0, n);
-      elements = newIntBuffer;
+      IntBuffer newBuffer = IntBuffer.allocate(n);
+        //      long[] newArray = new long[n];
+      newBuffer.put(elements.array(), 0, n);
+      elements = newBuffer;
       capacity = n;
       return;
     }
     if (n == capacity) {
       return;
     }
-    error(new LispError("End of native shrink routine:  shouldn't be reachable."));
+    error(new LispError());
   }
 
   @Override
   public LispObject reverse() {
     BasicVector_IntBuffer result = new BasicVector_IntBuffer(capacity);
     int i, j;
-    for (i = 0, j = capacity - 1; i < capacity; i++, j--){
+    for (i = 0, j = capacity - 1; i < capacity; i++, j--) {
       result.elements.put(i, elements.get(j));
     }
     return result;
@@ -254,19 +252,22 @@ public final class BasicVector_IntBuffer
           list = list.cdr();
         }
       } else if (initialContents.vectorp()) {
-        for (int i = 0; i < newCapacity; i++)
+        for (int i = 0; i < newCapacity; i++) {
           newElements[i] = initialContents.elt(i);
-      } else
+        }
+      } else {
         type_error(initialContents, Symbol.SEQUENCE);
+      }
       return new BasicVector_IntBuffer(newElements);
     }
-    if (capacity != newCapacity) { // FIXME: more efficient
+    if (capacity != newCapacity) {
       LispObject[] newElements = new LispObject[newCapacity];
       System.arraycopy(elements.array(), 0, newElements, 0,
                        Math.min(capacity, newCapacity));
       if (initialElement != null) {
-        for (int i = capacity; i < newCapacity; i++)
+        for (int i = capacity; i < newCapacity; i++) {
           newElements[i] = initialElement;
+        }
       }
       return new BasicVector_IntBuffer(newElements);
     }
@@ -276,11 +277,8 @@ public final class BasicVector_IntBuffer
 
   @Override
   public AbstractVector adjustArray(int newCapacity,
-                                    AbstractArray displacedTo,
-                                    int displacement) {
+                                     AbstractArray displacedTo,
+                                     int displacement) {
     return new ComplexVector(newCapacity, displacedTo, displacement);
   }
 }
-
-
-
