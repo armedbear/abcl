@@ -55,6 +55,30 @@ public final class BasicVector_IntBuffer
     }
   }
 
+  // ### ext:make-intbuffer-byte-vector BYTEBUFFER
+  // Construct a simple (unsigned 16) vector from a nio.java.IntBuffer
+  public static final Primitive MAKE_INTBUFFER_BYTE_VECTOR
+    = new pf_make_intbuffer_byte_vector();
+  private static final class pf_make_intbuffer_byte_vector extends Primitive {
+    pf_make_intbuffer_byte_vector() {
+      super(Symbol.MAKE_INTBUFFER_BYTE_VECTOR, "bytebuffer");
+    }
+    @Override
+    public LispObject execute(LispObject arg) {
+      return new BasicVector_IntBuffer(coerceToIntBuffer(arg));
+    }
+  }
+
+  static public IntBuffer coerceToIntBuffer(LispObject arg) {
+    JavaObject javaObject = (JavaObject) arg;
+    Object o = javaObject.getObject();
+    if (o instanceof ByteBuffer) {
+      return ((ByteBuffer)o).asIntBuffer();
+    } else {
+      return (IntBuffer) o;
+    }
+  }
+
   public BasicVector_IntBuffer(ByteBuffer buffer) {
     elements = buffer.asIntBuffer();
     capacity = buffer.limit();
