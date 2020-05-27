@@ -2919,6 +2919,14 @@ public class Symbol extends LispObject implements java.io.Serializable
   // End of CL symbols.
 
   // Extensions.
+  public static final Symbol MAKE_NIOBUFFER_VECTOR =
+    PACKAGE_EXT.addExternalSymbol("MAKE-NIOBUFFER-VECTOR");
+  public static final Symbol MAKE_BYTEBUFFER_BYTE_VECTOR =
+    PACKAGE_EXT.addExternalSymbol("MAKE-BYTEBUFFER-BYTE-VECTOR");
+  public static final Symbol MAKE_CHARBUFFER_BYTE_VECTOR =
+    PACKAGE_EXT.addExternalSymbol("MAKE-CHARBUFFER-BYTE-VECTOR");
+  public static final Symbol MAKE_INTBUFFER_BYTE_VECTOR =
+    PACKAGE_EXT.addExternalSymbol("MAKE-INTBUFFER-BYTE-VECTOR");
   public static final Symbol MOST_POSITIVE_JAVA_LONG =
     PACKAGE_EXT.addExternalSymbol("MOST-POSITIVE-JAVA-LONG");
   public static final Symbol MOST_NEGATIVE_JAVA_LONG=
