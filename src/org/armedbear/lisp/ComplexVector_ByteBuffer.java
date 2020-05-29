@@ -1,5 +1,5 @@
 /*
- * ComplexVector_ByteBuffer
+ * ComplexVector_ByteBuffer.java
  *
  * Copyright (C) 2020 @easye
  *
@@ -40,7 +40,7 @@ import java.nio.ByteBuffer;
 // another array, has a fill pointer, and/or is expressly adjustable.
 public final class ComplexVector_ByteBuffer extends AbstractVector
 {
-  private int capacity; // needed for displaced arrays
+  private int capacity; 
   private int fillPointer = -1; // -1 indicates no fill pointer.
   private boolean isDisplaced;
 
@@ -256,9 +256,10 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
     // use the limit marker to denote the length
     if (n < length()) {
       elements.limit(n);
+      this.capacity = n;
       return;
     }
-    if (n == length()) {
+    if (n == elements.limit()) { 
       return;
     }
     error(new LispError());
@@ -279,7 +280,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
   public LispObject nreverse() {
     if (elements != null) {
       int i = 0;
-      int j = capacity() - 1;
+      int j = length() - 1;
       while (i < j) {
         byte temp = elements.get(i);
         elements.put(i, elements.get(j));
@@ -345,7 +346,6 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
   private final void ensureCapacity(int minCapacity) {
     if (elements != null) {
       if (capacity < minCapacity) {
-        //                byte[] newArray = new byte[minCapacity];
         ByteBuffer newBuffer = ByteBuffer.allocate(minCapacity);
         newBuffer.put(elements); 
         elements = newBuffer;
@@ -407,7 +407,6 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
         }
       } else if (capacity != newCapacity) {
         ByteBuffer newElements = ByteBuffer.allocate(newCapacity);
-        //              byte[] newElements = new byte[newCapacity];
         newElements.put(elements.array(), 0, 
                         Math.min(capacity, newCapacity));
         elements = newElements;
