@@ -128,11 +128,9 @@ be in a directory named '../ansi-test/'."
   :description "Test ABCL with CL-BENCH."
   :perform (test-op (o s)
                     (uiop:symbol-call :abcl.test.cl-bench 'run))
-  :components ((:module package :pathname "../cl-bench/"
-                        :components ((:file "defpackage")))
-               (:module wrapper :pathname "test/lisp/cl-bench/" 
-                        :depends-on (package) :components
-                        ((:file "wrapper")))))
+  :components ((:module wrapper :pathname "test/lisp/cl-bench/"
+                :components ((:file "wrapper")))))
+
 (defsystem abcl/documentation
   :description "Tools to generate LaTeX source from docstrings."
   :depends-on (swank
