@@ -153,7 +153,7 @@ public final class Bignum extends LispInteger
           {
             if (minusp())
               return NIL;
-            return isLessThan(UNSIGNED_BYTE_32_MAX_VALUE) ? T : NIL;
+            return isLessThanOrEqualTo(UNSIGNED_BYTE_32_MAX_VALUE) ? T : NIL;
           }
       }
     return super.typep(type);
