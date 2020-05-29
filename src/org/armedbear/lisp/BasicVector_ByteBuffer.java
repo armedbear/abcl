@@ -40,36 +40,41 @@ import java.nio.BufferOverflowException;
 
 // A basic vector is a specialized vector that is not displaced to another
 // array, has no fill pointer, and is not expressly adjustable.
-public final class BasicVector_ByteBuffer extends AbstractVector
+public final class BasicVector_ByteBuffer
+  extends AbstractVector
 {
+  private int capacity;
   private ByteBuffer elements;
 
   public BasicVector_ByteBuffer(int capacity) {
     elements = ByteBuffer.allocate(capacity);
+    this.capacity = capacity;
   }
 
   public BasicVector_ByteBuffer(byte[] array) {
+    capacity = array.length;
     elements = ByteBuffer.wrap(array);
   }
   
-  public BasicVector_ByteBuffer(ByteBuffer buffer) {
-    elements = buffer;
-  }
-
   public BasicVector_ByteBuffer(LispObject[] array) {
     // FIXME: for now we assume that we're being handled an array of
     // primitive bytes
-    
+    capacity = array.length;
     elements = ByteBuffer.allocate(array.length);
     for (int i = array.length; i-- > 0;)
       // Faster please!
       elements.put((byte)coerceLispObjectToJavaByte(array[i]));
   }
 
+  public BasicVector_ByteBuffer(ByteBuffer buffer) {
+    elements = buffer;
+    capacity = buffer.limit();  // XXX or should this be buffer.capacity()?
+  }
+
   @Override
   public LispObject typeOf() {
     return list(Symbol.SIMPLE_ARRAY, UNSIGNED_BYTE_8,
-                new Cons(Fixnum.getInstance(elements.limit())));
+                new Cons(Fixnum.getInstance(capacity)));
   }
 
   @Override
@@ -108,15 +113,12 @@ public final class BasicVector_ByteBuffer extends AbstractVector
 
   @Override
   public int capacity() {
-    return elements.capacity();
+    return capacity;
   }
 
-  // In order to "shrink" a ByteBuffer without allocating new memory,
-  // we use the the limit field to mark the end of the usable portion
-  // of the vector
   @Override
   public int length() {
-    return elements.limit();
+    return capacity;
   }
 
   @Override
@@ -124,7 +126,7 @@ public final class BasicVector_ByteBuffer extends AbstractVector
     try {
       return coerceJavaByteToLispObject(elements.get(index));
     } catch (IndexOutOfBoundsException e) {
-      badIndex(index, length());
+      badIndex(index, capacity);
       return NIL; // Not reached.
     }
   }
@@ -132,9 +134,9 @@ public final class BasicVector_ByteBuffer extends AbstractVector
   @Override
   public int aref(int index) {
     try {
-      return ((elements.get(index) & 0xff)); // XXX Hmmm
+      return (((int)elements.get(index) & 0xff)); // XXX Hmmm
     } catch (IndexOutOfBoundsException e) {
-      badIndex(index, length());
+      badIndex(index, elements.limit()); // XXX why use the capacity field?
       // Not reached.
       return 0;
     }
@@ -145,7 +147,7 @@ public final class BasicVector_ByteBuffer extends AbstractVector
     try {
       return coerceJavaByteToLispObject(elements.get(index));
     } catch (IndexOutOfBoundsException e) {
-      badIndex(index, length());
+      badIndex(index, elements.limit()); // XXX why not use the capacity field?
       return NIL; // Not reached.
     }
   }
@@ -155,7 +157,7 @@ public final class BasicVector_ByteBuffer extends AbstractVector
     try {
       elements.put(index,  (byte) n);
     } catch (IndexOutOfBoundsException e) {
-      badIndex(index, length());
+      badIndex(index, capacity);
     }
   }
 
@@ -164,12 +166,13 @@ public final class BasicVector_ByteBuffer extends AbstractVector
     try {
         elements.put(index, coerceLispObjectToJavaByte(value));
     } catch (IndexOutOfBoundsException e) {
-      badIndex(index, length());
+      badIndex(index, capacity);
     }
   }
 
   @Override
   public LispObject subseq(int start, int end) {
+    // ??? Do we need to check that start, end are valid?
     BasicVector_ByteBuffer v = new BasicVector_ByteBuffer(end - start);
     ByteBuffer view = elements.asReadOnlyBuffer();
     view.position(start);
@@ -203,9 +206,13 @@ public final class BasicVector_ByteBuffer extends AbstractVector
 
   @Override
   public void shrink(int n) {
-    // One cannot shrink a ByteBuffer physically, so 
+    // One cannot shrink a ByteBuffer physically, and the elements
+    // field may refer to malloc()d memory that we shouldn't touch, so
+    // use the java.nio.Buffer limit pointer.  Not totally sure that
+    // this strategy will work out…
     if (n < length()) {
         elements.limit(n);
+        capacity = n;
         return;
     }
     if (n == length()) {
