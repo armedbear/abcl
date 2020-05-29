@@ -1547,7 +1547,7 @@ public final class Lisp
     list(Symbol.UNSIGNED_BYTE, Fixnum.constants[32]);
 
   public static final LispObject UNSIGNED_BYTE_32_MAX_VALUE =
-    Bignum.getInstance(4294967296L);
+    Bignum.getInstance(4294967295L);
 
   public static final LispObject getUpgradedArrayElementType(LispObject type)
 
