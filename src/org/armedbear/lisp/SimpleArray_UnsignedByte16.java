@@ -87,7 +87,7 @@ public final class SimpleArray_UnsignedByte16 extends AbstractArray
     {
         if (dims.length == 0) {
             try {
-                data[index] = coerceLispObjectToJavaByte(contents);
+              data[index] = coerceLispObjectToJavaByte(contents); // This has to be wrong!
             }
             catch (ArrayIndexOutOfBoundsException e) {
                 error(new LispError("Bad initial contents for array."));
