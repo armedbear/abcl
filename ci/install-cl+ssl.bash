@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-#
-# Until <https://github.com/cl-plus-ssl/cl-plus-ssl/pull/97> is
-# resolved, we need to use our patched version.
 
-root="${HOME}/quicklisp/local-projects"
 dir="cl-plus-ssl"
-tag="easye/stream-fd"
+#uri="https://github.com/cl-plus-ssl/${dir}"
+uri="https://github.com/armedbear/${dir}"
+root="${HOME}/quicklisp/local-projects"
+tag="easye/openjdk14"
+tag=master
 
 mkdir -p ${root}
 pushd ${root}
 
 if [[ ! -d ${dir} ]]; then 
-    git clone https://github.com/armedbear/cl-plus-ssl ${dir}
+    git clone ${uri} ${dir}
 fi
 
 pushd ${dir}
