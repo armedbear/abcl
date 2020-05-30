@@ -57,6 +57,9 @@ install:
   # Install the patched version of cl+ssl
   - bash -x ${ABCL_ROOT}/ci/install-cl+ssl.bash
 
+  # Install the patched version of cffi
+  - bash -x ${ABCL_ROOT}/ci/install-cffi.bash
+
   # Install the ANSI-TEST suite
   - bash -x ${ABCL_ROOT}/ci/sync-ansi-test.bash
 

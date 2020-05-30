@@ -1,0 +1,106 @@
+# HG changeset patch
+# Parent  a5ee931fc9a61275240863749f20d0fe360cb78d
+abcl: implement MAKE-SHAREABLE-BYTE-VECTOR
+
+ABCL is able create and share malloc()d memory for byte vectors with
+EXTENSION:MAKE-NIOBUFFER-VECTOR in
+<https://github.com/armedbear/abcl/pull/197> ff. patch to
+abcl-1.6.2-dev for the upcoming abcl-1.7.0 release.  Conditionalize
+code on presence of an CL:FBOUNDP EXTENSION:MAKE-NIOBUFFER-VECTOR
+symbol.
+
+Retain the old behavior of copying memory for
+WITH-POINTER-TO-VECTOR-DATA when passed a non-shareable byte vector.
+
+diff -r a5ee931fc9a6 src/cffi-abcl.lisp
+--- a/src/cffi-abcl.lisp	Wed May 27 10:31:25 2020 +0100
++++ b/src/cffi-abcl.lisp	Sat May 30 10:51:04 2020 +0200
+@@ -69,8 +69,6 @@
+    #:native-namestring
+    #:%mem-ref
+    #:%mem-set
+-   ;; #:make-shareable-byte-vector
+-   ;; #:with-pointer-to-vector-data
+    #:%foreign-symbol-pointer
+    #:%defcallback
+    #:%callback
+@@ -291,10 +289,53 @@
+     (:pointer "getPointer")
+     ((:short :unsigned-short) "getShort")))
+ 
++;;; HACK for now: keep track of all the pointers to malloc()'d memory
++;;; hashed by the shareable byte vectors we allocate.
++(defvar *static-vector-pointer*
++  (make-hash-table :weakness :value))
++
++#+#.(uiop:symbol-test-to-feature-expression :make-niobuffer-vector :ext)
++(defun make-shareable-vector (length &key (element-type '(unsigned-byte 8)))
++  "Use memory on the heap for storing a vector of LENGTH with ELEMENT-TYPE
++
++Returns the allocated vector as the first value, and the pointer to
++the heap memory as the second.
++
++Only works for 8, 16, 32 bit bytes.
++"
++  (let* ((type
++           (first element-type))
++         (bits-per-byte
++           (second element-type))
++         (bytes-per-element  ;; ehh, not going to work well for element type not of size 8, 16, or 32
++           (ceiling bits-per-byte 8)))
++    (unless (subtypep element-type
++                      '(or (unsigned-byte 8) (unsigned-byte 16) (unsigned-byte 32)))
++      (signal 'type-error :datum element-type
++                          :expected-type '(or
++                                           (unsigned-byte 8)
++                                           (unsigned-byte 16)
++                                           (unsigned-byte 32))))
++    (let* ((bytes
++             (* length bytes-per-element))
++           (heap-pointer
++             (jss:new "com.sun.jna.Memory" bytes))
++           (bytebuffer
++             (#"getByteBuffer" heap-pointer 0 bytes))
++           (static-vector
++             (ext:make-niobuffer-vector bytebuffer :element-type element-type)))
++      (setf (gethash static-vector *static-vector-pointer*)
++            heap-pointer)
++      (values
++       static-vector
++       heap-pointer))))
++
+ (defun make-shareable-byte-vector (size)
+   "Create a Lisp vector of SIZE bytes can passed to
+ WITH-POINTER-TO-VECTOR-DATA."
+-  (make-array size :element-type '(unsigned-byte 8)))
++  (if (fboundp (uiop:find-symbol* :make-niobuffer-vector :ext nil))
++      (make-shareable-vector size :element-type '(unsigned-byte 8)) ;; abcl-1.6.2-dev, upcoming abcl-1.7.0
++      (make-array size :element-type '(unsigned-byte 8))))
+ 
+ (let ((method (jmethod "com.sun.jna.Pointer"
+                        (jna-setter :char) "long" (jna-setter-arg-type :char))))
+@@ -314,13 +355,17 @@
+ 
+ (defmacro with-pointer-to-vector-data ((ptr-var vector) &body body)
+   "Bind PTR-VAR to a foreign pointer to the data in VECTOR."
+-  (let ((vector-sym (gensym "VECTOR")))
+-    `(let ((,vector-sym ,vector))
+-       (with-foreign-pointer (,ptr-var (length ,vector-sym))
+-         (copy-to-foreign-vector ,vector-sym ,ptr-var)
+-         (unwind-protect
+-              (progn ,@body)
+-           (copy-from-foreign-vector ,vector-sym ,ptr-var))))))
++  (let ((vector-sym (gensym "VECTOR"))
++        (heap-pointer (gethash vector *static-vector-pointer*)))
++    (if heap-pointer
++        `(let ((,ptr-var ,heap-pointer))
++           (progn ,@body))
++        `(let ((,vector-sym ,vector))
++           (with-foreign-pointer (,ptr-var (length ,vector-sym))
++             (copy-to-foreign-vector ,vector-sym ,ptr-var)
++             (unwind-protect
++                  (progn ,@body)
++               (copy-from-foreign-vector ,vector-sym ,ptr-var)))))))
+ 
+ ;;;# Dereferencing
+ 
