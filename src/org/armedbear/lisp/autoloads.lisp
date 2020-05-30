@@ -53,3 +53,8 @@
 ;; where simple-format calls sys::%format
 
 (autoload 'simple-format "format")
+;;; Otherwise the Primitive don't get fbound…
+(autoload '(ext:make-charbuffer-byte-vector
+            ext:make-intbuffer-byte-vector)
+          "buffers")
+
