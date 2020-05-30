@@ -132,7 +132,7 @@ public final class BasicVector_IntBuffer
   @Override
   public int aref(int index) {
     try {
-      return (int) elements.get(index);
+      return elements.get(index);
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, elements.limit()); 
       return -1; // Not reached.
@@ -162,7 +162,7 @@ public final class BasicVector_IntBuffer
   @Override
   public void aset(int index, LispObject newValue) {
     try {
-      elements.put(index, (int)(newValue.longValue() & 0xffffffff));
+      elements.put(index, coerceLispObjectToJavaInt(newValue));
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, capacity);
     }
@@ -193,7 +193,7 @@ public final class BasicVector_IntBuffer
     if (obj.isLessThan(Fixnum.ZERO) || obj.isGreaterThan(UNSIGNED_BYTE_32_MAX_VALUE)) {
       type_error(obj, UNSIGNED_BYTE_32);
     }
-    int value = (int) (obj.longValue() & 0xffffffff);
+    int value = coerceLispObjectToJavaInt(obj);
     for (int i = capacity; i-- > 0;) {
       elements.put(i, value);
     }

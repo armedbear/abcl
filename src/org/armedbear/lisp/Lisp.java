@@ -1221,6 +1221,10 @@ public final class Lisp
     return null;
   }
 
+  public static final LispObject number(int i) {
+    return number((long) i & 0xffff_ffff);
+  }
+
   public static final LispObject number(long n)
   {
     if (n >= Integer.MIN_VALUE && n <= Integer.MAX_VALUE)
@@ -1651,13 +1655,15 @@ public final class Lisp
       }
     return T;
   }
+  public static final int coerceLispObjectToJavaInt(LispObject obj) {
+    return (int) Fixnum.getValue(obj);
+  }
 
   public static final char coerceLispObjectToJavaChar(LispObject obj) {
     return (char) (byte)Fixnum.getValue(obj);
   }
 
   public static final byte coerceLispObjectToJavaByte(LispObject obj)
-
   {
           return (byte)Fixnum.getValue(obj);
   }
@@ -1665,6 +1671,11 @@ public final class Lisp
   public static final LispObject coerceJavaByteToLispObject(byte b)
   {
     return Fixnum.constants[((int)b) & 0xff];
+  }
+
+  public static final LispObject coerceJavaIntToLispObject(int i)
+  {
+    return Fixnum.constants[(i & 0xffff_ffff)];
   }
 
   public static final LispCharacter checkCharacter(LispObject obj)
