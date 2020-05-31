@@ -61,7 +61,7 @@ install:
   - bash -x ${ABCL_ROOT}/ci/install-cffi.bash
 
   # Install the ANSI-TEST suite
-  - bash -x ${ABCL_ROOT}/ci/sync-ansi-test.bash
+  - bash -x ${ABCL_ROOT}/ci/install-ansi-test.bash
 
   # Install the patched version of static-vectors
   - bash -x ${ABCL_ROOT}/ci/install-static-vectors.bash
