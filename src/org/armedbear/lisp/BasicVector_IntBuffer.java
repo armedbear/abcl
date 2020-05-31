@@ -55,7 +55,8 @@ public final class BasicVector_IntBuffer
     capacity = array.length;
     elements = IntBuffer.allocate(capacity);
     for (int i = array.length; i-- > 0;) {
-      elements.put(i, (int)(array[i].longValue() & 0xffffffff)); 
+      // FIXME: if  LispObeject is a number that can't fit into an int
+      elements.put(i, (int)(array[i].longValue() & 0xffff_ffffL));  
     }
   }
 
@@ -132,7 +133,8 @@ public final class BasicVector_IntBuffer
   @Override
   public int aref(int index) {
     try {
-      return (int) elements.get(index);
+      // FIXME: this shouldn't be used?  
+      return number(((long)elements.get(index)) & 0xffff_ffffL).intValue(); 
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, elements.limit()); 
       return -1; // Not reached.
@@ -142,7 +144,7 @@ public final class BasicVector_IntBuffer
   @Override
   public long aref_long(int index) {
     try {
-      return elements.get(index);
+      return ((long)elements.get(index)) & 0xffff_ffffL;
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, elements.limit());
       return -1; // Not reached.
@@ -152,7 +154,7 @@ public final class BasicVector_IntBuffer
   @Override
   public LispObject AREF(int index) {
     try {
-      return number(elements.get(index));
+      return number(((long)elements.get(index)) & 0xffff_ffffL);
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, elements.limit());
       return NIL; // Not reached.
@@ -162,7 +164,10 @@ public final class BasicVector_IntBuffer
   @Override
   public void aset(int index, LispObject newValue) {
     try {
-      elements.put(index, (int)(newValue.longValue() & 0xffffffff));
+      if (newValue.isLessThan(Fixnum.ZERO) || newValue.isGreaterThan(UNSIGNED_BYTE_32_MAX_VALUE)) {
+        type_error(newValue, UNSIGNED_BYTE_32);
+      }
+      elements.put(index, (int)(newValue.longValue() & 0xffff_ffffL));
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, capacity);
     }
@@ -193,9 +198,8 @@ public final class BasicVector_IntBuffer
     if (obj.isLessThan(Fixnum.ZERO) || obj.isGreaterThan(UNSIGNED_BYTE_32_MAX_VALUE)) {
       type_error(obj, UNSIGNED_BYTE_32);
     }
-    int value = (int) (obj.longValue() & 0xffffffff);
     for (int i = capacity; i-- > 0;) {
-      elements.put(i, value);
+      elements.put(i, (int)(obj.longValue() & 0xffff_ffffL));
     }
   }
 
