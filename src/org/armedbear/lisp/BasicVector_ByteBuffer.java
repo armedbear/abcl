@@ -55,6 +55,30 @@ public final class BasicVector_ByteBuffer
     capacity = array.length;
     elements = ByteBuffer.wrap(array);
   }
+
+  // ### ext:make-bytebuffer-byte-vector BYTEBUFFER Construct a simple vector from BYTEBUFFER
+  @DocString(name="make-bytebuffer-byte-vector",
+             args="bytebuffer",
+             doc="Construct a simple vector from a java.nio.ByteBuffer BYTEBUFFER reference")
+             
+  public static final Primitive MAKE_BYTEBUFFER_BYTE_VECTOR
+    = new pf_make_bytebuffer_byte_vector();
+  private static final class pf_make_bytebuffer_byte_vector extends Primitive {
+    pf_make_bytebuffer_byte_vector() {
+      super(Symbol.MAKE_BYTEBUFFER_BYTE_VECTOR, "bytebuffer");
+    }
+    @Override
+    public LispObject execute(LispObject arg) {
+      return new BasicVector_ByteBuffer(coerceToByteBuffer(arg));
+    }
+  }
+
+  static public ByteBuffer coerceToByteBuffer(LispObject arg) {
+    JavaObject obj = (JavaObject) arg;
+    return (ByteBuffer)obj.getObject();
+  }
+    
+
   
   public BasicVector_ByteBuffer(LispObject[] array) {
     // FIXME: for now we assume that we're being handled an array of
