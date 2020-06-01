@@ -1653,7 +1653,7 @@ public final class Lisp
   }
 
   public static final char coerceLispObjectToJavaChar(LispObject obj) {
-    return (char) (byte)Fixnum.getValue(obj);
+    return (char)Fixnum.getValue(obj);
   }
 
   public static final byte coerceLispObjectToJavaByte(LispObject obj)

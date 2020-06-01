@@ -155,7 +155,7 @@ public final class BasicVector_ByteBuffer
   @Override
   public void aset(int index, int n) {
     try {
-      elements.put(index,  (byte) n);
+      elements.put(index, (byte) n);
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, capacity);
     }
