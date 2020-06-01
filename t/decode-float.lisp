@@ -43,11 +43,37 @@
     (let ((result (decode-float float)))
       (prove:is-type result 'double-float))))
 
-;;; additional things along the way…
+;; From the REPL, I don't get a signaled condition, but these tests succeed…
+(let ((infinities '(single-float-positive-infinity
+                    single-float-negative-infinity
+                    double-float-positive-infinity
+                    double-float-negative-infinity)))
+  (prove:plan (length infinities))
+  (dolist (infinity infinities)
+    (prove:is-error
+     (decode-float infinity)
+     'error
+     (format nil "Attempting to DECODE-FLOAT ~a should signal error" infinity))))
 
-#|
-Should fail, as you shouldn't be able to 
-(decode-float single-float-positive-infinity)
-|# 
+
+(let ((floats `(1f0
+                1d0
+                1f6
+                1d6
+                1f-6
+                1d-6
+                ,least-positive-normalized-single-float
+                ,least-positive-single-float
+                ,least-positive-normalized-double-float
+                ,least-positive-double-float)))
+  (prove:plan (length floats))
+  (dolist (float floats)
+    (multiple-value-bind (significand exponent sign)
+        (integer-decode-float float)
+      (prove:is
+       (coerce (* significand (expt 2 exponent)) (type-of float))
+       float
+       (format nil "INTEGER-DECODE-FLOAT roundtrips for ~s" float)))))
+
 
 (prove:finalize)

@@ -163,11 +163,20 @@
              :format-control "~S is neither SINGLE-FLOAT nor DOUBLE-FLOAT."
              :format-arguments (list float)))))
 
+;;; From <http://paste.lisp.org/display/10847>.  Thanks Xophe!
+(defun sane-integer-decode-float (float)
+  (multiple-value-bind (mantissa exp sign)
+      (integer-decode-float float)
+    (let ((fixup (- (integer-length mantissa) (float-precision float))))
+      (values (ash mantissa (- fixup))
+              (+ exp fixup)
+              sign))))
+
 (defun decode-float-single (float)
   ;; TODO memoize
   (let ((float-precision-single (float-precision 1f0)))
     (multiple-value-bind (significand exponent sign)
-        (integer-decode-float float)
+        (sane-integer-decode-float float)
       (values (coerce (/ significand (expt 2 float-precision-single)) 'single-float)
               (+ exponent float-precision-single)
               (if (minusp sign) -1f0 1f0)))))
@@ -177,7 +186,7 @@
   ;; TODO memoize
   (let ((float-precision-double (float-precision 1d0)))
     (multiple-value-bind (significand exponent sign)
-        (integer-decode-float float)
+        (sane-integer-decode-float float)
       (values (coerce (/ significand (expt 2 float-precision-double)) 'double-float)
               (+ exponent float-precision-double)
               (if (minusp sign) -1d0 1d0)))))

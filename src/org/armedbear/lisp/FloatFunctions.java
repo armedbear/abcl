@@ -95,20 +95,14 @@ public final class FloatFunctions
     private static final Primitive INTEGER_DECODE_FLOAT =
         new Primitive("integer-decode-float", "float")
     {
-//         (defun sane-integer-decode-float (float)
-//           (multiple-value-bind (mantissa exp sign)
-//               (integer-decode-float float)
-//             (let ((fixup (- (integer-length mantissa) (float-precision float))))
-//                   (values (ash mantissa (- fixup))
-//                           (+ exp fixup)
-//                           sign))))
-
-        // See also: http://paste.lisp.org/display/10847
-
         @Override
         public LispObject execute(LispObject arg)
         {
             if (arg instanceof SingleFloat) {
+                if (arg.equals(SingleFloat.SINGLE_FLOAT_POSITIVE_INFINITY)
+                    || arg.equals(SingleFloat.SINGLE_FLOAT_NEGATIVE_INFINITY)) {
+                    return error(new LispError("Cannot decode infinity."));
+                }
                 int bits =
                     Float.floatToRawIntBits(((SingleFloat)arg).value);
                 int s = ((bits >> 31) == 0) ? 1 : -1;
@@ -126,6 +120,11 @@ public final class FloatFunctions
                                                             sign);
             }
             if (arg instanceof DoubleFloat) {
+                if (arg.equals(DoubleFloat.DOUBLE_FLOAT_POSITIVE_INFINITY)
+                    || arg.equals(DoubleFloat.DOUBLE_FLOAT_NEGATIVE_INFINITY)) {
+                    return error(new LispError("Cannot decode infinity."));
+                }
+
                 long bits =
                     Double.doubleToRawLongBits((double)((DoubleFloat)arg).value);
                 int s = ((bits >> 63) == 0) ? 1 : -1;
