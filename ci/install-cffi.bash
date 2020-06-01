@@ -3,7 +3,7 @@
 dir="cffi"
 uri="https://github.com/armedbear/${dir}"
 root="${HOME}/quicklisp/local-projects"
-tag="abcl/easye-20200530a"
+tag="abcl/nio-20200601a"
 
 mkdir -p ${root}
 pushd ${root}
