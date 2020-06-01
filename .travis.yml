@@ -63,10 +63,14 @@ install:
   # Install the ANSI-TEST suite
   - bash -x ${ABCL_ROOT}/ci/sync-ansi-test.bash
 
+  # Install the patched version of static-vectors
+  - bash -x ${ABCL_ROOT}/ci/install-static-vectors.bash
+
 # TODO: figure out how to add abcl to our path
 
 script:
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/abcl-prove.lisp
+  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-static-vectors.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-cffi.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-cl+ssl.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-abcl-introspect.lisp
