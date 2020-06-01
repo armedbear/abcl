@@ -45,29 +45,43 @@ public final class BasicVector_ByteBuffer
 {
   private int capacity;
   private ByteBuffer elements;
+  private boolean directAllocation;
 
-  public BasicVector_ByteBuffer(int capacity) {
-    elements = ByteBuffer.allocate(capacity);
+  public BasicVector_ByteBuffer(int capacity, boolean directAllocation) {
+    this.directAllocation = directAllocation;
+    if (directAllocation) {
+      elements = ByteBuffer.allocateDirect(capacity);
+    } else {
+      elements = ByteBuffer.allocate(capacity);
+    }
     this.capacity = capacity;
   }
 
-  public BasicVector_ByteBuffer(byte[] array) {
+  public BasicVector_ByteBuffer(byte[] array, boolean directAllocation) {
     capacity = array.length;
+    this.directAllocation = directAllocation; // ??? A wrapped array should be signaled as used
     elements = ByteBuffer.wrap(array);
   }
   
-  public BasicVector_ByteBuffer(LispObject[] array) {
+  public BasicVector_ByteBuffer(LispObject[] array, boolean directAllocation) {
     // FIXME: for now we assume that we're being handled an array of
     // primitive bytes
+    this.directAllocation = directAllocation;
     capacity = array.length;
-    elements = ByteBuffer.allocate(array.length);
-    for (int i = array.length; i-- > 0;)
+    if (directAllocation) {
+      elements = ByteBuffer.allocateDirect(array.length);
+    } else {
+      elements = ByteBuffer.allocate(array.length);
+    }
+    for (int i = array.length; i-- > 0;) {
       // Faster please!
       elements.put((byte)coerceLispObjectToJavaByte(array[i]));
+    }
   }
 
-  public BasicVector_ByteBuffer(ByteBuffer buffer) {
+  public BasicVector_ByteBuffer(ByteBuffer buffer, boolean directAllocation) {
     elements = buffer;
+    this.directAllocation = directAllocation;
     capacity = buffer.limit();  // XXX or should this be buffer.capacity()?
   }
 
@@ -173,7 +187,7 @@ public final class BasicVector_ByteBuffer
   @Override
   public LispObject subseq(int start, int end) {
     // ??? Do we need to check that start, end are valid?
-    BasicVector_ByteBuffer v = new BasicVector_ByteBuffer(end - start);
+    BasicVector_ByteBuffer v = new BasicVector_ByteBuffer(end - start, directAllocation);
     ByteBuffer view = elements.asReadOnlyBuffer();
     view.position(start);
     view.limit(end);
@@ -223,7 +237,7 @@ public final class BasicVector_ByteBuffer
 
   @Override
   public LispObject reverse() {
-    BasicVector_ByteBuffer result = new BasicVector_ByteBuffer(length());
+    BasicVector_ByteBuffer result = new BasicVector_ByteBuffer(length(), directAllocation);
     int i, j;
     for (i = 0, j = length() - 1; i < length(); i++, j--) {
       result.elements.put(i, elements.get(j));
@@ -262,7 +276,7 @@ public final class BasicVector_ByteBuffer
           newElements.put(i, coerceLispObjectToJavaByte(initialContents.elt(i)));
       } else
         type_error(initialContents, Symbol.SEQUENCE);
-      return new BasicVector_ByteBuffer(newElements);
+      return new BasicVector_ByteBuffer(newElements, directAllocation);
     }
     if (length() != newCapacity) {
       ByteBuffer newElements = ByteBuffer.allocate(newCapacity);
@@ -281,7 +295,7 @@ public final class BasicVector_ByteBuffer
         for (int i = length(); i < newCapacity; i++)
           newElements.put(i, initValue);
       }
-      return new BasicVector_ByteBuffer(newElements);
+      return new BasicVector_ByteBuffer(newElements, directAllocation);
     }
     // No change.
     return this;

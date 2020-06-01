@@ -50,8 +50,8 @@ public final class make_array extends Primitive
   public LispObject execute(LispObject[] args)
   {
     // What a mess without keywords, but it still works…
-    if (args.length != 11)
-      return error(new WrongNumberOfArgumentsException(this, 11));
+    if (args.length != 13)
+      return error(new WrongNumberOfArgumentsException(this, 13));
     LispObject dimensions = args[0];
     LispObject elementType = args[1];
     LispObject initialElement = args[2];
@@ -62,8 +62,11 @@ public final class make_array extends Primitive
     LispObject displacedTo = args[7];
     LispObject displacedIndexOffset = args[8];
     LispObject direct = args[9]; // boolean whether to do a direct allocation for nio capable vectors
+    LispObject directProvided = args[10];
     boolean directAllocation = direct.equals(NIL) ? false : true;
     LispObject nioBuffer = args[10];
+    LispObject nioBufferProvided = args[11];
+    
     if (initialElementProvided != NIL && initialContents != NIL)
       {
         return error(new LispError("MAKE-ARRAY: cannot specify both " +
@@ -180,7 +183,11 @@ public final class make_array extends Primitive
               }
             } else {
               if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-                v = new BasicVector_ByteBuffer(size);
+                if (!nioBuffer.equals(NIL)) {
+                  v = new BasicVector_ByteBuffer((java.nio.ByteBuffer)(((JavaObject)nioBuffer).getObject()), directAllocation);
+                } else {
+                  v = new BasicVector_ByteBuffer(size, directAllocation);
+                }
               } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
                 v = new BasicVector_UnsignedByte8(size);
               }

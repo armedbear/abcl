@@ -275,7 +275,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
   public LispObject reverse()
   {
     int length = length();
-    BasicVector_ByteBuffer result = new BasicVector_ByteBuffer(length);
+    BasicVector_ByteBuffer result = new BasicVector_ByteBuffer(length, directAllocation);
     int i, j;
     for (i = 0, j = length - 1; i < length; i++, j--)
       result.aset(i, AREF(j));
