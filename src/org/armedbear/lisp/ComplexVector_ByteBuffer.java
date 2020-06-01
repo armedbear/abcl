@@ -50,10 +50,16 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
   // For displaced arrays.
   private AbstractArray array;
   private int displacement;
+  private boolean directAllocation;
+
+  public ComplexVector_ByteBuffer(int capacity, boolean directAllocation) {
+    elements = ByteBuffer.allocateDirect(capacity);
+    this.capacity = capacity;
+  }    
 
   public ComplexVector_ByteBuffer(int capacity) {
     elements = ByteBuffer.allocate(capacity);
-    this.capacity = capacity; // FIXME: shouldn't need 
+    this.capacity = capacity; 
   }
 
   public ComplexVector_ByteBuffer(int capacity, AbstractArray array,
@@ -291,7 +297,12 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
     } else {
       // Displaced array.
       int length = length();
-      ByteBuffer data = ByteBuffer.allocate(length);
+      ByteBuffer data = null;
+      if (directAllocation) {
+        data = ByteBuffer.allocateDirect(length);
+      } else {
+        data = ByteBuffer.allocate(length);
+      }
       int i, j;
       for (i = 0, j = length - 1; i < length; i++, j--) {
         data.put(i, coerceLispObjectToJavaByte(AREF(j)));
@@ -346,7 +357,11 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
   private final void ensureCapacity(int minCapacity) {
     if (elements != null) {
       if (capacity < minCapacity) {
-        ByteBuffer newBuffer = ByteBuffer.allocate(minCapacity);
+        ByteBuffer newBuffer = null;
+        if (directAllocation) {
+          newBuffer = ByteBuffer.allocateDirect(minCapacity);
+        } else { 
+          newBuffer = ByteBuffer.allocate(minCapacity);
         newBuffer.put(elements); 
         elements = newBuffer;
         capacity = minCapacity;
@@ -357,17 +372,21 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
       if (capacity < minCapacity
           || array.getTotalSize() - displacement < minCapacity) {
           // Copy array.
+        if (directAllocation) {
+           elements = ByteBuffer.allocateDirect(minCapacity);
+        } else {
           elements = ByteBuffer.allocate(minCapacity);
-          
-          final int limit
-            = Math.min(length(), array.getTotalSize() - displacement);
-          for (int i = 0; i < limit; i++) {
-            elements.put(i, coerceLispObjectToJavaByte(array.AREF(displacement + i)));
-          }
-          capacity = minCapacity;
-          array = null;
-          displacement = 0;
-          isDisplaced = false;
+        }
+        final int limit
+          = Math.min(length(), array.getTotalSize() - displacement);
+        for (int i = 0; i < limit; i++) {
+          elements.put(i, coerceLispObjectToJavaByte(array.AREF(displacement + i)));
+        }
+        capacity = minCapacity;
+        array = null;
+        displacement = 0;
+        isDisplaced = false;
+      }
       }
     }
   }
@@ -380,7 +399,12 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
       // "If INITIAL-CONTENTS is supplied, it is treated as for MAKE-
       // ARRAY. In this case none of the original contents of array
       // appears in the resulting array."
-      ByteBuffer newElements = ByteBuffer.allocate(newCapacity);
+      ByteBuffer newElements = null;
+      if (directAllocation) {
+        newElements = ByteBuffer.allocateDirect(newCapacity);
+      } else {
+        newElements = ByteBuffer.allocate(newCapacity);
+      }
       //      byte[] newElements = new byte[newCapacity];
       if (initialContents.listp()) {
         LispObject list = initialContents;
@@ -400,13 +424,22 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
     } else {
       if (elements == null) {
         // Displaced array. Copy existing elements.
-        elements = ByteBuffer.allocate(newCapacity);
+        if (directAllocation) {
+          elements = ByteBuffer.allocateDirect(newCapacity);
+        } else {
+          elements = ByteBuffer.allocate(newCapacity);
+        }
         final int limit = Math.min(capacity, newCapacity);
         for (int i = 0; i < limit; i++) {
           elements.put(i, coerceLispObjectToJavaByte(array.AREF(displacement + i)));
         }
       } else if (capacity != newCapacity) {
-        ByteBuffer newElements = ByteBuffer.allocate(newCapacity);
+        ByteBuffer newElements = null;
+        if (directAllocation) {
+          ByteBuffer.allocateDirect(newCapacity);
+        } else {
+          ByteBuffer.allocate(newCapacity);
+        }
         newElements.put(elements.array(), 0, 
                         Math.min(capacity, newCapacity));
         elements = newElements;

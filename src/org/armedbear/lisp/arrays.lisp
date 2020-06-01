@@ -38,11 +38,20 @@
                               (element-type t)
                               (initial-element nil initial-element-p)
                               initial-contents adjustable fill-pointer
-                              displaced-to displaced-index-offset)
+                              displaced-to displaced-index-offset
+                              (direct-buffer nil direct-buffer-p)
+                              (nio-buffer nil nio-buffer-p))
+                                
   (setf element-type (normalize-type element-type))
   (%make-array dimensions element-type initial-element initial-element-p
                initial-contents adjustable fill-pointer displaced-to
-               displaced-index-offset))
+               displaced-index-offset
+               (if direct-buffer-p
+                   direct-buffer
+                   nil)
+               (if nio-buffer-p
+                   nio-buffer
+                   nil)))
 
 (defun adjust-array (array new-dimensions
                            &key
