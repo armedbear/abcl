@@ -5,5 +5,5 @@ dest=$HOME/.config/common-lisp/source-registry.conf.d
 
 mkdir -p $dest
 
-echo "(:tree \""${TRAVIS_BUILD_DIR}"\")" > ${dest}/abcl.conf
+echo "(:tree \""${ABCL_ROOT}"\")" > ${dest}/abcl.conf
 
