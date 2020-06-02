@@ -38,11 +38,15 @@
                               (element-type t)
                               (initial-element nil initial-element-p)
                               initial-contents adjustable fill-pointer
-                              displaced-to displaced-index-offset)
+                              displaced-to displaced-index-offset
+                              (nio-direct nil nio-direct-p)
+                              (nio-buffer nil nio-buffer-p))
   (setf element-type (normalize-type element-type))
   (%make-array dimensions element-type initial-element initial-element-p
                initial-contents adjustable fill-pointer displaced-to
-               displaced-index-offset))
+               displaced-index-offset
+               nio-direct nio-direct-p
+               nio-buffer nio-buffer-p))
 
 (defun adjust-array (array new-dimensions
                            &key
@@ -82,3 +86,5 @@
 ;; (SETF (APPLY #'SBIT ...
 (defun (setf sbit) (new-value array &rest subscripts)
   (aset array (%array-row-major-index array subscripts) new-value))
+
+(push :nio *features*)
