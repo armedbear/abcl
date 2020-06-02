@@ -776,6 +776,8 @@ will compile (if necessary) and load JSS.
 
       <include name="doc/**/*"/>
 
+      <include name="ci/**/*"/>
+
       <!-- FIXME:  currently necessary to build from our source archives -->
       <include name="nbproject/**/*"/>
     </patternset>
