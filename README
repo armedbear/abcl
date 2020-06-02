@@ -47,7 +47,7 @@ RUNNING FROM DOCKER
 With [Docker Engine][] installed one may execute:
 
     docker build -t YOURID/abcl .
-    docker run -it YOURID/abcl
+    docker run -it YOURID/abcl 
 
 to get something like
 
@@ -60,6 +60,10 @@ to get something like
     Type ":help" for a list of available commands.
     CL-USER(1): 23
     23
+
+To install Quicklisp for ABCL in the Docker container run:
+
+    docker run -t YOURID/abcl abcl --batch --load /home/abcl/work/abcl/ci/install-quicklisp.lisp
 
 See <file:Dockerfile> for the build instructions.
 
