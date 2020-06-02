@@ -61,7 +61,7 @@ install:
   - bash -x ${ABCL_ROOT}/ci/install-cffi.bash
 
   # Install the ANSI-TEST suite
-  - bash -x ${ABCL_ROOT}/ci/sync-ansi-test.bash
+  - bash -x ${ABCL_ROOT}/ci/install-ansi-test.bash
 
 # TODO: figure out how to add abcl to our path
 
