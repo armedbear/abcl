@@ -42,27 +42,46 @@ public final class BasicVector_CharBuffer
 {
   private int capacity;
   private CharBuffer elements;
+  private boolean directAllocation;
 
   public BasicVector_CharBuffer(int capacity) {
-    elements = CharBuffer.allocate(capacity);
+    this(capacity, false);
+  }
+  
+  public BasicVector_CharBuffer(int capacity, boolean directAllocation) {
+    this.directAllocation = directAllocation;
+    if (directAllocation) {
+      ByteBuffer b = ByteBuffer.allocateDirect(capacity * 2);
+      elements = b.asCharBuffer();
+    } else {
+      elements = CharBuffer.allocate(capacity);
+    }
     this.capacity = capacity;  
   }
 
-  public BasicVector_CharBuffer(LispObject[] array) {
+  public BasicVector_CharBuffer(LispObject[] array, boolean directAllocation) {
     capacity = array.length;
-    elements = CharBuffer.allocate(capacity);
+    this.directAllocation = directAllocation;
+    if (directAllocation) {
+      ByteBuffer b = ByteBuffer.allocateDirect(capacity * 2);
+      elements = b.asCharBuffer();
+    } else {
+      elements = CharBuffer.allocate(capacity);
+    }
     for (int i = array.length; i-- > 0;) {
       elements.put(i, (char)Fixnum.getValue(array[i])); // FIXME bulk copy
     }
   }
 
-  public BasicVector_CharBuffer(ByteBuffer buffer) {
+  public BasicVector_CharBuffer(ByteBuffer buffer, boolean directAllocation) {
     elements = buffer.asCharBuffer();
+    this.directAllocation = directAllocation;
     capacity = buffer.limit();
   }
 
-  public BasicVector_CharBuffer(CharBuffer buffer) {
+  public BasicVector_CharBuffer(CharBuffer buffer, boolean directAllocation) {
     elements = buffer;
+    this.directAllocation = directAllocation;
     capacity = buffer.limit();
   }
 
@@ -260,7 +279,7 @@ public final class BasicVector_CharBuffer
           newElements[i] = initialContents.elt(i);
       } else
         type_error(initialContents, Symbol.SEQUENCE);
-      return new BasicVector_CharBuffer(newElements);
+      return new BasicVector_CharBuffer(newElements, directAllocation);
     }
     if (capacity != newCapacity) { // FIXME: more efficient
       LispObject[] newElements = new LispObject[newCapacity];
@@ -270,7 +289,7 @@ public final class BasicVector_CharBuffer
         for (int i = capacity; i < newCapacity; i++)
           newElements[i] = initialElement;
       }
-      return new BasicVector_CharBuffer(newElements);
+      return new BasicVector_CharBuffer(newElements, directAllocation);
     }
     // No change.
     return this;
