@@ -225,10 +225,12 @@ public final class BasicVector_CharBuffer
 
   @Override
   public void shrink(int n) {
-    if (n < capacity) {
-      CharBuffer newBuffer = CharBuffer.allocate(n);
-      newBuffer.put(elements.array(), 0, n);
-      elements = newBuffer;
+    // One cannot shrink the underlying ByteBuffer physically, and
+    // the elements field may refer to malloc()d memory that we
+    // shouldn't touch, so use the java.nio.Buffer limit pointer.
+    // Not totally sure that this strategy will work out…
+    if (n < length()) {
+      elements.limit(n);
       capacity = n;
       return;
     }
