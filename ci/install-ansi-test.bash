@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-pushd ${TRAVIS_BUILD_DIR}/..
+pushd ${ABCL_ROOT}/..
 
 if [[ ! -r ansi-test ]]; then
     git clone https://gitlab.common-lisp.net/ansi-test/ansi-test

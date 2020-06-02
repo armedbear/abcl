@@ -776,6 +776,8 @@ will compile (if necessary) and load JSS.
 
       <include name="doc/**/*"/>
 
+      <include name="ci/**/*"/>
+
       <!-- FIXME:  currently necessary to build from our source archives -->
       <include name="nbproject/**/*"/>
     </patternset>
@@ -1244,15 +1246,30 @@ JVM System Properties
             tofile="${dist.dir}/asdf.pdf"/>
     </target>
 
-    <target name="abcl.properties.autoconfigure.openjdk.11">
+    <target name="abcl.properties.autoconfigure.openjdk.8">
       <exec executable="/usr/bin/env">
         <arg value="bash"/>
         <arg value="ci/create-abcl-properties.bash"/>
-        
+        <arg value="openjdk8"/>
+      </exec>
+    </target>
+
+      <target name="abcl.properties.autoconfigure.openjdk.11">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
         <arg value="openjdk11"/>
       </exec>
     </target>
-          
+
+    <target name="abcl.properties.autoconfigure.openjdk.14">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        <arg value="openjdk14"/>
+      </exec>
+    </target>
+  
     <import file="etc/ant/netbeans-build.xml"
             optional="true"/> 
     <import file="etc/ant/build-snapshot.xml"
