@@ -138,7 +138,7 @@ public final class ByteArrayOutputStream extends Stream
           if (arg instanceof ByteArrayOutputStream) {
             byte[] array = ((ByteArrayOutputStream)arg).getByteArray();
             if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-              return new BasicVector_ByteBuffer(array);
+              return new BasicVector_ByteBuffer(array, false);
             } else if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
               return new BasicVector_UnsignedByte8(array);
             }
