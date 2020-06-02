@@ -49,8 +49,9 @@ public final class make_array extends Primitive
   @Override
   public LispObject execute(LispObject[] args)
   {
-    if (args.length != 9)
-      return error(new WrongNumberOfArgumentsException(this, 9));
+    // What a mess without keywords, but it still works…
+    if (args.length != 13)
+      return error(new WrongNumberOfArgumentsException(this, 13));
     LispObject dimensions = args[0];
     LispObject elementType = args[1];
     LispObject initialElement = args[2];
@@ -60,6 +61,12 @@ public final class make_array extends Primitive
     LispObject fillPointer = args[6];
     LispObject displacedTo = args[7];
     LispObject displacedIndexOffset = args[8];
+    LispObject direct = args[9]; // boolean whether to do a direct allocation for nio capable vectors
+    LispObject directProvided = args[10];
+    boolean directAllocation = direct.equals(NIL) ? false : true;
+    LispObject nioBuffer = args[10];
+    LispObject nioBufferProvided = args[11];
+    
     if (initialElementProvided != NIL && initialContents != NIL)
       {
         return error(new LispError("MAKE-ARRAY: cannot specify both " +
@@ -102,7 +109,8 @@ public final class make_array extends Primitive
               v = new ComplexBitVector(dimv[0], array, displacement);
             } else if (arrayElementType.equal(UNSIGNED_BYTE_8)) {
               if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-                v = new ComplexVector_ByteBuffer(dimv[0], array, displacement);
+                // an abstract array doesn't have a directAllocation  ???
+                v = new ComplexVector_ByteBuffer(dimv[0], array, displacement); 
               } else if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
                 v = new ComplexVector_UnsignedByte8(dimv[0], array, displacement);
               }
@@ -175,7 +183,11 @@ public final class make_array extends Primitive
               }
             } else {
               if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-                v = new BasicVector_ByteBuffer(size);
+                if (!nioBuffer.equals(NIL)) {
+                  v = new BasicVector_ByteBuffer((java.nio.ByteBuffer)(((JavaObject)nioBuffer).getObject()), directAllocation);
+                } else {
+                  v = new BasicVector_ByteBuffer(size, directAllocation);
+                }
               } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
                 v = new BasicVector_UnsignedByte8(size);
               }
