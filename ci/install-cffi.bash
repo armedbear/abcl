@@ -3,7 +3,7 @@
 dir="cffi"
 uri="https://github.com/armedbear/${dir}"
 root="${HOME}/quicklisp/local-projects"
-tag="abcl/easye-20200530a"
+tag="abcl/easye-20200602a"
 
 mkdir -p ${root}
 pushd ${root}
@@ -14,9 +14,11 @@ fi
 
 pushd ${dir}
 if [[ -d .hg ]]; then
+    hg pull
     hg update -r $tag
     hg sum -v
 else
+    git pull
     git checkout $tag
     git show-ref
     git rev-parse
