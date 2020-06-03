@@ -33,6 +33,7 @@
 
 package org.armedbear.lisp;
 
+import org.armedbear.lisp.Java.Buffers.AllocationPolicy;
 import static org.armedbear.lisp.Lisp.*;
 
 public final class ByteArrayOutputStream extends Stream
@@ -134,10 +135,16 @@ public final class ByteArrayOutputStream extends Stream
         @Override
         public LispObject execute(LispObject arg)
         {
-            if (arg instanceof ByteArrayOutputStream)
-                return new BasicVector_UnsignedByte8(((ByteArrayOutputStream)arg).getByteArray());
+          if (arg instanceof ByteArrayOutputStream) {
+            byte[] array = ((ByteArrayOutputStream)arg).getByteArray();
+            if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+              return new BasicVector_ByteBuffer(array, false);
+            } else if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+              return new BasicVector_UnsignedByte8(array);
+            }
+          }
 
-            return type_error(this, Symbol.STREAM); // TODO
+          return type_error(this, Symbol.STREAM); // TODO
         }
     };
 
