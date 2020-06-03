@@ -907,10 +907,11 @@ See \cite{RHODES2007} for a generic function interface to the native
 
 \chapter{Beyond ANSI}
 
-Naturally, in striving to be a useful contemporary \textsc{Common Lisp}
-implementation, \textsc{ABCL} endeavors to include extensions beyond the ANSI
-specification which are either widely adopted or are especially useful
-in working with the hosting \textsc{JVM}.
+Naturally, in striving to be a useful contemporary \textsc{Common
+  Lisp} implementation, \textsc{ABCL} endeavors to include extensions
+beyond the ANSI specification which are either widely adopted or are
+especially useful in working with the hosting \textsc{JVM}.  This
+chapter documents such extensions beyond ANSI conformation.
 
 \section{Compiler to Java Virtual Machine Bytecode}
 
@@ -1403,6 +1404,53 @@ follows:
 
 \begin{listing-lisp}
 CL-USER> (require :asdf)
+\end{listing-lisp}
+
+\section{Extension to CL:MAKE-ARRAY}
+
+When the implementation uses subclasses of \code{java.nio.Buffer} for
+its storage of vectors and arrays specialized on the byte-vector
+types\footnote{Available starting in abcl-1.7.0 and indicated by the
+presence of \code{:nio} in \code{cl:*features*}}:
+
+\begin{listing-lisp}
+  (or
+    (unsigned-byte 8)
+    (unsigned-byte 16)
+    (unsigned-byte 32))
+\end{listing-lisp}
+
+the following additional keywords are added to \code{cl:make-array}:
+
+\begin{description}[style=nextline]
+
+\item[\code{:nio-buffer NIO-BUFFER}]
+
+Initializes the contents of the new vector or array with the contents
+of \code{NIO-BUFFER} which needs to be a reference to a
+\code{java-object} of class \code{java.nio.ByteBuffer}.
+
+\item[\code{:nio-direct GENERALIZED-BOOLEAN}]
+
+When \code{GENERALIZED-BOOLEAN} is true, constructs a ``direct''
+underlying nio buffer.  The buffers returned by this method typically
+have somewhat higher allocation and deallocation costs than non-direct
+buffers. The contents of direct buffers may reside outside of the
+normal garbage-collected heap, and so their impact upon the memory
+footprint of an application might not be obvious. It is therefore
+recommended that direct buffers be allocated primarily for large,
+long-lived buffers that are subject to the underlying system's native
+I/O operations. In general it is best to allocate direct buffers only
+when they yield a measureable gain in program performance.
+
+\end{description}
+
+As an example, the following would create a 16 byte vector using the
+created byte-buffer for storage:
+\begin{listing-lisp}
+  (let* ((length 16)
+         (byte-buffer (java:jstatic "allocate" "java.nio.ByteBuffer" 16)))
+    (make-array 16 :element-type '(unsigned-byte 8) :nio-buffer byte-buffer))
 \end{listing-lisp}
 
 \chapter{Contrib}
