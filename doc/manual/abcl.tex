@@ -18,6 +18,16 @@ Unreleased}
 \maketitle
 
 \tableofcontents
+%%Preface to the Eighth edition, abcl-1.7.0
+\subsection{Preface to the Eighth Edition}
+Following a fecund Spring, the Bear has consumed a frugal diet of
+java.nio.Buffer objects for its basic abstractions of arrays
+specialized on (or (unsigned-byte 8) (unsigned-byte 16) (unsigned-byte
+32)).  Not all parts of the implementation were complete, but the
+basic shape of the code was deemed worthy to bless as abcl-1.7.0 in
+June 2020.
+
+
 %%Preface to the Seventh edition, abcl-1.6.0
 \subsection{Preface to the Seventh Edition}
 
@@ -178,7 +188,7 @@ contemporary Common Lisp.
 \textsc{ABCL} is licensed under the terms of the \textsc{GPL} v2 of
 June 1991 with an added ``classpath-exception'' clause (see the file
 \texttt{COPYING} in the source distribution\footnote{See
-  \url{http://abcl.org/svn/trunk/tags/1.6.1/COPYING}} for the license,
+  \url{http://abcl.org/svn/trunk/tags/1.7.0/COPYING}} for the license,
 term 13 in the same file for the classpath exception).  This license
 broadly means that you must distribute the sources to \textsc{ABCL},
 including any changes you make, together with a program that includes
@@ -204,7 +214,7 @@ course.
 
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-\texttt{abcl.jar} or possibly something like \texttt{abcl-1.6.1.jar} if
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.7.0.jar} if
 using a versioned package on the local filesystem from your system
 vendor.  This jar file can be executed from the command line to obtain a
 \textsc{REPL}\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
@@ -1457,7 +1467,7 @@ created byte-buffer for storage:
 
 The \textsc{ABCL} contrib is packaged as a separate jar archive usually named
 \code{abcl-contrib.jar} or possibly something like
-\code{abcl-contrib-1.6.1.jar}.  The contrib jar is not loaded by the
+\code{abcl-contrib-1.7.0.jar}.  The contrib jar is not loaded by the
 implementation by default, and must be first initialized by the
 \code{REQUIRE} mechanism before using any specific contrib:
 
@@ -1546,7 +1556,7 @@ Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
 More extensive documentations and examples can be found at
-\url{http://abcl.org/svn/tags/1.6.1/contrib/abcl-asdf/README.markdown}.
+\url{http://abcl.org/svn/tags/1.7.0/contrib/abcl-asdf/README.markdown}.
 
 \section{asdf-jar}
 
@@ -1557,7 +1567,7 @@ this package will recursively package all the required source and
 fasls in a jar archive.
 
 The documentation for this contrib can be found at
-\url{http://abcl.org/svn/tags/1.6.1/contrib/asdf-jar/README.markdown}.
+\url{http://abcl.org/svn/tags/1.7.0/contrib/asdf-jar/README.markdown}.
 
 \section{jss}
 \label{section:jss}
@@ -1592,7 +1602,7 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp} %$ <-- un-confuse Emacs font-lock
 
 Some more information on jss can be found in its documentation at
-\url{http://abcl.org/svn/tags/1.6.1/contrib/jss/README.markdown}
+\url{http://abcl.org/svn/tags/1.7.0/contrib/jss/README.markdown}
 
 \section{jfli}
 \label{section:jfli}
@@ -1601,7 +1611,7 @@ The contrib contains a pure-Java version of \textsc{JFLI}, apparently
 a descendent of Rich Hickey's early experimentations with using Java
 from Common Lisp.
 
-\url{http://abcl.org/svn/tags/1.6.1/contrib/jfli/README}.
+\url{http://abcl.org/svn/tags/1.7.0/contrib/jfli/README}.
 
 \section{abcl-introspect}
 
@@ -1706,7 +1716,7 @@ NIL
 \end{listing-lisp}
   
 
-\url{http://abcl.org/svn/tags/1.6.1/contrib/abcl-introspect/}.
+\url{http://abcl.org/svn/tags/1.7.0/contrib/abcl-introspect/}.
 
 \section{abcl-build}
 \label{sec:abcl-build}
@@ -1733,7 +1743,7 @@ for system construction, namely
     archives from the network.
 \end{itemize}
 
-\url{http://abcl.org/svn/tags/1.6.1/contrib/abcl-build/}.
+\url{http://abcl.org/svn/tags/1.7.0/contrib/abcl-build/}.
 
 \section{named-readtables}
 
@@ -1741,7 +1751,7 @@ for system construction, namely
 readtables akin to the already-existing namespace of packages.
 
 \url{https://github.com/melisgl/named-readtables/}.
-\url{http://abcl.org/svn/tags/1.6.1/contrib/named-readtables/}.
+\url{http://abcl.org/svn/tags/1.7.0/contrib/named-readtables/}.
 
 \chapter{History}
 \index{History}
@@ -1793,6 +1803,13 @@ Against the falling canvas of 2019 we released ABCL 1.6.0 which
 provided compatibility with Java 11 while skipping Java 9 and 10.  In
 April 2020, we offered abcl-1.6.1 as a maintenance release for usage
 around ELS2020.
+
+Following a fecund Spring, the Bear has consumed a frugal diet of
+java.nio.Buffer objects for its basic abstractions of arrays
+specialized on (or (unsigned-byte 8) (unsigned-byte 16) (unsigned-byte
+32)).  Not all parts of the implementation were complete, but the
+basic shape of the code was deemed worthy to bless as abcl-1.7.0 in
+June 2020.
 
 \appendix 
 
