@@ -1,10 +1,10 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP -*-
 (defsystem abcl
-  :version "1.6.1"
+  :version "1.7.0"
   :in-order-to ((test-op (test-op "abcl/test/lisp"))))
 
 (defsystem abcl/test/lisp
-  :version "1.6.1"
+  :version "1.7.0"
   :description "Test ABCL with the its own collection of unit tests."
   :perform  (test-op (o s)
                      (uiop:symbol-call :abcl.test.lisp '#:run))
@@ -63,7 +63,7 @@
 ;;; loaded, but can't seem to put in the :defsystem-depends-on stanza
 (defsystem abcl/t
   :description "DEPRECATED tests for ABCL via PROVE see ABCL-PROVE."
-  :version "1.6.1"
+  :version "1.7.0"
   :perform
     (asdf:test-op (op c)
        (ql:quickload :abcl-prove)

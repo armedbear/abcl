@@ -16,12 +16,13 @@
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.6.2#dev> ;           
+  dc:identifier         <urn:abcl.org/1.7.0#> ; # deprecated?
+  dc:identifier         <urn:abcl.org/release/1.7.0#> ;
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "11-MAY-2020" ;
-  dc:version           "abcl-1.6.2" ;
-  dc:release           "dev" ;
+  dc:modified          "04-JUN-2020" ;
+  dc:version           "abcl-1.7.0" ;
+  dc:release           "20200604a" ;
   abcl:git             <https://github.com/armedbear/abcl/> ;
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
   abcl:svn             <https://abcl.org/svn/trunk/abcl/> . 
@@ -92,12 +93,12 @@ _:user dc:identifier <http://ville.not.org/#me>  ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2> ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
      dc:licenseDocument 
-       <http://abcl.org/svn/tags/1.6.1/src/org/armedbear/COPYING> ;
+       <http://abcl.org/svn/tags/1.7.0/src/org/armedbear/COPYING> ;
 ] .
 
 doap:Project rdfs:seeAlso [
   a rdf:Bag;
-  rdf:_0 <http://abcl.org/releases/1.6.1/abcl-1.6.1.jar> ;
+  rdf:_0 <http://abcl.org/releases/1.7.0/abcl-1.7.0.jar> ;
   rdf:_1 <http://abcl.org/trac/timeline> ;
   rdf:_2 <http://abcl.org/trac/wiki> ;
   rdf:_4 <https://github.com/armedbear/abcl/> ;
@@ -118,6 +119,7 @@ doap:Project rdfs:seeAlso [
      rdf:_10 <http://abcl.org/releases/1.5.0/abcl-1.5.0.jar> ;
      rdf:_11 <http://abcl.org/releases/1.6.0/abcl-1.6.0.jar> ;
      rdf:_13 <http://abcl.org/releases/1.6.0/abcl-1.6.1.jar> ;
+     ndf:_17 <http://abcl.org/releases/1.6.0/abcl-1.7.0.jar> ;
   ] ;
 ] .
 

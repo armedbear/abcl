@@ -1,0 +1,60 @@
+# HG changeset patch
+# User Mark <evenson.not.org@gmail.com>
+# Date 1591169635 -7200
+#      Wed Jun 03 09:33:55 2020 +0200
+# Node ID a7e933901bf6d37ef87076d55c9a89c64a8b8192
+# Parent  21795eddcbc9156a5542e9deac1960a95c668317
+abcl: "final" initial implementation
+
+Conditionalize compilation under on the presence of :NIO in
+CL:*FEATURES* additions available abcl-1.6.2-dev and the unreleased
+abcl-1.7.0 See <https://github.com/armedbear/abcl/pull/221> ff.
+
+diff -r 21795eddcbc9 -r a7e933901bf6 src/impl-abcl.lisp
+--- a/src/impl-abcl.lisp	Wed May 20 13:40:59 2020 +0200
++++ b/src/impl-abcl.lisp	Wed Jun 03 09:33:55 2020 +0200
+@@ -5,6 +5,11 @@
+ 
+ (in-package :static-vectors)
+ 
++#-nio
++(error "For allocating memory via malloc() we need the :NIO-BUFFER
++argument to CL:MAKE-ARRAY available in abcl-1.6.2-dev and the upcoming
++abcl-1.7.0.")
++
+ (declaim (inline fill-foreign-memory))
+ (defun fill-foreign-memory (pointer length value)
+   (foreign-funcall "memset" :pointer pointer :int value size-t length :pointer)
+@@ -22,17 +27,27 @@
+ 
+ (declaim (inline %allocate-static-vector))
+ (defun %allocate-static-vector (length element-type)
+-  (flet ((size-of (element-type)
+-           ;; assume 8-bit bytes
+-           1))
++  (let* ((type
++          (first element-type))
++         (bits-per-byte
++           (second element-type))
++         (bytes-per-element  ;; ehh, not going to work well for element type not of size 8, 16, or 32
++           (ceiling bits-per-byte 8)))
++    (unless (subtypep element-type
++                      '(or (unsigned-byte 8) (unsigned-byte 16) (unsigned-byte 32)))
++      (signal 'type-error :datum element-type
++                          :expected-type '(or
++                                           (unsigned-byte 8)
++                                           (unsigned-byte 16)
++                                           (unsigned-byte 32))))
+     (let* ((bytes
+-             (* length (size-of element-type)))
++             (* length bytes-per-element))
+            (heap-pointer
+              (jss:new "com.sun.jna.Memory" bytes))
+            (bytebuffer
+              (#"getByteBuffer" heap-pointer 0 bytes))
+            (static-vector
+-             (ext:make-bytebuffer-byte-vector bytebuffer)))
++             (make-array length :element-type element-type :nio-buffer bytebuffer)))
+       (setf (gethash static-vector *static-vector-pointer*)
+             heap-pointer)
+       (values

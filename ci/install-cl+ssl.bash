@@ -3,7 +3,7 @@
 dir="cl-plus-ssl"
 uri="https://github.com/armedbear/${dir}"
 root="${HOME}/quicklisp/local-projects"
-tag="easye/openjdk14"
+tag="easye/stream-fd-20200603a"
 
 mkdir -p ${root}
 pushd ${root}

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-dir="cffi"
+dir="static-vectors"
 uri="https://github.com/armedbear/${dir}"
 root="${HOME}/quicklisp/local-projects"
-tag="abcl/easye-20200602a"
+tag="abcl/easye-20200603a"
 
 mkdir -p ${root}
 pushd ${root}
