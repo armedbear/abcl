@@ -66,6 +66,9 @@ install:
   # Install the patched version of static-vectors
   - bash -x ${ABCL_ROOT}/ci/install-static-vectors.bash
 
+  # Install Jeannie for testing
+  - bash -x ${ABCL_ROOT}/ci/install-jeannie.bash
+
 # TODO: figure out how to add abcl to our path
 
 script:
