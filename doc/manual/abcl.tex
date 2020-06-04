@@ -907,10 +907,11 @@ See \cite{RHODES2007} for a generic function interface to the native
 
 \chapter{Beyond ANSI}
 
-Naturally, in striving to be a useful contemporary \textsc{Common Lisp}
-implementation, \textsc{ABCL} endeavors to include extensions beyond the ANSI
-specification which are either widely adopted or are especially useful
-in working with the hosting \textsc{JVM}.
+Naturally, in striving to be a useful contemporary \textsc{Common
+  Lisp} implementation, \textsc{ABCL} endeavors to include extensions
+beyond the ANSI specification which are either widely adopted or are
+especially useful in working with the hosting \textsc{JVM}.  This
+chapter documents such extensions beyond ANSI conformation.
 
 \section{Compiler to Java Virtual Machine Bytecode}
 
@@ -1392,7 +1393,7 @@ reader in the definition of the \code{SHARPSIGN-DOUBLE-QUOTE}
 
 \section{ASDF}
 
-asdf-3.3.3 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
+asdf-3.3.4 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
 but not initialized by default, as it relies on the \textsc{CLOS} subsystem
 which can take a bit of time to start \footnote{While this time is
   ``merely'' on the order of seconds for contemporary 2011 machines,
@@ -1404,6 +1405,67 @@ follows:
 \begin{listing-lisp}
 CL-USER> (require :asdf)
 \end{listing-lisp}
+
+\section{Extension to CL:MAKE-ARRAY}
+
+With the \code{:nio} feature is present\footnote{Available starting in
+abcl-1.7.0 and indicated by the presence of \code{:nio} in
+\code{cl:*features*}}, the implementation adds two keyword arguments
+to \code{cl:make-array}, viz. \code{:nio-buffer} and
+\code{:nio-direct}.
+
+With the \code{:nio-buffer} keyword, the user is able to pass
+instances of of \code{java.nio.ByteBuffer} and its subclasses for the
+storage of vectors and arrays specialized on the byte-vector
+types satisfying
+
+\begin{listing-lisp}
+  (or
+    (unsigned-byte 8)
+    (unsigned-byte 16)
+    (unsigned-byte 32))
+\end{listing-lisp}
+
+As an example, the following would use the \code{:nio-buffer} as
+follows to create a 16 byte vector using the created byte-buffer for
+storage:
+
+\begin{listing-lisp}
+  (let* ((length 16)
+         (byte-buffer (java:jstatic "allocate" "java.nio.ByteBuffer" length)))
+    (make-array length :element-type '(unsigned-byte 8) :nio-buffer byte-buffer))
+\end{listing-lisp}
+
+This feature is available in CFFI\footnote{Available at runtime via
+\textsc{Quicklisp}} via
+\code{CFFI-SYS:MAKE-SHAREABLE-BYTE-VECTOR}\footnote{Implemented in
+\url{https://github.com/cffi/cffi/commit/47136ad9a97c2df98dbcd13a068e14489ced5b03}}
+
+
+\begin{description}[style=nextline]
+
+\item[\code{:nio-buffer NIO-BUFFER}]
+
+Initializes the contents of the new vector or array with the contents
+of \code{NIO-BUFFER} which needs to be a reference to a
+\code{java-object} of class \code{java.nio.ByteBuffer}.
+
+\item[\code{:nio-direct NIO-DIRECT-P}]
+
+When \code{NIO-DIRECT-P} is non-\code{nil}, constructs a
+java.nio.Buffer as a ``direct'' buffer.  The buffers returned by this
+method typically have somewhat higher allocation and deallocation
+costs than non-direct buffers. The contents of direct buffers may
+reside outside of the normal garbage-collected heap, and so their
+impact upon the memory footprint of an application might not be
+obvious. It is therefore recommended that direct buffers be allocated
+primarily for large, long-lived buffers that are subject to the
+underlying system's native I/O operations. In general it is best to
+allocate direct buffers only when they yield a measureable gain in
+program performance.
+
+\end{description}
+
 
 \chapter{Contrib}
 
