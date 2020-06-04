@@ -3,8 +3,8 @@ Version 1.6.2
 June 3, 2020
 
 <https://abcl.org/svn/tags/1.7.0/>
-<https://github.com/armedbear/abcl/>
-<https://gitlab.common-lisp.net/abcl/abcl/>
+<https://github.com/armedbear/abcl/commit/91f7561840ee5ded6f35922119ed7dc8442747cd>
+<https://github.com/armedbear/abcl/pull/224>
 
 The implementation now runs on the openjdk6, openjdk7, openjdk8,
 openjdk11, openjdk13, and openjdk14 JVM runtimes.
@@ -13,11 +13,11 @@ openjdk11, openjdk13, and openjdk14 JVM runtimes.
 Enhancements
 ------------
 
-* [] The :NIO symbol is now present in CL:*FEATURES*, denoting the use
-  of java.nio.ByteBuffer et. al. in the implementation of arrays
-  specialized on commonly used unsigned byte-types.  CL:MAKE-ARRAY now
-  has the :NIO-BUFFER and :NIO-DIRECT keyword arguments useful in the
-  construction of such arrays.
+* [r15305][r15306][r15307] The :NIO symbol is now present in
+  CL:*FEATURES*, denoting the use of java.nio.ByteBuffer et. al. in
+  the implementation of arrays specialized on commonly used unsigned
+  byte-types.  CL:MAKE-ARRAY now has the :NIO-BUFFER and :NIO-DIRECT
+  keyword arguments useful in the construction of such arrays.
 
 * [r15280][r15283] The default implementation for CL:DISASSEMBLE has
   been switched from jad to javap.  The SYS:CHOOSE-ASSEMBLER interface
@@ -40,13 +40,13 @@ Fixes
 * [r15292] Fixed all known outstanding problems with DECODE-FLOAT for
   values less than normalized floats.
 
-* [r15287] Attemps to fill specialized 32-bit arrays with elements
+* [r15287] Attempts to fill specialized 32-bit arrays with elements
    greater than 2^32-1 now properly signals a type error.
      
 * [r15267] ABCL-BUILD:ANT/CALL no longer signals an error on failure instead
   reporting associated error messages.
 
-* [r15281] Autoconfiguration for builds on supported platform extended
+* [r15281] Autoconfiguration for builds on supported platforms extended.
 
 * [r15290] The invocation of CL-BENCH now utilizes its ASDF definition.
 
@@ -67,7 +67,8 @@ Tests
 * [r15284][r15285][r15288] The CI now tests the ability to use OpenSSL via
   CL+SSL.
 
-* [r15289] The CI now tests CFFI.
+* [r15289] The CI now tests the version CFFI with
+  CFFI-SYS:MAKE-SHAREABLE-BYTE-VECTOR implemented.
 
 * [r15291] The CI now tests IRONCLAD.
 
