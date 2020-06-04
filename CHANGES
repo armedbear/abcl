@@ -1,10 +1,10 @@
-Version 1.6.2
+Version 1.7.0
 =============
 June 3, 2020
 
 <https://abcl.org/svn/tags/1.7.0/>
 <https://github.com/armedbear/abcl/commit/91f7561840ee5ded6f35922119ed7dc8442747cd>
-<https://github.com/armedbear/abcl/pull/224>
+<https://gitlab.common-lisp.net/abcl/abcl/-/commit/799cfb697d20652e06ffa760f07288823424cf2f>
 
 The implementation now runs on the openjdk6, openjdk7, openjdk8,
 openjdk11, openjdk13, and openjdk14 JVM runtimes.
