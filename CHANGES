@@ -1,15 +1,76 @@
 Version 1.6.2
 =============
-Unreleased
+June 3, 2020
 
+<https://abcl.org/svn/tags/1.7.0/>
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
-<https://abcl.org/svn/trunk/abcl/>
+
+The implementation now runs on the openjdk6, openjdk7, openjdk8,
+openjdk11, openjdk13, and openjdk14 JVM runtimes.
+
 
 Enhancements
-============
+------------
 
-* [] Fix and extend SYS:CHOOSE-ASSEMBLER functionality for CL:DISASSEMBLE
+* [] The :NIO symbol is now present in CL:*FEATURES*, denoting the use
+  of java.nio.ByteBuffer et. al. in the implementation of arrays
+  specialized on commonly used unsigned byte-types.  CL:MAKE-ARRAY now
+  has the :NIO-BUFFER and :NIO-DIRECT keyword arguments useful in the
+  construction of such arrays.
+
+* [r15280][r15283] The default implementation for CL:DISASSEMBLE has
+  been switched from jad to javap.  The SYS:CHOOSE-ASSEMBLER interface
+  is now able to switch between the jad, javap, fernflower, Procyon,
+  and CFR backends provided as loaded ASDF definitions contained in
+  the ABCL-INTROSPECT contrib.
+
+* [r15268] ABCL-BUILD:DIRECTORY-HASHES outputs the SHA256 hashes of files in
+  a directory.
+
+* [r15282] The ABCL-INTROSPECT contrib now adds the EXT:WRITE-CLASS method
+  to write the bytecode representation of a Java class to disk.
+
+* [r15293] The Dockerfile has been updated to use openjdk11
+
+
+Fixes
+-----
+
+* [r15292] Fixed all known outstanding problems with DECODE-FLOAT for
+  values less than normalized floats.
+
+* [r15287] Attemps to fill specialized 32-bit arrays with elements
+   greater than 2^32-1 now properly signals a type error.
+     
+* [r15267] ABCL-BUILD:ANT/CALL no longer signals an error on failure instead
+  reporting associated error messages.
+
+* [r15281] Autoconfiguration for builds on supported platform extended
+
+* [r15290] The invocation of CL-BENCH now utilizes its ASDF definition.
+
+* [r15294][r15298] The contents of the <file:ci/> directory are now
+  included in the source release, and have had all mention of
+  TRAVIS_BUILD_DIR removed decoupling their use from the presence of
+  Travis.
+
+
+Tests
+-----
+
+* [r15277] (pdietz) Additional tests for compiler failures.
+
+* [r15278][r15279] (phoe) Added tests for unbound slots DIVISION-BY-ZERO has
+  ARITHMETIC-ERROR-OPERANDS.
+
+* [r15284][r15285][r15288] The CI now tests the ability to use OpenSSL via
+  CL+SSL.
+
+* [r15289] The CI now tests CFFI.
+
+* [r15291] The CI now tests IRONCLAD.
+
 
 
 Version 1.6.1
