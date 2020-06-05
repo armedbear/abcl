@@ -29,5 +29,13 @@
        (format nil "Making a (SIMPLE-ARRAY ~a (~a)) filled with ~a signals a type-error" 
                type length exclusive-max)))))
 
+;; pfdietz
+(prove:plan 1)
+(prove:ok
+ (handler-case
+     (stable-sort (make-array '(0)) '<)
+   (t (e) nil))
+ "Able to STABLE-SORT an empty vector.")
+
 (prove:finalize)
 
