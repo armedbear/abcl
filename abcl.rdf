@@ -119,7 +119,7 @@ doap:Project rdfs:seeAlso [
      rdf:_10 <http://abcl.org/releases/1.5.0/abcl-1.5.0.jar> ;
      rdf:_11 <http://abcl.org/releases/1.6.0/abcl-1.6.0.jar> ;
      rdf:_13 <http://abcl.org/releases/1.6.0/abcl-1.6.1.jar> ;
-     ndf:_17 <http://abcl.org/releases/1.6.0/abcl-1.7.0.jar> ;
+     rdf:_17 <http://abcl.org/releases/1.6.0/abcl-1.7.0.jar> ;
   ] ;
 ] .
 
