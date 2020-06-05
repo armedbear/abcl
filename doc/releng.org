@@ -2,7 +2,7 @@
 
 See also <https://abcl.org/trac/wiki/ReleaseSteps>.
 
-** Maven
+*** Maven
 
 Instructions for releasing ABCL on Sonatype's OSS Maven repository.
 
@@ -10,7 +10,7 @@ You need a Sonatype account, see
 <https://central.sonatype.org/pages/ossrh-guide.html>.  This will
 result in providing you with a "JIRA username and a password".
 
-*** settings.xml
+**** settings.xml
 
 Enter your "JIRA username and a password" in a
 <file:.m2/settings.xml>.  This will authenticate 
@@ -30,10 +30,13 @@ Enter your "JIRA username and a password" in a
 </settings>
 #+END_SRC
 
-*** Process
+**** Process
 
 Ensure that the artifacts you wish to upload are present by building
 them.
+#+begin_src 
+ant abcl.release abcl.source.jar abcl.javadoc.jar abcl.contrib.javadoc.jar abcl.contrib.source.jar
+#+end_src
 
 #+BEGIN_SRC 
 ant abcl.jar abcl.source.jar abcl.javadoc.jar abcl.contrib
@@ -44,7 +47,6 @@ And maybe test it as well
 #+BEGIN_SRC 
 ant abcl.test
 #+END_SRC
-
 
 **** Snapshots
 For snapshots - development versions - the version in the POM should look like ~x.y.z-SNAPSHOT~.
@@ -71,7 +73,7 @@ mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-${abcl_ve
 
 abcl-contrib release
 
-#+BEGIN_SRC 
+#+BEGIN_SRC bash
 keyname='<evenson.not.org@gmail.com>'
 abcl_version=1.7.0
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-contrib.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging 
@@ -79,17 +81,47 @@ mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-contrib-$
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-contrib-${abcl_version}-javadoc.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc
 #+END_SRC
 
+**** Releasing through Sonatype interface
+<https://www.sonatype.org/nexus/2015/06/02/how-to-publish-software-artifacts-to-maven-central/>
+<https://central.sonatype.org/pages/releasing-the-deployment.html>
+
+1. "Close" the repo
+
+2. wait
+
+3. "Release" the repo
+
 **** Testing downloads 
 
 #+BEGIN_SRC 
 mvn org.apache.maven.plugins:maven-dependency-plugin:2.1:get -DrepoUrl=https://oss.sonatype.org/content/repositories/snapshots -Dartifact=org.abcl:abcl-contrib:1.5.0-SNAPSHOT:jar
 #+END_SRC
 
-*** See also
-<http://www.sonatype.org/nexus/2015/06/02/how-to-publish-software-artifacts-to-maven-central/>
-<http://central.sonatype.org/pages/releasing-the-deployment.html>
+
+
 
 *** Specifying GPG executable
 
 For specifying gpg executable, use a property specified via
 '-Dgpg.executable=gpg2'.
+
+**** Signing binary release
+
+gpg --default-key YOUR-KEY --detach-sign --armor FILE
+
+#+begin_src bash
+key="evenson.not.org@gmail.com"
+for file in *; do gpg --default-key ${key} --detach-sign --armor ${file} ; done
+#+end_src
+
+** Update CLiki page
+<https://www.cliki.net/ABCL>
+Roswell parses it for release information?
+
+* Colophon
+  
+  #+begin_example
+  Created: ??
+  Revised: <2020-06-05 Fri 08:46>
+  #+end_example
+  
