@@ -98,21 +98,27 @@
 			       `(,k-b ,v-b)))
 		   (loop 
 		     (if (funcall ,predicate ,k-b ,k-a)
-			 (progn 
-;;			   (setf (svref ,aux ,i-aux) ,v-b ;; FIXME Ticket #196
-			   (setf (aref ,aux ,i-aux) ,v-b
-				 ,i-aux (+ ,i-aux 1)
-				 ,i-b (+ ,i-b 1))
+			 (progn
+                           ,(if (subtypep type 'simple-vector)
+			        `(setf (svref ,aux ,i-aux) ,v-b 
+                                       ,i-aux (+ ,i-aux 1)
+				       ,i-b (+ ,i-b 1))
+                                `(setf (aref ,aux ,i-aux) ,v-b
+                                       ,i-aux (+ ,i-aux 1)
+				       ,i-b (+ ,i-b 1)))
 			   (when (= ,i-b ,end-b) (return))
 			   (setf ,v-b (,ref ,b ,i-b)
 				 ,@(if key 
 				       `(,k-b (funcall ,key ,v-b))
 				       `(,k-b ,v-b))))
-			 (progn 
-;;			   (setf (svref ,aux ,i-aux) ,v-a ;; FIXME Ticket #196
-			   (setf (aref ,aux ,i-aux) ,v-a
-				 ,i-aux (+ ,i-aux 1)
-				 ,i-a (+ ,i-a 1))
+			 (progn
+                           ,(if (subtypep type 'simple-vector)
+			        `(setf (svref ,aux ,i-aux) ,v-a 
+				       ,i-aux (+ ,i-aux 1)
+				       ,i-a (+ ,i-a 1))
+                                `(setf (aref ,aux ,i-aux) ,v-a
+                                       ,i-aux (+ ,i-aux 1)
+				       ,i-a (+ ,i-a 1)))
 			   (when (= ,i-a ,end-a)
 			     (setf ,a ,b 
 				   ,i-a ,i-b 
@@ -124,9 +130,11 @@
 				       `(,k-a (funcall ,key ,v-a))
 				       `(,k-a ,v-a))))))))
 	    (loop
-;;	      (setf (svref ,aux ,i-aux) ,v-a ;; FIXME Ticket #196
-	      (setf (aref ,aux ,i-aux) ,v-a
-		    ,i-a (+ ,i-a 1))
+              ,(if (subtypep type 'simple-vector)
+	           `(setf (svref ,aux ,i-aux) ,v-a 
+                          ,i-a (+ ,i-a 1))
+	           `(setf (aref ,aux ,i-aux) ,v-a
+                          ,i-a (+ ,i-a 1)))
 	      (when (= ,i-a ,end-a) (return))
 	      (setf ,v-a (,ref ,a ,i-a)
 		    ,i-aux (+ ,i-aux 1))))))))
@@ -163,8 +171,7 @@
 			 `(merge-vectors-body ,type ,ref ,sequence ,start ,mid ,sequence 
 					      ,mid ,end ,aux ,start ,predicate)))))
 	 (let ((,maux (make-array ,mend)))
-;;	   (declare (type simple-vector ,maux))
-	   (declare (type vector ,maux))
+           (declare (type ,maux ,type))
 	   (,merge-sort-call ,msequence ,mstart ,mend ,mpredicate ,mkey ,maux nil))))))
 
 (defun merge-sort-vectors (sequence predicate key)
