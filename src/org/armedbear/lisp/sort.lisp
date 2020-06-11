@@ -169,15 +169,16 @@
 
 (defun merge-sort-vectors (sequence predicate key)
   (let ((end (length sequence)))
-    (typecase sequence
-      (simple-vector 
-       (if key
-	   (merge-sort-body simple-vector svref predicate key sequence 0 end)
-	   (merge-sort-body simple-vector svref predicate nil sequence 0 end)))
-      (vector 
-       (if key
-	   (merge-sort-body vector aref predicate key sequence 0 end)
-	   (merge-sort-body vector aref predicate nil sequence 0 end))))
+    (when (> end 1)
+      (typecase sequence
+        (simple-vector 
+         (if key
+	     (merge-sort-body simple-vector svref predicate key sequence 0 end)
+	     (merge-sort-body simple-vector svref predicate nil sequence 0 end)))
+        (vector 
+         (if key
+	     (merge-sort-body vector aref predicate key sequence 0 end)
+	     (merge-sort-body vector aref predicate nil sequence 0 end)))))
     sequence))
 
 
