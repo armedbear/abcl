@@ -1,9 +1,11 @@
 (require :asdf)
 (require :abcl-contrib)
 
-(ql:quickload :cffi)
-(ql:quickload :cffi-tests)
+(ql:quickload
+ '(:cffi :cffi-tests))
 
-(asdf:test-system :cffi)
+(time 
+ (asdf:test-system :cffi))
+
 
 

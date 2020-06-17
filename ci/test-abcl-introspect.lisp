@@ -1,2 +1,4 @@
 (ql:quickload :abcl-introspect-test)
-(asdf:test-system :abcl-introspect)
+(time 
+ (asdf:test-system :abcl-introspect))
+

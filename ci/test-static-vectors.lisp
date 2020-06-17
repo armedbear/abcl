@@ -1,7 +1,9 @@
 (require :asdf)
 (require :abcl-contrib)
 
-(ql:quickload :static-vectors)
-(ql:quickload :static-vectors/test)
+(ql:quickload
+ '(:static-vectors :static-vectors/test))
 
-(asdf:test-system :static-vectors)
+(time 
+ (asdf:test-system :static-vectors))
+
