@@ -1,5 +1,6 @@
-(ql:quickload :ironclad)
-(ql:quickload :ironclad/tests)
+(ql:quickload
+ '(:ironclad :ironclad/tests))
 
-(asdf:test-system :ironclad)
+(time 
+ (asdf:test-system :ironclad))
 
