@@ -2,65 +2,65 @@
 
 (prove:plan 15)
 
-(prove:ok
- (format t "~,vf" 3 -0.1768522)
- "reported with -0.177 NIL")
+(prove:is
+ (format nil "~,vf" 3 -0.1768522)
+ "-0.177") ;; sbcl
 
-(prove:ok
- (format t "~,vf" 2 -0.1768522)
- "reported with -0.18 NIL")
+(prove:is
+ (format nil "~,vf" 2 -0.1768522)
+ "-0.18")
 
-(prove:ok 
- (format t "~,vf" 1 -0.1768522)
- "reported with -0.2 NIL")
+(prove:is 
+ (format nil "~,vf" 1 -0.1768522)
+ "-0.2")
 
-(prove:ok 
- (format t "~,vf" 0 -0.1768522)
- "-0. NIL")
+(prove:is
+ (format nil "~,vf" 0 -0.1768522)
+ "-0.")
 
-(prove:ok 
- (format t "~$" -0.1768522)
- "--1.6 NIL")
+(prove:is
+ (format nil "~$" -0.1768522)
+ "-0.18")
 
-(prove:ok
- (format t "~v$" 3 -0.1768522)
- "reported as --1.75 NIL")
+(prove:is
+ (format nil "~v$" 3 -0.1768522)
+ "-0.177")
 
-(prove:ok
- (format t "~v$" 2 -0.1768522)
- "--1.6 NIL")
+(prove:is
+ (format nil "~v$" 2 -0.1768522)
+ "-0.18")
 
-(prove:ok
- (format t "~v$" 1 -0.1768522)
- "reported type error:  Array index out of bounds: 2")
+(prove:is
+ (format nil "~v$" 1 -0.1768522)
+ "-0.2") ;;  reported type error:  Array index out of bounds: 
 
-(prove:ok
- (format t "~v$" 0 -0.1768522)
- "--0. NIL")
+(prove:is
+ (format nil "~v$" 0 -0.1768522)
+ "-0.")
 
-(prove:ok 
- (format t "~$" 0.1768522)
- "0.18 NIL")
+(prove:is
+ (format nil "~$" 0.1768522)
+ "0.18")
 
-(prove:ok 
- (format t "~v$" 3 0.1768522)
- "0.177 NIL")
+(prove:is
+ (format nil "~v$" 3 0.1768522)
+ "0.177")
 
-(prove:ok
+(prove:is
  (format nil "~v$" 2 0.1768522)
- "0.18 NIL")
+ "0.18")
 
-(prove:ok 
+(prove:is
  (format nil "~v$" 1 0.1768522)
- "0.2 NIL")
+ "0.2")
 
-(prove:ok
+(prove:is
  (format nil "~v$" 0 0.1768522)
- "0. NIL")
+ "0.")
 
 ;; dingd
-(prove:ok
+(prove:is
  (format nil "~$" -0.0)
- "-0.00")
+ "0.00") ;; sbcl
 
 (prove:finalize)

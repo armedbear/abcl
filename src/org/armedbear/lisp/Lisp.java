@@ -1546,8 +1546,8 @@ public final class Lisp
   public static final LispObject UNSIGNED_BYTE_32 =
     list(Symbol.UNSIGNED_BYTE, Fixnum.constants[32]);
 
-  public static final LispObject UNSIGNED_BYTE_32_MAX_VALUE =
-    Bignum.getInstance(4294967296L);
+  public static final LispObject UNSIGNED_BYTE_32_MAX_VALUE
+    = Bignum.getInstance(4294967295L);
 
   public static final LispObject getUpgradedArrayElementType(LispObject type)
 
@@ -1601,9 +1601,9 @@ public final class Lisp
                   }
                 if (lower.isGreaterThanOrEqualTo(Fixnum.ZERO))
                   {
-                    if (lower.isLessThan(UNSIGNED_BYTE_32_MAX_VALUE))
+                    if (lower.isLessThanOrEqualTo(UNSIGNED_BYTE_32_MAX_VALUE))
                       {
-                        if (upper.isLessThan(UNSIGNED_BYTE_32_MAX_VALUE))
+                        if (upper.isLessThanOrEqualTo(UNSIGNED_BYTE_32_MAX_VALUE))
                           return UNSIGNED_BYTE_32;
                       }
                   }
@@ -1630,7 +1630,7 @@ public final class Lisp
               {
                 if (obj.isGreaterThanOrEqualTo(Fixnum.ZERO))
                   {
-                    if (obj.isLessThan(UNSIGNED_BYTE_32_MAX_VALUE))
+                    if (obj.isLessThanOrEqualTo(UNSIGNED_BYTE_32_MAX_VALUE))
                       return UNSIGNED_BYTE_32;
                   }
               }
@@ -1650,6 +1650,10 @@ public final class Lisp
           }
       }
     return T;
+  }
+
+  public static final char coerceLispObjectToJavaChar(LispObject obj) {
+    return (char)Fixnum.getValue(obj);
   }
 
   public static final byte coerceLispObjectToJavaByte(LispObject obj)
@@ -2698,7 +2702,7 @@ public final class Lisp
   // ### *disassembler*
   public static final Symbol _DISASSEMBLER_ =
     exportSpecial("*DISASSEMBLER*", PACKAGE_EXT,
-                  new SimpleString("jad -a -p")); // or "jad -dis -p"
+                  new SimpleString("javap -c -verbose")); // or "jad -dis -p"
 
   // ### *speed* compiler policy
   public static final Symbol _SPEED_ =

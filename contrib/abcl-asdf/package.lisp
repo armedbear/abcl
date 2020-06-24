@@ -16,6 +16,7 @@
    #:ensure-mvn-version
    
    #:find-mvn
+   #:mvn-version
 
    #:*mvn-directory*
 
@@ -28,6 +29,7 @@
 ;;;; Maven 
    #:*mvn-libs-directory*
    #:*maven-http-proxy*
+   #:*default-repository*
    #:make-remote-repository
    #:*maven-remote-repository*
    #:resolve-multiple-maven-dependencies

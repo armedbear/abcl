@@ -1,4 +1,4 @@
-(in-package :abcl/build/t)
+(in-package :cl-user)
 
 (prove:plan 1)
 (prove:is-type (abcl/build:possible-executable-names "java")

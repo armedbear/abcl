@@ -2,7 +2,7 @@
 (defsystem abcl-asdf
   :author "Mark Evenson"
   :description "Extensions to ASDF for handling Java binary artifacts."
-  :long-description "<urn:abcl.org/release/1.6.0/contrib/abcl-asdf#>"
+  :long-description "<urn:abcl.org/release/1.7.0/contrib/abcl-asdf#>"
   :version "2.1.0"
   :depends-on (jss abcl-build)
   :components 
@@ -13,7 +13,7 @@
             :pathname "" 
             :components ((:file "abcl-asdf")
                          (:file "asdf-jar" :depends-on ("abcl-asdf")))
-            :depends-on (package))
+            :depends-on (package maven))
    (:module maven
             :pathname "" 
             :components ((:file "maven")

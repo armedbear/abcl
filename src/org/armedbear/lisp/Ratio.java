@@ -36,6 +36,9 @@ package org.armedbear.lisp;
 import static org.armedbear.lisp.Lisp.*;
 
 import java.math.BigInteger;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
 public final class Ratio extends LispObject
 {
@@ -192,8 +195,17 @@ public final class Ratio extends LispObject
         final int numLen = num.bitLength();
         final int denLen = den.bitLength();
         int length = Math.min(numLen, denLen);
-        if (length <= 1)
-            return result;
+        if (length <= 1) {  
+          // A precision of 512 is overkill for DOUBLE-FLOAT types
+          // based on java.lang.Double  TODO: optimize for space/time 
+          final MathContext mathContext = new MathContext(512, RoundingMode.HALF_EVEN);
+          BigDecimal p = new BigDecimal(numerator, mathContext);
+          BigDecimal q = new BigDecimal(denominator, mathContext);
+          BigDecimal r = p.divide(q, mathContext);
+          result = r.doubleValue();
+          return result; 
+        }
+
         BigInteger n = num;
         BigInteger d = den;
         final int digits = 54;

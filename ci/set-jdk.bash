@@ -6,7 +6,7 @@ function set_jdk() {
 
     dir=$2
     if [[ -z ${dir} ]]; then
-        dir=${TRAVIS_BUILD_DIR}
+        dir=${ABCL_ROOT}
     fi
 
     . ${DIR}/ensure-jenv-is-present.bash
@@ -41,4 +41,4 @@ function set_jdk() {
     popd
 }
 
-set_jdk ${ABCL_JDK} ${TRAVIS_BUILD_DIR}
+set_jdk ${ABCL_JDK} ${ABCL_ROOT}

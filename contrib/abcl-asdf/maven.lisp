@@ -1,7 +1,7 @@
-;;;; Use the Aether system in a localy installed Maven3 distribution to download
-;;;; and install JVM artifact dependencies.
+;;;; Use the Aether system packaged as jar files in a locally
+;;;; installed Maven3 distribution to download and install JVM
+;;;; artifact dependencies.
 
-;;; TODO refactor out aether.lisp
 
 #|
 
@@ -25,6 +25,18 @@ that the Maven specific "~/.m2/settings.xml" file is NOT parsed for settings.
 
 |#
 
+#|
+
+We aim to be compatible with the "current" version of Maven back to
+maven-3.0.4.  The necessary internals of Maven are messy, and not very
+well abstracted, especially in the earlier releases.  In maintaining
+this code over the past decade, it has been the case that entire APIs
+will disappear during what are advertised as "patchlevel" upgrades of
+Maven.
+
+
+|#
+
 ;;; N.b. evaluated *after* we load the ABCL specific modifications of
 ;;;      ASDF in abcl-asdf.lisp
 
@@ -45,10 +57,10 @@ Test:
 
 (defparameter *mavens* 
   (if (find :windows *features*)
-      '("mvn" "mvn.bat" "mvn3.bat" "mvn.cmd")
-      '("mvn3" "mvn"
+      '("mvn" "mvn.bat" "mvn.cmd" "mvn3.bat")
+      '("mvn" "mvn3"
         ;; MacPorts
-        "/opt/local/bin/mvn3"))
+        "/opt/local/bin/mvn" "/opt/local/bin/mvn3"))
   "Locations to search for the Maven executable.")
 
 (defun find-mvn () 
@@ -85,30 +97,27 @@ Emits warnings if not able to find a suitable executable."
                     (ensure-mvn-version))
             (warn "M2 was set to '~A' in the process environment but '~A' doesn't exist." 
                   m2 mvn-path))))
-    (let* ((which-cmd 
+    (let ((which-cmd 
             (if (find :unix *features*)
                 "which" 
                 ;; Starting with Windows Server 2003
-                "where.exe"))
-           (which-cmd-p 
-            (handler-case 
-                (sys:run-program which-cmd nil)
-              (t () nil))))
-      (when which-cmd-p
-        (dolist (mvn-path *mavens*)
-          (let ((mvn 
-                 (handler-case 
-                     (truename (read-line (sys:process-output 
-                                           (sys:run-program 
-                                            which-cmd `(,mvn-path))))) 
-                   (end-of-file () nil)
-                   (t (e) 
-                     (format cl:*load-verbose*
-                             "~&; abcl-asdf; Failed to find Maven executable '~A' in PATH because~&~A" 
-                             mvn-path e)))))
-            (when mvn
-              (return-from find-mvn mvn)))))))
-  (warn "Unable to locate Maven executable to find Maven Aether adaptors."))
+                "where.exe")))
+      (dolist (mvn-path *mavens*)
+	(let ((mvn 
+	       (handler-case
+		   (truename 
+		    (string-trim
+		     '(#\space #\newline #\return #\tab)
+		     (uiop:run-program
+		      (format nil "~a ~a" which-cmd mvn-path)
+		      :output :string)))
+		 (t (e) 
+		   (format cl:*load-verbose*
+			   "~&; abcl-asdf; Failed to find Maven executable '~a' in PATH because~%~a" 
+			   mvn-path e)))))
+	  (when mvn
+	    (return-from find-mvn mvn)))))
+  (warn "Unable to locate Maven executable to find Maven Aether adaptors.")))
 
 (defun find-mvn-libs ()
   (unless (find-mvn)
@@ -136,46 +145,90 @@ Emits warnings if not able to find a suitable executable."
   nil
   "Location of 'maven-core-3.<m>.<p>.jar', 'maven-embedder-3.<m>.<p>.jar' etc.")
 
+(defun normalize-mvn-libs ()
+  "Ensure that any *mvn-libs-directory* is a both directory and a pathname"
+  (unless *mvn-libs-directory*
+    (return-from normalize-mvn-libs nil))
+  (when (not (pathnamep *mvn-libs-directory*))
+    (setf *mvn-libs-directory* (pathname *mvn-libs-directory*)))
+  (when (not (#"endsWith" (namestring *mvn-libs-directory*) "/"))
+    (setf *mvn-libs-directory*
+          (pathname (concatenate 'string *mvn-libs-directory* "/"))))
+  *mvn-libs-directory*)
+
 (defun mvn-version ()
+  "Return the version of Maven libaries in use"
+  (unless (normalize-mvn-libs)
+    (error "Need to specify a value of *mvn-libs-directory*"))
+  (let* ((pattern
+          "maven-core*.jar")
+         (maven-core-jars
+          (directory (merge-pathnames pattern
+                                      *mvn-libs-directory*)))
+         (maven-core-jar 
+          (cond
+            ((= (length maven-core-jars) 0)
+             (error "No file matching '~a' found in '~a'." pattern *mvn-libs-directory*))
+            ((> (length maven-core-jars) 1)
+             (warn "More than one file matching '~a' found in '~a'."
+                   pattern *mvn-libs-directory*)
+             (first maven-core-jars))
+            (t
+             (first maven-core-jars)))))
+    (let* ((manifest
+            (#"getManifest" (jss:new 'java.util.jar.JarFile (namestring maven-core-jar))))
+           (attributes
+            (#"getMainAttributes" manifest))
+           (version
+            (#"getValue" attributes "Implementation-Version")))
+      (parse-mvn-version
+       version))))
+
+;;; deprecated, unused:  we now get the version directly from the JAR manifest
+(defun mvn-version-from-mvn-executable ()
   "Return the Maven version used by the Aether connector located by
   FIND-MVN as a list of (MAJOR MINOR PATHLEVEL) integers.
 
 Signals a simple-error with additional information if this attempt fails."
-  (handler-case 
-      (let* ((process (sys:run-program (truename (find-mvn)) '("-version")))
-             (output (sys:process-output process))
+  (handler-case
+      (let* ((mvn
+              (truename (find-mvn)))
              (pattern (#"compile"
                        'regex.Pattern
-                       "Apache Maven ([0-9]+)\\.([0-9]+)\\.([0-9]+)"))
-             lines)
-        (do ((line (read-line output nil :eof) 
-                   (read-line output nil :eof)))
-            ((or (not line) (eq line :eof)) nil)
-          (push line lines)
-          (let ((matcher (#"matcher" pattern line)))
+                       "^Apache Maven ([0-9]+\\.[0-9]+\\.[0-9]+)")))
+        (multiple-value-bind (output error)
+            (uiop:run-program
+             (format nil "~a --version" mvn)
+             :output :string :error :string)
+          (let ((matcher (#"matcher" pattern output)))
             (when (#"find" matcher)
-              (return-from mvn-version
-                (mapcar #'parse-integer 
-                        `(,(#"group" matcher 1) 
-                           ,(#"group" matcher 2) 
-                           ,(#"group" matcher 3)))))))
-        (when lines 
-          (signal "No parseable Maven version found in ~{~&  ~A~}" (nreverse lines)))
-        (let ((error (sys:process-error process)))
-          (do ((line (read-line error nil :eof) 
-                     (read-line error nil :eof)))
-              ((or (not line) (eq line :eof)) nil)
-            (push line lines)
-            (signal "Invocation of Maven returned the error ~{~&  ~A~}" (nreverse lines)))))
+              (return-from mvn-version-from-mvn-executable
+                (parse-mvn-version (#"group" matcher 1)))))
+          (when output
+            (signal "No parseable Maven version found in ~a" output))
+          (signal "Invocation of Maven returned the error ~{~&  ~A~}" error)))
     (t (e) 
       (error "Failed to determine Maven version: ~A." e))))
 
+(defun parse-mvn-version (version-string)
+  (let* ((pattern (#"compile"
+                   'regex.Pattern
+                   "([0-9]+)\\.([0-9]+)\\.([0-9]+)"))
+         (matcher (#"matcher" pattern version-string)))
+    (if (#"find" matcher)
+        (mapcar #'parse-integer 
+                `(,(#"group" matcher 1) 
+                   ,(#"group" matcher 2)
+                   ,(#"group" matcher 3)))
+        (error "Failed to parse a MAJOR.MINOR.PATCHLEVEL version from '~a'" version-string))))
+
+  
 (defun mvn-home ()
   "If the Maven executable can be invoked, introspect the value
   reported as Maven home."
   (handler-case 
       (multiple-value-bind (output error-output status)
-          (uiop/run-program:run-program
+          (uiop:run-program
            (format nil "~a --version" (truename (find-mvn)))
            :output :string
            :error-output :string)
@@ -194,7 +247,7 @@ Signals a simple-error with additional information if this attempt fails."
                     (uiop/pathname:ensure-directory-pathname (#"group" matcher 1)))))))))
     (subprocess-error (e)
           (error "Failed to invoke Maven executable to introspect library locations: ~a." e))))
-                        
+
 (defun ensure-mvn-version ()
   "Return t if Maven version is 3.0.3 or greater."
   (let* ((version (mvn-version))
@@ -218,10 +271,11 @@ Signals a simple-error with additional information if this attempt fails."
              (format stream "No Maven Aether libraries found locally in '~a'."
                      (locations condition)))))
              
-(defparameter *init* nil)
+(defparameter *init-p* nil
+  "Whether we have successfully located the necessary Maven libraries")
   
 (defun init (&optional &key (force nil))
-  "Run the initialization strategy to bootstrap a Maven dependency node.
+  "Run the initialization strategy to bootstrap a Maven dependency node
 
 Set *MVN-LIBS-DIRECTORY* to an explicit value before running this
 function in order to bypass the dynamic introspection of the location
@@ -240,15 +294,23 @@ of the mvn executable with an explicit value."
   (unless (ensure-mvn-version)
     (error "We need maven-3.0.3 or later."))
   (add-directory-jars-to-class-path *mvn-libs-directory* nil)
-  (setf *init* t))
+  (setf *init-p* t))
 
+;;; The AETHER-DIRECTORY parameter is conceptually a little broken:
+;;; because we can't "unload" jar files, we can't easily switch
+;;; between Maven implementation at runtime.  Maybe this would be
+;;; possible with some sort of classloader chaining, but such effort
+;;; is not currently deemed as worthwhile.  Instead, to change Aether
+;;; libraries, you'll have to restart ABCL.
 (defmacro with-aether ((&optional aether-directory) &body body)
-  "Ensure that the code in BODY is executed with the Maven Aether libraries on the classpath."
-  `(progn
-     (declare (ignore aether-directory)) ;;; FIXME
-     (unless abcl-asdf::*init*
-       (abcl-asdf::init))
-     ,@body))
+  "Ensure that the code in BODY is executed with the Maven Aether libraries on the classpath"
+  (if aether-directory
+      `(let ((*mvn-libs-directory* ,aether-directory))
+         (init :force t)
+         ,@body)
+      `(progn (unless *init-p*
+                (init))
+              ,@body)))
 
 (defun find-http-wagon ()
   "Find an implementation of the object that provides access to http and https resources.
@@ -263,12 +325,12 @@ maso2000 in the Manual.)"
       (java:jnew  "org.apache.maven.wagon.providers.http.LightweightHttpWagon"))))
 
 (defun make-wagon-provider ()
-  "Returns an implementation of the org.sonatype.aether.connector.wagon.WagonProvider contract.
+  "Returns an implementation of the org.sonatype.aether.connector.wagon.WagonProvider contract
 
 The implementation is specified as Lisp closures.  Currently, it only
 specializes the lookup() method if passed an 'http' or an 'https' role
 hint."
-  (unless *init* (init))
+  (unless *init-p* (init))
   (java:jinterface-implementation 
    (#"getName" 
     (or
@@ -296,11 +358,11 @@ hint."
 (defun find-service-locator ()
   (or
    (ignore-errors
-     ;; maven-3.1.0 using org.eclipse.aether...
-     (jss:new "aether.impl.DefaultServiceLocator"))
-   (ignore-errors
      ;; maven-3.0.4
      (jss:new "org.apache.maven.repository.internal.MavenServiceLocator")) 
+   (ignore-errors
+     ;; maven-3.1.0 using org.eclipse.aether...
+     (jss:new "aether.impl.DefaultServiceLocator"))
    (ignore-errors
      (jss:new "org.apache.maven.repository.internal.DefaultServiceLocator"))
    (ignore-errors
@@ -309,25 +371,25 @@ hint."
 
 
 (defun make-repository-system ()
-  (unless *init* (init))
+  (unless *init-p* (init))
   (let ((locator 
          (find-service-locator))
         (wagon-provider-class 
          (or
+          (ignore-errors 
+            (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))
           (ignore-errors ;; Maven-3.3.x
             (jss:find-java-class 'connector.transport.TransporterFactory))
           (ignore-errors ;; Maven-3.2.5
             (jss:find-java-class 'org.eclipse.aether.transport.wagon.WagonProvider))
           (ignore-errors  ;; Maven-3.1.x 
-            (jss:find-java-class 'aether.connector.wagon.WagonProvider))
-          (ignore-errors 
-            (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))))
+            (jss:find-java-class 'aether.connector.wagon.WagonProvider))))
         (wagon-repository-connector-factory-class
-         (or 
+         (or
+          (ignore-errors 
+            (jss:find-java-class 'org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory))
           (ignore-errors 
             (jss:find-java-class 'org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory))
-          (ignore-errors 
-            (jss:find-java-class 'aether.connector.wagon.WagonRepositoryConnectorFactory))
           (ignore-errors 
             (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory"))))
         (repository-connector-factory-class 
@@ -340,13 +402,12 @@ hint."
             (java:jclass "org.sonatype.aether.spi.connector.RepositoryConnectorFactory"))))
         (repository-system-class
          (or
+          (ignore-errors
+            (java:jclass "org.sonatype.aether.RepositorySystem"))
           (ignore-errors 
             (jss:find-java-class 'org.eclipse.aether.RepositorySystem))
           (ignore-errors 
-            (jss:find-java-class 'aether.RepositorySystem))
-          (ignore-errors
-            (java:jclass "org.sonatype.aether.RepositorySystem")))))
-
+            (jss:find-java-class 'aether.RepositorySystem)))))
     (if (equal wagon-provider-class (ignore-errors (jss:find-java-class 'TransporterFactory)))
         ;;; Maven-3.3.3
         (let ((wagon-transporter-factory (jss:new 'WagonTransporterFactory)))
@@ -372,23 +433,36 @@ hint."
     (let ((session
            (or 
             (ignore-errors
-              (jss:new "MavenRepositorySystemSession"))
+              (java:jnew
+               (jss:find-java-class "MavenRepositorySystemSession")))
             (ignore-errors
               (#"newSession"
                'org.apache.maven.repository.internal.MavenRepositorySystemUtils))))
-          (local-repository 
-           (java:jnew (jss:find-java-class "LocalRepository")
-                      (namestring (merge-pathnames ".m2/repository/"
-                                                   (user-homedir-pathname))))))
+          (local-repository
+           (make-local-repository)))
       (#"setLocalRepositoryManager"
        session
-       (or 
-        (ignore-errors      ;; maven-3.1.0
-          (#"newLocalRepositoryManager" 
-           repository-system session local-repository))
-        (ignore-errors 
-          (#"newLocalRepositoryManager" 
-           repository-system local-repository)))))))
+       (make-local-repository-manager repository-system local-repository session)))))
+
+
+(defun make-local-repository-manager (repository-system local-repository session)
+  (or 
+   (ignore-errors 
+     (#"newLocalRepositoryManager" 
+      repository-system local-repository))
+   (ignore-errors      ;; maven-3.1.0
+     (#"newLocalRepositoryManager" 
+      repository-system session local-repository))))
+
+(defun make-local-repository ()
+  (java:jnew
+   (or
+    (ignore-errors
+      (jss:find-java-class "org.sonatype.aether.repository.LocalRepository"))
+    (ignore-errors
+      (jss:find-java-class "org.eclipse.aether.repository.LocalRepository")))
+   (namestring (merge-pathnames ".m2/repository/"
+                                (user-homedir-pathname)))))
 
 (defparameter *maven-http-proxy* nil
   "A string containing the URI of an http proxy for Maven to use.")
@@ -442,12 +516,12 @@ If *MAVEN-HTTP-PROXY* is non-nil, parse its value as the http proxy."
   *session*)
 
 (defun make-artifact (artifact-string)
-  "Return an instance of aether.artifact.DefaultArtifact initialized from ARTIFACT-STRING." 
+  "Return an instance of aether.artifact.DefaultArtifact initialized from ARTIFACT-STRING" 
   (or
    (ignore-errors
-     (jss:new 'aether.artifact.DefaultArtifact artifact-string))
+     (jss:new "org.sonatype.aether.util.artifact.DefaultArtifact" artifact-string))
    (ignore-errors
-     (jss:new "org.sonatype.aether.util.artifact.DefaultArtifact" artifact-string))))
+     (jss:new 'aether.artifact.DefaultArtifact artifact-string))))
 
 (defun make-artifact-request () 
   "Construct a new aether.resolution.ArtifactRequest."
@@ -468,7 +542,7 @@ If unspecified, the string \"LATEST\" will be used for the VERSION.
 Returns the Maven specific string for the artifact "
   (unless versionp
     (warn "Using LATEST for unspecified version."))
-  (unless *init* (init))
+  (unless *init-p* (init))
   (let* ((artifact-string 
           (format nil "~A:~A:~A" group-id artifact-id version))
          (artifact 
@@ -482,24 +556,27 @@ Returns the Maven specific string for the artifact "
                                                       (ensure-session) artifact-request))))))
 
 (defun make-remote-repository (id type url) 
-  (or 
-   (ignore-errors 
-     (#"build" (jss:new "org.eclipse.aether.repository.RemoteRepository$Builder" id type url)))
+  (or
    (ignore-errors
-     (jss:new 'aether.repository.RemoteRepository id type url))))
+     (jss:new 'org.sonatype.aether.repository.RemoteRepository id type url))
+   (ignore-errors 
+     (#"build" (jss:new "org.eclipse.aether.repository.RemoteRepository$Builder" id type url)))))
 
-(defparameter *default-repository* 
-  "http://repo1.maven.org/maven2/")
+(defvar *default-repository* 
+  "https://repo1.maven.org/maven2/"
+  "URI of default remote Maven repository")
 
 (defun add-repository (repository)
   (ensure-remote-repository :repository repository))
 
 (defparameter *maven-remote-repository*  nil
-  "The remote repository used by the Maven Aether embedder.")
+  "Reference to remote repository used by the Maven Aether
+  embedder.")
+
 (defun ensure-remote-repository (&key 
                                    (force nil)
                                    (repository *default-repository* repository-p))
-  (unless *init* (init))
+  (unless *init-p* (init))
   (when (or force  
             repository-p 
             (not *maven-remote-repository*))
@@ -523,17 +600,21 @@ If unspecified, the string \"LATEST\" will be used for the VERSION.
 
 Returns a string containing the necessary jvm classpath entries packed
 in Java CLASSPATH representation."
-  (unless *init* (init))
+  (unless *init-p* (init))
   (unless versionp
     (warn "Using LATEST for unspecified version."))
   (let* ((coords 
           (format nil "~A:~A:~A" group-id artifact-id (if versionp version "LATEST")))
          (artifact 
           (make-artifact coords))
-         (dependency 
-          (java:jnew (jss:find-java-class 'aether.graph.Dependency)
-                     artifact (java:jfield (jss:find-java-class "JavaScopes") "COMPILE")))
-         (collect-request (java:jnew (jss:find-java-class "CollectRequest"))))
+         (dependency
+          (make-dependency artifact))
+         (collect-request
+          (or
+           (ignore-errors
+             (java:jnew (jss:find-java-class "org.sonatype.aether.collection.CollectRequest")))
+           (ignore-errors
+             (java:jnew (jss:find-java-class "org.eclipse.aether.collection.CollectRequest"))))))
     (#"setRoot" collect-request dependency)
     (setf repositories-p (or repository-p repositories-p))
     ;; Don't call addRepository if we explicitly specify a NIL repository
@@ -550,20 +631,40 @@ in Java CLASSPATH representation."
                           (when *maven-http-proxy*
                             (#"setProxy" r (make-proxy)))
                           r)))
-    (let* ((node 
-            (#"getRoot" (#"collectDependencies" (ensure-repository-system) (ensure-session) collect-request)))
+    (let* ((collect-result (#"collectDependencies" (ensure-repository-system)
+                                                   (ensure-session) collect-request))
+           (node 
+            (#"getRoot" collect-result))
            (dependency-request
+            (or
+             (ignore-errors
             ;;; pre Maven-3.3.x
-            #+nil
-            (java:jnew (jss:find-java-class "DependencyRequest")
-                       node java:+null+)
-            (jss:new 'DependencyRequest))
+               (java:jnew (jss:find-java-class "DependencyRequest")
+                          node java:+null+))
+             (ignore-errors
+               (jss:new 'DependencyRequest))))
            (nlg 
             (java:jnew (jss:find-java-class "PreorderNodeListGenerator"))))
       (#"setRoot" dependency-request node)
       (#"resolveDependencies" (ensure-repository-system) (ensure-session) dependency-request)
       (#"accept" node nlg)
       (#"getClassPath" nlg))))
+
+(defun make-dependency (artifact)
+  (or
+   (ignore-errors
+     (java:jnew (jss:find-java-class 'org.sonatype.aether.graph.Dependency)
+                artifact
+                (java:jfield
+                 (jss:find-java-class "org.sonatype.aether.util.artifact.JavaScopes")
+                 "COMPILE")))
+   (ignore-errors
+     (java:jnew (jss:find-java-class 'org.eclipse.aether.graph.Dependency)
+                artifact
+                (java:jfield
+                 (jss:find-java-class "org.eclipse.aether.util.artifact.JavaScopes")
+                 "COMPILE")))))
+
 
 (defun make-repository-listener ()
   (flet ((log (e) 
@@ -642,4 +743,5 @@ artifact and all of its transitive dependencies."
 
 ;;; Currently the last file listed in ASDF
 (provide 'abcl-asdf)
+
 

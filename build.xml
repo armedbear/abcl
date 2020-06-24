@@ -208,6 +208,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
              target="${abcl.javac.target}"
              source="${abcl.javac.source}"
              includeantruntime="false"
+             encoding="UTF-8"
              failonerror="true">
         <src path="${src.dir}"/>
         <patternset refid="abcl.source.java"/>
@@ -775,6 +776,8 @@ will compile (if necessary) and load JSS.
 
       <include name="doc/**/*"/>
 
+      <include name="ci/**/*"/>
+
       <!-- FIXME:  currently necessary to build from our source archives -->
       <include name="nbproject/**/*"/>
     </patternset>
@@ -1192,17 +1195,25 @@ user.dir
 -->
 
 <target name="abcl.build.diagnostic" description="Emit diagnostics describing available hosting JVM properties.">
-  <echo>:java.version    ${java.version}</echo>
-  <echo>:java.vendor     ${java.vendor}</echo>
-  <echo>:java.vm.vendor  ${java.vm.vendor}</echo>
-  <echo>:java.vm.name    ${java.vm.name}</echo>
+  <echo>
+JVM System Properties
+=====================
+:java.version    ${java.version}
+:java.vendor     ${java.vendor}
+:java.vm.vendor  ${java.vm.vendor}
+:java.vm.name    ${java.vm.name}
 
-  <echo>:os.name    ${os.name}</echo>
-  <echo>:os.arch    ${os.arch}</echo>
-  <echo>:os.version ${os.version}</echo>
+:os.name         ${os.name}
+:os.arch         ${os.arch}
+:os.version      ${os.version}
   
-  <echo>:java.specification.version       ${java.specification.version}</echo>
-  <echo>:java.vm.specification.version    ${java.vm.specification.version}</echo>
+:java.specification.version
+                 ${java.specification.version}
+:java.vm.specification.version
+                 ${java.vm.specification.version}
+  </echo>
+
+  <echoproperties/>
 </target>
 
     <target name="abcl.release" 
@@ -1235,6 +1246,30 @@ user.dir
             tofile="${dist.dir}/asdf.pdf"/>
     </target>
 
+    <target name="abcl.properties.autoconfigure.openjdk.8">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        <arg value="openjdk8"/>
+      </exec>
+    </target>
+
+      <target name="abcl.properties.autoconfigure.openjdk.11">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        <arg value="openjdk11"/>
+      </exec>
+    </target>
+
+    <target name="abcl.properties.autoconfigure.openjdk.14">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        <arg value="openjdk14"/>
+      </exec>
+    </target>
+  
     <import file="etc/ant/netbeans-build.xml"
             optional="true"/> 
     <import file="etc/ant/build-snapshot.xml"

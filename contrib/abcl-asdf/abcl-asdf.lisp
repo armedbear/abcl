@@ -135,14 +135,21 @@ single entry denoting a remote binary artifact."
         (unless (java:jinstance-of-p (java:java-exception-cause e)
                                      "java.lang.ClassNotFoundException")
           (error "Unexpected Java exception~&~A.~&" e))))
-    (if (find-mvn)
-        (resolve-dependencies group-id artifact-id
-                              :version version
-                              :repository NIL
-                              :repositories repositories)
-        (if alternate-uri
-            (values (pathname alternate-uri) alternate-uri) 
-            (error "Failed to resolve MVN component name ~A." name)))))
+    (let ((result (ignore-errors 
+                          (with-aether ()
+                            (resolve-dependencies group-id artifact-id
+                                                  :version version
+                                                  :repository NIL
+                                                  :repositories repositories)))))
+      (if result
+          result
+        ;; The alternate-uri facility doesn't currently work.
+        ;; It would only work if there is a single jar that
+        ;; corresponds to a dependency, which is often not the case.
+        ;; probably should just remove…
+          (if alternate-uri
+              (values (pathname alternate-uri) alternate-uri) 
+              (error "Failed to resolve MVN component name ~A." name))))))
 
 (defmethod resolve ((uri pathname))
   (warn "Unimplemented."))

@@ -4236,13 +4236,18 @@ given a specific common representation.")
          (constant-shift (fixnum-constant-value type2))
          (result-type (derive-compiler-type form)))
     (cond ((and (integerp arg1) (integerp arg2))
+           ;; test t/ash.lisp: ash-constant
            (compile-constant (ash arg1 arg2) target representation))
+          ((and (integerp arg1) constant-shift)
+           ;; test t/ash.lisp: ash-constant2
+           (compile-constant (ash arg1 constant-shift) target representation))
           ((and constant-shift
                 ;; ishl/ishr only use the low five bits of the mask.
                 (<= -31 constant-shift 31)
                 (fixnum-type-p type1)
                 (fixnum-type-p result-type))
            (cond ((plusp constant-shift)
+                  ;; test t/ash.lisp: ash-fixnum1-pos-constant-shift2
                   (with-operand-accumulation
                       ((compile-operand arg1 :int)
                        (compile-operand arg2 :int)
@@ -4250,21 +4255,24 @@ given a specific common representation.")
                   (emit 'ishl))
                  ((minusp constant-shift)
                   (cond ((fixnump arg2)
+                         ;; test t/ash.lisp: ash-fixnum1-neg-constant-shift2
                          (with-operand-accumulation
                              ((compile-operand arg1 :int)
-                              (accumulate-operand (representation)
+                              (accumulate-operand (:int)
                                 (emit-push-constant-int (- arg2)))
                               (maybe-emit-clear-values arg1))))
                         (t
+                         ;; test t/ash.lisp: ash-fixnum1-neg-constant-shift-form2
                          (with-operand-accumulation
                              ((compile-operand arg1 :int)
-                              (accumulate-operand (representation :unsafe-p t)
+                              (accumulate-operand (:int)
                                 (compile-form arg2 'stack :int)
                                 (emit 'ineg))
                                (maybe-emit-clear-values arg1 arg2)))))
                   (maybe-emit-clear-values arg1 arg2)
                   (emit 'ishr))
                  ((zerop constant-shift)
+                  ;; test t/ash.lisp: ash-fixnum1-zero-shift2
                   (compile-form arg1 'stack :int)
                   (compile-form arg2 nil nil))) ; for effect
            (convert-representation :int representation)
@@ -4275,6 +4283,7 @@ given a specific common representation.")
                 (java-long-type-p type1)
                 (java-long-type-p result-type))
            (cond ((plusp constant-shift)
+                  ;; test t/ash.lisp: ash-long1-pos-constant-shift2
                   (with-operand-accumulation
                       ((compile-operand arg1 :long)
                        (compile-operand arg2 :int)
@@ -4282,30 +4291,37 @@ given a specific common representation.")
                   (emit 'lshl))
                  ((minusp constant-shift)
                   (cond ((fixnump arg2)
+                         ;; test t/ash.lisp: ash-long1-neg-constant-shift2
                          (with-operand-accumulation
                              ((compile-operand arg1 :long)
-                              (with-operand-accumulation (representation)
+                              (with-operand-accumulation (:int)
                                 (emit-push-constant-int (- arg2)))
                               (maybe-emit-clear-values arg1))))
                         (t
+                         ;; test t/ash.lisp: ash-long1-neg-constant-shift-form2
                          (with-operand-accumulation
                              ((compile-operand arg1 :long)
-                              (accumulate-operand (representation :unsafe-p t)
+                              (accumulate-operand (:int)
                                 (compile-form arg2 'stack :int)
                                 (emit 'ineg))
                                (maybe-emit-clear-values arg1 arg2)))))
                   (maybe-emit-clear-values arg1 arg2)
                   (emit 'lshr))
                  ((zerop constant-shift)
+                  ;; test t/ash.lisp: ash-long1-zero-shift2
                   (compile-form arg1 'stack :long)
                   (compile-form arg2 nil nil))) ; for effect
            (convert-representation :long representation)
            (emit-move-from-stack target representation))
           ((and (fixnum-type-p type1)
                 low2 high2 (<= -31 low2 high2 0)) ; Negative shift.
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                      arg2 'stack :int)
-           (emit 'ineg)
+           ;; t/ash.lisp: ash-fixnum1-neg-2
+           (with-operand-accumulation
+               ((compile-operand arg1 :int)
+                 (accumulate-operand (:int)
+                   (compile-operand arg2 :int)
+                   (emit 'ineg))))
+           (maybe-emit-clear-values arg1 arg2)
            (emit 'ishr)
            (convert-representation :int representation)
            (emit-move-from-stack target representation))
@@ -4313,6 +4329,7 @@ given a specific common representation.")
            (cond ((and low2 high2 (<= 0 low2 high2 63) ; Non-negative shift.
                        (java-long-type-p type1)
                        (java-long-type-p result-type))
+                  ;; test t/ash.lisp: ash-long1-pos-fixnum2
                   (with-operand-accumulation
                       ((compile-operand arg1 :long)
                        (compile-operand arg2 :int)
@@ -4322,14 +4339,17 @@ given a specific common representation.")
                  ((and low2 high2 (<= -63 low2 high2 0) ; Negative shift.
                        (java-long-type-p type1)
                        (java-long-type-p result-type))
+                  ;; test t/ash.lisp: ash-long1-neg-fixnum2
                   (with-operand-accumulation
                       ((compile-operand arg1 :long)
-                        (compile-operand arg2 :int)
-                        (maybe-emit-clear-values arg1 arg2)))
-                  (emit 'ineg)
+                        (accumulate-operand (:int)
+                          (compile-operand arg2 :int)
+                          (emit 'ineg))))
+                  (maybe-emit-clear-values arg1 arg2)
                   (emit 'lshr)
                   (convert-representation :long representation))
                  (t
+                  ;; test t/ash.lisp ash-long1-fixnum2
                   (with-operand-accumulation
                       ((compile-operand arg1 nil)
                        (compile-operand arg2 :int)
@@ -4338,6 +4358,7 @@ given a specific common representation.")
                   (fix-boxing representation result-type)))
            (emit-move-from-stack target representation))
           (t
+           ;; test t/ash.lisp: ash-regular
            (compile-function-call form target representation)))))
 
 (defknown p2-logand (t t t) t)

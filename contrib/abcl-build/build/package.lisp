@@ -40,6 +40,9 @@
    #:with-ensured-maven
    #:mvn/install
    #:mvn/call
+
+   #:directory-hashes
+   #:hashes-report
    
    #:install-zip
    #:download-artifact)

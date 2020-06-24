@@ -58,126 +58,134 @@
 
 (defmacro merge-vectors-body (type ref a start-a end-a b start-b end-b aux start-aux predicate &optional key)
   (let ((i-a (gensym)) 
-	(i-b (gensym))
-	(i-aux (gensym))
-	(v-a (gensym))
-	(v-b (gensym))
-	(k-a (gensym))
-	(k-b (gensym))
-	(merge-block (gensym))) 
+        (i-b (gensym))
+        (i-aux (gensym))
+        (v-a (gensym))
+        (v-b (gensym))
+        (k-a (gensym))
+        (k-b (gensym))
+        (merge-block (gensym))) 
     `(locally
-	 (declare (type fixnum ,start-a ,end-a ,start-b ,end-b ,start-aux)
-		  (type ,type ,a ,b)
-		  (type simple-vector ,aux)
-		  (type function ,predicate ,@(if key `(,key)))
-		  (optimize (speed 3) (safety 0)))
+         (declare (type fixnum ,start-a ,end-a ,start-b ,end-b ,start-aux)
+                  (type ,type ,a ,b)
+                  (type simple-vector ,aux)
+                  (type function ,predicate ,@(if key `(,key)))
+                  (optimize (speed 3) (safety 0)))
        (block ,merge-block
-	  (let ((,i-a ,start-a)
-		(,i-b ,start-b)
-		(,i-aux ,start-aux)
-		,v-a ,v-b ,k-a ,k-b)
-	    (declare (type fixnum ,i-a ,i-b ,i-aux))
-	    (cond ((= ,start-a ,end-a)
-		   (when (= ,start-b ,end-b)
-		     (return-from ,merge-block))
-		   (setf ,i-a ,start-b
-			 ,end-a ,end-b
-			 ,a ,b
-			 ,v-a (,ref ,a ,i-a)))
-		  ((= ,start-b ,end-b)
-		   (setf ,i-a ,start-a
-			 ,v-a (,ref ,a ,i-a)))
-		  (t
-		   (setf ,v-a (,ref ,a ,i-a)
-			 ,v-b (,ref ,b ,i-b)
-			 ,@(if key 
-			       `(,k-a (funcall ,key ,v-a))
-			       `(,k-a ,v-a))
-			 ,@(if key 
-			       `(,k-b (funcall ,key ,v-b))
-			       `(,k-b ,v-b)))
-		   (loop 
-		     (if (funcall ,predicate ,k-b ,k-a)
-			 (progn 
-;;			   (setf (svref ,aux ,i-aux) ,v-b ;; FIXME Ticket #196
-			   (setf (aref ,aux ,i-aux) ,v-b
-				 ,i-aux (+ ,i-aux 1)
-				 ,i-b (+ ,i-b 1))
-			   (when (= ,i-b ,end-b) (return))
-			   (setf ,v-b (,ref ,b ,i-b)
-				 ,@(if key 
-				       `(,k-b (funcall ,key ,v-b))
-				       `(,k-b ,v-b))))
-			 (progn 
-;;			   (setf (svref ,aux ,i-aux) ,v-a ;; FIXME Ticket #196
-			   (setf (aref ,aux ,i-aux) ,v-a
-				 ,i-aux (+ ,i-aux 1)
-				 ,i-a (+ ,i-a 1))
-			   (when (= ,i-a ,end-a)
-			     (setf ,a ,b 
-				   ,i-a ,i-b 
-				   ,end-a ,end-b 
-				   ,v-a ,v-b)
-			     (return))
-			   (setf ,v-a (,ref ,a ,i-a)
-				 ,@(if key 
-				       `(,k-a (funcall ,key ,v-a))
-				       `(,k-a ,v-a))))))))
-	    (loop
-;;	      (setf (svref ,aux ,i-aux) ,v-a ;; FIXME Ticket #196
-	      (setf (aref ,aux ,i-aux) ,v-a
-		    ,i-a (+ ,i-a 1))
-	      (when (= ,i-a ,end-a) (return))
-	      (setf ,v-a (,ref ,a ,i-a)
-		    ,i-aux (+ ,i-aux 1))))))))
+          (let ((,i-a ,start-a)
+                (,i-b ,start-b)
+                (,i-aux ,start-aux)
+                ,v-a ,v-b ,k-a ,k-b)
+            (declare (type fixnum ,i-a ,i-b ,i-aux))
+            (cond ((= ,start-a ,end-a)
+                   (when (= ,start-b ,end-b)
+                     (return-from ,merge-block))
+                   (setf ,i-a ,start-b
+                         ,end-a ,end-b
+                         ,a ,b
+                         ,v-a (,ref ,a ,i-a)))
+                  ((= ,start-b ,end-b)
+                   (setf ,i-a ,start-a
+                         ,v-a (,ref ,a ,i-a)))
+                  (t
+                   (setf ,v-a (,ref ,a ,i-a)
+                         ,v-b (,ref ,b ,i-b)
+                         ,@(if key 
+                               `(,k-a (funcall ,key ,v-a))
+                               `(,k-a ,v-a))
+                         ,@(if key 
+                               `(,k-b (funcall ,key ,v-b))
+                               `(,k-b ,v-b)))
+                   (loop 
+                     (if (funcall ,predicate ,k-b ,k-a)
+                         (progn
+                           ,(if (subtypep type 'simple-vector)
+                                `(setf (svref ,aux ,i-aux) ,v-b 
+                                       ,i-aux (+ ,i-aux 1)
+                                       ,i-b (+ ,i-b 1))
+                                `(setf (aref ,aux ,i-aux) ,v-b
+                                       ,i-aux (+ ,i-aux 1)
+                                       ,i-b (+ ,i-b 1)))
+                           (when (= ,i-b ,end-b) (return))
+                           (setf ,v-b (,ref ,b ,i-b)
+                                 ,@(if key 
+                                       `(,k-b (funcall ,key ,v-b))
+                                       `(,k-b ,v-b))))
+                         (progn
+                           ,(if (subtypep type 'simple-vector)
+                                `(setf (svref ,aux ,i-aux) ,v-a 
+                                       ,i-aux (+ ,i-aux 1)
+                                       ,i-a (+ ,i-a 1))
+                                `(setf (aref ,aux ,i-aux) ,v-a
+                                       ,i-aux (+ ,i-aux 1)
+                                       ,i-a (+ ,i-a 1)))
+                           (when (= ,i-a ,end-a)
+                             (setf ,a ,b 
+                                   ,i-a ,i-b 
+                                   ,end-a ,end-b 
+                                   ,v-a ,v-b)
+                             (return))
+                           (setf ,v-a (,ref ,a ,i-a)
+                                 ,@(if key 
+                                       `(,k-a (funcall ,key ,v-a))
+                                       `(,k-a ,v-a))))))))
+            (loop
+              ,(if (subtypep type 'simple-vector)
+                   `(setf (svref ,aux ,i-aux) ,v-a 
+                          ,i-a (+ ,i-a 1))
+                   `(setf (aref ,aux ,i-aux) ,v-a
+                          ,i-a (+ ,i-a 1)))
+              (when (= ,i-a ,end-a) (return))
+              (setf ,v-a (,ref ,a ,i-a)
+                    ,i-aux (+ ,i-aux 1))))))))
 
 (defmacro merge-sort-body (type ref mpredicate mkey msequence mstart mend)
   (let ((merge-sort-call (gensym))
-	(maux (gensym))
-	(aux (gensym))
-	(sequence (gensym))
-	(start (gensym))
-	(end (gensym))
-	(predicate (gensym))
-	(key (gensym))
-	(mid (gensym))
-	(direction (gensym)))
+        (maux (gensym))
+        (aux (gensym))
+        (sequence (gensym))
+        (start (gensym))
+        (end (gensym))
+        (predicate (gensym))
+        (key (gensym))
+        (mid (gensym))
+        (direction (gensym)))
     `(locally
-	 (declare (optimize (speed 3) (safety 0)))
+         (declare (optimize (speed 3) (safety 0)))
        (labels ((,merge-sort-call (,sequence ,start ,end ,predicate ,key ,aux ,direction)
-		  (declare (type function ,predicate ,@(if mkey `(,key)))
-			   (type fixnum ,start ,end)
-			   (type ,type ,sequence))
-		  (let ((,mid (+ ,start (ash (- ,end ,start) -1))))
-		    (declare (type fixnum ,mid))
-		    (if (<= (- ,mid 1) ,start)
-			(unless ,direction (setf (,ref ,aux ,start) (,ref ,sequence ,start)))
-			(,merge-sort-call ,sequence ,start ,mid ,predicate ,key ,aux (not ,direction)))
-		    (if (>= (+ ,mid 1) ,end)
-			(unless ,direction (setf (,ref ,aux ,mid) (,ref ,sequence ,mid)))
-			(,merge-sort-call ,sequence ,mid ,end ,predicate ,key ,aux (not ,direction)))
-		    (unless ,direction (psetq ,sequence ,aux ,aux ,sequence))
-		    ,(if mkey
-			 `(merge-vectors-body ,type ,ref ,sequence ,start ,mid ,sequence 
-					      ,mid ,end ,aux ,start ,predicate ,key)
-			 `(merge-vectors-body ,type ,ref ,sequence ,start ,mid ,sequence 
-					      ,mid ,end ,aux ,start ,predicate)))))
-	 (let ((,maux (make-array ,mend)))
-;;	   (declare (type simple-vector ,maux))
-	   (declare (type vector ,maux))
-	   (,merge-sort-call ,msequence ,mstart ,mend ,mpredicate ,mkey ,maux nil))))))
+                  (declare (type function ,predicate ,@(if mkey `(,key)))
+                           (type fixnum ,start ,end)
+                           (type ,type ,sequence))
+                  (let ((,mid (+ ,start (ash (- ,end ,start) -1))))
+                    (declare (type fixnum ,mid))
+                    (if (<= (- ,mid 1) ,start)
+                        (unless ,direction (setf (,ref ,aux ,start) (,ref ,sequence ,start)))
+                        (,merge-sort-call ,sequence ,start ,mid ,predicate ,key ,aux (not ,direction)))
+                    (if (>= (+ ,mid 1) ,end)
+                        (unless ,direction (setf (,ref ,aux ,mid) (,ref ,sequence ,mid)))
+                        (,merge-sort-call ,sequence ,mid ,end ,predicate ,key ,aux (not ,direction)))
+                    (unless ,direction (psetq ,sequence ,aux ,aux ,sequence))
+                    ,(if mkey
+                         `(merge-vectors-body ,type ,ref ,sequence ,start ,mid ,sequence 
+                                              ,mid ,end ,aux ,start ,predicate ,key)
+                         `(merge-vectors-body ,type ,ref ,sequence ,start ,mid ,sequence 
+                                              ,mid ,end ,aux ,start ,predicate)))))
+         (let ((,maux (make-array ,mend)))
+           (declare (type ,maux ,type))
+           (,merge-sort-call ,msequence ,mstart ,mend ,mpredicate ,mkey ,maux nil))))))
 
 (defun merge-sort-vectors (sequence predicate key)
   (let ((end (length sequence)))
-    (typecase sequence
-      (simple-vector 
-       (if key
-	   (merge-sort-body simple-vector svref predicate key sequence 0 end)
-	   (merge-sort-body simple-vector svref predicate nil sequence 0 end)))
-      (vector 
-       (if key
-	   (merge-sort-body vector aref predicate key sequence 0 end)
-	   (merge-sort-body vector aref predicate nil sequence 0 end))))
+    (when (> end 1)
+      (typecase sequence
+        (simple-vector 
+         (if key
+             (merge-sort-body simple-vector svref predicate key sequence 0 end)
+             (merge-sort-body simple-vector svref predicate nil sequence 0 end)))
+        (vector 
+         (if key
+             (merge-sort-body vector aref predicate key sequence 0 end)
+             (merge-sort-body vector aref predicate nil sequence 0 end)))))
     sequence))
 
 
@@ -364,58 +372,58 @@
 
 (defmacro quicksort-body (type ref mpredicate mkey sequence mstart mend)
   (let ((quicksort-call (gensym))
-	(predicate (gensym))
-	(key (gensym))
-	(vector (gensym))
-	(start (gensym))
-	(end (gensym))
-	(i (gensym))
-	(j (gensym))
-	(p (gensym))
-	(d (gensym))
-	(kd (gensym)))
+        (predicate (gensym))
+        (key (gensym))
+        (vector (gensym))
+        (start (gensym))
+        (end (gensym))
+        (i (gensym))
+        (j (gensym))
+        (p (gensym))
+        (d (gensym))
+        (kd (gensym)))
     `(locally 
-	 (declare (speed 3) (safety 0))
+         (declare (speed 3) (safety 0))
        (labels ((,quicksort-call (,vector ,start ,end ,predicate ,key)
-		   (declare (type function ,predicate ,@(if mkey `(,key)))
-			    (type fixnum ,start ,end)
-			    (type ,type ,sequence))
-		   (if (< ,start ,end)
-		       (let* ((,i ,start)
-			      (,j (1+ ,end))
-			      (,p (the fixnum (+ ,start (ash (- ,end ,start) -1))))
-			      (,d (,ref ,vector ,p))
-			      ,@(if mkey
-				    `((,kd (funcall ,key ,d)))
-				    `((,kd ,d))))
-			 (rotatef (,ref ,vector ,p) (,ref ,vector ,start))
-			 (block outer-loop
-			   (loop
-			     (loop 
-			       (unless (> (decf ,j) ,i) (return-from outer-loop))
-			       (when (funcall ,predicate 
-					      ,@(if mkey 
-						    `((funcall ,key (,ref ,vector ,j)))
-						    `((,ref ,vector ,j)))
-					      ,kd) (return)))
-			     (loop 
-			       (unless (< (incf ,i) ,j) (return-from outer-loop))
-			       (unless (funcall ,predicate
-						,@(if mkey 
-						    `((funcall ,key (,ref ,vector ,i)))
-						    `((,ref ,vector ,i)))
-						,kd) (return)))
-			     (rotatef (,ref ,vector ,i) (,ref ,vector ,j))))
-			 (setf (,ref ,vector ,start) (,ref ,vector ,j)
-			       (,ref ,vector ,j) ,d)
-			 (if (< (- ,j ,start) (- ,end ,j))
-			     (progn
-			       (,quicksort-call ,vector ,start (1- ,j) ,predicate ,key)
-			       (,quicksort-call ,vector (1+ ,j) ,end ,predicate ,key))
-			     (progn
-			       (,quicksort-call ,vector (1+ ,j) ,end ,predicate ,key)
-			       (,quicksort-call ,vector ,start (1- ,j) ,predicate ,key)))))))
-	 (,quicksort-call ,sequence ,mstart ,mend ,mpredicate ,mkey)))))
+                   (declare (type function ,predicate ,@(if mkey `(,key)))
+                            (type fixnum ,start ,end)
+                            (type ,type ,sequence))
+                   (if (< ,start ,end)
+                       (let* ((,i ,start)
+                              (,j (1+ ,end))
+                              (,p (the fixnum (+ ,start (ash (- ,end ,start) -1))))
+                              (,d (,ref ,vector ,p))
+                              ,@(if mkey
+                                    `((,kd (funcall ,key ,d)))
+                                    `((,kd ,d))))
+                         (rotatef (,ref ,vector ,p) (,ref ,vector ,start))
+                         (block outer-loop
+                           (loop
+                             (loop 
+                               (unless (> (decf ,j) ,i) (return-from outer-loop))
+                               (when (funcall ,predicate 
+                                              ,@(if mkey 
+                                                    `((funcall ,key (,ref ,vector ,j)))
+                                                    `((,ref ,vector ,j)))
+                                              ,kd) (return)))
+                             (loop 
+                               (unless (< (incf ,i) ,j) (return-from outer-loop))
+                               (unless (funcall ,predicate
+                                                ,@(if mkey 
+                                                    `((funcall ,key (,ref ,vector ,i)))
+                                                    `((,ref ,vector ,i)))
+                                                ,kd) (return)))
+                             (rotatef (,ref ,vector ,i) (,ref ,vector ,j))))
+                         (setf (,ref ,vector ,start) (,ref ,vector ,j)
+                               (,ref ,vector ,j) ,d)
+                         (if (< (- ,j ,start) (- ,end ,j))
+                             (progn
+                               (,quicksort-call ,vector ,start (1- ,j) ,predicate ,key)
+                               (,quicksort-call ,vector (1+ ,j) ,end ,predicate ,key))
+                             (progn
+                               (,quicksort-call ,vector (1+ ,j) ,end ,predicate ,key)
+                               (,quicksort-call ,vector ,start (1- ,j) ,predicate ,key)))))))
+         (,quicksort-call ,sequence ,mstart ,mend ,mpredicate ,mkey)))))
 
 (defun quicksort (sequence predicate key)
   (handler-case 

@@ -1,9 +1,7 @@
-# XXX should be called 'build.properties' but this collides with its
-#     usage by the Eclipse IDE
+## Ant based build process and runtime settings
 
-# Template for Ant based build process settings.
-
-# Copy to 'abcl.properties' to set options to local builds.
+## A file named 'abcl.properties' controls settings for the ABCL
+## build.  This is the prototype for its contents.
 
 # Attempt to perform incremental compilation? 
 abcl.build.incremental=true
@@ -14,32 +12,53 @@ abcl.javac.target=1.8
 # specify Java source compatiblity level
 abcl.javac.source=1.6
 
-# Additional site specific startup code to be merged in 'system.lisp' at build time
+## Additional site specific startup code to be merged in 'system.lisp' at build time
 #abcl.startup.file=${basedir}/startup.lisp
 
-## java.options sets the Java options in the abcl wrapper scripts
+## java.options sets the invoking JVM options in the abcl wrapper script
 
 # Base JVM settings that work on all supported platforms
+# <> java.options 
 java.options=-XshowSettings:vm -Dfile.encoding=UTF-8
 
-# Java 11 
-#java.options= 
+## N.b. Ant properties can only be set once, so lines like
+##    java.options=${java.options} further options
+## will NOT work.  Instead one has to "manually" create lines
 
-# Maximum safe performance on JDK8
-#java.options=-d64  -XX:+UseG1GC -XshowSettings:vm -Dfile.encoding=UTF-8 -XX:+AggressiveOpts -XX:CompileThreshold=10
+#<>
+# <java/runtime> ( openjdk11, openjdk13, openjdk14 ) ;
+#
+#java.options=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -Xmx<size> -Xlog:gc
 
-# Reasonable defaults for Java 8
-#java.options=-d64 -XshowSettings:vm -XX:+UseG1GC 
+#<>
+#  <java/runtime> openjdk11 ;
+#  rdfs:seeAlso <https://blog.gceasy.io/2020/03/18/7-jvm-arguments-of-highly-effective-applications/> ;
+#java.options=-XX:CompileThreshold=10
 
-# Java7 on 64bit optimizations
-#java.options=-d64 -XshowSettings:vm -XX:+UseG1GC 
+#<>
+#  <java/runtime> openjdk8 ;
+#java.options=-XX:+UseG1GC -XX:+AggressiveOpts -XX:CompileThreshold=10
 
-# Reasonable defaults for openjdk6
-#java.options=-d64 -XshowSettings:vm -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g -XX:+UseConcMarkSweepGC
+#<> 
+#  rdfs:comment "openjdk7 with 64bit optimizations" ;
+#  <java/runtime> openjdk7 ;
+#java.options=-d64 -XX:+UseG1GC 
 
-# See
-# http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html
-# for options for the Oracle HotSpot JVM.
+#<>
+#  rdfs:comment "openjdk6 is the minimum supported runtime"
+#  <java/runtime> openjdk6 ;
+#java.options=-d64 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g -XX:+UseConcMarkSweepGC
+
+# Comprehensive documentation for JVM options does not really exist:
+# per the usual entropy of long projects, the only true source of
+# truth is the source of the specific openjdk.
+#
+# As of 2020, decent online compendiums are
+# <https://chriswhocodes.com/> and <http://jvm-options.tech.xebia.fr/#>
+#
+# ORCL's documentation <http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html>
+
+## Various historical option settings
 
 # Java7 on 64bit optimizations
 #java.options=-d64 -Xmx16g -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=2g
@@ -48,15 +67,18 @@ java.options=-XshowSettings:vm -Dfile.encoding=UTF-8
 #java.options=-d64 -Xmx1g
 
 # Use the G1 garbage collector stablized with jdk1.7.0_04, printing GC details
-#java.options=-d64 -Xmx4g -XX:+PrintGCDetails -XX:+UseG1GC 
+#java.options=-d64 -Xmx4g -XX:+UseG1GC 
 
 # Use a separate concurrent GC thread (java-1.6_14 or later)
 #java.options=-d64 -Xmx8g -XX:+UseConcMarkSweepGC
 
+# Verbose garbage collection
+#java.options=-verbos:gc -XX:+PrintGCDetails
+
 # Java 5 era (???) flag to GC class definitions
 #java.options=-XX:+CMSPermGenSweepingEnabled
 
-# The unloading of class definitions is a per jvm policy.  For those
+# The unloading of class definitions is a per jvm policy.  For 
 # implementations which run out of permgen space, the following should
 # help things out.
 #java.options=-d64 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g

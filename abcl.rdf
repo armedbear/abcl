@@ -16,16 +16,16 @@
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.6.1#dev> ;           
+  dc:identifier         <urn:abcl.org/1.7.1#dev> ; # deprecated?
+  dc:identifier         <urn:abcl.org/release/1.7.1#dev> ;
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "22-NOV-2019" ;
-  dc:version           "abcl-1.6.1" ;
+  dc:modified          "04-JUN-2020" ;
+  dc:version           "abcl-1.7.1" ;
   dc:release           "dev" ;
-  abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
+  abcl:git             <https://github.com/armedbear/abcl/> ;
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
-
-  abcl:svn                 <https://abcl.org/trac/changeset/15198> . # releng UPDATE
+  abcl:svn             <https://abcl.org/svn/trunk/abcl/> . 
  
 <> 
   rdfs:seeAlso <file:README> ;
@@ -76,6 +76,7 @@
     rdf:_10 "Elias Pipping" ; 
     rdf:_12 _:vibhu ;
     rdf:_12 "Vibhu Mohindra" ;
+    rdf:_13 "somewhat-functional-programmer" ;
 ] .
 
 <abcl:doap>  
@@ -85,19 +86,19 @@
 _:user dc:identifier <http://ville.not.org/#me>  ; 
        rdf:label "V-ille"  .
 
- <http://purl.org/dc/elements/1.1/>  
+<http://purl.org/dc/elements/1.1/>  
   rdfs:seeAlso <http://dublincore.org/documents/2012/06/14/dcmi-terms/> .
 
 <> doap:license  [
      dc:license <http://usefulinc.com/doap/licenses/gplv2> ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
      dc:licenseDocument 
-       <http://abcl.org/svn/tags/1.6.0/src/org/armedbear/COPYING> ;
+       <http://abcl.org/svn/tags/1.7.0/src/org/armedbear/COPYING> ;
 ] .
 
 doap:Project rdfs:seeAlso [
   a rdf:Bag;
-  rdf:_0 <http://abcl.org/releases/1.6.0/abcl-1.6.0.jar> ;
+  rdf:_0 <http://abcl.org/releases/1.7.0/abcl-1.7.0.jar> ;
   rdf:_1 <http://abcl.org/trac/timeline> ;
   rdf:_2 <http://abcl.org/trac/wiki> ;
   rdf:_4 <https://github.com/armedbear/abcl/> ;
@@ -111,12 +112,14 @@ doap:Project rdfs:seeAlso [
      rdf:_4 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.1.jar> ;
      rdf:_5 <http://abcl.org/releases/1.2.1/abcl-1.2.1.jar> ;
      rdf:_6 <http://abcl.org/releases/1.3.0/abcl-1.3.0.jar> ;
-    rdf:_14 <http://abcl.org/releases/1.3.2/abcl-1.3.1.jar> ;
+     rdf:_14 <http://abcl.org/releases/1.3.2/abcl-1.3.1.jar> ;
      rdf:_7 <http://abcl.org/releases/1.3.2/abcl-1.3.2.jar> ;
      rdf:_8 <http://abcl.org/releases/1.3.3/abcl-1.3.3.jar> ;
      rdf:_9 <http://abcl.org/releases/1.4.0/abcl-1.4.0.jar> ;
      rdf:_10 <http://abcl.org/releases/1.5.0/abcl-1.5.0.jar> ;
      rdf:_11 <http://abcl.org/releases/1.6.0/abcl-1.6.0.jar> ;
+     rdf:_13 <http://abcl.org/releases/1.6.0/abcl-1.6.1.jar> ;
+     rdf:_17 <http://abcl.org/releases/1.6.0/abcl-1.7.0.jar> ;
   ] ;
 ] .
 
@@ -158,10 +161,10 @@ doap:Project rdfs:seeAlso
 abcl:jna
         dc:version "5.5.0" .
 abcl:asdf
-        dc:version "3.3.3" .
+        dc:version "3.3.4" .
 
 abcl:abcl-introspect  
-  rdfs:seeAlso <file:contrib/abcl-introspect/README.markdown> .                             
+  rdfs:seeAlso <file:contrib/abcl-introspect/README.org> .                             
 
 abcl:abcl-contrib  
   rdfs:seeAlso <file:contrib/README.markdown> .                             
@@ -174,26 +177,49 @@ abcl:jfli
 abcl:jss
   rdfs:seeAlso <file:contrib/jss/README.markdown> .                             
 
+# FIXME: figure out the right way to specify these values ontologically
 @prefix java:            <https://rdf.not.org/java#> .
+@prefix openjdk:         <https://rdf.not.org/java/openjdk#> .
+@prefix not.org:         <https://rdf.not.org#> .
 
 [abcl:run _:supported]
   a rdf:Bag ;
-  rdf:_6   java:6 ;
-  rdf:_7   java:7 ;
-  rdf:_8   java:8 ;
-  rdf:_11  java:11 ;
+  rdf:_6   openjdk:6 ;
+  rdf:_7   openjdk:7 ;
+  rdf:_8   openjdk:8 ;
+  rdf:_11  openjdk:11 ;
+  rdf:_13  openjdk:13 ;
+  rdf:_14  openjdk:14 ;
+  rdfs:comment "Compatible Java runtimes" .
 
-rdfs:comment """
-Compatible Java runtimes.
-""" .
+[abcl:run _:options]
+    not.org:base "-XShowSettings:vm -DFile.encoding=UTF-8" ;
+    openjdk:6 "-XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g -XX:+UseConcMarkSweepGC" ;
+    openjdk:8 "-XX:+AggressiveOpts" ;
+    openjdk:11 "-XX:CompileThreshold=10" ;
+    openjdk:13 "-XX:CompileThreshold=10" ;
+    openjdk:14 "-XX:CompileThreshold=10" ;
+    rdfs:comment "Java platform runtime options" .
 
-[abcl:build _:supported]
-  a rdf:Bag ;
-  rdf:_8   java:8 ;
-  rdf:_11  java:11 ;
+[abcl:build _:options]
+    not.org:target "1.8" ;
+    not.org:source "1.6" ;
+    not.org:encoding "UTF-8" ;
+    not.org:debug "true" ;
+    rdfs:comment "Java build options" .
 
-rdfs:comment """
-Platforms on which building is most supported.  
-""" .
+ [abcl:build _:supported]
+   a rdf:Bag ;
+   rdf:_6   openjdk:6 ;
+   rdf:_6     not.org:deprecated ;        
+   rdf:_7   openjdk:7 ;
+   rdf:_7     not.org:deprecated ;        
+   rdf:_8   openjdk:8 ;
+   rdf:_8     not.org:deprecated ;        
+   rdf:_11  openjdk:11 ;
+   rdf:_13  openjdk:13 ;
+   rdf:_14  openjdk:14 ;
+   rdfs:comment "Supported build platforms" .
+
 
   

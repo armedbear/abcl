@@ -42,6 +42,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
+import java.math.BigInteger;
 import java.util.*;
 
 public final class Java
@@ -427,36 +428,46 @@ public final class Java
     static final LispObject jstatic(Primitive fun, LispObject[] args, boolean translate)
 
     {
-        if (args.length < 2)
+        if (args.length < 2) {
             error(new WrongNumberOfArgumentsException(fun, 2, -1));
+        }
         try {
             Method m = null;
             LispObject methodRef = args[0];
+            List<Method> staticMethods = new ArrayList<Method>();
+            String methodName = null;
+        
             if (methodRef instanceof JavaObject) {
                 Object obj = ((JavaObject)methodRef).getObject();
-                if (obj instanceof Method)
-                    m = (Method) obj;
+                if (obj instanceof Method) {
+                    staticMethods.add((Method) obj);
+                    methodName = ((Method)obj).getName();
+                } else {
+                    error(new LispError(methodRef +  "is not a valid reference to a Method"));
+                }
             } else if (methodRef instanceof AbstractString) {
                 Class c = javaClass(args[1]);
                 if (c != null) {
-                    String methodName = methodRef.getStringValue();
+                    methodName = methodRef.getStringValue();
                     Method[] methods = c.getMethods();
-                    List<Method> staticMethods = new ArrayList<Method>();
                     int argCount = args.length - 2;
                     for(Method m1 : methods) {
                         if(Modifier.isStatic(m1.getModifiers())) {
                             staticMethods.add(m1);
                         }
                     }
-                    if(staticMethods.size() > 0) {
-                        m = findMethod(staticMethods.toArray(new Method[staticMethods.size()]), methodName, args, 2);
-                    }
-                    if (m == null)
-                        error(new LispError("no such method"));
                 }
             } else {
-              type_error(methodRef, Symbol.STRING);
+                type_error(methodRef, Symbol.STRING);
             }
+
+            if (staticMethods.size() > 0) {
+                m = findMethod(staticMethods.toArray(new Method[staticMethods.size()]),
+                               methodName, args, 2);
+            }
+            if (m == null)
+                error(new LispError("no such method"));
+
             Object[] methodArgs = new Object[args.length-2];
             Class[] argTypes = m.getParameterTypes();
             for (int i = 2; i < args.length; i++) {
@@ -470,7 +481,12 @@ public final class Java
                 }
             }
             m.setAccessible(true);
-            Object result = m.invoke(null, methodArgs);
+            Object result = null;
+            if (!m.isVarArgs()) {
+              result = m.invoke(null, methodArgs);
+            } else {
+              result = m.invoke(null, (Object)methodArgs);
+            }
 	    return JavaObject.getInstance(result, translate, m.getReturnType());
         }
         catch (ControlTransfer c) {
@@ -1064,6 +1080,12 @@ public final class Java
             return Float.class.equals(to) || Double.class.equals(to);
         } else if (Float.class.equals(from)) {
             return Double.class.equals(to);
+        } else if (from.isArray() && to.isArray()) {
+            // for now just indicate that anything is assignable to an
+            // java.lang.Object[], as this is the most common case
+            if (to.getComponentType().equals(java.lang.Object.class)) {
+                return true;
+            }
         }
         return false;
     }
@@ -1075,11 +1097,51 @@ public final class Java
             Object arg = args[i];
             if (arg == null) {
                 return !methodType.isPrimitive();
-            } else if (!isAssignable(arg.getClass(), methodType)) {
+            } else if (!isAssignableWithValue(arg.getClass(), methodType, arg)) {
                 return false;
             }
         }
         return true;
+    }
+
+    private static boolean isAssignableWithValue(Class<?> from, Class<?> to, Object value) {
+        if (isAssignable(from, to)) {
+            return true;
+        }
+        if (!(value instanceof Number)) {
+            return false;
+        }
+        from = maybeBoxClass(from);
+        to = maybeBoxClass(to);
+        if (Integer.class.equals(from)) {
+            int v = ((java.lang.Number)value).intValue();
+
+            if (Short.class.equals(to)
+                && Short.MAX_VALUE >= v
+                && v >= Short.MIN_VALUE) {
+                return true;
+            }
+            if (Byte.class.equals(to)
+                && 255 >= v
+                && v >= 0) {
+                return true;
+            }
+        // Java 8 introduces BigInteger.longValueExact() which will make the following much easier
+        } else if (BigInteger.class.equals(from)) {
+            // ??? should only need to check for possible conversion to longs
+            BigInteger v = (java.math.BigInteger) value;
+            final BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
+            final BigInteger minLong = BigInteger.valueOf(Long.MIN_VALUE);
+            if (Long.class.equals(to)
+                && ((v.compareTo(maxLong) == -1)
+                    || (v.compareTo(maxLong) == 0))
+                && ((v.compareTo(minLong) == 1)
+                    || (v.compareTo(minLong) == 0))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static boolean isMoreSpecialized(Class<?>[] xtypes, Class<?>[] ytypes) {
@@ -1358,4 +1420,12 @@ public final class Java
             message = t.getClass().getName();
         return message;
     }
+
+  // FIXME: better handled as a Lisp symbol?  With a Java enum, the
+  // compiler probably has a better chance to optimize.
+  public static class Buffers {
+    public enum AllocationPolicy { PRIMITIVE_ARRAY, NIO; };
+    public static AllocationPolicy active = AllocationPolicy.NIO;
+  }
+  
 }
