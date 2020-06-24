@@ -29,6 +29,7 @@
 
 (defmethod read-java-expression ((r javaparser) expression)
   `(let ((this *object-for-this*))
+     (declare (ignorable this))
      ,(process-node r (#"parseExpression" 'javaparser expression))))
 
 (def-java-read LongLiteralExpr javaparser ()
