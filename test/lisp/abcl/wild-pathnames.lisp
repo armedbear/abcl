@@ -50,12 +50,12 @@
   t)
 
 (deftest wild-pathnames.2
-    (equal 
-     (first (with-test-directories
-                (directory (make-pathname :directory (pathname-directory *temp-directory-root*)
-                                          :name :wild :type "ext"
-                                          :version :newest))))
-     (merge-pathnames *temp-directory-root* "foo.ext"))
+    (check-namestring
+     (namestring (first (with-test-directories
+                            (directory (make-pathname :directory (pathname-directory *temp-directory-root*)
+                                                      :name :wild :type "ext"
+                                                      :version :newest)))))
+     (namestring (merge-pathnames *temp-directory-root* "foo.ext")))
   t)
 
     

@@ -23,7 +23,6 @@
 (in-package #:abcl.test.lisp)
 
 
-
 ;; tests for D-M-C, long form, some taken from SBCL
 
 ;; D-M-C should return the name of the new method combination, nothing else.
@@ -245,11 +244,13 @@
 
 ;; From SBCL: method combination (long form) with arguments
 
+#-ccl ;; "The value (ABCL.TEST.LISP::EXTRA :EXTRA) is not of the expected type SYMBOL."
 (define-method-combination dmc-test.5 ()
   ((method-list *))
   (:arguments arg1 arg2 &aux (extra :extra))
   `(progn ,@(mapcar (lambda (method) `(call-method ,method)) method-list)))
 
+#-ccl ;; "The value (ABCL.TEST.LISP::EXTRA :EXTRA) is not of the expected type SYMBOL."
 (defgeneric dmc-test-mc.5 (p1 p2 s)
   (:method-combination dmc-test.5)
   (:method ((p1 number) (p2 t) s)
@@ -453,6 +454,7 @@
     (dmc-test-args-with-optional.1 T T)
   T)
 
+#-ccl ;; "The value (ABCL.TEST.LISP::A :DEFAULT) is not of the expected type SYMBOL."
 (define-method-combination dmc-test-args-with-optional.2 ()
   ((methods *))
   (:arguments &optional (a :default))
@@ -460,6 +462,7 @@
                            methods)
                  ,a)))
 
+#-ccl ;; "The value (ABCL.TEST.LISP::A :DEFAULT) is not of the expected type SYMBOL."
 (defgeneric dmc-test-args-with-optional.2 (x &optional b)
   (:method-combination dmc-test-args-with-optional.2)
   (:method (x &optional b) (progn x b)))
@@ -474,6 +477,7 @@
     (dmc-test-args-with-optional.2 T T)
   T)
 
+#-ccl ;; The value (ABCL.TEST.LISP::A :DEFAULT) is not of the expected type SYMBOL.
 (define-method-combination dmc-test-args-with-optional.3 ()
   ((methods *))
   (:arguments &optional (a :default))
@@ -481,16 +485,18 @@
                            methods)
                  ,a)))
 
+#-ccl ;; The value (ABCL.TEST.LISP::A :DEFAULT) is not of the expected type SYMBOL.
 (defgeneric dmc-test-args-with-optional.3 (x)
   (:method-combination dmc-test-args-with-optional.3)
   (:method (x) (progn x)))
 
+#-ccl ;; The value (ABCL.TEST.LISP::A :DEFAULT) is not of the expected type SYMBOL.
 (deftest dmc-test-args-with-optional.3
     :documentation "TODO"
     (dmc-test-args-with-optional.3 T)
   nil)
 
-
+#-ccl ;; The value (ABCL.TEST.LISP::A :DEFAULT ABCL.TEST.LISP::SUP-P) is not of the expected type SYMBOL.
 (define-method-combination dmc-test-args-with-optional.4 ()
   ((methods ()))
   (:arguments &optional (a :default sup-p))
@@ -498,24 +504,29 @@
                     methods)
           (values ,a ,sup-p)))
 
+#-ccl
 (defgeneric dmc-test-args-with-optional.4a (x &optional b)
   (:method-combination dmc-test-args-with-optional.4)
   (:method (x &optional b) (progn x b)))
 
+#-ccl
 (deftest dmc-test-args-with-optional.4a
     (dmc-test-args-with-optional.4a T)
   :default
   nil)
 
+#-ccl
 (deftest dmc-test-args-with-optional.4b
     (dmc-test-args-with-optional.4a T T)
   T
   T)
 
+#-ccl
 (defgeneric dmc-test-args-with-optional.4c (x)
   (:method-combination dmc-test-args-with-optional.4)
   (:method (x) (progn x)))
 
+#-ccl
 (deftest dmc-test-args-with-optional.4c
     :documentation "TODO"
     (dmc-test-args-with-optional.4c T)
