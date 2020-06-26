@@ -18,7 +18,7 @@
             :pathname "" 
             :components ((:file "maven")
                          (:file "mvn-module"))
-    :depends-on (base))
+    :depends-on (package))
    (:module osgi
             :pathname "" 
             :components ((:file "asdf-osgi-bundle"))
