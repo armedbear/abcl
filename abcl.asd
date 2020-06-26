@@ -43,6 +43,7 @@
                          (:file "latin1-tests")
                          (:file "bugs" :depends-on 
                                 ("file-system-tests"))
+                         #+abcl
                          (:file "wild-pathnames"
                                 :depends-on ("file-system-tests"))
                          #+abcl 
@@ -51,7 +52,6 @@
                          (:file "zip")
                          #+abcl 
                          (:file "java")
-                         #+abcl
                          (:file "pathname-tests" :depends-on 
                                 ("utilities"))
                          #+abcl

@@ -22,8 +22,9 @@
 
 (in-package #:abcl.test.lisp)
 
-(defconstant most-positive-java-long 9223372036854775807)
-(defconstant most-negative-java-long -9223372036854775808)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar most-positive-java-long 9223372036854775807)
+  (defvar most-negative-java-long -9223372036854775808))
 
 #+abcl
 (assert (eql most-positive-java-long ext:most-positive-java-long))
@@ -104,7 +105,7 @@
   #.(+ most-positive-fixnum most-positive-fixnum))
 #+allegro (pushnew 'plus.3 *expected-failures*)
 
-#-clisp
+#+abcl
 (define-compiler-test plus.4
   (lambda (x y)
     (declare (type (integer #.most-negative-java-long #.most-positive-java-long) x y))

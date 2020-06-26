@@ -19,6 +19,9 @@
 
 ;;; Most of these tests are adapted from the SBCL test suite.
 
+;;;; FIXME:  re-running these tests in the same process fails the second time due to interactions
+;;;          with the problems with DEFPACKAGE "only being run once"
+
 (in-package #:abcl.test.lisp)
 
 (defmacro with-tmp-packages (bindings &body body)
