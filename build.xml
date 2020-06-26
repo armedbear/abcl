@@ -1014,8 +1014,8 @@ ${basedir}/../cl-bench
 
     <target name="abcl.ext" depends="abcl.ext.p" unless="abcl.ext.p">
       <mkdir dir="${abcl.ext.dir}"/>
-      <get 
-          src="http://cloud.github.com/downloads/KentBeck/junit/junit-4.8.1.jar"
+      <get
+          src="https://repo1.maven.org/maven2/junit/junit/4.8.1/junit-4.8.1.jar"
           usetimestamp="true"
           dest="${junit.path}"/>
       <get 
