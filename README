@@ -102,16 +102,20 @@ which should result in output like the following
 Yer now at the interactive ABCL "Read Eval Print Loop" (REPL): hacks
 'n glory await.
 
-SWANK
+
+SLIME
 -----
 
-One may easily start a swank listener via:
+For usage of ABCL with the [Superior Lisp Interaction Mode for
+Emacs][slime], one may easily start a Swank listener via:
 
     (require :asdf)
     (require :abcl-contrib)
     (asdf:load-system :quicklisp-abcl)
     (ql:quickload :swank)
-    (swank:create-server :dont-close t) 
+    (swank:create-server :dont-close t)
+
+[slime]: https://common-lisp.net/project/slime/
 
 
 Building From Source Release
@@ -170,7 +174,8 @@ distribution contains Netbeans-specific project artifacts under
 With Netbeans, one should be able to open the ABCL directory as a
 project whereupon the usual build, run, and debug targets as invoked
 in the GUI are available.  Use the 'slime' config with a suitably
-linked 'swank.asd' in '~/.asdf-install-dir/systems/' to connect a REPL
+linked SLIME `swank.asd` ASDF configuration
+<file:~/.config/common-lisp/source-registry.conf.d/> to connect a REPL
 to the NetBeans debug process.
 
 [netbeans]: http://netbeans.org/downloads/
@@ -179,11 +184,14 @@ to the NetBeans debug process.
 Bugs
 ----
 
-Armed Bear Common Lisp is a conforming ANSI X3J13 Common Lisp
-implementation.  Any other behavior should be reported as a bug.
+Armed Bear Common Lisp strives to be a conforming ANSI X3J13 Common
+Lisp implementation.  Any other behavior should be reported as a bug.
 
-ABCL has a user manual stating its conformance to the ANSI standard,
-providing a compliant and practical Common Lisp implementation.
+ABCL has a [User Manual][manual] stating its conformance to the ANSI
+standard, providing a compliant and practical Common Lisp
+implementation.
+
+[manual]: https://abcl.org/releases/1.7.0/abcl-1.7.0.pdf
 
 
 Tests
@@ -198,23 +206,27 @@ written for GCL).
 
 Maxima's test suite runs without failures.
 
-ABCL comes with a test suite, see the output of `ant help.test` for
-more information.
+ABCL comes with a test suite.  Consult the output of `ant help.test`
+for more information.
 
 
 Support
 -------
 
 ABCL has many deficiencies, both known and unknown.  Descriptions,
-tests, and even patches to address will be gladly accepted.
+tests, and even patches to address them will be gladly accepted.
 
+Please report problems to the [development mailing list][mailing-list]
+or via opening an issue on either the [ABCL trac instance][trac] or
+[github][].
 
-Please report problems to the development mailing list:
+[mailing-list]: https://mailman.common-lisp.net/pipermail/armedbear-devel/
+[github]: https://github.com/armedbear/abcl/issues
+[trac]: https://abcl.org/trac/
 
-    <armedbear-devel@common-lisp.net>
 
 Authors
-=======
+-------
 
 On behalf of all ABCL development team and contributors,
 
