@@ -1,16 +1,13 @@
-Armed Bear Common Lisp README
-=============================
+Armed Bear Common Lisp (ABCL) README
+====================================
 
-GENERAL INFORMATION
--------------------
-
-Armed Bear Common Lisp is a conforming implementation of ANSI Common
-Lisp that runs in a Java virtual machine.  It compiles Lisp code
-directly to Java byte code.
+Armed Bear Common Lisp is a conforming implementation of ANSI X2J13
+Common Lisp that runs in a Java virtual machine.  It compiles Lisp
+code directly to Java byte code for execution.
 
 
 LICENSE
-=======
+-------
 
 Armed Bear Common Lisp is distributed under the GNU General Public
 License with a classpath exception (see "Classpath Exception" below).
@@ -42,7 +39,7 @@ We have modified our GPLv2 license section 13 to read:
 
 
 RUNNING FROM DOCKER
-===================
+-------------------
 
 With [Docker Engine][] installed one may execute:
 
@@ -53,7 +50,7 @@ to get something like
 
     illin:~/work/abcl$ docker run -it YOURID/abcl
     Armed Bear Common Lisp 1.7.0
-    Java 1.7.0_252 Oracle Corporation
+    Java 11.0.7 AdoptOpenJDK    
     OpenJDK 64-Bit Server VM
     Low-level initialization completed in 0.295 seconds.
     Startup completed in 1.425 seconds.
@@ -75,14 +72,14 @@ See <file:Dockerfile> for the build instructions.
 
 
 RUNNING FROM BINARY RELEASE
-===========================
+---------------------------
 
 After you have downloaded a binary release from either [the
 distributed Maven POM graph][maven-abcl] or from
 [abcl.org][abcl.org-release] archive unpack it into its own
-directory. To run ABCL directly from this directory, make sure Java
-(Java 6, 7, 8, 11, 13, and 14 are supported by ABCL 1.7.0) is in your
-shell's path.
+directory. To run ABCL directly from this directory, make sure the
+Java executable (`java`) (Java 6, 7, 8, 11, 13, and 14 are supported
+by ABCL 1.7.0) is in your shell's path.
 
 [maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.7.0>
 [maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.7.0>
@@ -108,25 +105,26 @@ Yer now at the interactive ABCL "Read Eval Print Loop" (REPL): hacks
 SWANK
 -----
 
-One may easily start a swank listener via
+One may easily start a swank listener via:
 
     (require :asdf)
     (require :abcl-contrib)
-    (asdf:load-system :quicklisp-abcl :force t)
-    (ql:quickload :swank)                     
+    (asdf:load-system :quicklisp-abcl)
+    (ql:quickload :swank)
+    (swank:create-server :dont-close t) 
 
 
-BUILDING FROM SOURCE RELEASE
-============================
+Building From Source Release
+----------------------------
 
 ABCL may be built from its source code by executing the build
 instructions <file:build.xml> expressed by the venerable Apache Ant
 tool.
 
 To build, one must have a Java 6, 7, 8, 11, 13 or 14 Java Development
-Kit (JDK) installed locally. Just the Java Runtime Environment (JRE)
-isn't enough, as you need the Java compiler ('javac') to compile the
-Java source of the ABCL implementation.
+Kit (openjdk) installed locally. Just the Java Runtime Environment
+(JRE) isn't enough, as you need the Java compiler ('javac') to compile
+the Java source of the ABCL implementation.
 
 Download a binary distribution [Ant version 1.7.1 or greater][ant].
 Unpack the files somewhere convenient, ensuring that the 'ant' (or
@@ -156,7 +154,7 @@ or from the shell as
 
     bash ci/create-abcl-properties.bash openjdk11
 
-Currently upported platforms are 'openjdk6', 'openjdk7', 'openjdk8',
+Currently supported platforms are 'openjdk6', 'openjdk7', 'openjdk8',
 'openjdk11', 'openjdk13', and 'openjdk14'.
 
 
@@ -165,7 +163,9 @@ Using NetBeans
 
 Alternatively, one may install the [Netbeans visual integrated
 development environment][netbeans], which contains both the Java
-Development Kit as well as the Ant build tool.
+Development Kit as well as the Ant build tool.  The source
+distribution contains Netbeans-specific project artifacts under
+<file:nbproject> for loading ABCL as a Netbeans project.
 
 With Netbeans, one should be able to open the ABCL directory as a
 project whereupon the usual build, run, and debug targets as invoked
@@ -176,13 +176,13 @@ to the NetBeans debug process.
 [netbeans]: http://netbeans.org/downloads/
 
 
-BUGS
-====
+Bugs
+----
 
-ABCL is a conforming ANSI Common Lisp implementation.  Any other
-behavior should be reported as a bug.
+Armed Bear Common Lisp is a conforming ANSI X3J13 Common Lisp
+implementation.  Any other behavior should be reported as a bug.
 
-ABCL now has a manual stating its conformance to the ANSI standard,
+ABCL has a user manual stating its conformance to the ANSI standard,
 providing a compliant and practical Common Lisp implementation.
 
 
@@ -201,25 +201,25 @@ Maxima's test suite runs without failures.
 ABCL comes with a test suite, see the output of `ant help.test` for
 more information.
 
-### Deficiencies
 
-Many.  But patches to address issues mentioned above will be gladly
-accepted.
+Support
+-------
 
-CONTACT
-=======
+ABCL has many deficiencies, both known and unknown.  Descriptions,
+tests, and even patches to address will be gladly accepted.
+
 
 Please report problems to the development mailing list:
 
     <armedbear-devel@common-lisp.net>
 
-AUTHORS
+Authors
 =======
 
 On behalf of all ABCL development team and contributors,
 
     Mark Evenson
-    Erik Huelsmann
+    Erik Hülsmann
     Rudolf Schlatte
     Alessio Stalla
     Ville Voutilainen
@@ -230,6 +230,9 @@ On behalf of all ABCL development team and contributors,
     slyrus
     vibhu
     dmiles
+
+    András Simon
+    Peter Graves
 
 Have fun!
 
