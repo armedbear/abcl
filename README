@@ -1,7 +1,7 @@
 Armed Bear Common Lisp (ABCL) README
 ====================================
 
-Armed Bear Common Lisp is a conforming implementation of ANSI X2J13
+Armed Bear Common Lisp is a conforming implementation of ANSI X3J13
 Common Lisp that runs in a Java virtual machine.  It compiles Lisp
 code directly to Java byte code for execution.
 
