@@ -45,6 +45,18 @@ public class PathnameJar extends PathnameURL {
 
   static final private String jarSeparator = "!/";
 
+  /** Enumerate the individual namestrings of the enclosing jars for a namestring */
+  static LispObject enumerateJarURIs(String s) {
+    LispObject result = NIL;
+
+    // ???  enumerate the contained jars
+
+    // Are namestrings not enough,
+    // and this should return the actual chain of DEVICE references?
+    result = result.push(new SimpleString(s));
+    return result;
+  }
+
   static public LispObject create(String s) {
     if (!s.startsWith("jar:")) {
       error(new SimpleError("Cannot create a PATHNAME-JAR from namestring: " + s));
@@ -54,7 +66,7 @@ public class PathnameJar extends PathnameURL {
 
     // A JAR file
     if (s.endsWith(jarSeparator)) {
-      LispObject jars = NIL;
+      LispObject jars = PathnameJar.enumerateJarURIs(s); 
       int i = s.lastIndexOf(jarSeparator, s.length() - jarSeparator.length() - 1);
       String jar = null;
       if (i == -1) {
@@ -147,5 +159,28 @@ public class PathnameJar extends PathnameURL {
     result.setVersion(p.getVersion());
     return result;
   }
+
+  public String getNamestring() {
+    StringBuffer sb = new StringBuffer();
+    LispObject enclosingJars = getDevice().reverse();
+
+    while (enclosingJars.cdr() != NIL) {
+      PathnameURL jarPathname = (PathnameURL)enclosingJars.car();
+      sb.append("jar:");
+      String jarNamestring = jarPathname.getNamestringAsURI();
+      sb.append(jarNamestring);
+      sb.append(jarSeparator);
+
+      enclosingJars = enclosingJars.cdr();
+    }
+
+    Pathname withoutDevice = new Pathname(this); // not gonna work on Windows
+    withoutDevice.setDevice(NIL);
+    String withoutDeviceNamestring = withoutDevice.getNamestring(); // need to URI encode?
+    sb.append(withoutDeviceNamestring);
+
+    return sb.toString();
+  }
 }
+
                                  

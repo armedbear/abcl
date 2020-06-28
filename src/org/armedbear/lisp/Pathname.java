@@ -181,7 +181,7 @@ public class Pathname extends LispObject {
     protected Pathname() {}
 
   /** Copy constructor which shares no structure with the original. */
-  private Pathname(Pathname p) {
+  public Pathname(Pathname p) {
         if (p.host != NIL) {
             if (p.host instanceof SimpleString) {
                 host = new SimpleString(((SimpleString)p.getHost()).getStringValue());
