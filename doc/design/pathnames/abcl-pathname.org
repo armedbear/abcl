@@ -1,0 +1,238 @@
+#+TITLE: Design and Implementation of the ABCL PATHNAME
+* The ABCL PATHNAME Implementation
+
+An ongoing document eventually to be published as a paper.
+
+** Needs within ABCL
+
+*** Pathname refactoring
+"vaguely", I want to replace org.lisp.armedbear.Pathname with some
+sort of abstraction that allows easier maintainence and understanding of the code.
+
+#+begin_example
+cl:logical-pathname  a cl:pathname
+ext:url-pathname     a cl:pathname
+ext:jar-pathname     a ext:url-pathname
+
+#+end_example
+
+We naively begin by attempting to outline reasons one can't replace with an interface.
+
+**** constructors
+
+These would be present for all =ext:url-pathname= 
+
+#+BEGIN_SRC java
+     new Pathname(namestring)
+#+END_SRC
+
+#+BEGIN_SRC java
+    Pathname Pathname.create(namestring)
+#+END_SRC
+
+
+**** Use Builder or Factory?
+<http://stackoverflow.com/questions/757743/what-is-the-difference-between-builder-design-pattern-and-factory-design-pattern>
+
+Decide to use Builder so we can do stuff like.
+
+#+begin_src java
+      Pathname result = new PathnameBuilder()
+        .setDirectory("/foo/bar/")
+        .setName("baz")
+        .setType("bat").build();
+#+end_src
+
+In any event, the Pathname constructors would be deprecated, and
+perhaps made =private=.  Currently they are =protected=.
+
+
+**** DONE Encapsulate fields with getter/setters
+     CLOSED: [2020-06-19 Fri 17:42]
+
+     - CLOSING NOTE [2020-06-19 Fri 17:42] \\
+       Done in pathname-2-build.patch
+**** TODO figure out what to do with invalidateNamestring()?
+
+Cache result of calling =getNamestring=?
+
+Unsure what this would gain.  Just rerun the namestring computation
+routine, as it is correct.
+
+*** Changes from abcl-1.7.0
+
+1.  (???) jar:file:jar:file rather than jar:jar:file
+
+    Treat jar:jar:file as shorthand for jar:file:jar:file?
+
+** Description of Current Problems
+
+As noted from <[[file:jar-pathnames.markdown][file:./jar-pathnames.markdown]]>.
+
+Goals:
+
+1.  All objects descending from =URL-PATHNAME= can roundtrip their namestring().
+
+2.  Able to represent archives within archives abitrarily.
+
+*** TODO Figure out what the class hierarchy 
+
+Figure the hierarchy out abstractly, and then concretely in Java and Lisp.
+
+Idea:  use =DEVICE= components to represent a pathname that is an archive
+
+#+NAME: Example of an archive in an archive
+#+begin_example
+jar:jar:file:~/work/abcl/dist/abcl.jar!/something.abcl!/__loader__._
+#+end_example
+
+#+NAME: 
+#+begin_example
+[jar:file:/tmp/foo.jar!/] 
+  ^--has-device-- [jar:file:a/path/something.abcl!/] 
+      ^--has-device-- [/__loader__._]
+#+end_example
+
+All the following pathnames should be valid:
+#+begin_example
+#p"file:/tmp/foo.jar" 
+#p"jar:file:/tmp/foo.jar!/"
+#p"jar:file:/tmp/foo.jar!/a/path/something.abcl"
+#p"jar:file:/tmp/foo.jar!/a/path/something.abcl!/"
+#p"jar:file:/tmp/foo.jar!/a/path/something.abcl!/__loader__._"
+#+end_example
+
+#+NAME: Parsing the namestring 
+#+begin_src lisp
+(pathname "jar:jar:file:~/work/abcl/dist/abcl.jar!/something.abcl!/__loader__._")
+#+end_src
+
+would create four pathnames:
+
+#+begin_src lisp
+  #1# #p(:device #2# :name "__loader__" :type "_")
+
+  #2# #p(:device #3#: :name "something" :type "abcl"
+                 :directory (:absolute))
+
+  #3# #p(:device #4# :name nil :type nil
+         :directory nil :host nil :version nil)
+
+  #4# #p"/tmp/abcl/dist/abcl.jar"
+#+end_src
+
+| reference | namestring                                                         | Java Type    |
+|-----------+--------------------------------------------------------------------+--------------|
+| #1#       | jar:jar:file:/tmp/abcl/dist/abcl.jar!/something.abcl!/__loader__._ | pathname-jar |
+| #2#       | jar:jar:file:/tmp/abcl/dist/abcl.jar!/something.abcl!/             | pathname-jar |
+| #3#       | jar:file:/tmp/abcl/dist/abcl.jar!/                                 | pathname-jar |
+| #4#       | /tmp/abcl/dist/abcl.jar                                            | pathname     |
+
+
+
+#3# has to have a device of nil in order to be a DOS drive letter under Windows.
+
+Problems:
+
+#3# is both a file and an archive source.  The namestring of #2#
+encapsulates this, but a naked reference to #3# should be able to be
+target of a DIRECTORY operation? 
+
+No, there is a difference between:
+
+| namestring                         | type         |
+|------------------------------------+--------------|
+| jar:file:/tmp/abcl/dist/abcl.jar!/ | jar-pathname |
+| file:/tmp/abcl/dist/abcl.jar       |              |
+
+So, any =JAR-PATHNAME= whose =:directory= is =(:absolute)= can be operated on
+via =MERGE-PATHNAMES= to =DIRECTORY= if it names a valid file or directory.
+
+#+begin_src 
+(directory #p"jar:file:/tmp/abcl/dist/abcl.jar!/*.*")
+#+end_src
+
+**** TODO Does this use of =DIRECTORY= clash with current ways of distinguishing files and directories?
+
+*** TODO Fix the representation in CL:PATHNAME of objects to reflect this hierarchy.
+
+*** TODO Refactor the Java 
+
+Use hybrid Builder/Factory pattern.  Don't use constructors, but
+rather =Pathname.create()= and the five =Pathname.setDirectory()=
+=Pathname.setDevice()= calls, which may chained.  This introduces an
+asymmetry between the setCOMPONENT() / getCOMPONENT() entries, but
+seems workable.
+
+
+
+** Rename existing Java hierarchy?
+
+Too destructive?!
+| current      | new                                                        |
+|--------------+------------------------------------------------------------|
+| pathname-jar | pathname-archive pathname-zip-archive pathname-jar-archive |
+| pathname-url | pathname-url                                               |
+
+* Gotchas
+
+** Should error: "jar:" prefix needs suffixed "!/"
+  #+begin_src 
+#p"jar:file:foo.jar"  
+  #+end_src
+
+
+* Scratch
+
+** Algorithim to enumerate jars in a namestring
+
+1.  Count the prefixed occurrences of "jar:"
+
+2.  For each count greedily math
+
+  #+begin_example
+  jar:file:jar:file:abcl.jar!/time.abcl!/time_1.cls
+       =>
+    jar:file:time.abcl!/time_1.cls
+    jar:file:abcl.jar!/
+  #+end_example
+
+  #+begin_example
+  jar:file:jar:https://abcl.org/releases/current/abcl.jar!/a-fasl.abcl!/__loader__._
+       =>
+    jar:file:a-fasl.abcl!/__loader__._
+    jar:https://abcl.org/releases/current/abcl.jar!
+  #+end_example
+
+  #+begin_example
+  jar:file:jar:file:jar:file:abcl-aio.jar!/abcl-contrib.jar!/enclosed.abcl!/__loader__._
+       =>
+    jar:file:/enclosed.abcl!/__loader__._
+    jar:file:abcl-contrib.jar
+  #+end_example
+
+
+* Tests
+** Problem with abcl-1.5.0 
+
+   #+begin_src 
+   #p"jar:jar:file:a/baz.jar!/b/c/foo.abcl!/"
+   #+end_src
+
+Refers to three =CL:PATHNAME= objects:
+
+|-----+----------------------------------------+--------+--------------|
+| Ref | Namestring                             | Device | Type         |
+|-----+----------------------------------------+--------+--------------|
+| #1# | file:a/baz.jar                         | nil    | PATHNAME-URL |
+| #2# | jar:file:a/baz.jar!                    | #1#    | PATHNAME-JAR |
+| #3# | jar:jar:file:a/baz.jar!/b/c/foo.abcl!/ | #2#    | PATHNAME-JAR |
+|-----+----------------------------------------+--------+--------------|
+
+* Colophon
+  #+begin_example
+  Mark Evenson  
+  Created: 2010
+  Revised: <2020-06-28 Sun 16:28>
+  #+end_example
+
