@@ -47,7 +47,15 @@ public class PathnameURL extends Pathname {
   static final Symbol QUERY = internKeyword("QUERY");
   static final Symbol FRAGMENT = internKeyword("FRAGMENT");
 
-  private PathnameURL() {}
+  protected PathnameURL() {}
+
+  public static PathnameURL create(URL url) {
+    return PathnameURL.create(url.toString());
+  }
+
+  public static PathnameURL create(URI uri) {
+    return PathnameURL.create(uri.toString());
+  }
 
   public static PathnameURL create(String s) {
     // A URL
@@ -108,9 +116,6 @@ public class PathnameURL extends Pathname {
     String authority = uri.getAuthority();
     if (authority == null) {
       authority = url.getAuthority();
-      if (authority == null) {
-        Debug.trace(MessageFormat.format("{0} has a null authority.", url));
-      }
     }
 
     LispObject host = NIL;
@@ -155,13 +160,6 @@ public class PathnameURL extends Pathname {
     return result;
   }
 
-  protected PathnameURL(URL url) {
-    create(url.toString());
-  }
-  protected PathnameURL(URI uri) {
-    create(uri.toString());
-  }
-
   public String getNamestring() {
     StringBuilder sb = new StringBuilder();
     return getNamestring(sb);
@@ -170,7 +168,17 @@ public class PathnameURL extends Pathname {
   public String getNamestring(StringBuilder sb) {
     LispObject scheme = Symbol.GETF.execute(getHost(), SCHEME, NIL);
     LispObject authority = Symbol.GETF.execute(getHost(), AUTHORITY, NIL);
-    Debug.assertTrue(scheme != NIL);
+
+    // FIXME ??? HACK for now:  assume we are a file pathname, so normalize to have a scheme
+    //    Debug.assertTrue(scheme != NIL);
+    if (scheme.equals(NIL)) {
+      LispObject host = NIL;
+      scheme = new SimpleString("file");
+      host.push(scheme);
+      host.push(SCHEME);
+      setHost(host);
+    }
+    
     sb.append(scheme.getStringValue());
     sb.append(":");
     if (authority != NIL) {

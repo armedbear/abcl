@@ -177,7 +177,7 @@ public final class Load
             if (n.startsWith("jar:")) {
                 n = "jar:" + n + "!/" + name + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;
-	    } else if (n.startsWith("zip:")) {
+            } else if (n.startsWith("zip:")) {
                 n = "zip:" + n + "!/" + name + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;
             } else {
@@ -216,7 +216,7 @@ public final class Load
             }
             truename = (Pathname)initTruename;
         } 
-				
+                                
         InputStream in = truename.getInputStream();
         Debug.assertTrue(in != null);
     
@@ -324,9 +324,9 @@ public final class Load
                                            + " in boot classpath."));
             }                
             if (!bootPath.equals(NIL)) {
-                Pathname urlPathname = Pathname.create(url);
-							  loadableFile = findLoadableFile(urlPathname);
-								truename = (Pathname)Pathname.truename(loadableFile);
+                PathnameURL urlPathname = PathnameURL.create(url);
+                loadableFile = findLoadableFile(urlPathname);
+                truename = (Pathname)Pathname.truename(loadableFile);
                 if (truename == null) {
                     return error(new LispError("Failed to find loadable system file in boot classpath "
                                                + "'" + url + "'"));
@@ -369,7 +369,7 @@ public final class Load
             final LispThread thread = LispThread.currentThread();
             final SpecialBindingsMark mark = thread.markSpecialBindings();
             thread.bindSpecial(_WARN_ON_REDEFINITION_, NIL);
-	    thread.bindSpecial(FASL_LOADER, NIL);
+            thread.bindSpecial(FASL_LOADER, NIL);
             try {
                 Stream stream = new Stream(Symbol.SYSTEM_STREAM, in, Symbol.CHARACTER);
                 return loadFileFromStream(pathname, truename, stream,
@@ -626,7 +626,7 @@ public final class Load
                                          thread, Stream.currentReadtable);
                 if (obj == EOF)
                     break;
-		result = eval(obj, env, thread);
+                result = eval(obj, env, thread);
                 if (print) {
                     Stream out =
                         checkCharacterOutputStream(Symbol.STANDARD_OUTPUT.symbolValue(thread));

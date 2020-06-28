@@ -79,13 +79,6 @@ public class Pathname extends LispObject {
     return LogicalPathname.create(s, host);
   }
 
-  public static Pathname create(URL url) {
-    return new Pathname(url);
-  }
-
-  public static Pathname create(URI uri) {
-    return new Pathname(uri);
-  }
   protected LispObject host = NIL;
   public LispObject getHost() {
     return host;
@@ -187,7 +180,7 @@ public class Pathname extends LispObject {
   // If not protected, then inheriting classes cannot invoke their constructors
     protected Pathname() {}
 
-    /** Copy constructor which shares no structure with the original. */
+  /** Copy constructor which shares no structure with the original. */
   private Pathname(Pathname p) {
         if (p.host != NIL) {
             if (p.host instanceof SimpleString) {
@@ -292,16 +285,6 @@ public class Pathname extends LispObject {
         }
     }
 
-    private Pathname(URL url) {
-      // URL handling is now buried in init(String), as the URI
-      // escaping mechanism didn't interact well with '+' and other
-      // characters. 
-      init(url.toString());
-    }
-    
-    private Pathname(URI uri) {
-      init(uri.toString());
-    }
 
     static final private String jarSeparator = "!/";
     private final void init(String s) {
@@ -330,23 +313,23 @@ public class Pathname extends LispObject {
           } else {
               shareIndex = s.indexOf('/', 2);
               dirIndex = s.indexOf('/', shareIndex + 1);
-            }
-            if (shareIndex == -1 || dirIndex == -1) {
-              error(new LispError("Unsupported UNC path format: \"" + s + '"'));
-            }
-
-            setHost(new SimpleString(s.substring(2, shareIndex)));
-            setDevice(new SimpleString(s.substring(shareIndex + 1, dirIndex)));
-
-            Pathname p = Pathname.create(s.substring(dirIndex));
-            setDirectory(p.getDirectory());
-            setName(p.getName());
-            setType(p.getType());
-            setVersion(p.getVersion());
-            invalidateNamestring();
-            return;
           }
+          if (shareIndex == -1 || dirIndex == -1) {
+            error(new LispError("Unsupported UNC path format: \"" + s + '"'));
+          }
+
+          setHost(new SimpleString(s.substring(2, shareIndex)));
+          setDevice(new SimpleString(s.substring(shareIndex + 1, dirIndex)));
+          
+          Pathname p = Pathname.create(s.substring(dirIndex));
+          setDirectory(p.getDirectory());
+          setName(p.getName());
+          setType(p.getType());
+          setVersion(p.getVersion());
+          invalidateNamestring();
+          return;
         }
+      }
         
         // A JAR file
         if (s.startsWith("jar:") && s.endsWith(jarSeparator)) {
@@ -399,7 +382,7 @@ public class Pathname extends LispObject {
                 URL url = null;
                 try {
                     url = new URL(jar.substring("jar:".length(), jar.length() - 2));
-                    Pathname p = Pathname.create(url);
+                    PathnameURL p = PathnameURL.create(url);
                     jars = jars.push(p);
                 } catch (MalformedURLException e) {
                     error(new LispError("Failed to parse URL "
@@ -425,7 +408,7 @@ public class Pathname extends LispObject {
                                     + "'" + jarURL + "'"
                                     + ex.getMessage()));
             }
-            Pathname d = Pathname.create(url);
+            PathnameURL d = PathnameURL.create(url);
             if (getDevice() instanceof Cons) {
                 LispObject[] jars = d.copyToArray();
                 //  XXX Is this ever reached?  If so, need to append lists
@@ -441,9 +424,6 @@ public class Pathname extends LispObject {
             setVersion(p.getVersion());
             return;
         }
-
-        // A URL
-        // should be intercepted before this is reached
 
         if (Utilities.isPlatformWindows) {
             if (s.contains("\\")) {
@@ -604,9 +584,9 @@ public class Pathname extends LispObject {
     }
 
     public String getNamestring() {
-        if (namestring != null) {
-            return namestring;
-        }
+        // if (namestring != null) {
+        //     return namestring;
+        // }
         if (getName() == NIL && getType() != NIL) {
             Debug.assertTrue(namestring == null);
             return null;
@@ -1025,6 +1005,8 @@ public class Pathname extends LispObject {
                 // A defined logical pathname host.
                 return LogicalPathname.create(h, s.substring(s.indexOf(':') + 1));
             }
+        } else {
+            return PathnameURL.create(s);
         }
         return Pathname.create(s);
     }
@@ -1627,7 +1609,7 @@ public class Pathname extends LispObject {
                               path = file.getCanonicalPath();
                             }
                             URI pathURI = (new File(path)).toURI();
-                            p = Pathname.create(pathURI);
+                            p = PathnameURL.create(pathURI);
                             result = new Cons(p, result);
                         }
                     } catch (IOException e) {
