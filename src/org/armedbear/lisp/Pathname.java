@@ -63,12 +63,16 @@ public class Pathname extends LispObject {
   public static Pathname create(String s) {
     // TODO distinguish between logical hosts and schemes for URLs
     // which we can meaningfully parse.
-    if (!isValidURL(s)) {
+    if (isValidURL(s)) {
+      return PathnameURL.create(s);
+    } else {
       if (LogicalPathname.isValidLogicalPathname(s)) {
         return LogicalPathname.create(s);
       }
     }
-    return new Pathname(s);
+    Pathname result = Pathname.create();
+    result.init(s);
+    return result;
   }
 
   public static Pathname create(String s, String host) {
@@ -140,12 +144,12 @@ public class Pathname extends LispObject {
   }
 
 
-    /** The path component separator used by internally generated
-     * path namestrings.
-     */
-    public final static char separator = '/';
+  /** The path component separator used by internally generated
+   * path namestrings.
+   */
+  public final static char separator = '/';
 
-  private volatile String namestring;
+  public volatile String namestring;
 
     /** The protocol for changing any instance field (i.e. 'host',
      *  'type', etc.)  is to call this method after changing the field
@@ -160,16 +164,16 @@ public class Pathname extends LispObject {
      *  Although, given the number of bugs that crop up when this
      *  protocol is not adhered to, maybe we should consider it.
      */
-    public void invalidateNamestring() {
-        namestring = null;
-    }
+  public void invalidateNamestring() {
+    namestring = null;
+  }
     
-    private static final Primitive _INVALIDATE_NAMESTRING 
-        = new pf_invalidate_namestring();
-    @DocString(name="%invalidate-namestring",
-               args="pathname",
-               returns="pathname")
-    private static class pf_invalidate_namestring extends Primitive {
+  private static final Primitive _INVALIDATE_NAMESTRING 
+    = new pf_invalidate_namestring();
+  @DocString(name="%invalidate-namestring",
+             args="pathname",
+             returns="pathname")
+             private static class pf_invalidate_namestring extends Primitive {
         pf_invalidate_namestring() {
             super("%invalidate-namestring", PACKAGE_EXT, false);
         }
@@ -184,7 +188,7 @@ public class Pathname extends LispObject {
     protected Pathname() {}
 
     /** Copy constructor which shares no structure with the original. */
-    private Pathname(Pathname p) {
+  private Pathname(Pathname p) {
         if (p.host != NIL) {
             if (p.host instanceof SimpleString) {
                 host = new SimpleString(((SimpleString)p.getHost()).getStringValue());
@@ -268,9 +272,6 @@ public class Pathname extends LispObject {
     }
     }
 
-    private Pathname(String s) {
-        init(s);
-    }
 
     public static boolean isSupportedProtocol(String protocol) {
         // There is no programmatic way to know what protocols will
@@ -292,46 +293,41 @@ public class Pathname extends LispObject {
     }
 
     private Pathname(URL url) {
-         // URL handling is now buried in init(String), as the URI
-         // escaping mechanism didn't interact well with '+' and other
-         // characters. 
-        init(url.toString());
+      // URL handling is now buried in init(String), as the URI
+      // escaping mechanism didn't interact well with '+' and other
+      // characters. 
+      init(url.toString());
     }
     
     private Pathname(URI uri) {
-        init(uri.toString());
+      init(uri.toString());
     }
-
-    static final Symbol SCHEME = internKeyword("SCHEME");
-    static final Symbol AUTHORITY = internKeyword("AUTHORITY");
-    static final Symbol QUERY = internKeyword("QUERY");
-    static final Symbol FRAGMENT = internKeyword("FRAGMENT");
 
     static final private String jarSeparator = "!/";
     private final void init(String s) {
-        if (s == null) {
-            return;
-        }
-        if (s.equals(".") || s.equals("./")
+      if (s == null) {
+        return;
+      }
+      if (s.equals(".") || s.equals("./")
           || (Utilities.isPlatformWindows && s.equals(".\\"))) {
-            setDirectory(new Cons(Keyword.RELATIVE));
-            return;
-        }
-        if (s.equals("..") || s.equals("../")) {
-            setDirectory(list(Keyword.RELATIVE, Keyword.UP));
-            return;
-        }
-        if (Utilities.isPlatformWindows) {
-          if (s.startsWith("\\\\") || s.startsWith("//")) { 
-            // UNC path support
-            int shareIndex;
-            int dirIndex;
-            // match \\<server>\<share>\[directories-and-files]
-            if (s.startsWith("\\\\")) {
-              shareIndex = s.indexOf('\\', 2);
-              dirIndex = s.indexOf('\\', shareIndex + 1);
-              // match //<server>/<share>/[directories-and-files]
-            } else {
+        setDirectory(new Cons(Keyword.RELATIVE));
+        return;
+      }
+      if (s.equals("..") || s.equals("../")) {
+        setDirectory(list(Keyword.RELATIVE, Keyword.UP));
+        return;
+      }
+      if (Utilities.isPlatformWindows) {
+        if (s.startsWith("\\\\") || s.startsWith("//")) { 
+          // UNC path support
+          int shareIndex;
+          int dirIndex;
+          // match \\<server>\<share>\[directories-and-files]
+          if (s.startsWith("\\\\")) {
+            shareIndex = s.indexOf('\\', 2);
+            dirIndex = s.indexOf('\\', shareIndex + 1);
+            // match //<server>/<share>/[directories-and-files]
+          } else {
               shareIndex = s.indexOf('/', 2);
               dirIndex = s.indexOf('/', shareIndex + 1);
             }
@@ -446,101 +442,8 @@ public class Pathname extends LispObject {
             return;
         }
 
-        // A URL 
-        if (isValidURL(s)) {
-            URL url = null;
-            try {
-                url = new URL(s);
-            } catch (MalformedURLException e) {
-                Debug.assertTrue(false);
-            }
-            String scheme = url.getProtocol();
-            if (scheme.equals("file")) {
-                URI uri = null;
-                try {
-                    uri = new URI(s);
-                } catch (URISyntaxException ex) {
-                    error(new SimpleError("Improper URI syntax for "
-                                    + "'" + url.toString() + "'"
-                                    + ": " + ex.toString()));
-                }
-            
-                String uriPath = uri.getPath();
-                if (null == uriPath) {
-                                  // Under Windows, deal with pathnames containing
-                                  // devices expressed as "file:z:/foo/path"
-                                  uriPath = uri.getSchemeSpecificPart();
-                                  if (uriPath == null || uriPath.equals("")) {
-                    error(new LispError("The URI has no path: " + uri));
-                  }
-                }
-                final File file = new File(uriPath);
-                String path = file.getPath();
-                if (uri.toString().endsWith("/") && !path.endsWith("/")) {
-                  path += "/";
-                }
-                final Pathname p = Pathname.create(path);
-                this.setHost(p.getHost());
-                this.setDevice(p.getDevice());
-                this.setDirectory(p.getDirectory());
-                this.setName(p.getName());
-                this.setType(p.getType());
-                this.setVersion(p.getVersion());
-                return;
-            }
-            Debug.assertTrue(scheme != null);
-            URI uri = null;
-            try { 
-                uri = url.toURI().normalize();
-            } catch (URISyntaxException e) {
-                error(new LispError("Couldn't form URI from "
-                                    + "'" + url + "'"
-                                    + " because: " + e));
-            }
-            String authority = uri.getAuthority();
-        if (authority == null) {
-          authority = url.getAuthority();
-          if (authority == null) {
-            Debug.trace(MessageFormat.format("{0} has a null authority.", url));
-          }
-        }
-
-        setHost(NIL);
-        setHost(getHost().push(SCHEME));
-        setHost(getHost().push(new SimpleString(scheme)));
-
-        if (authority != null) {
-          setHost(getHost().push(AUTHORITY));
-          setHost(getHost().push(new SimpleString(authority)));
-        }
-
-        setDevice(NIL);
-            
-        // URI encode necessary characters
-        String path = uri.getRawPath();
-        if (path == null) {
-          path = "";
-        } 
-        String query = uri.getRawQuery();
-        if (query != null) {
-          setHost(getHost().push(QUERY));
-                setHost(getHost().push(new SimpleString(query)));
-            }
-            String fragment = uri.getRawFragment();
-            if (fragment != null) {
-                setHost(getHost().push(FRAGMENT));
-                setHost(getHost().push(new SimpleString(fragment)));
-            }
-            Pathname p = Pathname.create(path != null ? path : ""); 
-
-            setDirectory(p.getDirectory());
-            setName(p.getName());
-            setType(p.getType());
-            
-            setHost(getHost().nreverse());
-            invalidateNamestring();
-            return;
-        }
+        // A URL
+        // should be intercepted before this is reached
 
         if (Utilities.isPlatformWindows) {
             if (s.contains("\\")) {
@@ -720,15 +623,7 @@ public class Pathname extends LispObject {
             Debug.assertTrue(getHost() instanceof AbstractString 
                              || isURL());
             if (isURL()) {
-                LispObject scheme = Symbol.GETF.execute(getHost(), SCHEME, NIL);
-                LispObject authority = Symbol.GETF.execute(getHost(), AUTHORITY, NIL);
-                Debug.assertTrue(scheme != NIL);
-                sb.append(scheme.getStringValue());
-                sb.append(":");
-                if (authority != NIL) {
-                    sb.append("//");
-                    sb.append(authority.getStringValue());
-                }
+              return ((PathnameURL)this).getNamestring(sb);
             } else if (this instanceof LogicalPathname) {
                 sb.append(getHost().getStringValue());
                 sb.append(':');
@@ -820,19 +715,6 @@ public class Pathname extends LispObject {
                 sb.append('*');
             } else {
                 Debug.assertTrue(false);
-            }
-        }
-        
-        if (isURL()) {
-            LispObject o = Symbol.GETF.execute(getHost(), QUERY, NIL);
-            if (o != NIL) {
-                sb.append("?");
-                sb.append(o.getStringValue());
-            }
-            o = Symbol.GETF.execute(getHost(), FRAGMENT, NIL);
-            if (o != NIL) {
-                sb.append("#");
-                sb.append(o.getStringValue());
             }
         }
             
@@ -2281,20 +2163,20 @@ public class Pathname extends LispObject {
                 return result;
             }
         } else if (pathname.isURL()) {
-            if (pathname.getInputStream() != null) {
-              // If there is no type, query or fragment, we check to
-              // see if there is URL available "underneath".
-              if (pathname.getName() != NIL 
-                  && pathname.getType() == NIL
-                  && Symbol.GETF.execute(pathname.getHost(), QUERY, NIL) == NIL
-                  && Symbol.GETF.execute(pathname.getHost(), FRAGMENT, NIL) == NIL) {
-                Pathname p = Pathname.create(pathname.getNamestring() + "/");
-                if (p.getInputStream() != null) {
-                  return p;
-                }
+          PathnameURL p = (PathnameURL) pathname;
+          if (pathname.getInputStream() != null) {
+            // If there is no type, query or fragment, we check to
+            // see if there is URL available "underneath".
+            if (p.getName() != NIL 
+                && p.getType() == NIL
+                && Symbol.GETF.execute(pathname.getHost(), PathnameURL.QUERY, NIL) == NIL
+                && Symbol.GETF.execute(pathname.getHost(), PathnameURL.FRAGMENT, NIL) == NIL) {
+              if (p.getInputStream() != null) {
+                return p;
               }
-              return pathname;
             }
+            return p;
+          }
         } else
         jarfile: {
             // Possibly canonicalize jar file directory
@@ -2814,22 +2696,5 @@ public class Pathname extends LispObject {
             return null;
         }
     }
-
-  // BEGIN REMOVE ME use standard Factory pattern create() method instead
-  public static Pathname make(String s) {
-    Pathname p = Pathname.create();
-    p.init(s);
-    return p;
-  }
-
-  public static Pathname makeFrom(Pathname p) {
-    return Pathname.create(p);
-  }
-
-  public static Pathname makeFrom(Pathname p, String s) {
-    p.init(s);
-    return p;
-  }
-  // END REMOVE ME
 }
 
