@@ -28,7 +28,7 @@ public class PathnameTest
     } catch (MalformedURLException e) {
         System.out.println(e.getMessage());
     }
-    Pathname pathname = Pathname.create(url);
+    PathnameURL pathname = (PathnameURL)PathnameURL.create(url);
     assertNotNull(pathname);
     assertNotNull(pathname.getNamestring());
     assertNotNull(pathname.getName());

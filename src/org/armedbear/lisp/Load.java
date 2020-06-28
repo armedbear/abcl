@@ -57,7 +57,7 @@ public final class Load
     public static final LispObject load(String filename)
     {
         final LispThread thread = LispThread.currentThread();
-        return load(Pathname.create(filename),
+        return load((Pathname)Pathname.create(filename),
                     Symbol.LOAD_VERBOSE.symbolValue(thread) != NIL,
                     Symbol.LOAD_PRINT.symbolValue(thread) != NIL,
                     true);
@@ -184,7 +184,7 @@ public final class Load
                 n = "jar:file:" + Pathname.uriEncode(n) + "!/" + name + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;
             }
-            if (!((mergedPathname = Pathname.create(n)) instanceof Pathname)) {
+            if (!((mergedPathname = (Pathname)Pathname.create(n)) instanceof Pathname)) {
               return error(new FileError((MessageFormat.format("Failed to address JAR-PATHNAME truename {0} for name {1}", truename.princToString(), name)), truename));
             }
 
@@ -293,7 +293,7 @@ public final class Load
         InputStream in = null;
         Pathname pathname = null;
         Pathname truename = null;
-        pathname = Pathname.create(filename);
+        pathname = (Pathname)Pathname.create(filename);
         LispObject bootPath = Site.getLispHome();
         Pathname mergedPathname;
         if (bootPath instanceof Pathname) {
@@ -324,13 +324,13 @@ public final class Load
                                            + " in boot classpath."));
             }                
             if (!bootPath.equals(NIL)) {
-                PathnameURL urlPathname = PathnameURL.create(url);
-                loadableFile = findLoadableFile(urlPathname);
-                truename = (Pathname)Pathname.truename(loadableFile);
-                if (truename == null) {
-                    return error(new LispError("Failed to find loadable system file in boot classpath "
-                                               + "'" + url + "'"));
-                }
+              PathnameURL urlPathname = (PathnameURL)PathnameURL.create(url);
+              loadableFile = findLoadableFile(urlPathname);
+              truename = (Pathname)Pathname.truename(loadableFile);
+              if (truename == null) {
+                return error(new LispError("Failed to find loadable system file in boot classpath "
+                                           + "'" + url + "'"));
+              }
             } else {
                 truename = null; // We can't represent the FASL in a Pathname (q.v. OSGi)
             }
@@ -339,16 +339,16 @@ public final class Load
         // Look for a init FASL inside a packed FASL
         if (truename != null
             && truename.getType().princToString().equals(COMPILE_FILE_TYPE) && Utilities.checkZipFile(truename))  {
-            Pathname init = Pathname.create(truename.getNamestring());
-            init.setType(COMPILE_FILE_INIT_FASL_TYPE);
-            init.setName(new SimpleString("__loader__"));
-            LispObject t = Pathname.truename(init);
-            if (t instanceof Pathname) {
-                truename = (Pathname)t;
-            } else {
-                return error (new LispError("Failed to find loadable init FASL in "
-                                            + "'" + init.getNamestring() + "'"));
-            }
+          Pathname init = (Pathname)Pathname.create(truename.getNamestring());
+          init.setType(COMPILE_FILE_INIT_FASL_TYPE);
+          init.setName(new SimpleString("__loader__"));
+          LispObject t = Pathname.truename(init);
+          if (t instanceof Pathname) {
+            truename = (Pathname)t;
+          } else {
+            return error (new LispError("Failed to find loadable init FASL in "
+                                        + "'" + init.getNamestring() + "'"));
+          }
         }
 
         if (truename != null) {
@@ -525,9 +525,9 @@ public final class Load
             Pathname truePathname = null;
             if (!truename.equals(NIL)) {
                 if (truename instanceof Pathname) {
-                    truePathname = Pathname.create((Pathname)truename);
+                  truePathname = (Pathname)Pathname.create((Pathname)truename);
                 } else if (truename instanceof AbstractString) {
-                    truePathname = Pathname.create(truename.getStringValue());
+                  truePathname = (Pathname)Pathname.create(truename.getStringValue());
                 } else {
                     Debug.assertTrue(false);
                 }
