@@ -243,6 +243,11 @@ Refers to three =CL:PATHNAME= objects:
 |-----+----------------------------------------------+--------+--------------|
 
 
+* Misc
+** PATHNAME-URL have implicit "file:" scheme
+Not recorded in host; not emitted as namestring.  This is the current behavior.
+
+
 
 * Colophon
   #+begin_example

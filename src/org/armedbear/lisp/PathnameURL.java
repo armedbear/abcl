@@ -173,22 +173,27 @@ public class PathnameURL extends Pathname {
     LispObject scheme = Symbol.GETF.execute(getHost(), SCHEME, NIL);
     LispObject authority = Symbol.GETF.execute(getHost(), AUTHORITY, NIL);
 
-    // FIXME ??? HACK for now:  assume we are a file pathname, so normalize to have a scheme
-    //    Debug.assertTrue(scheme != NIL);
-    if (scheme.equals(NIL)) {
-      LispObject host = NIL;
-      scheme = new SimpleString("file");
-      host.push(scheme);
-      host.push(SCHEME);
-      setHost(host);
+    // A scheme of NIL is implicitly "file:", for which we don't emit as part of the usual namestring
+    if (!scheme.equals(NIL)) {
+      sb.append(scheme.getStringValue());
+      sb.append(":");
+      if (authority != NIL) {
+        sb.append("//");
+        sb.append(authority.getStringValue());
+      }
     }
-    
-    sb.append(scheme.getStringValue());
-    sb.append(":");
-    if (authority != NIL) {
-      sb.append("//");
-      sb.append(authority.getStringValue());
-    }
+    String directoryNamestring = getDirectoryNamestring();
+    sb.append(directoryNamestring);
+
+    // Use the output of Pathname
+    Pathname p = new Pathname(this);
+    Pathname.ncoerce(this, p);
+    p.setHost(NIL);
+    p.setDevice(NIL);
+    p.setDirectory(NIL);
+    String nameTypeVersion = p.getNamestring();
+    sb.append(nameTypeVersion);
+
     LispObject o = Symbol.GETF.execute(getHost(), QUERY, NIL);
     if (o != NIL) {
       sb.append("?");
@@ -199,34 +204,7 @@ public class PathnameURL extends Pathname {
       sb.append("#");
       sb.append(o.getStringValue());
     }
-    String directoryNamestring = getDirectoryNamestring();
-    sb.append(directoryNamestring);
 
-    if (getName() instanceof AbstractString) {
-      String n = getName().getStringValue();
-      if (n.indexOf('/') >= 0) {
-        Debug.assertTrue(namestring == null);
-        return null;
-      }
-      sb.append(n);
-    }
-
-    if (getType() != NIL && getType() != Keyword.UNSPECIFIC) {
-      sb.append('.');
-
-      if (getType() instanceof AbstractString) {
-        String t = getType().getStringValue();
-        // Allow Windows shortcuts to include TYPE
-        if (!(t.endsWith(".lnk") && Utilities.isPlatformWindows)) {
-          if (t.indexOf('.') >= 0) {
-            Debug.assertTrue(namestring == null);
-            return null;
-          }
-        } else {
-          sb.append(t);
-        }
-      }
-    }
     namestring = sb.toString();
     return namestring;
   }

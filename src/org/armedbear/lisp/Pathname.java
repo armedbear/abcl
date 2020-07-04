@@ -63,6 +63,9 @@ public class Pathname extends LispObject {
   public static LispObject create(String s) {
     // TODO distinguish between logical hosts and schemes for URLs
     // which we can meaningfully parse.
+    if (s.startsWith(PathnameJar.JAR_URI_PREFIX)) {
+        return PathnameJar.create(s);
+    }
     if (isValidURL(s)) {
       return PathnameURL.create(s);
     } else {
@@ -180,6 +183,19 @@ public class Pathname extends LispObject {
   // If not protected, then inheriting classes cannot invoke their constructors
     protected Pathname() {}
 
+  /** Coerce Java types destructively.
+   */
+  static public LispObject ncoerce(Pathname orig, Pathname dest) {
+    dest.setHost(orig.getHost());
+    dest.setDevice(orig.getDevice());
+    dest.setDirectory(orig.getDirectory());
+    dest.setName(orig.getName());
+    dest.setType(orig.getType());
+    dest.setVersion(orig.getVersion());
+
+    return dest;
+  }
+
   /** Copy constructor which shares no structure with the original. */
   public Pathname(Pathname p) {
         if (p.host != NIL) {
@@ -263,7 +279,7 @@ public class Pathname extends LispObject {
         Debug.assertTrue(false);
         }
     }
-    }
+  }
 
 
     public static boolean isSupportedProtocol(String protocol) {
@@ -2166,16 +2182,18 @@ public class Pathname extends LispObject {
 
     protected static URL makeURL(Pathname pathname) {
         URL result = null;
-        try {
-            if (pathname.isURL()) {
-                result = new URL(pathname.getNamestring());
-            } else {
-                // XXX Properly encode Windows drive letters and UNC paths
-                // XXX ensure that we have cannonical path?
-                result = new URL("file://" + pathname.getNamestring());
-            }
+        String ns = pathname.getNamestring();
+        
+        try {        
+          if (!pathname.isURL()) {
+           ns = "file://" + ns;
+          }
+          
+          // XXX Properly encode Windows drive letters and UNC paths
+          // XXX ensure that we have cannonical path?
+          result = new URL(ns);
         } catch (MalformedURLException e) {
-            Debug.trace("Could not form URL from " + pathname);
+           error(new SimpleError("Could not make a URL from: " + ns));
         }
         return result;
     }

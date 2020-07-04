@@ -39,9 +39,9 @@ public class PathnameJarTest {
     String s1 = "jar:jar:file:/a/foo.jar!/b/baz.abcl!/path/c.lisp";
     List<String> r1 = PathnameJar.enumerateJarURIs(s1);
     assertTrue(r1.size() == 2);
-    String s10 = "file:/a/foo.jar";
+    String s10 = "file:/a/foo.jar!/";
     assertTrue(s10.equals(r1.get(0)));
-    String s11 = "file:/b/baz.abcl";
+    String s11 = "b/baz.abcl!/path/c.lisp";
     assertTrue(s11.equals(r1.get(1)));
   }
 }
