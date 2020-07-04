@@ -216,18 +216,33 @@ Too destructive?!
 ** Problem with abcl-1.5.0 
 
    #+begin_src 
-   #p"jar:jar:file:a/baz.jar!/b/c/foo.abcl!/"
+   #p"jar:jar:file:/a/baz.jar!/b/c/foo.abcl!/"
    #+end_src
 
 Refers to three =CL:PATHNAME= objects:
 
-|-----+----------------------------------------+--------+--------------|
-| Ref | Namestring                             | Device | Type         |
-|-----+----------------------------------------+--------+--------------|
-| #1# | file:a/baz.jar                         | nil    | PATHNAME-URL |
-| #2# | jar:file:a/baz.jar!                    | #1#    | PATHNAME-JAR |
-| #3# | jar:jar:file:a/baz.jar!/b/c/foo.abcl!/ | #2#    | PATHNAME-JAR |
-|-----+----------------------------------------+--------+--------------|
+|-----+-----------------------------------------+--------+--------------|
+| Ref | Namestring                              | Device | Type         |
+|-----+-----------------------------------------+--------+--------------|
+| #1# | file:/a/baz.jar                         | nil    | PATHNAME-URL |
+| #2# | jar:file:/a/baz.jar!/                   | #1#    | PATHNAME-JAR |
+| #3# | jar:jar:file:/a/baz.jar!/b/c/foo.abcl!/ | #2#    | PATHNAME-JAR |
+|-----+-----------------------------------------+--------+--------------|
+
+   #+begin_src 
+   #p"jar:jar:file:/a/baz.jar!/b/c/foo.abcl!/a.cls"
+   #+end_src
+
+|-----+----------------------------------------------+--------+--------------|
+| Ref | Namestring                                   | Device | Type         |
+|-----+----------------------------------------------+--------+--------------|
+| #1# | file:/a/baz.jar                              | nil    | PATHNAME-URL |
+| #2# | jar:file:/a/baz.jar!/                        | #1#    | PATHNAME-JAR |
+| #3# | jar:jar:file:/a/baz.jar!/b/c/foo.abcl!/      | #2#    | PATHNAME-JAR |
+| #4# | jar:jar:file:/a/baz.jar!/b/c/foo.abcl!/a.cls | #3#    | PATHNAME-JAR |
+|-----+----------------------------------------------+--------+--------------|
+
+
 
 * Colophon
   #+begin_example
