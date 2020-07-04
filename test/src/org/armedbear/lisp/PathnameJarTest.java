@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.armedbear.lisp;
 
 import java.util.List;
@@ -13,10 +8,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author evenson
- */
 public class PathnameJarTest {
   
   public PathnameJarTest() {
@@ -48,5 +39,9 @@ public class PathnameJarTest {
     String s1 = "jar:jar:file:/a/foo.jar!/b/baz.abcl!/path/c.lisp";
     List<String> r1 = PathnameJar.enumerateJarURIs(s1);
     assertTrue(r1.size() == 2);
+    String s10 = "file:/a/foo.jar";
+    assertTrue(s10.equals(r1.get(0)));
+    String s11 = "file:/b/baz.abcl";
+    assertTrue(s11.equals(r1.get(1)));
   }
 }

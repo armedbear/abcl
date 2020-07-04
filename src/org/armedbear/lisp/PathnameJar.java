@@ -45,36 +45,36 @@ import java.util.List;
 public class PathnameJar extends PathnameURL {
   protected PathnameJar() {}
 
-  static final private String jarSeparator = "!/";
-  static final private String jarPrefix = "jar:";
+  static final private String JAR_URI_SUFFIX = "!/";
+  static final private String JAR_URI_PREFIX = "jar:";
 
   /** Enumerate the individual namestrings of the enclosing jars for */
   public static List<String> enumerateJarURIs(String s) {
     ArrayList<String> result = new ArrayList<String>();
 
     // ???  enumerate the contained jars
-    int i = s.lastIndexOf(jarPrefix);
+    int i = s.lastIndexOf(JAR_URI_PREFIX);
     if (i == -1) {
       error(new SimpleError("Failed to find any occurence of jars: " + s));
       return null; // not reached
     }
-    i += jarPrefix.length(); // advance index to end of "jar:jar:jar:..."
-    if ((i % jarPrefix.length()) != 0) {
+    i += JAR_URI_PREFIX.length(); // advance index to end of "jar:jar:jar:..."
+    if ((i % JAR_URI_PREFIX.length()) != 0) {
       error(new SimpleError("Failed to parse prefixed jar: " + s));
       return null;
     }
     int occurrences = i / 4; 
     String withoutPrefixes = s.substring(i);
 
-    String parts[] = withoutPrefixes.split(jarSeparator);
+    String parts[] = withoutPrefixes.split(JAR_URI_SUFFIX);
 
     for (int j = 0; j < occurrences - 1; j++) {
-      String ns = parts[j] + jarSeparator;
+      String ns = parts[j] + JAR_URI_SUFFIX;
       result.add(ns);
     }
 
     // Last namestring may have a path 
-    String ns = parts[occurrences - 1] + jarSeparator;
+    String ns = parts[occurrences - 1] + JAR_URI_SUFFIX;
     if (parts.length == (occurrences + 1)) {
       ns = ns + parts[occurrences];
     }
@@ -113,11 +113,12 @@ public class PathnameJar extends PathnameURL {
 
 
   static public LispObject create(String s) {
-    if (!s.startsWith(jarPrefix)) {
+    if (!s.startsWith(JAR_URI_PREFIX)) {
       error(new SimpleError("Cannot create a PATHNAME-JAR from namestring: " + s));
     }
     
-    PathnameJar result = new PathnameJar();
+    // FIXME: should be a PathnameJar
+    PathnameURL result = new PathnameURL();
 
     List<String> jarNamestrings = PathnameJar.enumerateJarURIs(s);
     LispObject enclosingJars = NIL;
@@ -226,16 +227,20 @@ public class PathnameJar extends PathnameURL {
                      
     //    PathnameURL d = (PathnameURL)PathnameURL.create(url);
 
-    String ns = jarNamestrings.get(jarNamestrings.size());
-    int i = ns.indexOf(jarSeparator);
+    String ns = jarNamestrings.get(jarNamestrings.size() - 1);
+    int i = ns.indexOf(JAR_URI_SUFFIX);
 
-    String jarNamestring = ns.substring(i);
-    result = (PathnameJar)PathnameURL.create(jarNamestring);
+    String jarNamestring = ns.substring(i + 1);
+    if (Pathname.isValidURL(jarNamestring)) {
+      result = (PathnameURL)PathnameURL.create(jarNamestring);
+    } else {
+      result = (PathnameURL)PathnameURL.create("file:" + jarNamestring);
+    }
 
     result.setDevice(enclosingJars.reverse());
 
-    if (i > ns.length() - jarSeparator.length()) {
-      String pathNameAndType = ns.substring(i + jarSeparator.length());
+    if (i > ns.length() - JAR_URI_SUFFIX.length()) {
+      String pathNameAndType = ns.substring(i + JAR_URI_SUFFIX.length());
       PathnameURL p = (PathnameURL)PathnameURL.create("file:" + pathNameAndType); 
       result.setDirectory(p.getDirectory());
       result.setName(p.getName());
@@ -254,7 +259,7 @@ public class PathnameJar extends PathnameURL {
       sb.append("jar:");
       String jarNamestring = jarPathname.getNamestringAsURI();
       sb.append(jarNamestring);
-      sb.append(jarSeparator);
+      sb.append(JAR_URI_SUFFIX);
 
       enclosingJars = enclosingJars.cdr();
     }
