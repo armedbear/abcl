@@ -36,6 +36,6 @@ import static org.armedbear.lisp.Lisp.*;
 
 
 public class PathnameJar extends PathnameURL {
-  
+  protected PathnameJar() {}
 }
                                  
