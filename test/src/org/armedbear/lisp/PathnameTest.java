@@ -59,26 +59,26 @@ public class PathnameTest
 
   @Test
   public void copyConstructor() {
-      Pathname orig = Pathname.create("/a/b/c/d/e/foo.lisp");
-      Pathname copy = Pathname.create(orig.getNamestring());
-      assertTrue(orig.getNamestring().equals(copy.getNamestring()));
+    Pathname orig = (Pathname)Pathname.create("/a/b/c/d/e/foo.lisp");
+    Pathname copy = (Pathname)Pathname.create(orig.getNamestring());
+    assertTrue(orig.getNamestring().equals(copy.getNamestring()));
   }
 
   @Test
   public void mergePathnames1() {
-      Pathname p = Pathname.create("a/b/c/d/foo.lisp");
-      Pathname d = Pathname.create("/foo/bar/there");
-      Pathname r = Pathname.mergePathnames(p, d);
-      String s = r.getNamestring();
-      assertTrue(s.equals("/foo/bar/a/b/c/d/foo.lisp"));
+    Pathname p = (Pathname)Pathname.create("a/b/c/d/foo.lisp");
+    Pathname d = (Pathname)Pathname.create("/foo/bar/there");
+    Pathname r = (Pathname)Pathname.mergePathnames(p, d);
+    String s = r.getNamestring();
+    assertTrue(s.equals("/foo/bar/a/b/c/d/foo.lisp"));
   }
 
   @Test
   public void mergePathnames2() {
-      Pathname p = Pathname.create("/a/b/c/d/foo.lisp");
-      Pathname d = Pathname.create("/foo/bar/there");
-      Pathname r = Pathname.mergePathnames(p, d);
-      assertTrue(r.getNamestring().equals("/a/b/c/d/foo.lisp"));
+    Pathname p = (Pathname)Pathname.create("/a/b/c/d/foo.lisp");
+    Pathname d = (Pathname)Pathname.create("/foo/bar/there");
+    Pathname r = (Pathname)Pathname.mergePathnames(p, d);
+    assertTrue(r.getNamestring().equals("/a/b/c/d/foo.lisp"));
   }
 
   @Test
@@ -87,31 +87,39 @@ public class PathnameTest
       args = args.push(Keyword.TYPE);
       args = args.push(new SimpleString("abcl-tmp"));
       args = args.nreverse();
-      Pathname p = Pathname.makePathname(args);
-      Pathname d = Pathname.create("/foo/bar.abcl");
-      Pathname r = Pathname.mergePathnames(p, d);
+      Pathname p = (Pathname)Pathname.makePathname(args);
+      Pathname d = (Pathname)Pathname.create("/foo/bar.abcl");
+      Pathname r = (Pathname)Pathname.mergePathnames(p, d);
       assertTrue(r.getNamestring().equals("/foo/bar.abcl-tmp"));
   }
 
   @Test
   public void mergePathnames4() {
-      Pathname p = Pathname.create("jar:file:foo.jar!/bar.abcl");
-      Pathname d = Pathname.create("/a/b/c/");
-      Pathname r = Pathname.mergePathnames(p, d);
-      String s = r.getNamestring();
-      assertTrue(s.equals("jar:file:/a/b/c/foo.jar!/bar.abcl"));
+    Pathname p = (Pathname)Pathname.create("jar:file:foo.jar!/bar.abcl");
+    Pathname d = (Pathname)Pathname.create("/a/b/c/");
+    Pathname r = (Pathname)Pathname.mergePathnames(p, d);
+    String s = r.getNamestring();
+    assertTrue(s.equals("jar:file:/a/b/c/foo.jar!/bar.abcl"));
   }
   @Test 
   public void constructorFileDirectory() {
-    Pathname p = Pathname.create("file://tmp/");
+    Pathname p = (Pathname)Pathname.create("file://tmp/");
     assertTrue(p.getNamestring().endsWith("/"));
   }
   @Test 
-    public void constructorFileWindowsDevice() {
-    Pathname p = Pathname.create("file:c://tmp/");
+  public void constructorFileWindowsDevice() {
+    Pathname p = (Pathname)Pathname.create("file:c://tmp/");
     LispObject device = p.getDevice();
     if (Utilities.isPlatformWindows) {
       assert(device != Lisp.NIL);
     }
+  }
+  // Necessary for ASDF output translations to work
+  @Test
+  public void wildInferiorsJars() {
+    String namestring = "jar:file:/**/*.jar!/**/*.*";
+    Pathname p = (Pathname)Pathname.create(namestring);
+    String parsedNamestring = p.getNamestring();
+    assertTrue(parsedNamestring.equals(namestring));
   }
 }

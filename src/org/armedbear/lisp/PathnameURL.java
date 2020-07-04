@@ -231,6 +231,11 @@ public class PathnameURL extends Pathname {
     return namestring;
   }
 
+  public String getNamestringAsURI() {
+    URL url = makeURL(this);
+    return url.toString();
+  }
+
   public LispObject typeOf() {
     return Symbol.URL_PATHNAME;
   }
