@@ -49,20 +49,24 @@ public class PathnameURL extends Pathname {
 
   protected PathnameURL() {}
 
-  public static PathnameURL create(URL url) {
+  public static LispObject create(URL url) {
     return PathnameURL.create(url.toString());
   }
 
-  public static PathnameURL create(URI uri) {
+  public static LispObject create(URI uri) {
     return PathnameURL.create(uri.toString());
   }
 
-  public static PathnameURL create(String s) {
+  public static LispObject create(String s) {
     // A URL
 
     if (!isValidURL(s)) {
       error(new SimpleError("Cannot form a PATHNAME-URL from " + s));
     }
+    if (s.startsWith("jar:")) {
+      return PathnameJar.create(s);
+    }
+
     PathnameURL result = new PathnameURL();
     URL url = null;
     try {
@@ -95,7 +99,7 @@ public class PathnameURL extends Pathname {
       if (uri.toString().endsWith("/") && !path.endsWith("/")) {
         path += "/";
       }
-      final Pathname p = Pathname.create(path);
+      final Pathname p = (Pathname)Pathname.create(path);
       result.setHost(p.getHost());
       result.setDevice(p.getDevice());
       result.setDirectory(p.getDirectory());
@@ -149,7 +153,7 @@ public class PathnameURL extends Pathname {
         .push(new SimpleString(fragment));
       result.setHost(component);
     }
-    Pathname p = Pathname.create(path != null ? path : ""); 
+    Pathname p = (Pathname)Pathname.create(path != null ? path : ""); 
 
     result.setDirectory(p.getDirectory());
     result.setName(p.getName());

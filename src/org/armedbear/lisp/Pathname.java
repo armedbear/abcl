@@ -60,7 +60,7 @@ public class Pathname extends LispObject {
     return new Pathname();
   }
 
-  public static Pathname create(String s) {
+  public static LispObject create(String s) {
     // TODO distinguish between logical hosts and schemes for URLs
     // which we can meaningfully parse.
     if (isValidURL(s)) {
@@ -286,7 +286,6 @@ public class Pathname extends LispObject {
     }
 
 
-    static final private String jarSeparator = "!/";
     private final void init(String s) {
       if (s == null) {
         return;
@@ -321,7 +320,7 @@ public class Pathname extends LispObject {
           setHost(new SimpleString(s.substring(2, shareIndex)));
           setDevice(new SimpleString(s.substring(shareIndex + 1, dirIndex)));
           
-          Pathname p = Pathname.create(s.substring(dirIndex));
+          Pathname p = (Pathname)Pathname.create(s.substring(dirIndex));
           setDirectory(p.getDirectory());
           setName(p.getName());
           setType(p.getType());
@@ -331,99 +330,6 @@ public class Pathname extends LispObject {
         }
       }
         
-        // A JAR file
-        if (s.startsWith("jar:") && s.endsWith(jarSeparator)) {
-            LispObject jars = NIL;
-            int i = s.lastIndexOf(jarSeparator, s.length() - jarSeparator.length() - 1);
-            String jar = null;
-            if (i == -1) {
-                jar = s;
-            } else {
-                // There can be no more than two jar references and the
-                // inner one must be a file reference within the outer.
-                jar = "jar:file:" + s.substring(i + jarSeparator.length());
-                s = s.substring("jar:".length(), i + jarSeparator.length());
-                Pathname p = Pathname.create(s);
-                jars = jars.push(p.getDevice().car());
-            }
-            if (jar.startsWith("jar:file:")) {
-                String file
-                    = jar.substring("jar:file:".length(),
-                                    jar.length() - jarSeparator.length());
-                Pathname jarPathname;
-                if (file.length() > 0) {
-                    URL url = null;
-                    URI uri = null;
-                    try {
-                        url = new URL("file:" + file);
-                        uri = url.toURI();
-                    } catch (MalformedURLException e1) {
-                        error(new SimpleError("Failed to create URI from "
-                                            + "'" + file + "'"
-                                            + ": " + e1.getMessage()));
-                    } catch (URISyntaxException e2) {
-                        error(new SimpleError("Failed to create URI from "
-                                            + "'" + file + "'"
-                                            + ": " + e2.getMessage()));
-                    }
-                    String path = uri.getPath();
-                    if (path == null) {
-                        // We allow "jar:file:baz.jar!/" to construct a relative
-                        // path for jar files, so MERGE-PATHNAMES means something.
-                        jarPathname = Pathname.create(uri.getSchemeSpecificPart());
-                    } else {
-                        jarPathname = Pathname.create((new File(path)).getPath());
-                    }
-                } else {
-                    jarPathname = Pathname.create("");
-                }
-                jars = jars.push(jarPathname);
-            } else {
-                URL url = null;
-                try {
-                    url = new URL(jar.substring("jar:".length(), jar.length() - 2));
-                    PathnameURL p = PathnameURL.create(url);
-                    jars = jars.push(p);
-                } catch (MalformedURLException e) {
-                    error(new LispError("Failed to parse URL "
-                                        + "'" + url + "'"
-                                        + e.getMessage()));
-                }
-            }
-            jars = jars.nreverse();
-            setDevice(jars);
-            invalidateNamestring();
-            return;
-        }
-
-        // An entry in a JAR file
-        final int separatorIndex = s.lastIndexOf(jarSeparator);
-        if (separatorIndex > 0 && s.startsWith("jar:")) {
-            final String jarURL = s.substring(0, separatorIndex + jarSeparator.length());
-            URL url = null;
-            try {
-                url = new URL(jarURL);
-            } catch (MalformedURLException ex) {
-                error(new LispError("Failed to parse URL "
-                                    + "'" + jarURL + "'"
-                                    + ex.getMessage()));
-            }
-            PathnameURL d = PathnameURL.create(url);
-            if (getDevice() instanceof Cons) {
-                LispObject[] jars = d.copyToArray();
-                //  XXX Is this ever reached?  If so, need to append lists
-                Debug.assertTrue(false);
-            } else {
-                setDevice(d.getDevice());
-            }
-            s = "/" + s.substring(separatorIndex + jarSeparator.length());
-            Pathname p = Pathname.create("file:" + s); // Use URI escaping rules
-            setDirectory(p.getDirectory());
-            setName(p.getName());
-            setType(p.getType());
-            setVersion(p.getVersion());
-            return;
-        }
 
         if (Utilities.isPlatformWindows) {
             if (s.contains("\\")) {
@@ -950,7 +856,7 @@ public class Pathname extends LispObject {
       LOGICAL_PATHNAME_TRANSLATIONS);
 
     public static Pathname parseNamestring(String s) {
-        return Pathname.create(s);
+      return (Pathname)Pathname.create(s);
     }
 
     public static boolean isValidURL(String s) {
@@ -1006,9 +912,9 @@ public class Pathname extends LispObject {
                 return LogicalPathname.create(h, s.substring(s.indexOf(':') + 1));
             }
         } else {
-            return PathnameURL.create(s);
+          return (Pathname)PathnameURL.create(s);
         }
-        return Pathname.create(s);
+        return (Pathname)Pathname.create(s);
     }
 
     // XXX was @return Pathname
@@ -1241,7 +1147,7 @@ public class Pathname extends LispObject {
               + "." + file + "'");
             return null;
         }
-        return Pathname.create(namestring);
+        return (Pathname)Pathname.create(namestring);
     }
 
 
@@ -1577,7 +1483,7 @@ public class Pathname extends LispObject {
                         String namestring = new String(pathname.getNamestring());
                         namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
                                  + entry.getName();
-                        Pathname p = Pathname.create(namestring);
+                        Pathname p = (Pathname)Pathname.create(namestring);
                         result = new Cons(p, result);
                     }
                 }
@@ -1609,7 +1515,7 @@ public class Pathname extends LispObject {
                               path = file.getCanonicalPath();
                             }
                             URI pathURI = (new File(path)).toURI();
-                            p = PathnameURL.create(pathURI);
+                            p = (Pathname)PathnameURL.create(pathURI);
                             result = new Cons(p, result);
                         }
                     } catch (IOException e) {
@@ -1691,7 +1597,7 @@ public class Pathname extends LispObject {
                             String namestring = new String(pathname.getNamestring());
                             namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
                                 + entry.getName();
-                            Pathname p = Pathname.create(namestring);
+                            Pathname p = (Pathname)Pathname.create(namestring);
                             result = new Cons(p, result);
                         }
                     }
@@ -1713,7 +1619,7 @@ public class Pathname extends LispObject {
                             String namestring = new String(pathname.getNamestring());
                             namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
                                 + entry.getName();
-                            Pathname p = Pathname.create(namestring);
+                            Pathname p = (Pathname)Pathname.create(namestring);
                             result = new Cons(p, result);
                         }
                     }
@@ -2134,7 +2040,7 @@ public class Pathname extends LispObject {
                     result = Pathname.getDirectoryPathname(file);
                 } else {
                     try {
-                        result = Pathname.create(file.getCanonicalPath());
+                      result = (Pathname)Pathname.create(file.getCanonicalPath());
                     } catch (IOException e) {
                         return error(new FileError(e.getMessage(), pathname));
                     }
@@ -2671,7 +2577,7 @@ public class Pathname extends LispObject {
                     namestring = namestring.concat(File.separator);
                 }
             }
-            return Pathname.create(namestring);
+            return (Pathname)Pathname.create(namestring);
         } catch (IOException e) {
             error(new LispError(e.getMessage()));
             // Not reached.
