@@ -1358,13 +1358,14 @@ public class Pathname extends LispObject {
         }
         @Override
         public LispObject execute(LispObject[] args) {
-            return _makePathname(args);
+          LispObject result = _makePathname(args);
+          return result;
         }
     }
 
     // Used by the #p reader.
     public static final Pathname makePathname(LispObject args) {
-        return _makePathname(args.copyToArray());
+      return (Pathname) _makePathname(args.copyToArray());
     }
 
     public static final Pathname makePathname(File file) {
@@ -1380,7 +1381,9 @@ public class Pathname extends LispObject {
     }
 
 
-    static final Pathname _makePathname(LispObject[] args) {
+  // ??? changed to return a LispObject, as we wish to return a
+  // meaningful Java type (Pathname for files, LogicalPathnames for you know…)
+    static final LispObject _makePathname(LispObject[] args) {
         if (args.length % 2 != 0) {
             program_error("Odd number of keyword arguments.");
         }
@@ -1466,8 +1469,7 @@ public class Pathname extends LispObject {
                 version = defaults.getVersion();
             }
         }
-        final Pathname p;
-        final boolean logical;
+        Pathname p;
         LispObject logicalHost = NIL;
         if (host != NIL) {
             if (host instanceof AbstractString) {
@@ -1477,20 +1479,17 @@ public class Pathname extends LispObject {
                 // Not a defined logical pathname host -- A UNC path
                 //warning(new LispError(host.printObject() + " is not defined as a logical pathname host."));
                 p = Pathname.create();
-                logical = false;
                 p.setHost(host);
             } else { 
                 p = LogicalPathname.create();
-                logical = true;
                 p.setHost(logicalHost);
             }
             p.setDevice(Keyword.UNSPECIFIC);
         } else {
             p = Pathname.create();
-            logical = false;
         }
         if (device != NIL) {
-            if (logical) {
+            if (p instanceof LogicalPathname) {
                 // "The device component of a logical pathname is always :UNSPECIFIC."
                 if (device != Keyword.UNSPECIFIC) {
                     error(new LispError("The device component of a logical pathname must be :UNSPECIFIC."));
@@ -1500,7 +1499,7 @@ public class Pathname extends LispObject {
             }
         }
         if (directory != NIL) {
-            if (logical) {
+            if (p instanceof LogicalPathname) {
                 if (directory.listp()) {
                     LispObject d = NIL;
                     while (directory != NIL) {
@@ -1523,7 +1522,7 @@ public class Pathname extends LispObject {
             }
         }
         if (name != NIL) {
-            if (logical && name instanceof AbstractString) {
+            if (p instanceof LogicalPathname && name instanceof AbstractString) {
               p.setName(LogicalPathname.canonicalizeStringComponent((AbstractString) name));
             } else if (name instanceof AbstractString) {
               p.setName(validateStringComponent((AbstractString) name));
@@ -1532,7 +1531,7 @@ public class Pathname extends LispObject {
             }
         }
         if (type != NIL) {
-            if (logical && type instanceof AbstractString) {
+            if (p instanceof LogicalPathname && type instanceof AbstractString) {
               p.setType(LogicalPathname.canonicalizeStringComponent((AbstractString) type));
             } else {
               p.setType(type);
@@ -1541,6 +1540,7 @@ public class Pathname extends LispObject {
         
         p.setVersion(version);
         p.validateDirectory(true);
+        
         return p;
     }
 
