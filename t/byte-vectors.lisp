@@ -1,6 +1,5 @@
 (in-package :cl-user)
 
-
 (let ((element-bits '(8 16 32))
       (length 16))
   (prove:plan (* (length element-bits) 3))
@@ -36,6 +35,29 @@
      (stable-sort (make-array '(0)) '<)
    (t (e) nil))
  "Able to STABLE-SORT an empty vector.")
+
+;; nibbles failures
+
+
+(let* ((unspecialized
+         #(2025373960 3099658457 3238582529 148439321
+           3099658456 3238582528 3000000000 1000000000
+           2000000000 2900000000 2400000000 2800000000
+           0 1))
+       (array 
+         (make-array (length unspecialized)
+                     :element-type '(unsigned-byte 32) 
+                     :initial-contents unspecialized)))
+  (prove:plan (length array))
+  (loop :for i :below (length array)
+        :doing
+           (let ((x0
+                   (elt unspecialized i))
+                 (x1
+                   (elt array i)))
+           (prove:ok
+            (equal x0 x1)
+            (format nil "~a: ~a equals ~a" i x0 x1)))))
 
 (prove:finalize)
 
