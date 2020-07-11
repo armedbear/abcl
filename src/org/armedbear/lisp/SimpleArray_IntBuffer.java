@@ -1,5 +1,5 @@
 /*
- * SimpleArray_CharBuffer.java
+ * SimpleArray_IntBuffer.java
  *
  * Copyright (C) 2020 @easye
  *
@@ -35,61 +35,61 @@ package org.armedbear.lisp;
 import static org.armedbear.lisp.Lisp.*;
 
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
+import java.nio.IntBuffer;
 
-public final class SimpleArray_CharBuffer
+public final class SimpleArray_IntBuffer
   extends AbstractArray
 {
   private final int[] dimv;
   private final int totalSize;
+  
+  final IntBuffer data;
+  private boolean directAllocation;
 
-  final CharBuffer data;
-  boolean directAllocation; 
-
-  public SimpleArray_CharBuffer(int[] dimv) {
+  public SimpleArray_IntBuffer(int[] dimv) {
     this(dimv, false);
   }
-  
-  public SimpleArray_CharBuffer(int[] dimv, boolean directAllocation) {
+
+  public SimpleArray_IntBuffer(int [] dimv, boolean directAllocation) {
     this.dimv = dimv;
-    totalSize = computeTotalSize(dimv);
     this.directAllocation = directAllocation;
+    totalSize = computeTotalSize(dimv);
     if (directAllocation) {
-      ByteBuffer b = ByteBuffer.allocateDirect(totalSize * 2);
-      data = b.asCharBuffer();
+      ByteBuffer b = ByteBuffer.allocateDirect(totalSize * 4);
+      data = b.asIntBuffer();
     } else {
-      data = CharBuffer.allocate(totalSize);
+      data = IntBuffer.allocate(totalSize);
     }
   }
 
-  public SimpleArray_CharBuffer(int[] dimv, LispObject initialContents) {
+  public SimpleArray_IntBuffer(int[] dimv, LispObject initialContents) {
     this(dimv, initialContents, false);
   }
-  
-  public SimpleArray_CharBuffer(int[] dimv, LispObject initialContents, boolean directAllocation) {
+    
+  public SimpleArray_IntBuffer(int[] dimv, LispObject initialContents, boolean directAllocation) {
     this.dimv = dimv;
     final int rank = dimv.length;
+    this.directAllocation = directAllocation;
     LispObject rest = initialContents;
     for (int i = 0; i < rank; i++) {
       dimv[i] = rest.length();
       rest = rest.elt(0);
     }
-    this.directAllocation = directAllocation;
     totalSize = computeTotalSize(dimv);
     if (directAllocation) {
-      ByteBuffer b = ByteBuffer.allocate(totalSize * 2);
-      data = b.asCharBuffer();
-    } else { 
-      data = CharBuffer.allocate(totalSize);
+      ByteBuffer b = ByteBuffer.allocateDirect(totalSize * 4);
+      data = b.asIntBuffer();
+    } else {
+      data = IntBuffer.allocate(totalSize);
     }
+
     setInitialContents(0, dimv, initialContents, 0);
   }
 
-  public SimpleArray_CharBuffer(int rank, LispObject initialContents) {
+  public SimpleArray_IntBuffer(int rank, LispObject initialContents) {
     this(rank, initialContents, false);
   }
-
-  public SimpleArray_CharBuffer(int rank, LispObject initialContents, boolean directAllocation) {
+  public SimpleArray_IntBuffer(int rank, LispObject initialContents, boolean directAllocation) {
     if (rank < 2) {
       Debug.assertTrue(false);
     }
@@ -97,19 +97,18 @@ public final class SimpleArray_CharBuffer
     LispObject rest = initialContents;
     for (int i = 0; i < rank; i++) {
       dimv[i] = rest.length();
-      if (rest == NIL || rest.length() == 0) {
+      if (rest == NIL || rest.length() == 0)
         break;
-      }
       rest = rest.elt(0);
     }
-    this.directAllocation = directAllocation;
     totalSize = computeTotalSize(dimv);
     if (directAllocation) {
-      ByteBuffer b = ByteBuffer.allocateDirect(totalSize * 2);
-      data = b.asCharBuffer();
+      ByteBuffer b = ByteBuffer.allocateDirect(totalSize * 4);
+      data = b.asIntBuffer();
     } else {
-      data = CharBuffer.allocate(totalSize);
+      data = IntBuffer.allocate(totalSize);
     }
+        
     setInitialContents(0, dimv, initialContents, 0);
   }
 
@@ -117,7 +116,7 @@ public final class SimpleArray_CharBuffer
                                  int index) {
     if (dims.length == 0) {
       try {
-        data.put(index, coerceLispObjectToJavaChar(contents));
+        data.put(index, (int)(contents.longValue() & 0xffffffffL));
       } catch (IndexOutOfBoundsException e) {
         error(new LispError("Bad initial contents for array."));
         return -1;
@@ -130,14 +129,13 @@ public final class SimpleArray_CharBuffer
         return -1;
       }
       int[] newDims = new int[dims.length-1];
-      for (int i = 1; i < dims.length; i++) {
+      for (int i = 1; i < dims.length; i++)
         newDims[i-1] = dims[i];
-      }
       if (contents.listp()) {
         for (int i = contents.length();i-- > 0;) {
           LispObject content = contents.car();
-          index
-            = setInitialContents(axis + 1, newDims, content, index);
+          index =
+            setInitialContents(axis + 1, newDims, content, index);
           contents = contents.cdr();
         }
       } else {
@@ -145,8 +143,8 @@ public final class SimpleArray_CharBuffer
         final int length = v.length();
         for (int i = 0; i < length; i++) {
           LispObject content = v.AREF(i);
-          index 
-            = setInitialContents(axis + 1, newDims, content, index);
+          index =
+            setInitialContents(axis + 1, newDims, content, index);
         }
       }
     }
@@ -155,7 +153,7 @@ public final class SimpleArray_CharBuffer
 
   @Override
   public LispObject typeOf() {
-    return list(Symbol.SIMPLE_ARRAY, UNSIGNED_BYTE_16, getDimensions());
+    return list(Symbol.SIMPLE_ARRAY, UNSIGNED_BYTE_32, getDimensions());
   }
 
   @Override
@@ -180,9 +178,8 @@ public final class SimpleArray_CharBuffer
   @Override
   public LispObject getDimensions() {
     LispObject result = NIL;
-    for (int i = dimv.length; i-- > 0;) {
+    for (int i = dimv.length; i-- > 0;)
       result = new Cons(Fixnum.getInstance(dimv[i]), result);
-    }
     return result;
   }
 
@@ -190,8 +187,7 @@ public final class SimpleArray_CharBuffer
   public int getDimension(int n) {
     try {
       return dimv[n];
-    }
-    catch (ArrayIndexOutOfBoundsException e) {
+    } catch (ArrayIndexOutOfBoundsException e) {
       error(new TypeError("Bad array dimension " + n + "."));
       return -1;
     }
@@ -199,7 +195,7 @@ public final class SimpleArray_CharBuffer
 
   @Override
   public LispObject getElementType() {
-    return UNSIGNED_BYTE_16;
+    return UNSIGNED_BYTE_32;
   }
 
   @Override
@@ -213,32 +209,22 @@ public final class SimpleArray_CharBuffer
   }
 
   @Override
-  public int aref(int index) {
-    try {
-      return data.get(index);
-    } catch (IndexOutOfBoundsException e) {
-      error(new TypeError("Bad row major index " + index + "."));
-      // Not reached.
-      return 0;
-    }
-  }
-
-  @Override
   public LispObject AREF(int index) {
     try {
-      return Fixnum.getInstance(data.get(index));
-    }
-    catch (IndexOutOfBoundsException e) {
+      return number(((long)data.get(index)) & 0xffffffffL);
+    } catch (IndexOutOfBoundsException e) {
       return error(new TypeError("Bad row major index " + index + "."));
     }
   }
 
   @Override
-  public void aset(int index, LispObject obj) {
+  public void aset(int index, LispObject newValue) {
     try {
-      data.put(index, (char)Fixnum.getValue(obj));
-    }
-    catch (IndexOutOfBoundsException e) {
+      if (newValue.isLessThan(Fixnum.ZERO) || newValue.isGreaterThan(UNSIGNED_BYTE_32_MAX_VALUE)) {
+        type_error(newValue, UNSIGNED_BYTE_32);
+      }
+      data.put(index, (int)(newValue.longValue() & 0xffffffffL));
+    } catch (IndexOutOfBoundsException e) {
       error(new TypeError("Bad row major index " + index + "."));
     }
   }
@@ -277,7 +263,7 @@ public final class SimpleArray_CharBuffer
   @Override
   public LispObject get(int[] subscripts) {
     try {
-      return Fixnum.getInstance(data.get(getRowMajorIndex(subscripts)));
+      return number(((long)data.get(getRowMajorIndex(subscripts))) & 0xffffffffL);
     } catch (IndexOutOfBoundsException e) {
       return error(new TypeError("Bad row major index " +
                                  getRowMajorIndex(subscripts) + "."));
@@ -285,10 +271,13 @@ public final class SimpleArray_CharBuffer
   }
 
   @Override
-  public void set(int[] subscripts, LispObject obj) {
+  public void set(int[] subscripts, LispObject newValue) {
     try {
-      data.put(getRowMajorIndex(subscripts), (char) Fixnum.getValue(obj));
-    } catch (ArrayIndexOutOfBoundsException e) {
+      if (newValue.isLessThan(Fixnum.ZERO) || newValue.isGreaterThan(UNSIGNED_BYTE_32_MAX_VALUE)) {
+        type_error(newValue, UNSIGNED_BYTE_32);
+      }
+      data.put(getRowMajorIndex(subscripts), (int)(newValue.longValue() & 0xffffffffL));
+    } catch (IndexOutOfBoundsException e) {
       error(new TypeError("Bad row major index " +
                           getRowMajorIndex(subscripts) + "."));
     }
@@ -296,21 +285,17 @@ public final class SimpleArray_CharBuffer
 
   @Override
   public void fill(LispObject obj) {
-    if (!(obj instanceof Fixnum)) {
-      type_error(obj, Symbol.FIXNUM);
+    if (!(obj instanceof LispInteger)) {
+      type_error(obj, Symbol.INTEGER);
       // Not reached.
       return;
     }
-    int n = ((Fixnum) obj).value;
-    if (n < 0 || n > 65535) {
-      type_error(obj, UNSIGNED_BYTE_16);
-      // Not reached.
-      return;
+    if (obj.isLessThan(Fixnum.ZERO) || obj.isGreaterThan(UNSIGNED_BYTE_32_MAX_VALUE)) {
+      type_error(obj, UNSIGNED_BYTE_32);
     }
-    for (int i = totalSize; i-- > 0;) {
-      data.put(i, (char)n);
+    for (int i = totalSize; i-- > 0;)
+      data.put(i, (int) (obj.longValue() & 0xffffffffL));;
     }
-  }
 
   @Override
   public String printObject() {
@@ -325,15 +310,17 @@ public final class SimpleArray_CharBuffer
   public AbstractArray adjustArray(int[] dimv, LispObject initialElement,
                                    LispObject initialContents) {
     if (initialContents != null) {
-      return new SimpleArray_CharBuffer(dimv, initialContents);
+      return new SimpleArray_IntBuffer(dimv, initialContents);
     }
     for (int i = 0; i < dimv.length; i++) {
       if (dimv[i] != this.dimv[i]) {
-        SimpleArray_CharBuffer newArray = new SimpleArray_CharBuffer(dimv);
+        SimpleArray_IntBuffer newArray
+          = new SimpleArray_IntBuffer(dimv, directAllocation);
         if (initialElement != null) {
           newArray.fill(initialElement);
         }
         copyArray(this, newArray);
+
         return newArray;
       }
     }
@@ -342,7 +329,7 @@ public final class SimpleArray_CharBuffer
   }
 
   // Copy a1 to a2 for index tuples that are valid for both arrays.
-  private static void copyArray(AbstractArray a1, AbstractArray a2) {
+  static void copyArray(AbstractArray a1, AbstractArray a2) {
     Debug.assertTrue(a1.getRank() == a2.getRank());
     int[] subscripts = new int[a1.getRank()];
     int axis = 0;
@@ -352,7 +339,7 @@ public final class SimpleArray_CharBuffer
   private static void copySubArray(AbstractArray a1, AbstractArray a2,
                                    int[] subscripts, int axis) {
     if (axis < subscripts.length) {
-      final int limit 
+      final int limit
         = Math.min(a1.getDimension(axis), a2.getDimension(axis));
       for (int i = 0; i < limit; i++) {
         subscripts[axis] = i;
@@ -366,7 +353,7 @@ public final class SimpleArray_CharBuffer
   }
 
   public AbstractArray adjustArray(int[] dimv, AbstractArray displacedTo,
-                                     int displacement) {
+                                   int displacement) {
     return new ComplexArray(dimv, displacedTo, displacement);
   }
 }
