@@ -55,7 +55,7 @@ public final class SimpleArray_CharBuffer
     totalSize = computeTotalSize(dimv);
     this.directAllocation = directAllocation;
     if (directAllocation) {
-      ByteBuffer b = ByteBuffer.allocateDirect(totalSize * 2);
+      ByteBuffer b = ByteBuffer.allocate(totalSize * 2);
       data = b.asCharBuffer();
     } else {
       data = CharBuffer.allocate(totalSize);
