@@ -141,7 +141,7 @@ public final class BasicVector_IntBuffer
   @Override
   public LispObject elt(int index) {
     try {
-      return number(elements.get(index));
+      return number(((long)elements.get(index)) & 0xffffffffL);
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, capacity);
       return NIL; // Not reached.
