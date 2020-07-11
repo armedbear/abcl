@@ -1652,21 +1652,16 @@ public final class Lisp
     return T;
   }
 
-  // TODO rename to coerceToJavaChar
   public static final char coerceLispObjectToJavaChar(LispObject obj) {
     return (char)Fixnum.getValue(obj);
   }
 
-  // TODO rename to coerceToJavaByte
   public static final byte coerceLispObjectToJavaByte(LispObject obj)
+
   {
           return (byte)Fixnum.getValue(obj);
   }
 
-  public static final int coerceToJavaUnsignedInt(LispObject obj) {
-    return (int) (obj.longValue() & 0xffffffffL);
-  }
-  // TODO rename to coerceFromJavaByte
   public static final LispObject coerceJavaByteToLispObject(byte b)
   {
     return Fixnum.constants[((int)b) & 0xff];
