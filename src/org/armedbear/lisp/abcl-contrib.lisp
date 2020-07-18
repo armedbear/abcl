@@ -56,7 +56,7 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
    ;; Need to test locating the system boot jar over the network, and
    ;; it would minimally need to check version information.
    (ignore-errors
-     #p"https://abcl.org/releases/1.7.0/abcl.jar")))
+     #p"https://abcl.org/releases/1.7.1/abcl.jar")))
 
 (defun flatten (list)
   (labels ((rflatten (list accumluator)

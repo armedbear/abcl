@@ -1,7 +1,5 @@
-;;;; FIXME: resolve this Quicklisp/ASDF schism so that this is not necessary
-
-
 (defsystem :abcl-prove
+  :version "1.7.0"
   :depends-on (prove))
 
 (defsystem :abcl-prove/t

@@ -1,7 +1,22 @@
 Version 1.7.1
 =============
 
-Unreleased
+July 18, 2020
+
+<https://abcl.org/svn/tags/1.7.1/>
+<https://github.com/armedbear/abcl/>
+<https://gitlab.common-lisp.net/abcl/abcl/>
+
+Fixes
+-----
+
+[r15337] Fix ELT on vectors specialized on (unsigned-byte 32)
+
+[r15327] Restore svref optimizations for SIMPLE-VECTOR sorts
+
+[r15326] Fix sorting vectors of length 0
+
+
 
 Version 1.7.0
 =============
