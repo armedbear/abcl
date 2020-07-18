@@ -65,7 +65,7 @@ For releases - the version in the POM should look like  ~x.y.z~
 
 #+BEGIN_SRC bash
 keyname='<evenson.not.org@gmail.com>'
-abcl_version=1.7.0
+abcl_version=1.7.1
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-${abcl_version}-sources.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=sources
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-${abcl_version}-javadoc.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc
@@ -75,7 +75,7 @@ abcl-contrib release
 
 #+BEGIN_SRC bash
 keyname='<evenson.not.org@gmail.com>'
-abcl_version=1.7.0
+abcl_version=1.7.1
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-contrib.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging 
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-contrib-${abcl_version}-sources.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=sources
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-contrib-${abcl_version}-javadoc.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc

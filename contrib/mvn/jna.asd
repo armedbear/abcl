@@ -2,7 +2,7 @@
 
 ;;;; Need to have jna.jar present for CFFI to work.
 (defsystem jna 
-  :long-description  "<urn:abcl.org/release/1.7.0/contrib/jna#5.5.0>"
+  :long-description  "<urn:abcl.org/release/1.7.1/contrib/jna#5.5.0>"
   :version "5.5.0"
   :defsystem-depends-on (jss abcl-asdf)
   :components ((:mvn "net.java.dev.jna/jna/5.5.0"
