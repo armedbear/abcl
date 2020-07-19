@@ -16,13 +16,13 @@
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.7.1#> ; # deprecated?
-  dc:identifier         <urn:abcl.org/release/1.7.1#> ;
+  dc:identifier         <urn:abcl.org/1.7.2#dev> ; # deprecated?
+  dc:identifier         <urn:abcl.org/release/1.7.1#dev> ;
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
   dc:modified          "18-JUL-2020" ;
-  dc:version           "abcl-1.7.1" ;
-  dc:release           "20200718a" ;
+  dc:version           "abcl-1.7.2" ;
+  dc:release           "dev" ;
   abcl:git             <https://github.com/armedbear/abcl/> ;
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
   abcl:svn             <https://abcl.org/svn/trunk/abcl/> . 
