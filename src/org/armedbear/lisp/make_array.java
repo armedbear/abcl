@@ -219,7 +219,10 @@ public final class make_array
         }
         defaultInitialElement = NIL;
       }
-      if (initialElementProvided != NIL) {
+      if (nioBuffer != NIL) {
+        // v is fine…
+        ;
+      } else if (initialElementProvided != NIL) {
         // Initial element was specified.
         v.fill(initialElement);
       } else if (initialContents != NIL) {
