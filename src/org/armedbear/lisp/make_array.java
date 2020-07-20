@@ -2,7 +2,6 @@
  * make_array.java
  *
  * Copyright (C) 2003-2005 Peter Graves
- * $Id$
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,22 +35,21 @@ package org.armedbear.lisp;
 import org.armedbear.lisp.Java.Buffers.AllocationPolicy;
 import static org.armedbear.lisp.Lisp.*;
 
-// ### %make-array dimensions element-type initial-element initial-element-p
-// initial-contents adjustable fill-pointer displaced-to displaced-index-offset
+// ### %make-array dimensions element-type initial-element initial-element-p initial-contents adjustable fill-pointer displaced-to displaced-index-offset nio-buffer nio-buffer-provided-p 
 // => new-array
-public final class make_array extends Primitive
+public final class make_array
+  extends Primitive
 {
-  public make_array()
-  {
+  public make_array() {
     super("%make-array", PACKAGE_SYS, false);
   }
 
   @Override
-  public LispObject execute(LispObject[] args)
-  {
+  public LispObject execute(LispObject[] args) {
     // What a mess without keywords, but it still works…
-    if (args.length != 13)
+    if (args.length != 13) {
       return error(new WrongNumberOfArgumentsException(this, 13));
+    }
     LispObject dimensions = args[0];
     LispObject elementType = args[1];
     LispObject initialElement = args[2];
@@ -67,38 +65,37 @@ public final class make_array extends Primitive
     LispObject nioBuffer = args[11];
     LispObject nioBufferProvided = args[12];
     
-    if (initialElementProvided != NIL && initialContents != NIL)
-      {
+    if (initialElementProvided != NIL && initialContents != NIL) {
         return error(new LispError("MAKE-ARRAY: cannot specify both " +
                                     "initial element and initial contents."));
-      }
+    }
     final int rank = dimensions.listp() ? dimensions.length() : 1;
     int[] dimv = new int[rank];
-    if (dimensions.listp())
-      {
-        for (int i = 0; i < rank; i++)
-          {
-            LispObject dim = dimensions.car();
-            dimv[i] = Fixnum.getValue(dim);
-            dimensions = dimensions.cdr();
-          }
+    if (dimensions.listp()) {
+      for (int i = 0; i < rank; i++) {
+        LispObject dim = dimensions.car();
+        dimv[i] = Fixnum.getValue(dim);
+        dimensions = dimensions.cdr();
       }
-    else
+    } else {
       dimv[0] = Fixnum.getValue(dimensions);
-    if (displacedTo != NIL)
-      {
+    }
+    if (displacedTo != NIL) {
         // FIXME Make sure element type (if specified) is compatible with
         // displaced-to array.
         final AbstractArray array = checkArray(displacedTo);
-        if (initialElementProvided != NIL)
+        if (initialElementProvided != NIL) {
           return error(new LispError("Initial element must not be specified for a displaced array."));
-        if (initialContents != NIL)
+        }
+        if (initialContents != NIL) {
           return error(new LispError("Initial contents must not be specified for a displaced array."));
+        }
         final int displacement;
-        if (displacedIndexOffset != NIL)
+        if (displacedIndexOffset != NIL) {
           displacement = Fixnum.getValue(displacedIndexOffset);
-        else
+        } else {
           displacement = 0;
+        }
         if (rank == 1)
           {
             AbstractVector v = null; // FIXME needed to get the compiler not to warn
@@ -111,11 +108,16 @@ public final class make_array extends Primitive
               if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
                 // an abstract array doesn't have a directAllocation  ???
                 v = new ComplexVector_ByteBuffer(dimv[0], array, displacement, directAllocation); 
-              } else if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+              } else { // if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) 
                 v = new ComplexVector_UnsignedByte8(dimv[0], array, displacement);
               }
             } else if (arrayElementType.equal(UNSIGNED_BYTE_32)) {
-              v = new ComplexVector_UnsignedByte32(dimv[0], array, displacement);
+              if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+                // an abstract array doesn't have a directAllocation  ???
+                v = new ComplexVector_IntBuffer(dimv[0], array, displacement, directAllocation);
+              } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY))
+                v = new ComplexVector_UnsignedByte32(dimv[0], array, displacement);
+              }
             } else {
               v = new ComplexVector(dimv[0], array, displacement);
             }
@@ -125,176 +127,147 @@ public final class make_array extends Primitive
             return v;
           }
         return new ComplexArray(dimv, array, displacement);
-      }
+    }
+
     LispObject upgradedType = getUpgradedArrayElementType(elementType);
-    if (rank == 0)
-      {
+    if (rank == 0) {
         LispObject data;
-        if (initialElementProvided != NIL)
+        if (initialElementProvided != NIL) {
           data = initialElement;
-        else
+        } else {
           data = initialContents;
+        }
         return new ZeroRankArray(upgradedType, data, adjustable != NIL);
+    } else if (rank == 1) {
+      final int size = dimv[0];
+      if (size < 0 || size >= ARRAY_DIMENSION_MAX) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("The size specified for this array (");
+        sb.append(size);
+        sb.append(')');
+        if (size >= ARRAY_DIMENSION_MAX) {
+          sb.append(" is >= ARRAY-DIMENSION-LIMIT (");
+          sb.append(ARRAY_DIMENSION_MAX);
+          sb.append(").");
+        } else {
+          sb.append(" is negative.");}
+        return error(new LispError(sb.toString()));
       }
-    if (rank == 1)
-      {
-        final int size = dimv[0];
-        if (size < 0 || size >= ARRAY_DIMENSION_MAX)
-          {
-            StringBuilder sb = new StringBuilder();
-            sb.append("The size specified for this array (");
-            sb.append(size);
-            sb.append(')');
-            if (size >= ARRAY_DIMENSION_MAX)
-              {
-                sb.append(" is >= ARRAY-DIMENSION-LIMIT (");
-                sb.append(ARRAY_DIMENSION_MAX);
-                sb.append(").");
-              }
-            else
-              sb.append(" is negative.");
-            return error(new LispError(sb.toString()));
+      final AbstractVector v;
+      final LispObject defaultInitialElement;
+      if (upgradedType == Symbol.CHARACTER) {
+        if (fillPointer != NIL || adjustable != NIL) {
+          v = new ComplexString(size);
+        } else {
+          v = new SimpleString(size);
+        }
+        defaultInitialElement = LispCharacter.getInstance('\0');
+      } else if (upgradedType == Symbol.BIT) {
+        if (fillPointer != NIL || adjustable != NIL) {
+          v = new ComplexBitVector(size);
+        } else {
+          v = new SimpleBitVector(size);
+        }
+        defaultInitialElement = Fixnum.ZERO;
+      } else if (upgradedType.equal(UNSIGNED_BYTE_8)) {
+        if (fillPointer != NIL || adjustable != NIL) {
+          if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+            v = new ComplexVector_ByteBuffer(size, directAllocation);
+          } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+            v = new ComplexVector_UnsignedByte8(size);
           }
-        final AbstractVector v;
-        final LispObject defaultInitialElement;
-        if (upgradedType == Symbol.CHARACTER)
-          {
-            if (fillPointer != NIL || adjustable != NIL)
-              v = new ComplexString(size);
-            else
-              v = new SimpleString(size);
-            defaultInitialElement = LispCharacter.getInstance('\0');
-          }
-        else if (upgradedType == Symbol.BIT)
-          {
-            if (fillPointer != NIL || adjustable != NIL)
-              v = new ComplexBitVector(size);
-            else
-              v = new SimpleBitVector(size);
-            defaultInitialElement = Fixnum.ZERO;
-          }
-        else if (upgradedType.equal(UNSIGNED_BYTE_8))
-          {
-            if (fillPointer != NIL || adjustable != NIL) {
-              if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-                v = new ComplexVector_ByteBuffer(size, directAllocation);
-              } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
-                v = new ComplexVector_UnsignedByte8(size);
-              }
+        } else {
+          if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+            if (!nioBuffer.equals(NIL)) {
+              v = new BasicVector_ByteBuffer((java.nio.ByteBuffer)(((JavaObject)nioBuffer).getObject()),
+                                             directAllocation);
             } else {
-              if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-                if (!nioBuffer.equals(NIL)) {
-                  v = new BasicVector_ByteBuffer((java.nio.ByteBuffer)(((JavaObject)nioBuffer).getObject()),
-                                                 directAllocation);
-                } else {
-                  v = new BasicVector_ByteBuffer(size, directAllocation);
-                }
-              } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
-                v = new BasicVector_UnsignedByte8(size);
-              }
+              v = new BasicVector_ByteBuffer(size, directAllocation);
             }
-
-            defaultInitialElement = Fixnum.ZERO;
+          } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+            v = new BasicVector_UnsignedByte8(size);
           }
-        else if (upgradedType.equal(UNSIGNED_BYTE_16) &&
-                 fillPointer == NIL && adjustable == NIL)
-          {
-            if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-              v = new BasicVector_CharBuffer(size, directAllocation);
-            } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
-              v = new BasicVector_UnsignedByte16(size);
-            }
-
-            defaultInitialElement = Fixnum.ZERO;
+        }
+        defaultInitialElement = Fixnum.ZERO;
+      } else if (upgradedType.equal(UNSIGNED_BYTE_16)
+                 && fillPointer == NIL && adjustable == NIL) {
+        if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+          v = new BasicVector_CharBuffer(size, directAllocation);
+        } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+          v = new BasicVector_UnsignedByte16(size);
+        }
+        defaultInitialElement = Fixnum.ZERO;
+      } else if (upgradedType.equal(UNSIGNED_BYTE_32)) {
+        if (fillPointer != NIL || adjustable != NIL) {
+          v = new ComplexVector_UnsignedByte32(size);
+        } else {
+          if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+            v = new BasicVector_IntBuffer(size, directAllocation);
+          } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+            v = new BasicVector_UnsignedByte32(size);
           }
-        else if (upgradedType.equal(UNSIGNED_BYTE_32))
-          {
-            if (fillPointer != NIL || adjustable != NIL)
-              v = new ComplexVector_UnsignedByte32(size);
-            else {
-              if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-                v = new BasicVector_IntBuffer(size, directAllocation);
-              } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
-                v = new BasicVector_UnsignedByte32(size);
-              }
-            }
-            defaultInitialElement = Fixnum.ZERO;
-          }
-        else if (upgradedType == NIL)
-          {
-            v = new NilVector(size);
-            defaultInitialElement = null;
-          }
-        else
-          {
-            if (fillPointer != NIL || adjustable != NIL)
-              v = new ComplexVector(size);
-            else
-              v = new SimpleVector(size);
-            defaultInitialElement = NIL;
-          }
-        if (initialElementProvided != NIL)
-          {
-            // Initial element was specified.
-            v.fill(initialElement);
-          }
-        else if (initialContents != NIL)
-          {
-            if (initialContents.listp())
-              {
-                LispObject list = initialContents;
-                for (int i = 0; i < size; i++)
-                  {
-                    v.aset(i, list.car());
-                    list = list.cdr();
-                  }
-              }
-            else if (initialContents.vectorp())
-              {
-                for (int i = 0; i < size; i++)
-                  v.aset(i, initialContents.elt(i));
-              }
-            else
-              return type_error(initialContents, Symbol.SEQUENCE);
-          }
-        else
-          {
-            if (defaultInitialElement != null)
-              v.fill(defaultInitialElement);
-          }
-        if (fillPointer != NIL)
-          v.setFillPointer(fillPointer);
-        return v;
+        }
+        defaultInitialElement = Fixnum.ZERO;
+      } else if (upgradedType == NIL) {
+        v = new NilVector(size);
+        defaultInitialElement = null;
+      } else {
+        if (fillPointer != NIL || adjustable != NIL) {
+          v = new ComplexVector(size);
+        } else {
+          v = new SimpleVector(size);
+        }
+        defaultInitialElement = NIL;
       }
-    // rank > 1
-    AbstractArray array;
-    if (adjustable == NIL)
-      {
-        if (upgradedType.equal(UNSIGNED_BYTE_8))
-          {
-            if (initialContents != NIL)
-              {
-                if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-                  array = new SimpleArray_ByteBuffer(dimv, initialContents, directAllocation);
-                } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
-                  array = new SimpleArray_UnsignedByte8(dimv, initialContents);
-                }
-              }
-            else
-              {
-                if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-                  array = new SimpleArray_ByteBuffer(dimv, directAllocation);
-                } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
-                  array = new SimpleArray_UnsignedByte8(dimv);
-                }
-                if (initialElementProvided != NIL) {
-                  array.fill(initialElement);
-                } else {
-                  array.fill(Fixnum.ZERO);
-                }
-              }
+      if (initialElementProvided != NIL) {
+        // Initial element was specified.
+        v.fill(initialElement);
+      } else if (initialContents != NIL) {
+        if (initialContents.listp()) {
+          LispObject list = initialContents;
+          for (int i = 0; i < size; i++) {
+            v.aset(i, list.car());
+            list = list.cdr();
           }
-        else if (upgradedType.equal(UNSIGNED_BYTE_16)) {
+        } else if (initialContents.vectorp()) {
+          for (int i = 0; i < size; i++) {
+            v.aset(i, initialContents.elt(i));
+          }
+        } else {
+          return type_error(initialContents, Symbol.SEQUENCE);
+        }
+      } else {
+        if (defaultInitialElement != null) {
+          v.fill(defaultInitialElement);
+        }
+      }
+      if (fillPointer != NIL) {
+        v.setFillPointer(fillPointer);
+      }
+        return v;
+    } else { // rank > 1
+      AbstractArray array;
+      if (adjustable == NIL) {
+        if (upgradedType.equal(UNSIGNED_BYTE_8)) {
+          if (initialContents != NIL) {
+            if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+              array = new SimpleArray_ByteBuffer(dimv, initialContents, directAllocation);
+            } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+              array = new SimpleArray_UnsignedByte8(dimv, initialContents);
+            }
+          } else {
+            if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+              array = new SimpleArray_ByteBuffer(dimv, directAllocation);
+            } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+              array = new SimpleArray_UnsignedByte8(dimv);
+            }
+            if (initialElementProvided != NIL) {
+              array.fill(initialElement);
+            } else {
+              array.fill(Fixnum.ZERO);
+            }
+          }
+        } else if (upgradedType.equal(UNSIGNED_BYTE_16)) {
           if (initialContents != NIL) {
             if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
               array = new SimpleArray_CharBuffer(dimv, initialContents, directAllocation);
@@ -313,96 +286,91 @@ public final class make_array extends Primitive
               array.fill(Fixnum.ZERO);
             }
           }
-        }
-        // N.b. There is no implementation of SimpleArray with
-        // contents (unsigned-byte 32) using either a
-        // primitive array or an nio.Buffer
-        else if (upgradedType.equal(UNSIGNED_BYTE_32))
-          {
-            if (initialContents != NIL)
-              {
-                array = new SimpleArray_UnsignedByte32(dimv, initialContents);
-              }
-            else
-              {
-                array = new SimpleArray_UnsignedByte32(dimv);
-                if (initialElementProvided != NIL)
-                  array.fill(initialElement);
-                else
-                  array.fill(Fixnum.ZERO);
-              }
-          }
-        else
-          {
-            if (initialContents != NIL)
-              {
-                array = new SimpleArray_T(dimv, upgradedType, initialContents);
-              }
-            else
-              {
-                array = new SimpleArray_T(dimv, upgradedType);
-                if (initialElementProvided != NIL)
-                  array.fill(initialElement);
-                else
-                  array.fill(NIL);
-              }
-          }
-      }
-    else
-      {
-        // Adjustable.
-        if (upgradedType.equal(UNSIGNED_BYTE_8))
-          {
-            if (initialContents != NIL) {
-              if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-                array = new ComplexArray_ByteBuffer(dimv, initialContents);
-              } else {  //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
-                array = new ComplexArray_UnsignedByte8(dimv, initialContents);
-              }
+        } else if (upgradedType.equal(UNSIGNED_BYTE_32)) {
+          if (initialContents != NIL) {
+            if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+              array = new SimpleArray_IntBuffer(dimv, initialContents, directAllocation);
+            } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+              array = new SimpleArray_UnsignedByte32(dimv, initialContents);
+            }
+          } else {
+            if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+              array = new SimpleArray_IntBuffer(dimv, directAllocation);
             } else {
-              if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-                array = new ComplexArray_ByteBuffer(dimv);
-              } else  { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
-                array = new ComplexArray_UnsignedByte8(dimv);
-              }
-              if (initialElementProvided != NIL)
-                array.fill(initialElement);
-              else
-                array.fill(Fixnum.ZERO);
-              }
+              array = new SimpleArray_UnsignedByte32(dimv);
+            }
+            if (initialElementProvided != NIL) {
+              array.fill(initialElement);
+            } else {
+              array.fill(Fixnum.ZERO);
+            }
           }
-        else if (upgradedType.equal(UNSIGNED_BYTE_32))
-          {
-            if (initialContents != NIL)
-              {
-                array = new ComplexArray_UnsignedByte32(dimv, initialContents);
-              }
-            else
-              {
-                array = new ComplexArray_UnsignedByte32(dimv);
-                if (initialElementProvided != NIL)
-                  array.fill(initialElement);
-                else
-                  array.fill(Fixnum.ZERO);
-              }
+        } else {
+          if (initialContents != NIL) {
+            array = new SimpleArray_T(dimv, upgradedType, initialContents);
+          } else {
+            array = new SimpleArray_T(dimv, upgradedType);
+            if (initialElementProvided != NIL) {
+              array.fill(initialElement);
+            } else {
+              array.fill(NIL);
+            }
           }
-        else
-          {
-            if (initialContents != NIL)
-              {
-                array = new ComplexArray(dimv, upgradedType, initialContents);
-              }
-            else
-              {
-                array = new ComplexArray(dimv, upgradedType);
-                if (initialElementProvided != NIL)
-                  array.fill(initialElement);
-                else
-                  array.fill(NIL);
-              }
+        }
+      } else { // Adjustable.
+        if (upgradedType.equal(UNSIGNED_BYTE_8)) {
+          if (initialContents != NIL) {
+            if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+              array = new ComplexArray_ByteBuffer(dimv, initialContents);
+            } else {  //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+              array = new ComplexArray_UnsignedByte8(dimv, initialContents);
+            }
+          } else {
+            if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+              array = new ComplexArray_ByteBuffer(dimv);
+            } else  { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+              array = new ComplexArray_UnsignedByte8(dimv);
+            }
+            if (initialElementProvided != NIL) {
+              array.fill(initialElement);
+            } else {
+              array.fill(Fixnum.ZERO);
+            }
+          } // FIXME add specialization on (unsigned-byte 16)
+        } else if (upgradedType.equal(UNSIGNED_BYTE_32)) {
+          if (initialContents != NIL) {
+            if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+              array = new ComplexArray_IntBuffer(dimv, initialContents, directAllocation);
+            } else {  //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+              array = new ComplexArray_UnsignedByte32(dimv, initialContents);
+            }
+          } else {
+            if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+              array = new ComplexArray_IntBuffer(dimv, directAllocation);
+            } else {  //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
+              array = new ComplexArray_UnsignedByte32(dimv);
+            }
+            if (initialElementProvided != NIL) {
+              array.fill(initialElement);
+            } else {
+              array.fill(Fixnum.ZERO);
+            }
           }
+        } else {
+          if (initialContents != NIL) {
+            array = new ComplexArray(dimv, upgradedType, initialContents);
+          } else {
+            array = new ComplexArray(dimv, upgradedType);
+            if (initialElementProvided != NIL) {
+              array.fill(initialElement);
+            } else {
+              array.fill(NIL);
+            }
+          }
+        }
       }
-    return array;
+      return array;
+    }
   }
 
   private static final Primitive _MAKE_ARRAY = new make_array();
