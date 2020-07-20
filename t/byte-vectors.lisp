@@ -59,5 +59,23 @@
             (equal x0 x1)
             (format nil "~a: ~a equals ~a" i x0 x1)))))
 
+(prove:plan 1)
+(let*
+    ((java-array
+       (jnew-array-from-array "byte"
+                              #(0 244 2 3)))
+     (nio-buffer
+       (#"allocate" 'java.nio.ByteBuffer
+                    (jarray-length java-array))))
+  (#"put" nio-buffer java-array)
+  (let ((result
+          (make-array 4 :element-type '(unsigned-byte 8)
+                        :nio-buffer nio-buffer)))
+    (prove:ok
+     (equalp result java-array)
+     (format nil "~a EQUALP ~a" result java-array))
+    (values result java-array)))
+
+  
 (prove:finalize)
 
