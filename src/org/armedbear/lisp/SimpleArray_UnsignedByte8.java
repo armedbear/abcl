@@ -87,7 +87,7 @@ public final class SimpleArray_UnsignedByte8 extends AbstractArray
     {
         if (dims.length == 0) {
             try {
-                data[index] = coerceLispObjectToJavaByte(contents);
+                data[index] = coerceToJavaByte(contents);
             }
             catch (ArrayIndexOutOfBoundsException e) {
                 error(new LispError("Bad initial contents for array."));
@@ -194,7 +194,7 @@ public final class SimpleArray_UnsignedByte8 extends AbstractArray
     public LispObject AREF(int index)
     {
         try {
-            return coerceJavaByteToLispObject(data[index]);
+            return coerceFromJavaByte(data[index]);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             return error(new TypeError("Bad row major index " + index + "."));
@@ -205,7 +205,7 @@ public final class SimpleArray_UnsignedByte8 extends AbstractArray
     public void aset(int index, LispObject newValue)
     {
         try {
-            data[index] = coerceLispObjectToJavaByte(newValue);
+            data[index] = coerceToJavaByte(newValue);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             error(new TypeError("Bad row major index " + index + "."));
@@ -248,7 +248,7 @@ public final class SimpleArray_UnsignedByte8 extends AbstractArray
     public LispObject get(int[] subscripts)
     {
         try {
-            return coerceJavaByteToLispObject(data[getRowMajorIndex(subscripts)]);
+            return coerceFromJavaByte(data[getRowMajorIndex(subscripts)]);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             return error(new TypeError("Bad row major index " +
@@ -261,7 +261,7 @@ public final class SimpleArray_UnsignedByte8 extends AbstractArray
 
     {
         try {
-            data[getRowMajorIndex(subscripts)] = coerceLispObjectToJavaByte(newValue);
+            data[getRowMajorIndex(subscripts)] = coerceToJavaByte(newValue);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             error(new TypeError("Bad row major index " +

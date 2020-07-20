@@ -105,7 +105,7 @@ public final class ComplexArray_ByteBuffer
   {
     if (dims.length == 0) {
       try {
-        data.put(index, coerceLispObjectToJavaByte(contents));
+        data.put(index, coerceToJavaByte(contents));
       }
       catch (IndexOutOfBoundsException e) {
         error(new LispError("Bad initial contents for array."));
@@ -211,7 +211,7 @@ public final class ComplexArray_ByteBuffer
   {
     if (data != null) {
       try {
-        return coerceJavaByteToLispObject(data.get(index));
+        return coerceFromJavaByte(data.get(index));
       }
       catch (IndexOutOfBoundsException e) {
         return error(new TypeError("Bad row major index " + index + "."));
@@ -225,7 +225,7 @@ public final class ComplexArray_ByteBuffer
   {
     if (data != null) {
       try {
-        data.put(index, coerceLispObjectToJavaByte(newValue));
+        data.put(index, coerceToJavaByte(newValue));
       }
       catch (IndexOutOfBoundsException e) {
         error(new TypeError("Bad row major index " + index + "."));
@@ -302,7 +302,7 @@ public final class ComplexArray_ByteBuffer
           newBuffer = ByteBuffer.allocate(computeTotalSize(dims));
         }
         if (initialElement != null) {
-          fill(newBuffer, coerceLispObjectToJavaByte(initialElement));           
+          fill(newBuffer, coerceToJavaByte(initialElement));           
         }
         this.data = newBuffer;
 

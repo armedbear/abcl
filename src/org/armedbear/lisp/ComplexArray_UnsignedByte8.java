@@ -83,7 +83,7 @@ public final class ComplexArray_UnsignedByte8 extends AbstractArray
     {
         if (dims.length == 0) {
             try {
-                data[index] = coerceLispObjectToJavaByte(contents);
+                data[index] = coerceToJavaByte(contents);
             }
             catch (ArrayIndexOutOfBoundsException e) {
                 error(new LispError("Bad initial contents for array."));
@@ -189,7 +189,7 @@ public final class ComplexArray_UnsignedByte8 extends AbstractArray
     {
         if (data != null) {
             try {
-                return coerceJavaByteToLispObject(data[index]);
+                return coerceFromJavaByte(data[index]);
             }
             catch (ArrayIndexOutOfBoundsException e) {
                 return error(new TypeError("Bad row major index " + index + "."));
@@ -203,7 +203,7 @@ public final class ComplexArray_UnsignedByte8 extends AbstractArray
     {
         if (data != null) {
             try {
-                data[index] = coerceLispObjectToJavaByte(newValue);
+                data[index] = coerceToJavaByte(newValue);
             }
             catch (ArrayIndexOutOfBoundsException e) {
                 error(new TypeError("Bad row major index " + index + "."));
