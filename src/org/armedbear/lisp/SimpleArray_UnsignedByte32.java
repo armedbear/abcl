@@ -35,6 +35,32 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
+/*
+ N.b. this implementation has problems somewhere with converting bytes
+
+      Not fixing currently, as this type is unused with NIO
+
+(let* ((unspecialized
+         #(2025373960 3099658457 3238582529 148439321
+           3099658456 3238582528 3000000000 1000000000
+           2000000000 2900000000 2400000000 2800000000
+           0 1))
+       (array 
+         (make-array (length unspecialized)
+                     :element-type '(unsigned-byte 32) 
+                     :initial-contents unspecialized)))
+  (prove:plan (length array))
+  (loop :for i :below (length array)
+        :doing
+           (let ((x0
+                   (elt unspecialized i))
+                 (x1
+                   (elt array i)))
+           (prove:ok
+            (equal x0 x1)
+            (format nil "~a: ~a equals ~a" i x0 x1)))))
+*/
+
 public final class SimpleArray_UnsignedByte32 extends AbstractArray
 {
     private final int[] dimv;
