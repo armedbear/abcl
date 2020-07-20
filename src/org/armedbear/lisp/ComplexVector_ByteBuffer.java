@@ -189,7 +189,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
   public LispObject AREF(int index) {
     if (elements != null) {
       try {
-        return coerceJavaByteToLispObject(elements.get(index));
+        return coerceFromJavaByte(elements.get(index));
       } catch (ArrayIndexOutOfBoundsException e) {
         badIndex(index, elements.limit());
         return NIL; // Not reached.
@@ -226,7 +226,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
   {
     if (elements != null) {
       try {
-        elements.put(index, coerceLispObjectToJavaByte(newValue));
+        elements.put(index, coerceToJavaByte(newValue));
       } catch (IndexOutOfBoundsException e) {
         badIndex(index, elements.limit());
       }
@@ -316,7 +316,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
       }
       int i, j;
       for (i = 0, j = length - 1; i < length; i++, j--) {
-        data.put(i, coerceLispObjectToJavaByte(AREF(j)));
+        data.put(i, coerceToJavaByte(AREF(j)));
       }
       elements = data;
       capacity = length;
@@ -391,7 +391,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
         final int limit
           = Math.min(length(), array.getTotalSize() - displacement);
         for (int i = 0; i < limit; i++) {
-          elements.put(i, coerceLispObjectToJavaByte(array.AREF(displacement + i)));
+          elements.put(i, coerceToJavaByte(array.AREF(displacement + i)));
         }
         capacity = minCapacity;
         array = null;
@@ -420,12 +420,12 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
       if (initialContents.listp()) {
         LispObject list = initialContents;
           for (int i = 0; i < newCapacity; i++) {
-            newElements.put(i, coerceLispObjectToJavaByte(list.car()));
+            newElements.put(i, coerceToJavaByte(list.car()));
             list = list.cdr();
           }
       } else if (initialContents.vectorp()) {
         for (int i = 0; i < newCapacity; i++) {
-          newElements.put(i, coerceLispObjectToJavaByte(initialContents.elt(i)));
+          newElements.put(i, coerceToJavaByte(initialContents.elt(i)));
         }
       } else {
           type_error(initialContents, Symbol.SEQUENCE);
@@ -442,7 +442,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
         }
         final int limit = Math.min(capacity, newCapacity);
         for (int i = 0; i < limit; i++) {
-          elements.put(i, coerceLispObjectToJavaByte(array.AREF(displacement + i)));
+          elements.put(i, coerceToJavaByte(array.AREF(displacement + i)));
         }
       } else if (capacity != newCapacity) {
         ByteBuffer newElements = null;
@@ -457,7 +457,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
       }
       // Initialize new elements (if applicable).
       if (initialElement != null) {
-        byte b = coerceLispObjectToJavaByte(initialElement);
+        byte b = coerceToJavaByte(initialElement);
         for (int i = capacity; i < newCapacity; i++) {
           elements.put(b);
         }

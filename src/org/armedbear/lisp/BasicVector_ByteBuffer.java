@@ -80,7 +80,7 @@ public final class BasicVector_ByteBuffer
     }
     for (int i = array.length; i-- > 0;) {
       // Faster please!
-      elements.put((byte)coerceLispObjectToJavaByte(array[i]));
+      elements.put((byte)coerceToJavaByte(array[i]));
     }
   }
 
@@ -143,7 +143,7 @@ public final class BasicVector_ByteBuffer
   @Override
   public LispObject elt(int index) {
     try {
-      return coerceJavaByteToLispObject(elements.get(index));
+      return coerceFromJavaByte(elements.get(index));
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, capacity);
       return NIL; // Not reached.
@@ -164,7 +164,7 @@ public final class BasicVector_ByteBuffer
   @Override
   public LispObject AREF(int index) {
     try {
-      return coerceJavaByteToLispObject(elements.get(index));
+      return coerceFromJavaByte(elements.get(index));
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, elements.limit()); 
       return NIL; // Not reached.
@@ -183,7 +183,7 @@ public final class BasicVector_ByteBuffer
   @Override
   public void aset(int index, LispObject value) {
     try {
-        elements.put(index, coerceLispObjectToJavaByte(value));
+        elements.put(index, coerceToJavaByte(value));
     } catch (IndexOutOfBoundsException e) {
       badIndex(index, capacity);
     }
@@ -279,12 +279,12 @@ public final class BasicVector_ByteBuffer
       if (initialContents.listp()) {
         LispObject list = initialContents;
         for (int i = 0; i < newCapacity; i++) {
-          newElements.put(i, coerceLispObjectToJavaByte(list.car()));
+          newElements.put(i, coerceToJavaByte(list.car()));
           list = list.cdr();
         }
       } else if (initialContents.vectorp()) {
         for (int i = 0; i < newCapacity; i++)
-          newElements.put(i, coerceLispObjectToJavaByte(initialContents.elt(i)));
+          newElements.put(i, coerceToJavaByte(initialContents.elt(i)));
       } else
         type_error(initialContents, Symbol.SEQUENCE);
       return new BasicVector_ByteBuffer(newElements, directAllocation);

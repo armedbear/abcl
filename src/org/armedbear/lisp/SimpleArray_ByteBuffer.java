@@ -110,7 +110,7 @@ public final class SimpleArray_ByteBuffer
                                  int index) {
     if (dims.length == 0) {
       try {
-        data.put(index, coerceLispObjectToJavaByte(contents));
+        data.put(index, coerceToJavaByte(contents));
       } catch (IndexOutOfBoundsException e) {
         error(new LispError("Bad initial contents for array."));
         return -1;
@@ -205,7 +205,7 @@ public final class SimpleArray_ByteBuffer
   @Override
   public LispObject AREF(int index) {
     try {
-      return coerceJavaByteToLispObject(data.get(index));
+      return coerceFromJavaByte(data.get(index));
     } catch (IndexOutOfBoundsException e) {
       return error(new TypeError("Bad row major index " + index + "."));
     }
@@ -214,7 +214,7 @@ public final class SimpleArray_ByteBuffer
   @Override
   public void aset(int index, LispObject newValue) {
     try {
-      data.put(index, coerceLispObjectToJavaByte(newValue));
+      data.put(index, coerceToJavaByte(newValue));
     } catch (IndexOutOfBoundsException e) {
       error(new TypeError("Bad row major index " + index + "."));
     }
@@ -254,7 +254,7 @@ public final class SimpleArray_ByteBuffer
   @Override
   public LispObject get(int[] subscripts) {
     try {
-      return coerceJavaByteToLispObject(data.get(getRowMajorIndex(subscripts)));
+      return coerceFromJavaByte(data.get(getRowMajorIndex(subscripts)));
     } catch (IndexOutOfBoundsException e) {
       return error(new TypeError("Bad row major index " +
                                  getRowMajorIndex(subscripts) + "."));
@@ -264,7 +264,7 @@ public final class SimpleArray_ByteBuffer
   @Override
   public void set(int[] subscripts, LispObject newValue) {
     try {
-      data.put(getRowMajorIndex(subscripts),coerceLispObjectToJavaByte(newValue));
+      data.put(getRowMajorIndex(subscripts),coerceToJavaByte(newValue));
     } catch (IndexOutOfBoundsException e) {
       error(new TypeError("Bad row major index " +
                           getRowMajorIndex(subscripts) + "."));

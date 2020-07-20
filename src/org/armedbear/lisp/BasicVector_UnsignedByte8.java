@@ -61,7 +61,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
     capacity = array.length;
     elements = new byte[capacity];
     for (int i = array.length; i-- > 0;)
-      elements[i] = coerceLispObjectToJavaByte(array[i]);
+      elements[i] = coerceToJavaByte(array[i]);
   }
 
   @Override
@@ -127,7 +127,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   {
     try
       {
-        return coerceJavaByteToLispObject(elements[index]);
+        return coerceFromJavaByte(elements[index]);
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
@@ -156,7 +156,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   {
     try
       {
-        return coerceJavaByteToLispObject(elements[index]);
+        return coerceFromJavaByte(elements[index]);
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
@@ -183,7 +183,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   {
     try
       {
-        elements[index] = coerceLispObjectToJavaByte(value);
+        elements[index] = coerceToJavaByte(value);
       }
     catch (ArrayIndexOutOfBoundsException e)
       {

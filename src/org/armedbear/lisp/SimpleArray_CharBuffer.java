@@ -117,7 +117,7 @@ public final class SimpleArray_CharBuffer
                                  int index) {
     if (dims.length == 0) {
       try {
-        data.put(index, coerceLispObjectToJavaChar(contents));
+        data.put(index, coerceToJavaChar(contents));
       } catch (IndexOutOfBoundsException e) {
         error(new LispError("Bad initial contents for array."));
         return -1;
