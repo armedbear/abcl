@@ -1350,16 +1350,39 @@ public final class Java
 	return classForName(className, JavaClassLoader.getPersistentInstance());
     }
 
-    private static Class classForName(String className, ClassLoader classLoader) {
-        try {
-            return Class.forName(className, true, classLoader);
+  private static Class classForName(String className,
+                                    ClassLoader classLoader) {
+    try {
+      if (!className.endsWith("[]")) {
+        return Class.forName(className, true, classLoader);
+      } else {
+        // <https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.2>
+        if (className.startsWith("byte")) {
+          return Class.forName("[B");
+        } else if (className.startsWith("char")) {
+          return Class.forName("[C");
+        } else if (className.startsWith("double")) {
+          return Class.forName("[D");
+        } else if (className.startsWith("float")) {
+          return Class.forName("[F");
+        } else if (className.startsWith("int")) {
+          return Class.forName("[I");
+        } else if (className.startsWith("long")) {
+          return Class.forName("[J");
+        } else if (className.startsWith("short")) {
+          return Class.forName("[S");
+        } else if (className.startsWith("boolean")) {
+          return Class.forName("[Z");
+        } else {
+          return Class.forName(className); // Not going to work well
         }
-        catch (ClassNotFoundException e) {
-	    error(new LispError("Class not found: " + className));
-	    // Not reached.
-	    return null;
-        }
+      }
+    } catch (ClassNotFoundException e) {
+      error(new LispError("Class not found: " + className));
+      // Not reached.
+      return null;
     }
+  }
 
     private static Class javaClass(LispObject obj) {
 	return javaClass(obj, JavaClassLoader.getCurrentClassLoader());
