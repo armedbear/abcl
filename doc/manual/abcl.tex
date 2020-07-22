@@ -18,68 +18,68 @@ Unreleased}
 \maketitle
 
 \tableofcontents
-%%Preface to the Eighth edition, abcl-1.7.0
-\subsection{Preface to the Eighth Edition}
-Since the implementation now runs comfortably on openjdk6, openjdk7,
-openjdk8, openjdk11, and openjdk14, we take advantage of the presence
-of the java.nio packages introduced in Java 1.5.  We have overhauled
-the implementation to use these abstractions for arrays specialized on
-commonly used unsigned-byte types, adding two additional keyword
-arguments useful in their construction to
-\code{cl:make-array}.\footnote{See \ref{sec:make-array} on page
-\pageref{sec:make-array}}.
+%%Preface to the second edition, abcl-1.1
+\subsection{Preface to the Second Edition}
+\textsc{ABCL} 1.1 now contains \textsc{(A)MOP}.  We hope you enjoy!
+--The Mgmt.
 
-%%Preface to the Seventh edition, abcl-1.6.0
-\subsection{Preface to the Seventh Edition}
-
-Long overdue, we turn our Java to 11.
-
-Reflecting the management's best estimates as to implementation most
-easily available to the potential \textsc{ABCL} 1.6 User, the Seventh
-release implementation works best with Java 8 or Java 11 runtimes.
-Since freely available implementations of jdk6 and jdk7 exist, we
-still strive to maintain compatibility with the Java 6 and Java 7
-runtime environments but those environments are less tested.  The User
-may need to use the facilities of the ABCL-BUILD contrib to recompile
-the implementation locally in more exotic runtimes (see
-Section~\ref{sec:abcl-build} page~\pageref{sec:abcl-build}).
-
-%%Preface to the Sixth edition, abcl-1.5.0
-\subsection{Preface to the Sixth Edition}
-
-With the sixth major release of the implementation, we make the
-following explicit revision of our compatibility to the underlying
-JVM.  Since we are an open source implementation, we insist on
-possible open access to the sources from with an JDK may both be built
-and run upon.  This requirement is no longer met by Java 5, so
-henceforth with the release of \textsc{ABCL} 1.5, we will support
-Java 6, Java 7 and Java 8 runtimes.
-
-%%Preface to the Fifth edition, abcl-1.4.0
-\subsection{Preface to the Fifth Edition}
-
-\textsc{ABCL} 1.4 consolidates eighteen months of production bug-fixes,
-and substantially improves the support for invoking external
-processes via \code{SYS:RUN-PROGRAM}.
+%%Preface to the Third edition, abcl-1.2
+\subsection{Preface to the Third Edition}
+The implementation now contains a performant and conformant
+implementation of \textsc{(A)MOP} to the point of inclusion in
+\textsc{CLOSER-MOP}'s test suite.
 
 %%Preface to the Fourth edition, abcl-1.3.
 \subsection{Preface to the Fourth Edition}
 
 \textsc{ABCL} 1.3 now implements an optimized implementation of the
 \code{org.armedbear.lisp.LispStack} abstraction thanks to Dmitry
-Nadezhin which runs on ORCL JVMs from 1.[5-8] conformantly.
+Nadezhin which runs on ORCL \textsc{JVMs} from 1.[5-8] conformantly.
 
-%%Preface to the Third edition, abcl-1.2.
-\subsection{Preface to the Third Edition}
-The implementation now contains a performant and conformant
-implementation of (A)MOP to the point of inclusion in CLOSER-MOP's
-test suite.
+%%Preface to the Fifth edition, abcl-1.4
+\subsection{Preface to the Fifth Edition}
 
-%%Preface to the second edition, abcl-1.1.
+\textsc{ABCL} 1.4 consolidates eighteen months of production bug-fixes,
+and substantially improves the support for invoking external
+processes via \code{SYS:RUN-PROGRAM}.
 
-\subsection{Preface to the Second Edition}
+%%Preface to the Sixth edition, abcl-1.5
+\subsection{Preface to the Sixth Edition}
 
-\textsc{ABCL} 1.1 now contains \textsc{(A)MOP}.  We hope you enjoy!  --The Mgmt.
+With the sixth major release of the implementation, we make the
+following explicit revision of our compatibility to the underlying
+\textsc{JVM}.  Since we are an open source implementation, we insist
+on possible open access to the sources from with an \textsc{JDK} may
+both be built and run upon.  This requirement is no longer met by Java
+5, so henceforth with the release of \textsc{ABCL} 1.5, we will
+support \textsc{Java 6}, \textsc{Java 7} and \textsc{Java 8} runtimes.
+
+%%Preface to the Seventh edition, abcl-1.6
+\subsection{Preface to the Seventh Edition}
+
+Long overdue, we turn our Java to 11.
+
+Reflecting the management's best estimates as to implementation most
+easily available to the potential \textsc{ABCL} 1.6 User, the Seventh
+release implementation works best with \textsc{Java 8} or \textsc{Java 11}
+runtimes.  Since freely available implementations of jdk6 and jdk7
+exist, we still strive to maintain compatibility with the Java 6 and
+Java 7 runtime environments but those environments are less tested.
+The User may need to use the facilities of the \textsc{ABCL-BUILD} contrib to
+recompile the implementation locally in more exotic runtimes (see
+Section~\ref{sec:abcl-build} page~\pageref{sec:abcl-build}).
+
+
+%%Preface to the Eighth edition, abcl-1.7
+\subsection{Preface to the Eighth Edition}
+Since the implementation now runs comfortably on openjdk6, openjdk7,
+openjdk8, openjdk11, and openjdk14, we take advantage of the presence
+of the \code{java.nio} package introduced in \textsc{Java 5}.  We have
+overhauled the implementation to use these abstractions for arrays
+specialized on commonly used unsigned-byte types, adding two
+additional keyword arguments useful in their construction to
+\code{cl:make-array}.\footnote{See \ref{sec:make-array} on page
+\pageref{sec:make-array}}.
 
 \chapter{Introduction}
 
@@ -128,34 +128,35 @@ programs and libraries provided therein out-of-the-box.
 implementation due to the following known issues:
 
 \begin{itemize}
-\item The generic function signatures of the \code{CL:DOCUMENTATION} symbol
-  do not match the specification.
-\item The \code{CL:TIME} form does not return a proper \code{CL:VALUES}
-  environment to its caller.
-\item When merging pathnames and the defaults point to a \code{EXT:JAR-PATHNAME},
-  we set the \code{DEVICE} of the result to \code{:UNSPECIFIC} if the pathname to be
-  be merged does not contain a specified \code{DEVICE}, does not contain a
-  specified \code{HOST}, does contain a relative \code{DIRECTORY}, and we are
-  not running on a \textsc{MSFT} Windows platform.\footnote{The intent of this
-    rather arcane sounding deviation from conformance is so that the
-    result of a merge won't fill in a \code{DEVICE} with the wrong "default
-    device for the host" in the sense of the fourth paragraph in the
-    \textsc{CLHS} description of MERGE-PATHNAMES (see in \cite{CLHS} the paragraph beginning
-    "If the PATHNAME explicitly specifies a host and not a device…").
-    A future version of the implementation may return to conformance
-    by using the \code{HOST} value to reflect the type explicitly.
-  }
+\item The generic function signatures of the \code{CL:DOCUMENTATION}
+  symbol do not match the specification.
+\item The \code{CL:TIME} form does not return a proper
+  \code{CL:VALUES} environment to its caller.
+\item When merging pathnames and the defaults point to a
+  \code{EXT:JAR-PATHNAME}, we set the \code{DEVICE} of the result to
+  \code{:UNSPECIFIC} if the pathname to be be merged does not contain
+  a specified \code{DEVICE}, does not contain a specified \code{HOST},
+  does contain a relative \code{DIRECTORY}, and we are not running on
+  a \textsc{MSFT} Windows platform.\footnote{The intent of this rather
+  arcane sounding deviation from conformance is so that the result of
+  a merge won't fill in a \code{DEVICE} with the wrong "default device
+  for the host" in the sense of the fourth paragraph in the
+  \textsc{CLHS} description of MERGE-PATHNAMES (see in \cite{CLHS} the
+  paragraph beginning "If the PATHNAME explicitly specifies a host and
+  not a device…").  A future version of the implementation may return
+  to conformance by using the \code{HOST} value to reflect the type
+  explicitly.}
 
 \end{itemize}
 
 Somewhat confusingly, this statement of non-conformance in the
 accompanying user documentation fulfills the requirements that
 \textsc{ABCL} is a conforming ANSI Common Lisp implementation according
-to the Common Lisp HyperSpec~\cite{CLHS}.  Clarifications to this point
+to the Common Lisp Hyper-Spec~\cite{CLHS}.  Clarifications to this point
 are solicited.
 
-\textsc{ABCL} aims to be be a fully conforming \textsc{ANSI} Common Lisp implementation.
-Any other behavior should be reported as a bug.
+\textsc{ABCL} aims to be be a fully conforming \textsc{ANSI} Common
+Lisp implementation.  Any other behavior should be reported as a bug.
 
 \subsection{Contemporary Common Lisp}
 In addition to \textsc{ANSI} conformance, \textsc{ABCL} strives to implement
@@ -176,7 +177,7 @@ contemporary Common Lisp.
   behavior\footnote{The streams could be optimized to the
     \textsc{JVM} NIO \cite{nio} abstractions at great profit for
     binary byte-level manipulations.}.
-\item Incomplete documentation: source code is missing docstrings from
+\item Incomplete documentation: source code is missing doc-strings from
   all exported symbols from the \code{EXTENSIONS}, \code{SYSTEM},
   \code{JAVA}, \code{MOP}, and \code{THREADS} packages.  This user
   manual is currently in draft status.
@@ -201,6 +202,7 @@ course.
 \section{Contributors}
 
 \begin{itemize}
+\item Dmitry Nadezhin
 \item Philipp Marek \texttt{Thanks for the markup, and review of the Manual}
 \item Douglas Miles \texttt{Thanks for the whacky IKVM stuff and keeping the flame alive
   in the dark years.}
@@ -1756,8 +1758,9 @@ NIL
 \url{http://abcl.org/svn/tags/1.7.1/contrib/abcl-introspect/}.
 
 \section{abcl-build}
-\label{section:abcl-build}
+\label{sec:abcl-build}
 \index{ABCL-BUILD}
+
 
 \textsc{ABCL-BUILD} constitutes a new implementation for the original
 Lisp-hosted ABCL build system API in the package \code{ABCL-BUILD}
