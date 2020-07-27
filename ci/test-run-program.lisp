@@ -2,7 +2,8 @@
 (require :abcl-contrib)
 (asdf:load-system :quicklisp-abcl)
 
-(asdf:load-system :prove)
+(unless (ignore-errors (asdf:load-system :prove))
+  (ql:quickload :prove))
 
 (prove:run #p"~/work/abcl/t/sys-run-program.lisp")
 

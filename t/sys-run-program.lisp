@@ -1,3 +1,6 @@
+(in-package :cl-user)
+
+
 (prove:plan 1)
 (prove:isnt
  (handler-case
