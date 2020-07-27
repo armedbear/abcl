@@ -5,6 +5,8 @@
 (unless (ignore-errors (asdf:load-system :prove))
   (ql:quickload :prove))
 
-(prove:run #p"~/work/abcl/t/sys-run-program.lisp")
+(prove:run
+ (asdf:system-relative-pathname :abcl
+				"t/sys-run-program.lisp")
 
 
