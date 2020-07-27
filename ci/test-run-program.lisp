@@ -7,6 +7,6 @@
 
 (prove:run
  (asdf:system-relative-pathname :abcl
-				"t/sys-run-program.lisp")
+				"t/sys-run-program.lisp"))
 
 
