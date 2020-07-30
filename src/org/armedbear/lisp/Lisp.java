@@ -2366,31 +2366,64 @@ public final class Lisp
   {
     Symbol.READ_EVAL.initializeSpecial(T);
   }
+  
 
+  //
   // ### *features*
+  //
   static
   {
     final String osName = System.getProperty("os.name");
     final String javaVersion = System.getProperty("java.version");
     final String osArch = System.getProperty("os.arch");
-
+    
     // Common features
     LispObject featureList = list(Keyword.ARMEDBEAR, Keyword.ABCL,
                                   Keyword.COMMON_LISP, Keyword.ANSI_CL,
-                                  Keyword.CDR6, Keyword.MOP,
+                                  Keyword.CDR6, 
+                                  Keyword.MOP,
                                   internKeyword("PACKAGE-LOCAL-NICKNAMES"));
+    
+    // add the contents of version as a keyword symbol regardless of runtime value
+    featureList = featureList.push(internKeyword("JVM-" + javaVersion));
+    {
+      String platformVersion = null;
+      if (javaVersion.startsWith("1.")) {
+          // pre <https://openjdk.java.net/jeps/223>
+          int i = javaVersion.indexOf(".", 2);
+          platformVersion = javaVersion.substring(2, i);
+        } else {
+          int i = javaVersion.indexOf(".");
+          platformVersion = javaVersion.substring(0, i);
+      }
+      featureList = featureList.push(internKeyword("JAVA-" + platformVersion));
+    }
+
+    {       // Deprecated java version
+      if (javaVersion.startsWith("1.5")) {
+        featureList = new Cons(Keyword.JAVA_1_5, featureList);
+      } else if (javaVersion.startsWith("1.6")) {
+        featureList = new Cons(Keyword.JAVA_1_6, featureList);
+      } else if (javaVersion.startsWith("1.7")) {
+        featureList = new Cons(Keyword.JAVA_1_7, featureList);
+      } else if (javaVersion.startsWith("1.8")) {
+        featureList = new Cons(Keyword.JAVA_1_8, featureList);
+      }
+    }
+
+    
     // OS type
     if (osName.startsWith("Linux"))
       featureList = Primitives.APPEND.execute(list(Keyword.UNIX,
                                                   Keyword.LINUX),
-                                             featureList);
+                                              featureList);
     else if (osName.startsWith("SunOS"))
       featureList = Primitives.APPEND.execute(list(Keyword.UNIX,
                                                    Keyword.SUNOS,
                                                    Keyword.SOLARIS),
                                               featureList);
-    else if (osName.startsWith("Mac OS X") ||
-             osName.startsWith("Darwin"))
+    else if (osName.startsWith("Mac OS X")
+             || osName.startsWith("Darwin"))
       featureList = Primitives.APPEND.execute(list(Keyword.UNIX,
                                                    Keyword.DARWIN),
                                               featureList);
@@ -2408,24 +2441,17 @@ public final class Lisp
                                               featureList);
     else if (osName.startsWith("Windows"))
       featureList = new Cons(Keyword.WINDOWS, featureList);
-    // Java version
-    if (javaVersion.startsWith("1.5")) {
-        featureList = new Cons(Keyword.JAVA_1_5, featureList);
-    } else if (javaVersion.startsWith("1.6")) {
-        featureList = new Cons(Keyword.JAVA_1_6, featureList);
-    } else if (javaVersion.startsWith("1.7")) {
-        featureList = new Cons(Keyword.JAVA_1_7, featureList);
-    } else if (javaVersion.startsWith("1.8")) {
-        featureList = new Cons(Keyword.JAVA_1_8, featureList);
-    } else if (javaVersion.startsWith("1.9")) {
-        featureList = new Cons(Keyword.JAVA_1_9, featureList);
-    }
+
     // Processor architecture
-    if(osArch != null) {
-      if (osArch.equals("amd64") || osArch.equals("x86_64"))
-        featureList = new Cons(Keyword.X86_64, featureList);
-      else if (osArch.equals("x86") || osArch.equals("i386"))
-        featureList = new Cons(Keyword.X86, featureList);
+    if (osArch != null) {
+      if (osArch.equals("amd64") || osArch.equals("x86_64")) {
+        featureList = featureList.push(Keyword.X86_64);
+      } else if (osArch.equals("x86") || osArch.equals("i386")) {
+        featureList = featureList.push(Keyword.X86);
+      } else {
+        // just push the value of 'os.arch' as a keyword
+        featureList = featureList.push(internKeyword(osArch));
+      }
     }
     Symbol.FEATURES.initializeSpecial(featureList);
   }
