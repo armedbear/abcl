@@ -84,7 +84,7 @@ public class DecodingReader
         this.cd.onMalformedInput(CodingErrorAction.REPLACE);
         this.ce = cs.newEncoder();
         bbuf = ByteBuffer.allocate(size);
-        bbuf.flip();  // mark the buffer as 'needs refill'
+        ((java.nio.Buffer)bbuf).flip();  // mark the buffer as 'needs refill'
     }
 
     /** Change the Charset used to decode bytes from the input stream
@@ -173,23 +173,23 @@ public class DecodingReader
         ByteBuffer tb = // temp buffer
             ce.encode(CharBuffer.wrap(cbuf, off, len));
 
-        if (tb.limit() > bbuf.position()) {
+        if (tb.limit() > ((java.nio.Buffer)bbuf).position()) {
             // unread bbuf into the pushback input stream
             // in order to free up space for the content of 'tb'
-            for (int i = bbuf.limit(); i-- > bbuf.position(); )
+	    for (int i = ((java.nio.Buffer)bbuf).limit(); i-- > ((java.nio.Buffer)bbuf).position(); )
                 stream.unread(bbuf.get(i));
 
-            bbuf.clear();
+            ((java.nio.Buffer)bbuf).clear();
             ce.encode(CharBuffer.wrap(cbuf, off, len), bbuf, true);
-            bbuf.flip();
+            ((java.nio.Buffer)bbuf).flip();
         } else {
             // Don't unread bbuf, since tb will fit in front of the
             // existing data
-            int j = bbuf.position() - 1;
-            for (int i = tb.limit(); i-- > 0; j--) // two-counter loop
+	  int j = ((java.nio.Buffer)bbuf).position() - 1;
+            for (int i = ((java.nio.Buffer)tb).limit(); i-- > 0; j--) // two-counter loop
                 bbuf.put(j, tb.get(i));
 
-            bbuf.position(j+1);
+            ((java.nio.Buffer)bbuf).position(j+1);
         }
     }
 
@@ -214,12 +214,12 @@ public class DecodingReader
             int c = stream.read(by);
 
             if (c < 0) {
-                bbuf.flip();  // prepare bbuf for reading
+	        ((java.nio.Buffer)bbuf).flip();  // prepare bbuf for reading
                 return false;
             }
 
             bbuf.put(by, 0, c);
-            bbuf.flip();
+            ((java.nio.Buffer)bbuf).flip();
         }
         return true;
     }

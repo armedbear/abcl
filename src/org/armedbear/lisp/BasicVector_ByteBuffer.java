@@ -87,7 +87,7 @@ public final class BasicVector_ByteBuffer
   public BasicVector_ByteBuffer(ByteBuffer buffer, boolean directAllocation) {
     elements = buffer;
     this.directAllocation = directAllocation;
-    capacity = buffer.limit();  
+    capacity = ((java.nio.Buffer)buffer).limit();  
   }
 
   @Override
@@ -155,7 +155,7 @@ public final class BasicVector_ByteBuffer
     try {
       return (((int)elements.get(index) & 0xff)); // XXX Hmmm
     } catch (IndexOutOfBoundsException e) {
-      badIndex(index, elements.limit()); 
+      badIndex(index, ((java.nio.Buffer)elements).limit()); 
       // Not reached.
       return 0;
     }
@@ -166,7 +166,7 @@ public final class BasicVector_ByteBuffer
     try {
       return coerceFromJavaByte(elements.get(index));
     } catch (IndexOutOfBoundsException e) {
-      badIndex(index, elements.limit()); 
+      badIndex(index, ((java.nio.Buffer)elements).limit()); 
       return NIL; // Not reached.
     }
   }
@@ -194,8 +194,8 @@ public final class BasicVector_ByteBuffer
     // ??? Do we need to check that start, end are valid?
     BasicVector_ByteBuffer v = new BasicVector_ByteBuffer(end - start, directAllocation);
     ByteBuffer view = elements.asReadOnlyBuffer();
-    view.position(start);
-    view.limit(end);
+    ((java.nio.Buffer)view).position(start);
+    ((java.nio.Buffer)view).limit(end);
     try {
       v.elements.put(view);
       return v;
@@ -230,7 +230,7 @@ public final class BasicVector_ByteBuffer
     // use the java.nio.Buffer limit pointer.  Not totally sure that
     // this strategy will work out…
     if (n < length()) {
-        elements.limit(n);
+        ((java.nio.Buffer)elements).limit(n);
         capacity = n;
         return;
     }

@@ -249,7 +249,7 @@ public final class ComplexArray_ByteBuffer
       return;
     }
     if (data != null) {
-      for (int i = data.limit(); i-- > 0;)
+      for (int i = ((java.nio.Buffer)data).limit(); i-- > 0;)
         data.put(i, (byte) n); // FIXME Faster!!
     } else {
       for (int i = totalSize; i-- > 0;)
@@ -278,7 +278,7 @@ public final class ComplexArray_ByteBuffer
 
   // FIXME move me to someplace more general
   public static void fill(ByteBuffer buffer, byte value) {
-    for (int i = 0; i < buffer.limit(); i++) {
+    for (int i = 0; i < ((java.nio.Buffer)buffer).limit(); i++) {
       buffer.put(value);
     }
   }

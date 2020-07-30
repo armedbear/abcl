@@ -17,7 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, .
  *
  * As a special exception, the copyright holders of this library give you
  * permission to link this library with independent modules to produce an
@@ -296,7 +296,7 @@ public class RandomAccessCharacterFile {
         bbuf = ByteBuffer.allocate(BUFSIZ);
 
         // there is no readable data available in the buffers.
-        bbuf.flip();
+        ((java.nio.Buffer)bbuf).flip();
 
         // there is no write pending data in the buffers.
         bbufIsDirty = false;
@@ -360,21 +360,23 @@ public class RandomAccessCharacterFile {
 
             if (bbufIsDirty) {
                 flushBbuf(false);
-                bbuf.clear();
+                ((java.nio.Buffer)bbuf).clear();
                 bbufIsReadable = false;
             } else {
-                int bbufEnd = bbufIsReadable ? bbuf.limit() : bbuf.position();
+                int bbufEnd = bbufIsReadable
+                  ? ((java.nio.Buffer)bbuf).limit()
+                  : ((java.nio.Buffer)bbuf).position();
                 fcn.position(bbufpos + bbufEnd);
-                bbufpos += bbuf.position();
+                bbufpos += ((java.nio.Buffer)bbuf).position();
                 if (bbufIsReadable) {
                   bbuf.compact();
                   bbufIsReadable = false;
-                } else //must discard the junk bytes after bbuf.position()
-                  bbuf.clear();
+                } else //must discard the junk bytes after ((java.nio.Buffer)bbuf).position()
+                  ((java.nio.Buffer)bbuf).clear();
             }
 
             bufReady = (fcn.read(bbuf) != -1);
-            bbuf.flip();
+            ((java.nio.Buffer)bbuf).flip();
             bbufIsReadable = true;
         }
 
@@ -433,25 +435,25 @@ public class RandomAccessCharacterFile {
             bbufIsDirty = true;
             if (CoderResult.OVERFLOW == r || bbuf.remaining() == 0) {
                 flushBbuf(false);
-                bbuf.clear();
+                ((java.nio.Buffer)bbuf).clear();
                 bbufIsReadable = false;
             }
             if (r.isUnmappable()) {
-                throw new RACFUnmappableCharacterException(cbuf.position(),
-                                                           cbuf.charAt(cbuf.position()),
+                throw new RACFUnmappableCharacterException(((java.nio.Buffer)cbuf).position(),
+                                                           cbuf.charAt(((java.nio.Buffer)cbuf).position()),
                                                            cset.name());
             }
             if (r.isMalformed()) {
                 // We don't really expect Malformed, but not handling it
                 // will cause an infinite loop if we don't...
-                throw new RACFMalformedInputException(cbuf.position(),
-                                                      cbuf.charAt(cbuf.position()),
+                throw new RACFMalformedInputException(((java.nio.Buffer)cbuf).position(),
+                                                      cbuf.charAt(((java.nio.Buffer)cbuf).position()),
                                                       cset.name());
             }
             // UNDERFLOW is the normal condition where cbuf runs out
             // before bbuf is filled.
         }
-        if (bbuf.position() > 0 && bbufIsDirty && flush) {
+        if (((java.nio.Buffer)bbuf).position() > 0 && bbufIsDirty && flush) {
             flushBbuf(false);
         }
     }
@@ -459,26 +461,28 @@ public class RandomAccessCharacterFile {
     public final void position(long newPosition) throws IOException {
         flushBbuf(true);
         long bbufend = bbufpos // in case bbuf is readable, its contents is valid
-            + (bbufIsReadable ? bbuf.limit() : bbuf.position()); // beyond position()
+            + (bbufIsReadable
+	       ? ((java.nio.Buffer)bbuf).limit()
+	       : ((java.nio.Buffer)bbuf).position()); // beyond position()
         if (newPosition >= bbufpos && newPosition < bbufend) {
             // near seek. within existing data of bbuf.
             if (!bbufIsReadable) { //rewinding. keep tail buffered.
-              bbuf.limit(bbuf.position());
+              ((java.nio.Buffer)bbuf).limit(((java.nio.Buffer)bbuf).position());
               bbufIsReadable = true;
             }
-            bbuf.position((int)(newPosition - bbufpos));
+            ((java.nio.Buffer)bbuf).position((int)(newPosition - bbufpos));
         } else {
             fcn.position(newPosition);
             // far seek; discard the buffer (it's already cleared)
-            bbuf.clear();
-            bbuf.flip(); // "there is no useful data on this buffer yet."
+            ((java.nio.Buffer)bbuf).clear();
+            ((java.nio.Buffer)bbuf).flip(); // "there is no useful data on this buffer yet."
             bbufIsReadable = true;
             bbufpos = newPosition;
         }
     }
 
     public final long position() throws IOException {
-        return bbufpos + bbuf.position(); // the logical position within the file.
+        return bbufpos + ((java.nio.Buffer)bbuf).position(); // the logical position within the file.
     }
 
     public final long length() throws IOException {
@@ -498,7 +502,7 @@ public class RandomAccessCharacterFile {
         // calls this function.
         if (commitOnly) {
             ByteBuffer dup = bbuf.duplicate();
-            dup.flip();
+            ((java.nio.Buffer)dup).flip();
             fcn.write(dup);
             //ideally, should restore fcn.position(). but don't for performance.
 //            fcn.position(fcn.position()-dup.position());
@@ -507,13 +511,13 @@ public class RandomAccessCharacterFile {
         }
         
         if (bbufIsDirty) {
-          bbuf.flip();
+          ((java.nio.Buffer)bbuf).flip();
           fcn.write(bbuf);
         }
 
-        bbufpos += bbuf.position();
-        bbuf.clear();
-        bbuf.flip(); // there's no useable data in this buffer
+        bbufpos += ((java.nio.Buffer)bbuf).position();
+        ((java.nio.Buffer)bbuf).clear();
+        ((java.nio.Buffer)bbuf).flip(); // there's no useable data in this buffer
         bbufIsDirty = false;
         bbufIsReadable = true;
     }
@@ -556,12 +560,12 @@ public class RandomAccessCharacterFile {
             singleCharBuf = CharBuffer.allocate(1);
             shortByteBuf = ByteBuffer.allocate((int)cenc.maxBytesPerChar());
         }
-        singleCharBuf.clear();
+        ((java.nio.Buffer)singleCharBuf).clear();
         singleCharBuf.append(c);
-        singleCharBuf.flip();
-        shortByteBuf.clear();
+        ((java.nio.Buffer)singleCharBuf).flip();
+        ((java.nio.Buffer)shortByteBuf).clear();
         cenc.encode(singleCharBuf, shortByteBuf, false);
-        int n = shortByteBuf.position();
+        int n = ((java.nio.Buffer)shortByteBuf).position();
         long pos = position() - n;
         position(pos);
     }
@@ -576,7 +580,7 @@ public class RandomAccessCharacterFile {
         while (pos < off + len) {
             if (bbuf.remaining() == 0) {
                 flushBbuf(false);
-                bbuf.clear();
+                ((java.nio.Buffer)bbuf).clear();
                 bbufIsReadable = false;
             }
             int thisBatchLen = Math.min(off + len - pos, bbuf.remaining());

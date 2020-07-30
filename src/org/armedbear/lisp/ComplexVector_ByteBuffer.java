@@ -191,7 +191,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
       try {
         return coerceFromJavaByte(elements.get(index));
       } catch (ArrayIndexOutOfBoundsException e) {
-        badIndex(index, elements.limit());
+        badIndex(index, ((java.nio.Buffer)elements).limit());
         return NIL; // Not reached.
       }
     } else {
@@ -228,7 +228,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
       try {
         elements.put(index, coerceToJavaByte(newValue));
       } catch (IndexOutOfBoundsException e) {
-        badIndex(index, elements.limit());
+        badIndex(index, ((java.nio.Buffer)elements).limit());
       }
     } else {
       array.aset(index + displacement, newValue);
@@ -272,11 +272,11 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
     // One cannot shrink the underlying ByteBuffer physically, so
     // use the limit marker to denote the length
     if (n < length()) {
-      elements.limit(n);
+      ((java.nio.Buffer)elements).limit(n);
       this.capacity = n;
       return;
     }
-    if (n == elements.limit()) { 
+    if (n == ((java.nio.Buffer)elements).limit()) { 
       return;
     }
     error(new LispError());

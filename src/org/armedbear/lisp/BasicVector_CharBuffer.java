@@ -76,13 +76,13 @@ public final class BasicVector_CharBuffer
   public BasicVector_CharBuffer(ByteBuffer buffer, boolean directAllocation) {
     elements = buffer.asCharBuffer();
     this.directAllocation = directAllocation;
-    capacity = buffer.limit();
+    capacity = ((java.nio.Buffer)buffer).limit();
   }
 
   public BasicVector_CharBuffer(CharBuffer buffer, boolean directAllocation) {
     elements = buffer;
     this.directAllocation = directAllocation;
-    capacity = buffer.limit();
+    capacity = ((java.nio.Buffer)buffer).limit();
   }
 
   @Override
@@ -151,7 +151,7 @@ public final class BasicVector_CharBuffer
     try {
       return elements.get(index);
     } catch (ArrayIndexOutOfBoundsException e) {
-      badIndex(index, elements.limit()); // FIXME should implement method for length() contract
+      badIndex(index, ((java.nio.Buffer)elements).limit()); // FIXME should implement method for length() contract
       // Not reached.
       return 0;
     }
@@ -163,7 +163,7 @@ public final class BasicVector_CharBuffer
     try {
       return Fixnum.getInstance(elements.get(index));
     } catch (IndexOutOfBoundsException e) {
-      badIndex(index, elements.limit());  // FIXME limit() --> capacity?
+      badIndex(index, ((java.nio.Buffer)elements).limit());  // FIXME limit() --> capacity?
       return NIL; // Not reached.
     }
   }
@@ -230,7 +230,7 @@ public final class BasicVector_CharBuffer
     // shouldn't touch, so use the java.nio.Buffer limit pointer.
     // Not totally sure that this strategy will work out…
     if (n < length()) {
-      elements.limit(n);
+      ((java.nio.Buffer)elements).limit(n);
       capacity = n;
       return;
     }

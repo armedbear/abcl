@@ -79,13 +79,13 @@ public final class BasicVector_IntBuffer
   public BasicVector_IntBuffer(ByteBuffer buffer, boolean directAllocation) {
     this.directAllocation = directAllocation;
     elements = buffer.asIntBuffer();
-    capacity = buffer.limit();
+    capacity = ((java.nio.Buffer)buffer).limit();
   }
 
   public BasicVector_IntBuffer(IntBuffer buffer) {
     this.directAllocation = directAllocation;
     elements = buffer;
-    capacity = buffer.limit();
+    capacity = ((java.nio.Buffer)buffer).limit();
   }
 
   @Override
@@ -154,7 +154,7 @@ public final class BasicVector_IntBuffer
       // FIXME: this shouldn't be used?  
       return number(((long)elements.get(index)) & 0xffffffffL).intValue(); 
     } catch (IndexOutOfBoundsException e) {
-      badIndex(index, elements.limit()); 
+      badIndex(index, ((java.nio.Buffer)elements).limit()); 
       return -1; // Not reached.
     }
   }
@@ -164,7 +164,7 @@ public final class BasicVector_IntBuffer
     try {
       return ((long)elements.get(index)) & 0xffffffffL;
     } catch (IndexOutOfBoundsException e) {
-      badIndex(index, elements.limit());
+      badIndex(index, ((java.nio.Buffer)elements).limit());
       return -1; // Not reached.
     }
   }
@@ -174,7 +174,7 @@ public final class BasicVector_IntBuffer
     try {
       return number(((long)elements.get(index)) & 0xffffffffL);
     } catch (IndexOutOfBoundsException e) {
-      badIndex(index, elements.limit());
+      badIndex(index, ((java.nio.Buffer)elements).limit());
       return NIL; // Not reached.
     }
   }
@@ -228,7 +228,7 @@ public final class BasicVector_IntBuffer
       // the elements field may refer to malloc()d memory that we
       // shouldn't touch, so use the java.nio.Buffer limit pointer.
       // Not totally sure that this strategy will work out…
-      elements.limit(n);
+      ((java.nio.Buffer)elements).limit(n);
       capacity = n;
       return;
     }
