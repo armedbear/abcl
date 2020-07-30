@@ -32,10 +32,13 @@
 
 (require :java)
 
-(defparameter *implementations*
-  '(:java-1.6 :java-1.7 :java-1.8)) ;; UNUSED
-(defun not-java-6 ()
-  (not (find :java-1.6 *features*)))
+(defun not-java-6-p ()
+  (not (find :java-6 *features*)))
+
+(defun pre-java-11-p ()
+  (or (find :java-6 *features*)
+      (find :java-7 *features*)
+      (find :java-8 *features*)))
 
 (export '(run-program process process-p process-input process-output
           process-error process-alive-p process-wait process-exit-code
@@ -168,7 +171,7 @@ The &key arguments have the following meanings:
       (when directory
         (java:jcall "directory" process-builder (java:jnew "java.io.File" (namestring directory))))
       (let ((process 
-             (if (not-java-6)
+             (if (not-java-6-p)
                  (make-process (%process-builder-start process-builder)
                                input-stream-p output-stream-p error-stream-p)
                  (make-process (%process-builder-start process-builder)
@@ -188,7 +191,7 @@ The &key arguments have the following meanings:
                   (appendp (second output-redirection)))
               (threads:make-thread (lambda () (to-file error file :append appendp))))))
         (when (or wait
-                  (not-java-6)
+                  (not-java-6-p)
                   (process-wait process))
           process)))))
 
@@ -222,7 +225,7 @@ As a second value, returns either nil if input should inherit from the
 parent process, or a java.io.File reference to the file to read input from."
   (let ((redirect (if (eq value T)
                       ;; Either inherit stdio or fail
-                      (if (not-java-6)
+                      (if (not-java-6-p)
                           +inherit+
                           (signal 'implementation-not-available
                                   :missing "Inheritance for subprocess of standard input"))
@@ -237,10 +240,10 @@ parent process, or a java.io.File reference to the file to read input from."
                                    (error "Input file ~S does not already exist." value))
                                   ((NIL)
                                    (return-from setup-input-redirection))))))
-                        (if (not-java-6)
+                        (if (not-java-6-p)
                             (java:jstatic "from" "java.lang.ProcessBuilder$Redirect" file)
                             file)))))
-    (when (not-java-6)
+    (when (not-java-6-p)
       (java:jcall "redirectInput" process-builder redirect))
     redirect))
 
@@ -250,7 +253,7 @@ value
 |#
 (defun setup-output-redirection (process-builder value errorp if-does-exist)
   (let ((redirect (if (eq value T)
-                      (if (not-java-6)
+                      (if (not-java-6-p)
                           +inherit+
                           (if errorp
                               (signal 'implementation-not-available
@@ -268,12 +271,12 @@ value
                                                 :if-exists if-does-exist)))
                             (:append (setf appendp T))
                             ((NIL) (return-from setup-output-redirection))))
-			(if (not-java-6)
+			(if (not-java-6-p)
 			  (if appendp
 			      (java:jstatic "appendTo" "java.lang.ProcessBuilder$Redirect" file)
 			      (java:jstatic "to" "java.lang.ProcessBuilder$Redirect" file))
 			  (list file appendp))))))
-    (when (not-java-6)
+    (when (not-java-6-p)
       (if errorp
 	  (java:jcall "redirectError" process-builder redirect)
 	  (java:jcall "redirectOutput" process-builder redirect)))
@@ -368,8 +371,12 @@ value
 
 (defun %process-pid (jprocess)
   (if (ext:os-unix-p)
-      ;; TODO: memoize this 
-      (let ((field (java:jcall "getDeclaredField" (java:jclass "java.lang.UNIXProcess") "pid")))
+      (let* ((process-class
+              (if (pre-java-11-p)
+                  "java.lang.UNIXProcess"
+                  "java.lang.ProcessImpl"))
+             (field
+               (java:jcall "getDeclaredField" process-class "pid")))
         (java:jcall "setAccessible" field java:+true+)
         (java:jcall "get" field jprocess))
       (error "Can't retrieve PID on this platform.")))
