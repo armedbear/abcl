@@ -239,7 +239,7 @@ public final class ComplexArray_IntBuffer
       type_error(obj, UNSIGNED_BYTE_32);
     }
     if (data != null) {
-      for (int i = data.limit(); i-- > 0;) {
+      for (int i = ((java.nio.Buffer)data).limit(); i-- > 0;) {
         data.put(i, (int) (obj.longValue() & 0xffffffffL));;
       }
     } else {

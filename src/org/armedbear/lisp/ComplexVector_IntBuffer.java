@@ -184,7 +184,7 @@ public final class ComplexVector_IntBuffer
       try {
         return number(((long)elements.get(index)) & 0xffffffffL);
       } catch (IndexOutOfBoundsException e) {
-        badIndex(index, elements.limit());
+        badIndex(index, ((java.nio.Buffer)elements).limit());
         return NIL; // Not reached.
       }
     } else {
@@ -206,7 +206,7 @@ public final class ComplexVector_IntBuffer
       try {
         elements.put(index, (int)(newValue.longValue() & 0xffffffffL));
       } catch (IndexOutOfBoundsException e) {
-        badIndex(index, elements.limit());
+        badIndex(index, ((java.nio.Buffer)elements).limit());
       }
     } else {
       // Displaced array.
@@ -252,11 +252,11 @@ public final class ComplexVector_IntBuffer
     // One cannot shrink the underlying ByteBuffer physically, so
     // use the limit marker to denote the length
     if (n < length()) {
-      elements.limit(n);
+      ((java.nio.Buffer)elements).limit(n);
       this.capacity = n;
       return;
     }
-    if (n == elements.limit()) {
+    if (n == ((java.nio.Buffer)elements).limit()) {
       return;
     }
     error(new LispError());
