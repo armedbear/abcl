@@ -805,7 +805,7 @@ public class ArgumentListProcessor implements Serializable {
    * - KeywordParam
    * - AuxParam
    * */
-  public static abstract class Param {
+  public static abstract class Param implements Serializable {
       
       /** Assigns values to be bound to the correcsponding variables to the
        * array, using 'index' as the next free slot, consuming any required

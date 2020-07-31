@@ -4,5 +4,8 @@ abcl
 abcl-test*log
 ext
 scratch
+.idea/
+*.iml
+target/
 \#*\#
 \.\#*
