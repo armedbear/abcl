@@ -229,4 +229,11 @@ public class Closure extends Function
   {
     return arglist.match(args, environment, environment, thread);
   }
+
+  //Serialization
+
+  @Override
+  protected boolean shouldSerializeByName() {
+    return false; //Closures have an environment that we must serialize, even if they're top-level function
+  }
 }

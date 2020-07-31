@@ -45,7 +45,30 @@ public class SerializationTest {
 
         ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
         Object readObject = ois.readObject();
-        assertEquals(readObject, closure);
+        assertTrue(readObject instanceof Closure);
+        assertEquals(NIL, ((Closure) readObject).execute());
+    }
+
+    @Test
+    public void testSerializationOfLocalClosure() throws Exception {
+        Symbol symbol = new Symbol("test");
+        LispObject lambda_expression =
+                new Cons(Symbol.LAMBDA, new Cons(NIL, new Cons(symbol)));
+        LispObject lambda_name =
+                list(Symbol.FLET, new Symbol("test"));
+        Environment env = new Environment();
+        env.bind(symbol, new SimpleString("OK"));
+        Closure closure =
+                new Closure(lambda_name, lambda_expression, env);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(closure);
+
+        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
+        Object readObject = ois.readObject();
+        assertTrue(readObject instanceof Closure);
+        assertEquals("OK", ((Closure) readObject).execute().toString());
     }
 
 }

@@ -33,8 +33,9 @@
 
 package org.armedbear.lisp;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
+import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 import static org.armedbear.lisp.Lisp.*;
 
@@ -400,12 +401,58 @@ public abstract class Function extends Operator implements Serializable {
         }
     }
 
-    public Object writeReplace() throws NotSerializableException {
-        LispObject lambdaName = getLambdaName();
-        if(lambdaName instanceof Symbol && lambdaName.getSymbolFunction() == this) {
-            return new SerializedNamedFunction((Symbol) lambdaName);
-        } else {
-            throw new NotSerializableException(getClass().getName());
+    public static class SerializedLocalFunction implements Serializable {
+        final LispObject className;
+        final LispObject classBytes;
+        final byte[] serializedFunction;
+
+        public SerializedLocalFunction(Function function) {
+            this.className = JavaObject.getInstance(function.getClass().getName());
+            this.classBytes = function.getClassBytes();
+            serializingClosure.set(true);
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                new ObjectOutputStream(baos).writeObject(function);
+                serializedFunction = baos.toByteArray();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                serializingClosure.remove();
+            }
         }
+
+        public Object readResolve() throws InvalidObjectException {
+            MemoryClassLoader loader = new MemoryClassLoader();
+            MemoryClassLoader.PUT_MEMORY_FUNCTION.execute(JavaObject.getInstance(loader), className, classBytes);
+            Thread thread = Thread.currentThread();
+            ClassLoader oldLoader = thread.getContextClassLoader();
+            try {
+                thread.setContextClassLoader(loader);
+                return new ObjectInputStream(new ByteArrayInputStream(serializedFunction)).readObject();
+            } catch (Exception e) {
+                InvalidObjectException ex = new InvalidObjectException("Could not read the serialized function back");
+                ex.initCause(e);
+                throw ex;
+            } finally {
+                thread.setContextClassLoader(oldLoader);
+            }
+        }
+    }
+
+    private static final ThreadLocal<Boolean> serializingClosure = new ThreadLocal<Boolean>();
+
+    public Object writeReplace() throws ObjectStreamException {
+        if(shouldSerializeByName()) {
+            return new SerializedNamedFunction((Symbol) getLambdaName());
+        } else if(serializingClosure.get() != null) {
+            return new SerializedLocalFunction(this);
+        } else {
+            return this;
+        }
+    }
+
+    protected boolean shouldSerializeByName() {
+        LispObject lambdaName = getLambdaName();
+        return lambdaName instanceof Symbol && lambdaName.getSymbolFunction() == this;
     }
 }

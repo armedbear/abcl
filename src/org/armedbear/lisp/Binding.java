@@ -33,12 +33,14 @@
 
 package org.armedbear.lisp;
 
+import java.io.Serializable;
+
 /** Used by the environment to capture different kinds of bindings:
  * tags, blocks, functions and variables.
  *
  */
 // Package accessibility.
-final class Binding
+final class Binding implements Serializable
 {
     /** The symbol in case of a variable, block, symbol-macro or
      * non-SETF function binding, the tag (symbol or

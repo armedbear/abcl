@@ -34,6 +34,7 @@
 
 package org.armedbear.lisp;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 import static org.armedbear.lisp.Lisp.*;
@@ -43,7 +44,7 @@ import static org.armedbear.lisp.Lisp.*;
  * The lambda list may either be of type ORDINARY or MACRO lambda list.
  * All other lambda lists are parsed elsewhere in our code base.
  */
-public class ArgumentListProcessor {
+public class ArgumentListProcessor implements Serializable {
     
   public enum LambdaListType {
       ORDINARY,
@@ -561,7 +562,7 @@ public class ArgumentListProcessor {
   /** Internal class implementing the argument list to lambda list matcher.
    * Because we have two implementations - a fast one and a slower one - we
    * need this abstract super class */
-  private static abstract class ArgumentMatcher {
+  private static abstract class ArgumentMatcher implements Serializable {
       abstract LispObject[] match(LispObject[] args, Environment _environment,
               Environment env, LispThread thread);
   }
