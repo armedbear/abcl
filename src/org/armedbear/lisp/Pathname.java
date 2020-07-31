@@ -34,10 +34,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.FileInputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -50,7 +47,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-public class Pathname extends LispObject {
+public class Pathname extends LispObject implements Serializable {
 
     /** The path component separator used by internally generated
      * path namestrings.

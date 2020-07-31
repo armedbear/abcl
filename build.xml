@@ -1059,6 +1059,7 @@ ${basedir}/../cl-bench
         <arg value="org.armedbear.lisp.StreamTest"/>
         <arg value="org.armedbear.lisp.SeekableStringWriterTest"/>
         <arg value="org.armedbear.lisp.UtilitiesTest"/>
+        <arg value="org.armedbear.lisp.serialization.SerializationTest"/>
 		<!-- currently hangs(!) the running process
         <arg value="org.armedbear.lisp.util.HttpHeadTest"/>
 		-->
