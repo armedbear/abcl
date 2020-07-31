@@ -33,10 +33,12 @@
 
 package org.armedbear.lisp;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
+
 import static org.armedbear.lisp.Lisp.*;
 
-public abstract class Function extends Operator
-{
+public abstract class Function extends Operator implements Serializable {
     private LispObject propertyList = NIL;
     private int callCount;
     private int hotCount;
@@ -384,5 +386,26 @@ public abstract class Function extends Operator
     public final void incrementHotCount()
     {
         ++hotCount;
+    }
+
+    //Serialization
+    public static class SerializedNamedFunction implements Serializable {
+        private final Symbol name;
+        public SerializedNamedFunction(Symbol name) {
+            this.name = name;
+        }
+
+        public Object readResolve() {
+            return name.getSymbolFunctionOrDie();
+        }
+    }
+
+    public Object writeReplace() throws NotSerializableException {
+        LispObject lambdaName = getLambdaName();
+        if(lambdaName instanceof Symbol && lambdaName.getSymbolFunction() == this) {
+            return new SerializedNamedFunction((Symbol) lambdaName);
+        } else {
+            throw new NotSerializableException(getClass().getName());
+        }
     }
 }
