@@ -36,6 +36,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import org.armedbear.lisp.util.Finalizer;
@@ -3719,6 +3720,8 @@ public final class Primitives {
     };
 
     // ### block
+    private static class BlockMarker extends LispObject implements Serializable {}
+
     private static final SpecialOperator BLOCK = new sf_block();
     private static final class sf_block extends SpecialOperator {
         sf_block() {
@@ -3735,7 +3738,7 @@ public final class Primitives {
             tag = checkSymbol(args.car());
             LispObject body = ((Cons)args).cdr();
             Environment ext = new Environment(env);
-            final LispObject block = new LispObject();
+            final LispObject block = new BlockMarker();
             ext.addBlock(tag, block);
             LispObject result = NIL;
             final LispThread thread = LispThread.currentThread();
