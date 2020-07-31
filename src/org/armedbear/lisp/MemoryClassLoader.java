@@ -144,7 +144,7 @@ public class MemoryClassLoader extends JavaClassLoader {
         }
     };
 
-    private static final Primitive PUT_MEMORY_FUNCTION = new pf_put_memory_function();
+    public static final Primitive PUT_MEMORY_FUNCTION = new pf_put_memory_function();
     private static final class pf_put_memory_function extends Primitive {
         pf_put_memory_function() {
             super("put-memory-function", PACKAGE_SYS, false, "loader class-name class-bytes");

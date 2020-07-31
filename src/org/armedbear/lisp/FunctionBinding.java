@@ -33,8 +33,10 @@
 
 package org.armedbear.lisp;
 
+import java.io.Serializable;
+
 // Package accessibility.
-final class FunctionBinding
+final class FunctionBinding implements Serializable
 {
     LispObject name;
     LispObject value;

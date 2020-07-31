@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import java.io.Serializable;
+
 /** This class serves merely to store a reference to an
  * object, used in the closure array.
  *
@@ -40,7 +42,7 @@ package org.armedbear.lisp;
  * closures close over bindings and not over values.
  *
  */
-public class ClosureBinding
+public class ClosureBinding implements Serializable
 {
     public LispObject value;
 

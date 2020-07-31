@@ -33,9 +33,11 @@
 
 package org.armedbear.lisp;
 
+import java.io.Serializable;
+
 import static org.armedbear.lisp.Lisp.*;
 
-public final class Environment extends LispObject
+public final class Environment extends LispObject implements Serializable
 {
   Binding vars;
   FunctionBinding lastFunctionBinding;
