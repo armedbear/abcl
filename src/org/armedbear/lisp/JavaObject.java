@@ -35,12 +35,13 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.util.*;
 
-public final class JavaObject extends LispObject {
+public final class JavaObject extends LispObject implements Serializable {
     final Object obj;
     private final Class<?> intendedClass;
 

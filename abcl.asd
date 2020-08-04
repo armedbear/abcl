@@ -57,7 +57,9 @@
                          #+abcl
                          (:file "runtime-class")
                          #+abcl
-                         (:file "package-local-nicknames-tests")))))
+                         (:file "package-local-nicknames-tests")
+                         #+abcl
+                         (:file "closure-serialization")))))
 
 ;;; FIXME Currently requires ACBL-CONTRIB and QUICKLISP-ABCL to be
 ;;; loaded, but can't seem to put in the :defsystem-depends-on stanza
