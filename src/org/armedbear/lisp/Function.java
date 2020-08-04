@@ -194,32 +194,32 @@ public abstract class Function extends Operator implements Serializable {
     }
 
     public final LispObject getClassBytes() {
-	LispObject o = getf(propertyList, Symbol.CLASS_BYTES, NIL);
-	if(o != NIL) {
-	    return o;
-	} else {
-	    ClassLoader c = getClass().getClassLoader();
-	    if(c instanceof FaslClassLoader) {
-		final LispThread thread = LispThread.currentThread(); 
-		SpecialBindingsMark mark = thread.markSpecialBindings(); 
-		try { 
-		    thread.bindSpecial(Symbol.LOAD_TRUENAME, loadedFrom); 
-		    return new JavaObject(((FaslClassLoader) c).getFunctionClassBytes(this));
-		} catch(Throwable t) {
-		    //This is because unfortunately getFunctionClassBytes uses
-		    //Debug.assertTrue(false) to signal errors
-		    if(t instanceof ControlTransfer) {
-			throw (ControlTransfer) t;
-		    } else {
-			return NIL;
-		    }
-		} finally { 
-		    thread.resetSpecialBindings(mark); 
-		}		
-	    } else {
-		return NIL;
-	    }
-	}
+        LispObject o = getf(propertyList, Symbol.CLASS_BYTES, NIL);
+        if(o != NIL) {
+            return o;
+        } else {
+            ClassLoader c = getClass().getClassLoader();
+            if(c instanceof JavaClassLoader) {
+                final LispThread thread = LispThread.currentThread();
+                SpecialBindingsMark mark = thread.markSpecialBindings();
+                try {
+                    thread.bindSpecial(Symbol.LOAD_TRUENAME, loadedFrom);
+                    return new JavaObject(((JavaClassLoader) c).getFunctionClassBytes(this));
+                } catch(Throwable t) {
+                    //This is because unfortunately getFunctionClassBytes uses
+                    //Debug.assertTrue(false) to signal errors
+                    if(t instanceof ControlTransfer) {
+                        throw (ControlTransfer) t;
+                    } else {
+                        return NIL;
+                    }
+                } finally {
+                    thread.resetSpecialBindings(mark);
+                }
+            } else {
+                return NIL;
+            }
+        }
     }
 
     public static final Primitive FUNCTION_CLASS_BYTES = new pf_function_class_bytes();
@@ -401,13 +401,26 @@ public abstract class Function extends Operator implements Serializable {
         }
     }
 
+    public static class ObjectInputStreamWithClassLoader extends ObjectInputStream {
+        private final ClassLoader classLoader;
+        public ObjectInputStreamWithClassLoader(InputStream in, ClassLoader classLoader) throws IOException {
+            super(in);
+            this.classLoader = classLoader;
+        }
+
+        @Override
+        protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+            return Class.forName(desc.getName(), false, classLoader);
+        }
+    }
+
     public static class SerializedLocalFunction implements Serializable {
         final LispObject className;
         final LispObject classBytes;
         final byte[] serializedFunction;
 
         public SerializedLocalFunction(Function function) {
-            this.className = JavaObject.getInstance(function.getClass().getName());
+            this.className = new SimpleString(function.getClass().getName());
             this.classBytes = function.getClassBytes();
             serializingClosure.set(true);
             try {
@@ -424,17 +437,13 @@ public abstract class Function extends Operator implements Serializable {
         public Object readResolve() throws InvalidObjectException {
             MemoryClassLoader loader = new MemoryClassLoader();
             MemoryClassLoader.PUT_MEMORY_FUNCTION.execute(JavaObject.getInstance(loader), className, classBytes);
-            Thread thread = Thread.currentThread();
-            ClassLoader oldLoader = thread.getContextClassLoader();
             try {
-                thread.setContextClassLoader(loader);
-                return new ObjectInputStream(new ByteArrayInputStream(serializedFunction)).readObject();
+                ByteArrayInputStream in = new ByteArrayInputStream(serializedFunction);
+                return new ObjectInputStreamWithClassLoader(in, loader).readObject();
             } catch (Exception e) {
                 InvalidObjectException ex = new InvalidObjectException("Could not read the serialized function back");
                 ex.initCause(e);
                 throw ex;
-            } finally {
-                thread.setContextClassLoader(oldLoader);
             }
         }
     }
@@ -444,10 +453,10 @@ public abstract class Function extends Operator implements Serializable {
     public Object writeReplace() throws ObjectStreamException {
         if(shouldSerializeByName()) {
             return new SerializedNamedFunction((Symbol) getLambdaName());
-        } else if(serializingClosure.get() != null) {
-            return new SerializedLocalFunction(this);
-        } else {
+        } else if(getClassBytes() == NIL || serializingClosure.get() != null) {
             return this;
+        } else {
+            return new SerializedLocalFunction(this);
         }
     }
 
