@@ -32,5 +32,5 @@
     (let* ((b (java:jnew "java.io.ByteArrayInputStream" (f 3)))
     	   (i (java:jnew "java.io.ObjectInputStream" b)))
       (fmakunbound 'f)
-      (java:jcall "readObject" i))
-  T)
+      (funcall (java:jcall "readObject" i) T))
+  '(3 . T))
