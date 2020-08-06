@@ -51,7 +51,8 @@ public abstract class Function extends Operator implements Serializable {
 
     protected Function() {
 	LispObject loadTruename = Symbol.LOAD_TRUENAME.symbolValueNoThrow();
-	loadedFrom = loadTruename != null ? loadTruename : NIL;
+	LispObject loadTruenameFasl = Symbol.LOAD_TRUENAME_FASL.symbolValueNoThrow();
+	loadedFrom = loadTruenameFasl != null ? loadTruenameFasl : (loadTruename != null ? loadTruename : NIL);
     }
 
     public Function(String name)
