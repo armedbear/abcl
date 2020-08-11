@@ -1,4 +1,3 @@
-
 ;;; compile-file.lisp
 ;;;
 ;;; Copyright (C) 2004-2006 Peter Graves
@@ -267,6 +266,16 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   ;; it always evaluates to the same value."
   (note-toplevel-form form)
   (eval form)
+      ;;; emit make-array  when initial-value is a specialized vector
+    (when (and (atom initial-value)
+               (arrayp initial-value)
+               (= (length (array-dimensions initial-value)) 1)
+               (not (eq (array-element-type initial-value) t)))
+      (setf (third form)
+            `(common-lisp:make-array
+              ',(array-dimensions initial-value)
+              :element-type ',(array-element-type initial-value)
+              :initial-contents ',(coerce initial-value 'list))))
   `(progn
      (put ',(second form) 'sys::source (cons '(,(second form) ,(namestring *source*) ,*source-position*) (get ',(second form)  'sys::source nil)))
      ,form))
@@ -374,10 +383,22 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
       ;; time."
       (let ((name (second form)))
         (%defvar name)))
-  (let ((name (second form)))
+  (let ((name (second form))
+        (initial-value (third form)))
+    ;;; emit make-array  when initial-value is a specialized vector
+    (when (and (atom initial-value)
+               (arrayp initial-value)
+               (= (length (array-dimensions initial-value)) 1)
+               (not (eq (array-element-type initial-value) t)))
+      (setf (third form)
+            `(common-lisp:make-array
+              ',(array-dimensions initial-value)
+              :element-type ',(array-element-type initial-value)
+              :initial-contents ',(coerce initial-value 'list))))
     `(progn 
        (put ',name 'sys::source (cons (list :variable ,(namestring *source*) ,*source-position*) (get ',name  'sys::source nil)))
-      ,form)))
+       ,form)))
+
 
 (declaim (ftype (function (t t t) t) process-toplevel-defpackage/in-package))
 (defun process-toplevel-defpackage/in-package (form stream compile-time-too)
