@@ -21,8 +21,38 @@
       (read-sequence array stream :end length)
       (java:jnew-array-from-array "byte" array))))
   
-  
 (export '(write-class
           read-class)
         :extensions)
 
+;;;  Determining the underlying unix file descriptor depends on
+;;;  navigating private member structures dependent on the hosting
+;;;  JVMs wrapping of native socket. The JAVA package currently does
+;;;  not have a means for such aggressive intropsection, so we add it
+;;;  as a utility here
+;;;
+;;;  TODO test under :msdog
+;;;  TODO Should be in socket.lisp
+(defun stream-unix-fd (stream)
+  "Return the integer of the underlying unix file descriptor for STREAM
+
+Added by ABCL-INTROSPECT."
+  (check-type stream 'system::socket-stream)
+  (flet ((get-java-fields (object fields) ;; Thanks to Cyrus Harmon
+           (reduce (lambda (x y)
+                     (jss:get-java-field x y t))
+                          fields
+                          :initial-value object))
+                (jvm-version ()
+                  (read
+                   (make-string-input-stream
+                    (java:jstatic "getProperty" "java.lang.System"
+                                  "java.specification.version")))))
+           (ignore-errors
+            (get-java-fields (java:jcall "getWrappedInputStream"  ;; TODO: define this as a constant
+                                         (two-way-stream-input-stream stream))
+                             (if (< (jvm-version) 14)
+                                 '("in" "ch" "fdVal")
+                                 '("in" "this$0" "sc" "fd" "fd"))))))
+
+(export '(stream-unix-fd) :extensions)
