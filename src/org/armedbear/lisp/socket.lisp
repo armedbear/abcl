@@ -104,9 +104,9 @@ EXTERNAL-FORMAT must be of the same format as specified for OPEN."
 (defun write-timeout (socket seconds)
   "No-op setting of write timeout to SECONDS on SOCKET."
   (declare (ignore socket seconds))
-  (warn "Unimplemented.
-
-Timeouts for writes should be implemented by spawning a guardian
-to the thread perfoming the socket write"))
-
+  ;;  TODO timeouts for writes could possibly be implemented by
+  ;;  spawning a guardian to asynchronously check on the threads
+  ;;  perfoming the socket write.
+  (warn "Ignoring request for unimplemented socket write timeout."))
+  
 (provide '#:socket)
