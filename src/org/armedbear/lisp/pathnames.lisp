@@ -55,11 +55,13 @@
   (let ((testfunc (if ignore-case #'equalp #'equal)))
     (labels ((split-string (delim str)
 	       (flet ((finder (char) (find char delim)))
-		 (loop  for x = (position-if-not #'finder str) then
-		      (position-if-not #'finder str :start (or y (length str)))
-		    for y = (position-if #'finder str :start x) then
-		      (position-if #'finder str :start (or x (length str))) while x 
-		    collect (subseq str x y))))
+		 (loop
+                   :for x = (position-if-not #'finder str)
+                     :then (position-if-not #'finder str :start (or y (length str)))
+		   :for y = (position-if #'finder str :start (or x (length str)))
+                     :then (position-if #'finder str :start (or x (length str)))
+                   :while x 
+		    :collect (subseq str x y))))
 	     (positions-larger (thing substrings previous-pos)
 	       (let ((new-pos (search (car substrings) 
 				      thing 
