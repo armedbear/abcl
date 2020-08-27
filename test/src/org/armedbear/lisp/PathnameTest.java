@@ -122,4 +122,17 @@ public class PathnameTest
     String parsedNamestring = p.getNamestring();
     assertTrue(parsedNamestring.equals(namestring));
   }
+  
+  @Test
+  public void equality() {
+    Pathname p1 = (Pathname)Pathname.create("file://tmp/");
+    Pathname p2 = (Pathname)Pathname.create("file://tmp/");
+    boolean result = p1.equals(p2);
+    assertTrue("Java equals() for Pathname", result);
+
+    PathnameJar p3 = (PathnameJar)Pathname.create("jar:file:/abcl.jar!/tmp/");
+    PathnameJar p4 = (PathnameJar)Pathname.create("jar:file:/abcl.jar!/tmp/");
+    result = p3.equals(p4);
+    assertTrue("Java equals() for PathnameJar", result);
+  }
 }
