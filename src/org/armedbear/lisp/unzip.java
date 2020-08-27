@@ -64,8 +64,8 @@ public final class unzip
     public LispObject execute(LispObject first, LispObject second) {
         Pathname zipFile = coerceToPathname(first);
         Pathname directory = coerceToPathname(second);
-        directory.name = NIL;
-        directory.type = NIL;
+        directory.setName(NIL);
+        directory.setType(NIL);
         directory.invalidateNamestring();
         return unzipToDirectory(zipFile, directory);
     }
@@ -109,7 +109,7 @@ public final class unzip
                 }
                 out.close();
                 in.close();
-                result = result.push(new Pathname(filename));
+                result = result.push(Pathname.create(filename));
             }
         } catch (IOException e) {
             return error(new FileError("Failed to unzip " 

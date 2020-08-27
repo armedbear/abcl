@@ -62,7 +62,7 @@ public final class JarStream extends Stream
     {
         super(Symbol.JAR_STREAM);
         Debug.assertTrue(direction == Keyword.INPUT);
-        Debug.assertTrue(pathname.name != NIL);
+        Debug.assertTrue(pathname.getName() != NIL);
         isInputStream = true;
 
         super.setExternalFormat(format);
