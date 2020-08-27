@@ -56,7 +56,7 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
    ;; Need to test locating the system boot jar over the network, and
    ;; it would minimally need to check version information.
    (ignore-errors
-     #p"https://abcl.org/releases/1.7.1/abcl.jar")))
+     #p"jar:file:https://abcl.org/releases/1.7.1/abcl.jar!/")))
 
 (defun flatten (list)
   (labels ((rflatten (list accumluator)
@@ -114,7 +114,8 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
 					     :type "jar"))))
       (let ((jar (some predicate entries)))
 	(when jar
-	  (return-from find-jar jar))))))
+	  (return-from find-jar
+            (make-pathname :device (list jar))))))))
 
 (defun find-system-jar ()
   "Return the pathname of the system jar, one of `abcl.jar` or
