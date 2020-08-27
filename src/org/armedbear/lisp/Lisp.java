@@ -431,6 +431,10 @@ public final class Lisp
     return error(new ParseError(message));
   }
 
+  public static final Pathname Pathname_simple_error(String formatControl, Object... args) {
+    return (Pathname) simple_error(formatControl, args);
+  }
+  
   public static final LispObject simple_error(String formatControl, Object... args) {
     LispObject lispArgs = NIL;
     for (int i = 0; i < args.length; i++) {
