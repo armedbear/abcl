@@ -319,7 +319,7 @@ public class Pathname extends LispObject implements Serializable {
   private static final Pathname init(String s) { 
       Pathname result = new Pathname();
         if (s == null) {
-          return (Pathname)simple_error("Refusing to create a PATHNAME for the null reference.");
+          return (Pathname)parse_error("Refusing to create a PATHNAME for the null reference.");
         }
         if (s.equals(".") || s.equals("./")
           || (Utilities.isPlatformWindows && s.equals(".\\"))) {
@@ -346,7 +346,7 @@ public class Pathname extends LispObject implements Serializable {
               dirIndex = s.indexOf('/', shareIndex + 1);
             }
             if (shareIndex == -1 || dirIndex == -1) {
-              return Pathname_simple_error("Unsupported UNC path format: \"" + s + '"');
+              return (Pathname)parse_error("Unsupported UNC path format: \"" + s + '"');
             }
 
             result
@@ -581,30 +581,6 @@ public class Pathname extends LispObject implements Serializable {
         boolean uriEncoded = false;
         if (getDevice() == NIL) {
         } else if (getDevice() == Keyword.UNSPECIFIC) {
-        // } else if (isJar()) {
-        //     LispObject[] jars = ((Cons) getDevice()).copyToArray();
-        //     StringBuilder prefix = new StringBuilder();
-        //     for (int i = 0; i < jars.length; i++) {
-        //         prefix.append("jar:");
-        //         LispObject component = jars[i];
-        //         if (!(component instanceof Pathname)) {
-        //           return null; // If DEVICE is a CONS, it should only contain Pathname 
-        //         }
-        //         if (! ((Pathname)component).isURL() && i == 0) {
-        //           sb.append("file:");
-        //           uriEncoded = true;
-        //         }
-        //         Pathname jar = (Pathname) component;
-        //         String encodedNamestring;
-        //         if (uriEncoded) {
-        //           encodedNamestring = uriEncode(jar.getNamestring());
-        //         } else { 
-        //           encodedNamestring = jar.getNamestring();
-        //         }
-        //         sb.append(encodedNamestring);
-        //         sb.append("!/");
-        //     }
-        //     sb = prefix.append(sb);
         } else if (getDevice() instanceof AbstractString) {
             sb.append(getDevice().getStringValue());
             if (this instanceof LogicalPathname
@@ -663,19 +639,6 @@ public class Pathname extends LispObject implements Serializable {
                 Debug.assertTrue(false);
             }
         }
-        
-        // if (isURL()) {
-        //     LispObject o = Symbol.GETF.execute(getHost(), QUERY, NIL);
-        //     if (o != NIL) {
-        //         sb.append("?");
-        //         sb.append(o.getStringValue());
-        //     }
-        //     o = Symbol.GETF.execute(getHost(), FRAGMENT, NIL);
-        //     if (o != NIL) {
-        //         sb.append("#");
-        //         sb.append(o.getStringValue());
-        //     }
-        // }
             
         if (this instanceof LogicalPathname) {
             if (getVersion().integerp()) {
