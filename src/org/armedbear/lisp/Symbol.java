@@ -3092,8 +3092,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("%DOCUMENTATION");
   public static final Symbol _ENABLE_AUTOCOMPILE_ =
     PACKAGE_SYS.addExternalSymbol("*ENABLE-AUTOCOMPILE*");
-  public static final Symbol ENSURE_INPUT_STREAM =
-    PACKAGE_SYS.addExternalSymbol("ENSURE-INPUT-STREAM");
+  public static final Symbol GET_INPUT_STREAM =
+    PACKAGE_SYS.addExternalSymbol("GET-INPUT-STREAM");
   public static final Symbol ENVIRONMENT =
     PACKAGE_SYS.addExternalSymbol("ENVIRONMENT");
   public static final Symbol FINALIZED_P =
