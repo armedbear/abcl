@@ -68,7 +68,6 @@
   :version "1.7.1"
   :perform
     (asdf:test-op (op c)
-       (ql:quickload :abcl-prove)
        (asdf:load-system :abcl-prove)
        (asdf:test-system :abcl-prove/t)))
 
