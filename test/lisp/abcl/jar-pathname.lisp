@@ -41,19 +41,22 @@
       (dolist (form forms)
         (print form s)))))
 
-(defun jar-file-init ()
-  "Create the jar archives used for testing.
-Returns the two values of the pathnames of the created archives."
+(defun create-jar ()
   (let* ((temp-file (java:jcall "getAbsolutePath" 
-                               (java:jstatic "createTempFile" "java.io.File" "jar" "tmp")))
+                                (java:jstatic "createTempFile" "java.io.File" "jar" "tmp")))
          (temp-dir (make-pathname :directory (append 
                                               (pathname-directory (pathname temp-file))
                                               '("jar-pathname-tests")))))
-    (ensure-directories-exist temp-dir)
-    (setf *tmp-directory*
-          (truename temp-dir)
-          *tmp-directory-whitespace*
-          (merge-pathnames "a/directory with/s p a/" *tmp-directory*)))
+    (jar-file-init temp-file temp-dir)))
+
+(defun jar-file-init (temp-file temp-dir)
+  "Create the jar archives used for testing.
+Returns the two values of the pathnames of the created archives."
+  (ensure-directories-exist temp-dir)
+  (setf *tmp-directory*
+        (truename temp-dir)
+        *tmp-directory-whitespace*
+        (merge-pathnames "a/directory with/s p a/" *tmp-directory*))
   (format t "~&Using ~A to create files for testing jar-pathnames.~%" *tmp-directory*)
   (ensure-directories-exist *tmp-directory*)
   (let* ((*default-pathname-defaults*  *tmp-directory*)
@@ -68,8 +71,8 @@ Returns the two values of the pathnames of the created archives."
     (compile-file "eek.lisp")
     (let* ((tmpdir (merge-pathnames "tmp/" *tmp-directory*))
            (subdirs 
-            (mapcar (lambda (p) (merge-pathnames p tmpdir))
-                    '("a/b/" "d/e+f/" "path/with a couple/spaces/in it/")))
+             (mapcar (lambda (p) (merge-pathnames p tmpdir))
+                     '("a/b/" "d/e+f/" "path/with a couple/spaces/in it/")))
            (sub1 (first subdirs))
            (sub2 (second subdirs))
            (sub3 (third subdirs)))
@@ -114,7 +117,7 @@ Returns the two values of the pathnames of the created archives."
 (defmacro with-jar-file-init (&rest body)
   `(progn 
      (unless (and *tmp-jar-path* (probe-file *tmp-jar-path*))
-       (jar-file-init))
+       (create-jar))
      (let ((*default-pathname-defaults* *tmp-directory*))
        ,@body)))
 
@@ -127,14 +130,16 @@ Returns the two values of the pathnames of the created archives."
        (load (jar-pathname-escaped ,jar ,path))))
 
 ;;; XXX Figure out correct use of macros so this isn't necessary
+#|
 (push 'jar-pathname.load.init *expected-failures*)
 (deftest jar-pathname.load.init
     (with-jar-file-init
         nil)
   t)
+|#
 
 (deftest jar-pathname.load.1
-    (load-from-jar *tmp-jar-path* "foo")
+    (load-from-jar *tmp-jar-path* "__loader__._")
   t)
 
 (deftest jar-pathname.load.2
@@ -153,6 +158,7 @@ Returns the two values of the pathnames of the created archives."
     (load-from-jar *tmp-jar-path* "eek.lisp")
   t)
 
+#+(or)
 (deftest jar-pathname.load.6
     (load-from-jar *tmp-jar-path* "foo")
   t)
@@ -461,6 +467,7 @@ Returns the two values of the pathnames of the created archives."
 
 ;;; We allow jar-pathname to be contructed without a device to allow
 ;;; MERGE-PATHNAMES to work, even though #p"file:" is illegal.
+#+(or)
 (deftest jar-pathname.12
     (string= (namestring (first (pathname-device #p"jar:file:!/foo.bar")))
              "")
