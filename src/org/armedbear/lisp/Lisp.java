@@ -427,7 +427,28 @@ public final class Lisp
     return ""; // Not reached
   }
 
+  public static final LispObject parse_error(String message) {
+    return error(new ParseError(message));
+  }
 
+  public static final LispObject simple_error(String formatControl, Object... args) {
+    LispObject lispArgs = NIL;
+    for (int i = 0; i < args.length; i++) {
+      if (args[i] instanceof LispObject) {
+        lispArgs = lispArgs.push((LispObject)args[i]);
+      } else if (args[i] instanceof String) {
+        lispArgs = lispArgs.push(new SimpleString((String)args[i]));
+      } else {
+        lispArgs = lispArgs.push(new JavaObject(args[i]));
+      }
+    }
+    lispArgs = lispArgs.nreverse();
+    
+    LispObject format = new SimpleString(formatControl);
+
+    SimpleError s = new SimpleError(format, lispArgs);
+    return error(s);
+  }
 
   public static final LispObject type_error(LispObject datum,
                                             LispObject expectedType)
