@@ -61,17 +61,6 @@
                          #+abcl
                          (:file "closure-serialization")))))
 
-;;; FIXME Currently requires ACBL-CONTRIB and QUICKLISP-ABCL to be
-;;; loaded, but can't seem to put in the :defsystem-depends-on stanza
-(defsystem abcl/t
-  :description "DEPRECATED tests for ABCL via PROVE see ABCL-PROVE."
-  :version "1.7.1"
-  :perform
-    (asdf:test-op (op c)
-       (ql:quickload :abcl-prove)
-       (asdf:load-system :abcl-prove)
-       (asdf:test-system :abcl-prove/t)))
-
 ;;;
 ;;; ASDF definitions and the ANSI-TEST suite
 ;;;
