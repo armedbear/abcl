@@ -32,7 +32,9 @@
 
 (in-package "SYSTEM")
 
-(defun pathname-as-file (pathname)
+;;; utility function for LIST-DIRECTORIES-WITH-WILDCARDS
+(defun directory-as-file (pathname)
+  "Convert a PATHNAME referencing a directory to a file"
   (let ((directory (pathname-directory pathname)))
     (make-pathname :host nil
                    :device (pathname-device pathname)
@@ -41,6 +43,7 @@
                    :type nil
                    :version nil)))
 
+;;; utility function for LIST-DIRECTORIES-WITH-WILDCARDS
 (defun wild-inferiors-p (component)
   (eq component :wild-inferiors))
 
@@ -142,7 +145,13 @@ error to its caller."
                                 namestring nil resolve-symlinks))
                       matching-entries)
                   (dolist (entry entries)
-                    (when (pathname-match-p entry pathname)
+                    (when
+                        (or
+                         (and 
+                          (file-directory-p entry :wild-error-p nil)
+                          (pathname-match-p
+                           (directory-as-file entry) pathname))
+                         (pathname-match-p entry pathname))
                       (push 
                        (if resolve-symlinks
                            (truename entry) 
