@@ -812,9 +812,19 @@ code to be loaded.
      (car (push (gensym "LOOP-IGNORED-VAR-") *ignores*)))
     ((atom tree)
      tree)
-    (t
+    ((atom (cdr tree))
      (cons (subst-gensyms-for-nil (car tree))
-           (subst-gensyms-for-nil (cdr tree))))))
+           (subst-gensyms-for-nil (cdr tree))))
+    (t
+     (do* ((acc (cons '&optional nil))
+           (acc-last acc)
+           (elt tree (cdr elt)))
+          ((atom elt)
+           (setf (cdr acc-last) elt)
+           acc)
+       (setf (cdr acc-last)
+             (cons (subst-gensyms-for-nil (car elt)) nil))
+       (setf acc-last (cdr acc-last))))))
 
 (defmacro loop-destructuring-bind
     (lambda-list arg-list &rest body)
