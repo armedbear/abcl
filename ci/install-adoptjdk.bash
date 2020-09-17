@@ -28,7 +28,11 @@ function determine_adoptjdk() {
                     topdir=jdk-14.0.2+12
                     dist="https://github.com/AdoptOpenJDK/openjdk14-binaries/releases/download/jdk-14.0.2%2B12/OpenJDK14U-jdk_x64_mac_hotspot_14.0.2_12.tar.gz"
                     ;;
-            esac
+                openjdk15)
+                    topdir=jdk-15+36
+                    dist="https://github.com/AdoptOpenJDK/openjdk15-binaries/releases/download/jdk-15%2B36/OpenJDK15U-jdk_x64_mac_hotspot_15_36.tar.gz"
+                    ;;
+esac
             ;;
         Linux)
             case $jdk in
@@ -44,7 +48,11 @@ function determine_adoptjdk() {
                     topdir=jdk-14.0.2+12
                     dist="https://github.com/AdoptOpenJDK/openjdk14-binaries/releases/download/jdk-14.0.2%2B12/OpenJDK14U-jdk_x64_linux_hotspot_14.0.2_12.tar.gz"
                     ;;
-            esac
+                openjdk15)
+                    topdir=jdk-15+36
+                    dist="https://github.com/AdoptOpenJDK/openjdk15-binaries/releases/download/jdk-15%2B36/OpenJDK15U-jdk_x64_linux_hotspot_15_36.tar.gz"
+                    ;;
+esac
             ;;
         *)
             echo No known dist for $(uname)
@@ -81,10 +89,3 @@ add_jdk
 . ${DIR}/set-jdk.bash
 
 jenv doctor
-
-
-
-
-
-
-

@@ -33,7 +33,7 @@ addons:
 env:
   - ABCL_JDK=openjdk8  ABCL_ROOT=${TRAVIS_BUILD_DIR}
   - ABCL_JDK=openjdk11 ABCL_ROOT=${TRAVIS_BUILD_DIR}
-  - ABCL_JDK=openjdk14 ABCL_ROOT=${TRAVIS_BUILD_DIR}
+  - ABCL_JDK=openjdk15 ABCL_ROOT=${TRAVIS_BUILD_DIR}
 
 install:
   - echo PWD=$(pwd) && echo ABCL_ROOT=${ABCL_ROOT}
