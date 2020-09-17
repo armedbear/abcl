@@ -1270,7 +1270,15 @@ JVM System Properties
         <arg value="openjdk14"/>
       </exec>
     </target>
-  
+
+    <target name="abcl.properties.autoconfigure.openjdk.15">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        <arg value="openjdk15"/>
+      </exec>
+    </target>
+
     <import file="etc/ant/netbeans-build.xml"
             optional="true"/> 
     <import file="etc/ant/build-snapshot.xml"
