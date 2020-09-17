@@ -52,6 +52,11 @@ case $jdk in
 	abcl_javac_target=14
 	abcl_javac_source=1.8
         ;;
+    15|openjdk15)
+        options="-XX:CompileThreshold=10 ${zgc}"
+	abcl_javac_target=15
+	abcl_javac_source=1.8
+        ;;
 esac
 
 cat ${root}/abcl.properties.in \

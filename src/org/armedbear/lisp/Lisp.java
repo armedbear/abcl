@@ -2415,7 +2415,11 @@ public final class Lisp
           platformVersion = javaVersion.substring(2, i);
         } else {
           int i = javaVersion.indexOf(".");
-          platformVersion = javaVersion.substring(0, i);
+          if (i >= 0) {
+            platformVersion = javaVersion.substring(0, i);
+          } else {
+            platformVersion = javaVersion;
+          }
       }
       featureList = featureList.push(internKeyword("JAVA-" + platformVersion));
     }
