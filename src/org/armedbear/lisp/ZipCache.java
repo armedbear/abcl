@@ -259,7 +259,9 @@ public class ZipCache {
   static public class ArchiveFile
     extends Archive
   { 
-    ZipFile file; 
+    ZipFile file;
+
+    ZipFile get() { return file;}
 
     public ZipEntry getEntry(PathnameJar entryPathname) {
       ZipEntry result = entries.get(entryPathname);
@@ -361,21 +363,43 @@ public class ZipCache {
   }
 
   synchronized public static Archive getArchive(PathnameJar jar) {
-    Pathname rootJar = (Pathname) jar.getRootJar();
     LispObject innerJars = jar.getJars().cdr();
-    if (innerJars != NIL) {
-      // FIXME
-      simple_error("Currently unimplemented recursive archive: ~a" , jar);
-      return (Archive)UNREACHED;
+    if (innerJars.equals(NIL)) {
+      return getArchiveFile(jar);
     }
 
+    Pathname rootJar = (Pathname) jar.getRootJar();
+    PathnameJar rootPathname = (PathnameJar)PathnameJar.createFromPathname(rootJar);
+
+    Archive current = ZipCache.getArchive(rootPathname);
+
+    while (innerJars.car() != NIL) {
+      // TODO Finish me!
+      // Pathname next = (Pathname)innerJars.car();
+      // String entryPath = next.asEntryPath();
+      // InputStream source;
+      // if (current instanceof ArchiveFile) {
+      //   ArchiveFile zipFile = ((ArchiveFile)current).get();
+      //   ZipEntry entry = zipFile.getEntry(entryPath);
+      //   source = zipFile.getInputStream(entry);
+      //   ArchiveStream stream = new ArchiveStream();
+      //   stream.source = source;
+      // }
+    }
+    // FIXME
+    simple_error("Currently unimplemented recursive archive: ~a" , jar);
+    return (Archive)UNREACHED;
+  }
+
+
+  static Archive getArchiveFile(PathnameJar jar) {
     if (jar.isLocalFile()) {
       Archive cached = cache.get(jar);
       if (cached != null) {
         return cached;
       }
 
-      File f = rootJar.getFile();
+      File f = ((Pathname)jar.getRootJar()).getFile();
       
       try {
         ArchiveFile result = new ArchiveFile();
