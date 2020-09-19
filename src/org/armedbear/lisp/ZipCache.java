@@ -54,6 +54,8 @@ import java.util.Locale;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
@@ -173,12 +175,11 @@ public class ZipCache {
       // result =  ZipCache.getEntryAsInputStream(zipInputStream, entryPath);
     } else {
       Archive archive = ZipCache.getArchive(archiveEntry);
-      ZipFile zipFile = archive.file;
-      ZipEntry entry = archive.getEntry(archiveEntry);
+      // ZipFile zipFile = archive.file;
+      // ZipEntry entry = archive.getEntry(archiveEntry);
       
-      try {
-        result = zipFile.getInputStream(entry);
-      } catch (IOException e) {
+      result = archive.getEntryAsInputStream(archiveEntry);
+      if (result == null) {
         simple_error("Failed to get InputStream for ~a", archiveEntry);
       }
     }
@@ -194,12 +195,71 @@ public class ZipCache {
   // a null arg constructor for ZipFile.
   static HashMap<PathnameJar, Archive> cache = new HashMap<PathnameJar, Archive>();
 
-  static public class Archive {
-    ZipFile file; 
-    ZipInputStream inputStream;   // Unused, speculative
+  abstract static public class Archive {
+    PathnameJar root;
     LinkedHashMap<PathnameJar, ZipEntry> entries
       = new LinkedHashMap<PathnameJar, ZipEntry>();
     long lastModified;
+
+    abstract InputStream getEntryAsInputStream(PathnameJar entry);
+    abstract ZipEntry getEntry(PathnameJar entry);
+    abstract void populateAllEntries();
+    abstract void close();
+  }
+
+  static public class ArchiveStream
+    extends Archive
+  {
+    InputStream source;
+
+    public InputStream getEntryAsInputStream(PathnameJar entry) {
+      return null;
+    }
+
+    public ZipEntry getEntry(PathnameJar entry) {
+      return null;
+    }
+
+    void populateAllEntries() {}
+
+    void close () {
+      if (source != null) {
+        try {
+          source.close();
+        } catch (IOException ex) {
+          {}
+        }
+      }
+    }
+  }
+
+  static public class ArchiveURL
+    extends Archive
+  {
+    ZipFile file;
+    InputStream getEntryAsInputStream(PathnameJar entry) {
+      return null;
+    }
+    ZipEntry getEntry(PathnameJar entry) {
+      return null;
+    }
+    void populateAllEntries() {
+      return;
+    }
+    void close() {
+      if (file != null) {
+        try {
+          file.close();
+        } catch (IOException e) {
+        }
+      }
+    }
+  }
+
+  static public class ArchiveFile
+    extends Archive
+  { 
+    ZipFile file; 
 
     public ZipEntry getEntry(PathnameJar entryPathname) {
       ZipEntry result = entries.get(entryPathname);
@@ -225,7 +285,7 @@ public class ZipCache {
       return result;
     }
 
-    void populateAllEntries(PathnameJar jar) {
+    void populateAllEntries() {
       ZipFile f = file;
       if (f.size() == entries.size()) {
         return;
@@ -236,11 +296,31 @@ public class ZipCache {
         ZipEntry entry = e.nextElement();
         String name = entry.getName();
         PathnameJar entryPathname
-          = (PathnameJar)PathnameJar.createEntryFromJar(jar, name);
+          = (PathnameJar)PathnameJar.createEntryFromJar(root, name);
         entries.put(entryPathname, entry);
       }
     }
+
+    InputStream getEntryAsInputStream(PathnameJar entry) {
+      InputStream result = null;
+      ZipEntry zipEntry = getEntry(entry);
+
+      try { 
+        result = file.getInputStream(zipEntry);
+      } catch (IOException e) {}
+
+      return result;
+    }
+    void close() {
+      if (file != null) {
+        try {
+          file.close();
+        } catch (IOException e) {}
+          
+      }
+    }
   }
+  
 
   static boolean cacheEnabled = true;
   private final static Primitive DISABLE_ZIP_CACHE = new disable_zip_cache();
@@ -262,7 +342,7 @@ public class ZipCache {
 
   synchronized public static LinkedHashMap<PathnameJar,ZipEntry> getEntries(PathnameJar jar) {
     Archive archive = getArchive(jar);
-    archive.populateAllEntries(jar); // Very expensive for jars with large number of entries
+    archive.populateAllEntries(); // Very expensive for jars with large number of entries
     return archive.entries;
   }
 
@@ -298,7 +378,8 @@ public class ZipCache {
       File f = rootJar.getFile();
       
       try {
-        Archive result = new Archive();
+        ArchiveFile result = new ArchiveFile();
+        result.root = jar;
         result.file = new ZipFile(f);
         result.lastModified = f.lastModified();
         cache.put(jar, result);
@@ -469,9 +550,10 @@ public class ZipCache {
                           + " because " + e));
     }
     if (cacheEnabled) {
-      Archive archive = new Archive();
+      ArchiveURL archive = new ArchiveURL();
       archive.file = result;
       archive.lastModified = jarURLConnection.getLastModified();
+      archive.root = url;
       cache.put(url, archive);
     }
     return result;
@@ -497,19 +579,9 @@ public class ZipCache {
   synchronized public static boolean remove(PathnameJar p) {
     Archive archive = cache.get(p.getNamestring());
     if (archive != null) {
-      try {
-        if (archive.file != null) {
-          archive.file.close();
-        }
-        if (archive.inputStream != null) {
-          archive.inputStream.close();
-        }
-        cache.remove(p);
-        
-        return true;
-      } catch (IOException e) {
-        simple_error("failed to close zip cache references", e);
-      }
+      archive.close();
+      cache.remove(p);
+      return true;
     }
     return false;
   }
