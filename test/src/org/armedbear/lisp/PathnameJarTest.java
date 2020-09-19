@@ -1,6 +1,7 @@
 package org.armedbear.lisp;
 
 import java.util.List;
+import java.text.MessageFormat;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -66,4 +67,41 @@ public class PathnameJarTest {
     assertTrue(s12.equals(r1.get(2)));
   }
 
+  @Test
+  public void roundTrips() {
+    String namestrings[] = {
+      "jar:file:foo.jar!/",
+      "jar:jar:file:foo.jar!/baz.abcl!/",
+      "jar:jar:file:foo.jar!/baz.abcl!/__loader__._"
+    };
+
+    for (String namestring  : namestrings) {
+      Pathname result = (Pathname) Pathname.create(namestring);
+      String resultingNamestring = result.getNamestring();
+      String message = MessageFormat.format("Namestring \"{0}\" failed to roundtrip", namestring);
+      assertTrue(message,
+                 namestring.equals(resultingNamestring));
+    }
+  }
+
+  @Test
+  public void invalidNamestrings() {
+    String namestrings[] = {
+      "jar:file:foo.jar!/baz.abcl!/",
+      "jar:file:foo.jar!/baz.abcl!/__loader__._"
+    };
+
+    // JUnit 4.12 (which is what is available in Netbeans 12) doesn't
+    // have an assertion about throwing an error.
+    for (String namestring  : namestrings) {
+      try { 
+        Pathname.create(namestring);
+      } catch (Throwable t) {
+        String message = MessageFormat.format("Namestring \"{0}\" is invalid throwing: {1}",
+                                              namestring,
+                                              t.getCause());
+        assertTrue(message, true);
+      }
+    }
+  }
 }
