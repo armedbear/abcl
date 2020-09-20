@@ -373,6 +373,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
           newBuffer = ByteBuffer.allocateDirect(minCapacity);
         } else { 
           newBuffer = ByteBuffer.allocate(minCapacity);
+        }
         newBuffer.put(elements); 
         elements = newBuffer;
         capacity = minCapacity;
@@ -397,7 +398,6 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
         array = null;
         displacement = 0;
         isDisplaced = false;
-      }
       }
     }
   }
