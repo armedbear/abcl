@@ -9,70 +9,79 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class PathnameJarTest {
-  
-  public PathnameJarTest() {
-  }
-  
-  @BeforeClass
-  public static void setUpClass() {
-  }
-  
-  @AfterClass
-  public static void tearDownClass() {
-  }
-  
-  @Before
-  public void setUp() {
-  }
-  
-  @After
-  public void tearDown() {
+public class PathnameJarTest
+{
+  @Test
+  public void enumerate1() {
+    String s = "jar:jar:file:/a/foo.jar!/b/baz.abcl!/path/c.lisp";
+    List<String> r = PathnameJar.enumerate(s);
+    assertTrue("3 results", r.size() == 3);
+    String parts[] = {
+      "file:/a/foo.jar",
+      "b/baz.abcl!/",
+      "/path/c.lisp"
+    };
+    for (int i = 0; i < parts.length; i++) {
+      assertTrue(parts[i], r.get(i).equals(parts[i]));
+    }
   }
 
   @Test
-  public void testParseJars1() {
-    String s1 = "jar:jar:file:/a/foo.jar!/b/baz.abcl!/path/c.lisp";
-    List<String> r1 = PathnameJar.enumerate(s1);
-    assertTrue(r1.size() == 3);
-    String s10 = "file:/a/foo.jar";
-    assertTrue(s10.equals(r1.get(0)));
-    String s11 = "/b/baz.abcl!/";
-    assertTrue(s11.equals(r1.get(1)));
-    String s12 = "/path/c.lisp";
-    assertTrue(s12.equals(r1.get(2)));
+  public void enumerate2() {
+    String s = "jar:jar:file:/a/foo.jar!/b/baz.abcl!/";
+    List<String> r = PathnameJar.enumerate(s);
+    assertTrue("2 results", r.size() == 2);
+    String parts[] = {
+      "file:/a/foo.jar",
+      "b/baz.abcl!/"
+    };
+    for (int i = 0; i < parts.length; i++) {
+      assertTrue(parts[i], r.get(i).equals(parts[i]));
+    }
   }
 
   @Test
-  public void testParseJars10() {
-    String s1 = "jar:jar:file:/a/foo.jar!/b/baz.abcl!/";
-    List<String> r1 = PathnameJar.enumerate(s1);
-    assertTrue(r1.size() == 2);
-    String s10 = "file:/a/foo.jar";
-    assertTrue(s10.equals(r1.get(0)));
-    String s11 = "/b/baz.abcl!/";
-    assertTrue(s11.equals(r1.get(1)));
+  public void enumerate3() {
+    String s = "jar:jar:https://example.com/a/foo.jar!/b/baz.abcl!/path/c.lisp";
+    List<String> r = PathnameJar.enumerate(s);
+    assertTrue("3 results", r.size() == 3);
+    String parts[] = {
+      "https://example.com/a/foo.jar",
+      "b/baz.abcl!/",
+      "/path/c.lisp"
+    };
+    for (int i = 0; i < parts.length; i++) {
+      assertTrue(parts[i], r.get(i).equals(parts[i]));
+    }
   }
 
   @Test
-  public void testParseJars2() {
-    String s1 = "jar:jar:https://example.com/a/foo.jar!/b/baz.abcl!/path/c.lisp";
-    List<String> r1 = PathnameJar.enumerate(s1);
-    assertTrue(r1.size() == 3);
-    String s10 = "https://example.com/a/foo.jar";
-    assertTrue(s10.equals(r1.get(0)));
-    String s11 = "/b/baz.abcl!/";
-    assertTrue(s11.equals(r1.get(1)));
-    String s12 = "/path/c.lisp";
-    assertTrue(s12.equals(r1.get(2)));
+  public void enumerate4() {
+    String s = "jar:jar:jar:file:/a/foo.jar!/b/baz.abcl!/log4j.jar!/MF/manifest.mf";
+    List<String> r = PathnameJar.enumerate(s);
+    assertTrue("4 results", r.size() == 4);
+    String parts[] = {
+      "file:/a/foo.jar",
+      "b/baz.abcl!/",
+      "log4j.jar!/",
+      "/MF/manifest.mf"
+    };
+    for (int i = 0; i < parts.length; i++) {
+      assertTrue(parts[i], r.get(i).equals(parts[i]));
+    }
   }
 
   @Test
   public void roundTrips() {
     String namestrings[] = {
       "jar:file:foo.jar!/",
+      "jar:file:/foo.jar!/",
       "jar:jar:file:foo.jar!/baz.abcl!/",
-      "jar:jar:file:foo.jar!/baz.abcl!/__loader__._"
+      "jar:jar:file:/foo.jar!/baz.abcl!/",
+      "jar:jar:file:foo.jar!/baz.abcl!/__loader__._",
+      "jar:jar:file:/foo.jar!/baz.abcl!/__loader__._",
+      "jar:jar:jar:file:a/b/foo.jar!/c/baz.zip!/log4j.jar!/MF/manifest.mf",
+      "jar:jar:jar:file:/a/b/foo.jar!/c/baz.zip!/log4j.jar!/MF/manifest.mf"
     };
 
     for (String namestring  : namestrings) {
