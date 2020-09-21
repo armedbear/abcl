@@ -238,8 +238,31 @@ public class PathnameJar
     }
     jars = jars.nreverse();
     result.setDevice(jars);
+    result.validateComponents();
     return result;
   }
+
+  public LispObject validateComponents() {
+    if (!(getDevice() instanceof Cons)) {
+      return type_error("Invalid DEVICE for JAR-PATHNAME", getDevice(), Symbol.CONS);
+    }
+
+    LispObject jars = getDevice();
+    while (!jars.car().equals(NIL)) {
+      LispObject jar = jars.car();
+      if (!((jar instanceof Pathname)
+            || (jar instanceof PathnameURL))) {
+        return type_error("The value in DEVICE component of a JAR-PATHNAME is not of expected type",
+                          jar,
+                          list(Symbol.OR,
+                               Symbol.PATHNAME, Symbol.URL_PATHNAME));
+      }
+      jars = jars.cdr();
+    }
+
+    return T;
+  }
+    
 
   public String getNamestring() {
     StringBuffer sb = new StringBuffer();

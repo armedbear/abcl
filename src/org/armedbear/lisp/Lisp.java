@@ -460,6 +460,12 @@ public final class Lisp
     return error(new TypeError(datum, expectedType));
   }
 
+  public static final LispObject type_error(String message,
+                                            LispObject datum,
+                                            LispObject expectedType)  {
+    return error(new TypeError(message, datum, expectedType));
+  }
+
   public static final LispObject program_error(String message)
   {
     return error(new ProgramError(message));

@@ -1326,10 +1326,14 @@ public class Pathname extends LispObject implements Serializable {
         p.setVersion(version);
         p.validateDirectory(true);
 
+        // TODO:  need to check for downcast to PathnameURL as well
         // Possibly downcast type to PathnameJar
         if (p.getDevice() instanceof Cons) {
           PathnameJar result = new PathnameJar();
           ncoerce(p, result);
+          // sanity check that the pathname has been constructed correctly
+          result.validateComponents();
+
           return result;
         }
         
