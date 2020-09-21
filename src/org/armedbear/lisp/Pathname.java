@@ -612,7 +612,7 @@ public class Pathname extends LispObject implements Serializable {
               sb.append(':'); // non-UNC paths
             }
         } else {
-            Debug.assertTrue(false);
+          simple_error("Transitional error in pathname: should be a JAR-PATHNAME", this);
         }
         String directoryNamestring = getDirectoryNamestring();
         if (uriEncoded) {
@@ -1362,6 +1362,13 @@ public class Pathname extends LispObject implements Serializable {
         
         p.setVersion(version);
         p.validateDirectory(true);
+
+        // Possibly downcast type to PathnameJar
+        if (p.getDevice() instanceof Cons) {
+          PathnameJar result = new PathnameJar();
+          ncoerce(p, result);
+          return result;
+        }
         
         return p;
     }
@@ -1740,33 +1747,45 @@ public class Pathname extends LispObject implements Serializable {
   }
     
   public static final LispObject mergePathnames(final Pathname pathname,
-                                              final Pathname defaultPathname,
-                                              final LispObject defaultVersion) {
+                                                final Pathname defaultPathname,
+                                                final LispObject defaultVersion) {
     Pathname result;
     Pathname p = Pathname.create(pathname);
     Pathname d;
 
-      if (pathname instanceof LogicalPathname) {
-        result = LogicalPathname.create();
-        d = Pathname.create(defaultPathname);
+    if (pathname instanceof LogicalPathname) {
+      result = LogicalPathname.create();
+      d = Pathname.create(defaultPathname);
+    } else {
+      if (pathname instanceof PathnameJar
+          // If the defaults contain a JAR-PATHNAME, and the pathname to
+          // be be merged is not a JAR-PATHNAME, does not have a specified
+          // DEVICE, a specified HOST, and doesn't contain a relative
+          // DIRECTORY, then the result will not be a JAR-PATHNAME
+          || (defaultPathname instanceof PathnameJar
+              && !(pathname instanceof PathnameJar)
+              && pathname.getDevice().equals(NIL)
+              && !(!pathname.getDirectory().equals(NIL)
+                   && pathname.getDirectory().car().equals(Keyword.ABSOLUTE)))) {
+        result = PathnameJar.create();
+      } else if (pathname instanceof PathnameURL) {
+        result = PathnameURL.create();
       } else {
-        if ((pathname instanceof PathnameJar)
-            || (defaultPathname instanceof PathnameJar)) {
-          result = PathnameJar.create();
-        } else {
-          result = Pathname.create();
-        }
+        result = Pathname.create();
+      }
               
-        if (defaultPathname instanceof LogicalPathname) {
-          d = LogicalPathname.translateLogicalPathname((LogicalPathname) defaultPathname);
+      if (defaultPathname instanceof LogicalPathname) {
+        d = LogicalPathname.translateLogicalPathname((LogicalPathname) defaultPathname);
+      } else {
+        if (defaultPathname instanceof PathnameJar) {
+          d = PathnameJar.create(defaultPathname);
+        } else if (defaultPathname instanceof PathnameURL) {
+          d = PathnameURL.create(defaultPathname);
         } else {
-          if (defaultPathname instanceof PathnameJar) {
-            d = PathnameJar.create(defaultPathname);
-          } else {
-            d = Pathname.create(defaultPathname);
-          }
+          d = Pathname.create(defaultPathname);
         }
       }
+    }
 
       if (pathname.getHost() != NIL) {
         result.setHost(p.getHost());
@@ -1777,11 +1796,13 @@ public class Pathname extends LispObject implements Serializable {
       if (pathname.getDevice() != NIL) { 
         result.setDevice(p.getDevice());
       } else {
-        if (d instanceof PathnameJar) {
-          // If the defaults contain a JAR-PATHNAME, and the pathname
-          // to be be merged does not have a specified DEVICE, a
-          // specified HOST, and doesn't contain a relative DIRECTORY,
-          // then on non-MSDOG, set its device to :UNSPECIFIC.
+        // If the defaults contain a JAR-PATHNAME, and the pathname
+        // to be be merged is not a JAR-PATHNAME, does not have a
+        // specified DEVICE, a specified HOST, and doesn't contain a
+        // relative DIRECTORY, then on non-MSDOG, set its device to
+        // :UNSPECIFIC.
+        if ((d instanceof PathnameJar)
+            && (result instanceof Pathname)) {
           if (pathname.getHost() == NIL
               && pathname.getDevice() == NIL
               && d.isJar()
@@ -2013,7 +2034,7 @@ public class Pathname extends LispObject implements Serializable {
              doc="Returns a java.io.InputStream for resource denoted by PATHNAME.")
   private static final class pf_get_input_stream extends Primitive {
     pf_get_input_stream() {
-      super("ensure-input-stream", PACKAGE_SYS, true);
+      super(Symbol.GET_INPUT_STREAM, "pathname");
     }
     @Override
     public LispObject execute(LispObject pathname) {

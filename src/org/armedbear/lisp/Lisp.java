@@ -1925,9 +1925,9 @@ public final class Lisp
     if (arg instanceof URLStream)
       return ((URLStream)arg).getPathname();
     type_error(arg, list(Symbol.OR,
-                           Symbol.STRING,
-                           Symbol.PATHNAME, Symbol.JAR_PATHNAME, Symbol.URL_PATHNAME,
-                           Symbol.FILE_STREAM, Symbol.JAR_STREAM, Symbol.URL_STREAM));
+                         Symbol.STRING,
+                         Symbol.PATHNAME, Symbol.JAR_PATHNAME, Symbol.URL_PATHNAME,
+                         Symbol.FILE_STREAM, Symbol.JAR_STREAM, Symbol.URL_STREAM));
     // Not reached.
     return null;
   }

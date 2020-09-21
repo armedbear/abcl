@@ -53,6 +53,10 @@ public class PathnameURL
 
   protected PathnameURL() {}
 
+  public static Pathname create() {
+    return new PathnameURL();
+  }
+
   public static PathnameURL create(PathnameURL p) {
     return (PathnameURL) PathnameURL.create(p.getNamestring());
   }

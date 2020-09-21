@@ -57,6 +57,10 @@ public class PathnameJar
 
   protected PathnameJar() {}
 
+  public static Pathname create() {
+    return new PathnameJar();
+  }
+
   public static PathnameJar create(PathnameJar p) {
     return (PathnameJar)PathnameJar.create(p.getNamestring());
   }
@@ -196,9 +200,6 @@ public class PathnameJar
     return result;
   }
 
-  static public Pathname create() {
-    return new PathnameJar();
-  }
   static public LispObject create(String s) {
     if (!s.startsWith(JAR_URI_PREFIX)) {
       return parse_error("Cannot create a PATHNAME-JAR from namestring: " + s);
@@ -245,9 +246,9 @@ public class PathnameJar
 
     LispObject jars = getDevice();
 
-    if (jars.equals(NIL)) { // DESCRIBE ends up here somehow
-      // attempt to return some sort of representation
-      return super.getNamestring();
+    if (jars.equals(NIL) || jars.equals(Keyword.UNSPECIFIC)) { 
+        System.out.println("Pathname transitional problem: JAR-PATHNAME has bad PATHNAME-DEVICE");
+        return null;
     }
 
     for (int i = 0; i < jars.length() - 1; i++) {
@@ -305,7 +306,13 @@ public class PathnameJar
   }
 
   LispObject getRootJar() {
-    return getDevice().car();
+    LispObject jars = getJars();
+    if (!(jars instanceof Cons)) {
+      System.out.println("Transitional pathname error: PATHNAME-DEVICE is not a Cons cell");
+      return NIL;
+    }
+      
+    return jars.car();
   }
 
   LispObject getJars() {
@@ -323,11 +330,7 @@ public class PathnameJar
     if (!rootJar.isLocalFile()) {
       // FIXME implement me
       simple_error("Unimplemented TRUENAME for non-file root jar.");
-    } else {
-      rootJar = (Pathname)Symbol.MERGE_PATHNAMES.execute(rootJar);
-    }
-
-    rootJar = (Pathname)Symbol.TRUENAME.execute(rootJar);
+    } 
 
     PathnameJar p = new PathnameJar();
     p.copyFrom(pathname);
