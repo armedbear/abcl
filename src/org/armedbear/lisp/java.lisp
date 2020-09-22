@@ -582,7 +582,7 @@ is equivalent to the following Java code:
 
 (defun jinput-stream (pathname)
   "Returns a java.io.InputStream for resource denoted by PATHNAME."
-  (sys:ensure-input-stream pathname))
+  (sys:get-input-stream pathname))
 
 (provide "JAVA")
 
