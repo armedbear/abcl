@@ -28,12 +28,12 @@ public class PathnameTest
     } catch (MalformedURLException e) {
         System.out.println(e.getMessage());
     }
-    Pathname pathname = new Pathname(url);
+    Pathname pathname = Pathname.create(url);
     assertNotNull(pathname);
     assertNotNull(pathname.getNamestring());
-    assertNotNull(pathname.name);
-    assertNotNull(pathname.type);
-    assertNotNull(pathname.directory);
+    assertNotNull(pathname.getName());
+    assertNotNull(pathname.getType());
+    assertNotNull(pathname.getDirectory());
   }
   
   @Test
@@ -59,15 +59,15 @@ public class PathnameTest
 
   @Test
   public void copyConstructor() {
-      Pathname orig = new Pathname("/a/b/c/d/e/foo.lisp");
-      Pathname copy = new Pathname(orig.getNamestring());
+      Pathname orig = Pathname.create("/a/b/c/d/e/foo.lisp");
+      Pathname copy = Pathname.create(orig.getNamestring());
       assertTrue(orig.getNamestring().equals(copy.getNamestring()));
   }
 
   @Test
   public void mergePathnames1() {
-      Pathname p = new Pathname("a/b/c/d/foo.lisp");
-      Pathname d = new Pathname("/foo/bar/there");
+      Pathname p = Pathname.create("a/b/c/d/foo.lisp");
+      Pathname d = Pathname.create("/foo/bar/there");
       Pathname r = Pathname.mergePathnames(p, d);
       String s = r.getNamestring();
       assertTrue(s.equals("/foo/bar/a/b/c/d/foo.lisp"));
@@ -75,8 +75,8 @@ public class PathnameTest
 
   @Test
   public void mergePathnames2() {
-      Pathname p = new Pathname("/a/b/c/d/foo.lisp");
-      Pathname d = new Pathname("/foo/bar/there");
+      Pathname p = Pathname.create("/a/b/c/d/foo.lisp");
+      Pathname d = Pathname.create("/foo/bar/there");
       Pathname r = Pathname.mergePathnames(p, d);
       assertTrue(r.getNamestring().equals("/a/b/c/d/foo.lisp"));
   }
@@ -88,27 +88,27 @@ public class PathnameTest
       args = args.push(new SimpleString("abcl-tmp"));
       args = args.nreverse();
       Pathname p = Pathname.makePathname(args);
-      Pathname d = new Pathname("/foo/bar.abcl");
+      Pathname d = Pathname.create("/foo/bar.abcl");
       Pathname r = Pathname.mergePathnames(p, d);
       assertTrue(r.getNamestring().equals("/foo/bar.abcl-tmp"));
   }
 
   @Test
   public void mergePathnames4() {
-      Pathname p = new Pathname("jar:file:foo.jar!/bar.abcl");
-      Pathname d = new Pathname("/a/b/c/");
+      Pathname p = Pathname.create("jar:file:foo.jar!/bar.abcl");
+      Pathname d = Pathname.create("/a/b/c/");
       Pathname r = Pathname.mergePathnames(p, d);
       String s = r.getNamestring();
       assertTrue(s.equals("jar:file:/a/b/c/foo.jar!/bar.abcl"));
   }
   @Test 
   public void constructorFileDirectory() {
-    Pathname p = new Pathname("file://tmp/");
+    Pathname p = Pathname.create("file://tmp/");
     assertTrue(p.getNamestring().endsWith("/"));
   }
   @Test 
     public void constructorFileWindowsDevice() {
-    Pathname p = new Pathname("file:c://tmp/");
+    Pathname p = Pathname.create("file:c://tmp/");
     LispObject device = p.getDevice();
     if (Utilities.isPlatformWindows) {
       assert(device != Lisp.NIL);
