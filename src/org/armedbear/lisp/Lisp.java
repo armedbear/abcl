@@ -1362,7 +1362,7 @@ public final class Lisp
   @Deprecated
   public static final LispObject loadCompiledFunction(final String namestring)
   {
-      Pathname name = Pathname.create(namestring);
+    Pathname name = (Pathname)Pathname.create(namestring);
       byte[] bytes = readFunctionBytes(name);
       if (bytes != null)
         return loadClassBytes(bytes);
