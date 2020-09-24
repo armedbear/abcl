@@ -338,6 +338,14 @@ public class PathnameJar
     return jars.car();
   }
 
+  String getRootJarAsURLString() {
+   return
+     PathnameJar.JAR_URI_PREFIX
+     + ((Pathname)getRootJar()).getNamestring()
+     + PathnameJar.JAR_URI_SUFFIX;
+  }
+
+
   LispObject getJars() {
     return getDevice();
   }
@@ -350,10 +358,9 @@ public class PathnameJar
     Pathname rootJar = (Pathname) pathname.getRootJar();
     LispObject enclosingJars = jars.cdr();
 
-    if (!rootJar.isLocalFile()) {
-      // FIXME implement me
-      simple_error("Unimplemented TRUENAME for non-file root jar.");
-    } 
+    // if (!rootJar.isLocalFile()) {
+        
+    // } 
 
     PathnameJar p = new PathnameJar();
     p.copyFrom(pathname);
@@ -362,22 +369,14 @@ public class PathnameJar
     if (!p.isArchiveEntry()) {
       ZipCache.Archive archive = ZipCache.getArchive(p);
       if (archive == null) {
-        if (errorIfDoesNotExist) {
-          return simple_error("Accessible TRUENAME can't be determined for: ~a", pathname); //time !?
-        } else {
-          return NIL;
-        }
+        return Pathname.doTruenameExit(pathname, errorIfDoesNotExist);
       }
       return p;
     }
 
     ZipEntry entry = ZipCache.getZipEntry(p);
     if (entry == null) {
-      if (errorIfDoesNotExist) {
-        return simple_error("Accessible TRUENAME can't be determined for: ~a", pathname); //time !?
-      } else {
-        return NIL;
-      }
+      return Pathname.doTruenameExit(pathname, errorIfDoesNotExist);
     }
     return p;
   }
