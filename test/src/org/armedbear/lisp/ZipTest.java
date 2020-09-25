@@ -17,25 +17,30 @@ import org.junit.Before;
 
 public class ZipTest
 {
-  String zipFile;
+  // FIXME These need to be created as part of executing the tests
+  String zipFile = "/Users/evenson/work/abcl/dist/abcl-contrib.jar";
   PathnameJar zip;
+  String nestedJarFile = "/var/tmp/cl-ppcre-2.1.1.jar";
+  PathnameJar nestedJar;
 
   @Before
   public void setup() {
-    zipFile = "/Users/evenson/work/abcl/dist/abcl-contrib.jar";
     zip = (PathnameJar) PathnameJar.createFromFile(zipFile);
+    nestedJar = (PathnameJar) PathnameJar.createFromFile(nestedJarFile);
   }
 
   @Test
   public void getArchive() {
     ZipCache.Archive archive1 = ZipCache.getArchive(zip);
     assertTrue("Get ZipArchive from pathname",
-               archive1.file != null);
+               archive1 instanceof ZipCache.ArchiveFile
+               && ((ZipCache.ArchiveFile)archive1).file != null);
     PathnameJar zip2
       = (PathnameJar) PathnameJar.createFromFile(zipFile);
     ZipCache.Archive archive2 = ZipCache.getArchive(zip2);
     assertTrue("Get cached ZipArchive from pathname",
-               archive2.file != null);
+               archive2 instanceof ZipCache.ArchiveFile
+               && ((ZipCache.ArchiveFile)archive2).file != null);
     assertTrue("Cached ZipArchive refers to same entry",
                archive2.equals(archive1));
   }
@@ -55,7 +60,13 @@ public class ZipTest
                entry.equals(entry2));
   }
 
-    
+
+  @Test
+  public void nestedJar() {
+    String nestedNamestring = "jar:jar:file:/var/tmp/cl-ppcre-2.1.1.jar!/cl-ppcre/packages.abcl!/__loader__._";
+    Pathname nested = PathnameJar.create(nestedNamestring);
+  }
+  
   
 
 
