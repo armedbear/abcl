@@ -59,11 +59,14 @@
             (equal x0 x1)
             (format nil "~a: ~a equals ~a" i x0 x1)))))
 
+;;;; test :nio-buffer argument
 (prove:plan 1)
 (let*
-    ((java-array
-       (jnew-array-from-array "byte"
-                              #(0 244 2 3)))
+    ((original
+       (make-array 4 :element-type '(unsigned-byte 8)
+                   :initial-contents '(0 255 128 127)))
+     (java-array
+       (jnew-array-from-array "byte" original))
      (nio-buffer
        (#"allocate" 'java.nio.ByteBuffer
                     (jarray-length java-array))))
@@ -72,10 +75,44 @@
           (make-array 4 :element-type '(unsigned-byte 8)
                         :nio-buffer nio-buffer)))
     (prove:ok
-     (equalp result java-array)
-     (format nil "~a EQUALP ~a" result java-array))
-    (values result java-array)))
+     (equalp original result)
+     (format nil "Creating an (unsigned-byte 8) array from nio-buffer where~%~2t~a EQUALP ~a" result result))))
 
-  
+(prove:plan 1)
+(let*
+    ((original
+       (make-array 4 :element-type '(unsigned-byte 16)
+                   :initial-contents `(0 ,(1- (expt 2 16)) 128 127)))
+     (java-array
+       (jnew-array-from-array "char" original))
+     (nio-buffer
+       (#"allocate" 'java.nio.CharBuffer
+                    (jarray-length java-array))))
+  (#"put" nio-buffer java-array)
+  (let ((result
+          (make-array 4 :element-type '(unsigned-byte 16)
+                        :nio-buffer nio-buffer)))
+    (prove:ok
+     (equalp original result)
+     (format nil "Creating an (unsigned-byte 16) array from nio-buffer where~%~2t~a EQUALP ~a" result result))))
+
+(prove:plan 1)
+(let*
+    ((original
+       (make-array 4 :element-type '(unsigned-byte 32)
+                   :initial-contents `(0 ,(1- (expt 2 32)) 128 127)))
+     (java-array
+       (jnew-array-from-array "int" original))
+     (nio-buffer
+       (#"allocate" 'java.nio.IntBuffer
+                    (jarray-length java-array))))
+  (#"put" nio-buffer java-array)
+  (let ((result
+          (make-array 4 :element-type '(unsigned-byte 32)
+                        :nio-buffer nio-buffer)))
+    (prove:ok
+     (equalp original result)
+     (format nil "Creating an (unsigned-byte 8) array from nio-buffer where~%~2t~a EQUALP ~a" result result))))
+
 (prove:finalize)
 
