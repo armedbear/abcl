@@ -72,7 +72,7 @@ install:
 # TODO: figure out how to add abcl to our path
 
 script:
-  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/abcl-prove.lisp
+  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-abcl-prove.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-static-vectors.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-cffi.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-cl+ssl.lisp

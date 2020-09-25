@@ -3,15 +3,18 @@
   :depends-on (prove))
 
 (defsystem :abcl-prove/t
-  :depends-on (:abcl-prove :abcl)
+  :depends-on (abcl-prove abcl)
   :perform
-  (asdf:test-op (op c)
-     ;; (ignore c) ;;; any reference triggers all source artifacts           
-    (ignore-errors
+    (test-op (op c)
+      (declare (ignore op c))
       (dolist (p (directory
-        (merge-pathnames "*.lisp"
-                         (asdf:system-relative-pathname :abcl "t/"))))
-        (uiop:symbol-call :prove :run p)))))
+                  (merge-pathnames "*.lisp"
+                                   (asdf:system-relative-pathname :abcl
+                                                                  "t/"))))
+        (ignore-errors
+         (uiop:symbol-call :prove :run p)))))
+
+
 
 
 
