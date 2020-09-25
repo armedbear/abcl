@@ -728,9 +728,28 @@ public final class Java
                     a = Array.get(a, ((Integer)args[i].javaInstance()).intValue());
                 Object value = v.javaInstance();
                 int index = ((Integer)args[args.length - 1].javaInstance()).intValue();
-                if (value instanceof java.lang.Number
-                    && a.getClass().getComponentType().equals(Byte.TYPE)) {
-                    Array.setByte(a, index, ((java.lang.Number)value).byteValue());
+                if (value instanceof java.lang.Number) {
+                  Class type = a.getClass().getComponentType();
+                  Number number = (java.lang.Number)value;
+                  if (type.equals(Byte.TYPE)) {
+                    Array.setByte(a, index, number.byteValue());
+                  } else if (type.equals(Short.TYPE)) {
+                    Array.setShort(a, index, number.shortValue()); 
+                  } else if (type.equals(Character.TYPE)) {
+                    Array.setChar(a, index, (char)number.intValue()); // FIXME: value out of range
+                  } else if (type.equals(Integer.TYPE)) {
+                    Array.setInt(a, index, number.intValue()); 
+                  } else if (type.equals(Long.TYPE)) {
+                    Array.setLong(a, index, number.longValue()); 
+                  } else if (type.equals(Float.TYPE)) {
+                    Array.setFloat(a, index, number.floatValue()); 
+                  } else if (type.equals(Double.TYPE)) {
+                    Array.setDouble(a, index, number.doubleValue()); 
+                  } else if (type.equals(Boolean.TYPE)) {
+                    Array.setBoolean(a, index, number.equals(0) ? false : true); 
+                  } else {
+                    Array.set(a, index, value);
+                  }
                 } else {
                     Array.set(a, index, value);
                 }
