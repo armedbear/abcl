@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URI;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -299,6 +300,20 @@ public class PathnameURL
     }
     return result;
   }
+
+  URLConnection getURLConnection() {
+    Debug.assertTrue(isURL());
+    URL url = this.toURL();
+    URLConnection result = null;
+    try {
+      result = url.openConnection();
+    } catch (IOException e) {
+      error(new FileError("Failed to open URL connection.",
+                          this));
+    }
+    return result;
+  }
+
 
   public long getLastModified() {
     return getURLConnection().getLastModified();
