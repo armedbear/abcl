@@ -79,10 +79,14 @@ public final class BasicVector_IntBuffer
   public BasicVector_IntBuffer(ByteBuffer buffer, boolean directAllocation) {
     this.directAllocation = directAllocation;
     elements = buffer.asIntBuffer();
-    capacity = ((java.nio.Buffer)buffer).limit();
+    capacity = ((java.nio.Buffer)buffer).limit() / 4;
   }
 
   public BasicVector_IntBuffer(IntBuffer buffer) {
+    this(buffer, false);
+  }
+
+  public BasicVector_IntBuffer(IntBuffer buffer, boolean directAllocation) {
     this.directAllocation = directAllocation;
     elements = buffer;
     capacity = ((java.nio.Buffer)buffer).limit();
