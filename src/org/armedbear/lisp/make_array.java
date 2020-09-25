@@ -192,17 +192,43 @@ public final class make_array
       } else if (upgradedType.equal(UNSIGNED_BYTE_16)
                  && fillPointer == NIL && adjustable == NIL) {
         if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-          v = new BasicVector_CharBuffer(size, directAllocation);
+          if (!nioBuffer.equals(NIL)) {
+            Object o = ((JavaObject)nioBuffer).getObject();
+            if (o instanceof java.nio.CharBuffer) {
+              v = new BasicVector_CharBuffer((java.nio.CharBuffer) o, directAllocation);
+            } else if (o instanceof java.nio.ByteBuffer) {
+              v = new BasicVector_CharBuffer((java.nio.ByteBuffer)o, directAllocation); // FIXME warn on coercion?
+            } else {
+              return type_error(nioBuffer, JavaObject.getInstance(java.nio.CharBuffer.class));
+            }
+          } else {
+            v = new BasicVector_CharBuffer(size, directAllocation);
+          }
         } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
           v = new BasicVector_UnsignedByte16(size);
         }
         defaultInitialElement = Fixnum.ZERO;
       } else if (upgradedType.equal(UNSIGNED_BYTE_32)) {
         if (fillPointer != NIL || adjustable != NIL) {
-          v = new ComplexVector_UnsignedByte32(size);
+          if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
+            v = new ComplexVector_IntBuffer(size);
+          } else {
+            v = new ComplexVector_UnsignedByte32(size);
+          }
         } else {
           if (Java.Buffers.active.equals(AllocationPolicy.NIO)) {
-            v = new BasicVector_IntBuffer(size, directAllocation);
+            if (!nioBuffer.equals(NIL)) {
+              Object o = ((JavaObject)nioBuffer).getObject();
+              if (o instanceof java.nio.IntBuffer) {
+                v = new BasicVector_IntBuffer((java.nio.IntBuffer)o, directAllocation);
+              } else if (o instanceof java.nio.ByteBuffer) {
+                v = new BasicVector_IntBuffer((java.nio.ByteBuffer)o, directAllocation);
+              } else {
+                return type_error(nioBuffer, JavaObject.getInstance(java.nio.IntBuffer.class));
+              }
+            } else {
+              v = new BasicVector_IntBuffer(size, directAllocation);
+            }
           } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
             v = new BasicVector_UnsignedByte32(size);
           }
@@ -219,8 +245,9 @@ public final class make_array
         }
         defaultInitialElement = NIL;
       }
+      
       if (nioBuffer != NIL) {
-        // v is fine…
+        // v should have been allocated with a nioBuffer reference…
         ;
       } else if (initialElementProvided != NIL) {
         // Initial element was specified.

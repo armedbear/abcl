@@ -76,7 +76,7 @@ public final class BasicVector_CharBuffer
   public BasicVector_CharBuffer(ByteBuffer buffer, boolean directAllocation) {
     elements = buffer.asCharBuffer();
     this.directAllocation = directAllocation;
-    capacity = ((java.nio.Buffer)buffer).limit();
+    capacity = ((java.nio.Buffer)buffer).limit() / 2;
   }
 
   public BasicVector_CharBuffer(CharBuffer buffer, boolean directAllocation) {
