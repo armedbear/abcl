@@ -2,7 +2,7 @@
 
 dir="cffi"
 uri="https://github.com/armedbear/${dir}"
-root="${HOME}/quicklisp/local-projects"
+root="${HOME}/common-lisp"
 tag="abcl/easye-20200602a"
 
 mkdir -p ${root}
