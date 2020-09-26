@@ -2,7 +2,7 @@
 
 dir="jeannie"
 uri="https://github.com/easye/${dir}"
-root="${HOME}/quicklisp/local-projects"
+root="${HOME}/common-lisp"
 tag="master"
 
 mkdir -p ${root}

@@ -55,29 +55,31 @@ install:
   - ${ABCL_ROOT}/abcl --eval '(require :asdf)' --eval '(require :abcl-contrib)' --eval '(asdf:load-system :quicklisp-abcl :force t)' --eval '(progn (setf ql-util::*do-not-prompt* t)(ql:add-to-init-file))' --eval '(ext:quit)'
 
   # Install the patched version of cl+ssl
-  - bash -x ${ABCL_ROOT}/ci/install-cl+ssl.bash
+  #  - bash -x ${ABCL_ROOT}/ci/install-cl+ssl.bash
 
   # Install the patched version of cffi
-  - bash -x ${ABCL_ROOT}/ci/install-cffi.bash
-
-  # Install the ANSI-TEST suite
-  - bash -x ${ABCL_ROOT}/ci/install-ansi-test.bash
+  # - bash -x ${ABCL_ROOT}/ci/install-cffi.bash
 
   # Install the patched version of static-vectors
-  - bash -x ${ABCL_ROOT}/ci/install-static-vectors.bash
+  # - bash -x ${ABCL_ROOT}/ci/install-static-vectors.bash
 
   # Install Jeannie for testing
   - bash -x ${ABCL_ROOT}/ci/install-jeannie.bash
 
+  # Install the ANSI-TEST suite
+  - bash -x ${ABCL_ROOT}/ci/install-ansi-test.bash
+
+
 # TODO: figure out how to add abcl to our path
 
 script:
-  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/abcl-prove.lisp
+  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-abcl-prove.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-static-vectors.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-cffi.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-cl+ssl.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-abcl-introspect.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-abcl.lisp
+  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-jeannie.lisp
   # IRONCLAD takes a long time to test, so we place it near the end
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-ironclad.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-ansi.lisp

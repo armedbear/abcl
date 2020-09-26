@@ -2,7 +2,7 @@
 
 dir="static-vectors"
 uri="https://github.com/armedbear/${dir}"
-root="${HOME}/quicklisp/local-projects"
+root="${HOME}/quicklisp/common-lisp"
 tag="abcl/easye-20200603a"
 
 mkdir -p ${root}
