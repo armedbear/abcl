@@ -234,25 +234,12 @@ public class ZipCache {
   }
 
   static public class ArchiveURL
-    extends Archive
+    extends ArchiveFile
   {
-    ZipFile file;
-    InputStream getEntryAsInputStream(PathnameJar entry) {
-      return null;
-    }
-    ZipEntry getEntry(PathnameJar entry) {
-      return null;
-    }
-    void populateAllEntries() {
-      return;
-    }
+    JarURLConnection connection;
     void close() {
-      if (file != null) {
-        try {
-          file.close();
-        } catch (IOException e) {
-        }
-      }
+      super.close();
+      // TODO: do we need to clean up from the connection?
     }
   }
 
@@ -363,17 +350,26 @@ public class ZipCache {
   }
 
   synchronized public static Archive getArchive(PathnameJar jar) {
-    LispObject innerJars = jar.getJars().cdr();
-    if (innerJars.equals(NIL)) {
-      return getArchiveFile(jar);
+    Archive cached = cache.get(jar);
+    if (cached != null) {
+      return cached;
     }
 
     Pathname rootJar = (Pathname) jar.getRootJar();
-    PathnameJar rootPathname = (PathnameJar)PathnameJar.createFromPathname(rootJar);
+    LispObject innerJars = jar.getJars().cdr();
 
-    Archive current = ZipCache.getArchive(rootPathname);
+    if (!rootJar.isLocalFile()) {
+      return getArchiveURL(jar);
+    }
+    
+    if (innerJars.equals(NIL)) {
+      return getArchiveFile(jar);
+    } else {
+      PathnameJar rootPathname = (PathnameJar)PathnameJar.createFromPathname(rootJar);
 
-    while (innerJars.car() != NIL) {
+      Archive current = ZipCache.getArchive(rootPathname);
+      
+      while (innerJars.car() != NIL) {
       // TODO Finish me!
       // Pathname next = (Pathname)innerJars.car();
       // String entryPath = next.asEntryPath();
@@ -385,46 +381,56 @@ public class ZipCache {
       //   ArchiveStream stream = new ArchiveStream();
       //   stream.source = source;
       // }
+      }
+      // FIXME
+      simple_error("Currently unimplemented recursive archive: ~a" , jar);
+      return (Archive)UNREACHED;
     }
-    // FIXME
-    simple_error("Currently unimplemented recursive archive: ~a" , jar);
-    return (Archive)UNREACHED;
   }
 
+  public static Archive getArchiveURL(PathnameJar jar) {
+    Pathname rootJar = (Pathname) jar.getRootJar();
+    String rootJarURLString = jar.getRootJarAsURLString();
+    URL rootJarURL = null;
+    try {
+      rootJarURL = new URL(rootJarURLString);
+      JarURLConnection jarConnection
+        = (JarURLConnection) rootJarURL.openConnection();
 
-  static Archive getArchiveFile(PathnameJar jar) {
-    if (jar.isLocalFile()) {
-      Archive cached = cache.get(jar);
-      if (cached != null) {
-        return cached;
-      }
+      ArchiveURL result = new ArchiveURL();
+      result.root = jar;
+      result.connection = jarConnection;
+      result.file = (ZipFile)jarConnection.getJarFile();
+      result.lastModified = 0; // FIXME
+      cache.put(jar, result);
+      return result;
+    } catch (MalformedURLException e) {
+      simple_error("Failed to form root URL for ~a: ~a", jar, rootJarURLString);
+       return (Archive)UNREACHED;      
+    } catch (IOException e) {
+      simple_error("Failed to fetch ~a: ~a", jar, e);
+      return (Archive)UNREACHED;      
+    }
+  }
 
+  static public Archive getArchiveFile(PathnameJar jar) {
+    try {
+      ArchiveFile result = new ArchiveFile();
       File f = ((Pathname)jar.getRootJar()).getFile();
-      
-      try {
-        ArchiveFile result = new ArchiveFile();
-        result.root = jar;
-        result.file = new ZipFile(f);
-        result.lastModified = f.lastModified();
-        cache.put(jar, result);
-
-        return result;
-      } catch (ZipException e) {
-        error(new FileError("Failed to construct ZipFile"
-                            + " because " + e,
-                            Pathname.makePathname(f)));
-        return null;
-      } catch (IOException e) {
-        error(new FileError("Failed to contruct ZipFile"
-                            + " because " + e,
-                            Pathname.makePathname(f)));
-        return (Archive)UNREACHED;
-      }
-    } else {
-      simple_error("Unimplemented fetch of remote resource.");
+      result.root = jar;
+      result.file = new ZipFile(f);
+      result.lastModified = f.lastModified();
+      cache.put(jar, result);
+      return result;
+    } catch (ZipException e) {
+      error(new FileError("Failed to open local zip archive"
+                          + " because " + e, jar));
+                          
       return (Archive)UNREACHED;
-      // CachedItem e = fetchURL(jarOrEntry, false);
-      // return e;
+    } catch (IOException e) {
+      error(new FileError("Failed to open local zip archive"
+                          + " because " + e, jar));
+      return (Archive)UNREACHED;
     }
   }
 
@@ -491,14 +497,8 @@ public class ZipCache {
   //   return entry.file;
   // }
 
-  static final SimpleDateFormat ASCTIME
-    = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.US);
-  static final SimpleDateFormat RFC_1036
-    = new SimpleDateFormat("EEEE, dd-MMM-yy HH:mm:ss zzz", Locale.US);
-  static final SimpleDateFormat RFC_1123
-    = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
 
-  static void checkRemoteLastModified (PathnameJar jarEntry) {
+  static void checkRemoteLastModified(ArchiveURL archive) {
     // Unfortunately, the Apple JDK under OS X doesn't do
     // HTTP HEAD requests, instead refetching the entire
     // resource, and I assume this is the case in all
@@ -508,40 +508,53 @@ public class ZipCache {
     // refetch the resource.
 
     String dateString = null;
-    // try {
-    //   dateString = HttpHead.get(url, "Last-Modified");
-    // } catch (IOException ex) {
-    //   Debug.trace(ex);
-    // }
-    // Date date = null;
-    // ParsePosition pos = new ParsePosition(0);
+
+    String url = archive.root.getRootJarAsURLString();
     
-    // if (dateString != null) {
-    //   date = RFC_1123.parse(dateString, pos);
-    //   if (date == null) {
-    //     date = RFC_1036.parse(dateString, pos);
-    //     if (date == null)
-    //       date = ASCTIME.parse(dateString, pos);
-    //   }
-    // }
-      
-    // if (date == null || date.getTime() > entry.lastModified) {
-    //   entry = fetchURL(url, false);
-    //   cache.put(url, entry);
-    //   }
-    //   if (date == null) {
-    //     if (dateString == null) {
-    //       Debug.trace("Failed to retrieve request header: "
-    //                   + url.toString());
-    //     } else {
-    //       Debug.trace("Failed to parse Last-Modified date: " +
-    //                   dateString);
-    //     }
-    //   }
+    try {
+      dateString = HttpHead.get(url, "Last-Modified");
+    } catch (IOException ex) {
+      Debug.trace(ex);
+    }
+    Date date = null;
+    ParsePosition pos = new ParsePosition(0);
+
+    final SimpleDateFormat ASCTIME
+      = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.US);
+    final SimpleDateFormat RFC_1036
+      = new SimpleDateFormat("EEEE, dd-MMM-yy HH:mm:ss zzz", Locale.US);
+    final SimpleDateFormat RFC_1123
+      = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
+
+    if (dateString != null) {
+      date = RFC_1123.parse(dateString, pos);
+      if (date == null) {
+        date = RFC_1036.parse(dateString, pos);
+        if (date == null) {
+          date = ASCTIME.parse(dateString, pos);
+        }
+      }
+    }
+
+    // Replace older item in cache
+    if (date == null || date.getTime() > archive.lastModified) {
+      PathnameJar root = archive.root;
+      Archive entry = getArchiveURL(root);
+      cache.put(root, entry);
+    }
+    if (date == null) {
+      if (dateString == null) {
+        Debug.trace("Failed to retrieve request header: "
+                    + url.toString());
+      } else {
+        Debug.trace("Failed to parse Last-Modified date: " +
+                    dateString);
+      }
+    }
   }
 
   // FIXME recode once local fileaccesses are working
-  static private ZipFile fetchURL(PathnameJar url, boolean useCaches) {
+  static private ZipFile getRemote(PathnameJar url) {
     ZipFile result = null;
     URL jarURL = null;
     try {
@@ -565,7 +578,7 @@ public class ZipCache {
                           + "'" + jarURL + "'"));
     }
     JarURLConnection jarURLConnection = (JarURLConnection) connection;
-    jarURLConnection.setUseCaches(useCaches);
+    //    jarURLConnection.setUseCaches(useCaches);
     try {
       result = jarURLConnection.getJarFile();
     } catch (IOException e) {

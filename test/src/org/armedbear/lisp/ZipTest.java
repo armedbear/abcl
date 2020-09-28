@@ -64,7 +64,7 @@ public class ZipTest
   @Test
   public void nestedJar() {
     String nestedNamestring = "jar:jar:file:/var/tmp/cl-ppcre-2.1.1.jar!/cl-ppcre/packages.abcl!/__loader__._";
-    Pathname nested = PathnameJar.create(nestedNamestring);
+    Pathname nested = (Pathname)PathnameJar.create(nestedNamestring);
   }
   
   
