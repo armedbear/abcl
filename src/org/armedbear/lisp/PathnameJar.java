@@ -587,7 +587,7 @@ public class PathnameJar
         return entry.getTime();
       }
     }
-    return -1; // shouldn't be reached
+    return 0;
   }
 }
       
