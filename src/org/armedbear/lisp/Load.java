@@ -107,7 +107,6 @@ public final class Load
             return result;
           }
           name.setType(new SimpleString(COMPILE_FILE_TYPE));
-          name.invalidateNamestring();
           result = findLoadableFile(name);
           if (result != null) {
             return result;
@@ -157,9 +156,11 @@ public final class Load
             mergedPathname = (Pathname)Pathname.mergePathnames(pathname, pathnameDefaults);
         }
         Pathname loadableFile = findLoadableFile(mergedPathname != null ? mergedPathname : pathname);
-        Pathname truename = (Pathname)Symbol.PROBE_FILE.execute(loadableFile);
-
-        if (truename.equals(NIL)) {
+        Pathname truename = (loadableFile != null
+                             ? (Pathname)Symbol.PROBE_FILE.execute(loadableFile)
+                             : null);
+        
+        if (truename == null || truename.equals(NIL)) {
           if (ifDoesNotExist) {
             return error(new FileError("File not found: " + pathname.princToString(), pathname));
           } else {
@@ -297,12 +298,21 @@ public final class Load
         Pathname mergedPathname;
         if (bootPath instanceof Pathname) {
           mergedPathname = (Pathname)Symbol.MERGE_PATHNAMES.execute(pathname, bootPath);
+          // So PROBE-FILE won't attempt to merge when
+          // *DEFAULT-PATHNAME-DEFAULTS* is a JAR
+          if (mergedPathname.getDevice().equals(NIL)) {
+            mergedPathname.setDevice(Keyword.UNSPECIFIC);
+          }
         } else {
           mergedPathname = pathname;
         }
         URL url = null;
         Pathname loadableFile = findLoadableFile(mergedPathname);
-        truename = (Pathname)Symbol.PROBE_FILE.execute(loadableFile);
+        if (loadableFile == null) {
+          truename = null;
+        } else {
+          truename = (Pathname)Symbol.PROBE_FILE.execute(loadableFile);
+        }
         
         final String COMPILE_FILE_TYPE 
           = Lisp._COMPILE_FILE_TYPE_.symbolValue().getStringValue();
