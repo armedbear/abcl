@@ -52,20 +52,18 @@ public final class Site
             LISP_HOME = Pathname.create(s);
             return;
         }
-        URL url = Lisp.class.getResource("boot.lisp");
+        URL url = Lisp.class.getResource("boot.lisp"); // what if this was "__loader__._"?!!
         if (url != null) {
             if (!Pathname.isSupportedProtocol(url.getProtocol())) {
                 LISP_HOME = NIL;
             } else {
               Pathname p = (Pathname)Pathname.create(url);
-                p.setName(NIL);
-                p.setType(NIL);
-                p.invalidateNamestring();
-                LISP_HOME = p;
+              p.setName(NIL).setType(NIL);
+              LISP_HOME = p;
             }
             return;
         }
-        Debug.trace("Unable to determine LISP_HOME.");
+        simple_error("Unable to determine LISP_HOME.");
     }
 
     public static final LispObject getLispHome()

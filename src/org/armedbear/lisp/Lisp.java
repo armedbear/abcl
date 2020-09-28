@@ -434,7 +434,7 @@ public final class Lisp
   public static final Pathname Pathname_simple_error(String formatControl, Object... args) {
     return (Pathname) simple_error(formatControl, args);
   }
-  
+
   public static final LispObject simple_error(String formatControl, Object... args) {
     LispObject lispArgs = NIL;
     for (int i = 0; i < args.length; i++) {
@@ -1376,15 +1376,15 @@ public final class Lisp
       LispObject truenameFasl = Symbol.LOAD_TRUENAME_FASL.symbolValue(thread);
       LispObject truename = Symbol.LOAD_TRUENAME.symbolValue(thread);
       if (truenameFasl instanceof Pathname) {
-          load = Pathname.mergePathnames(name, (Pathname)truenameFasl, Keyword.NEWEST);
+          load = (Pathname)Pathname.mergePathnames(name, (Pathname)truenameFasl, Keyword.NEWEST);
       } else if (truename instanceof Pathname) {
-          load = Pathname.mergePathnames(name, (Pathname) truename, Keyword.NEWEST);
+          load = (Pathname)Pathname.mergePathnames(name, (Pathname) truename, Keyword.NEWEST);
       } else {
-          if (!Pathname.truename(name).equals(NIL)) {
-              load = name;
-          } else {
-              load = null;
-          }
+        if (!Symbol.PROBE_FILE.execute(name).equals(NIL)) {
+          load = name;
+        } else {
+          load = null;
+        }
       }
       InputStream input = null;
       if (load != null) {
@@ -1917,16 +1917,17 @@ public final class Lisp
     if (arg instanceof Pathname)
       return (Pathname) arg;
     if (arg instanceof AbstractString)
-      return (Pathname)Pathname.parseNamestring((AbstractString)arg);
+      return (Pathname)Pathname.create(((AbstractString)arg).toString());
     if (arg instanceof FileStream)
       return ((FileStream)arg).getPathname();
     if (arg instanceof JarStream)
       return ((JarStream)arg).getPathname();
     if (arg instanceof URLStream)
       return ((URLStream)arg).getPathname();
-    type_error(arg, list(Symbol.OR, Symbol.PATHNAME,
-                         Symbol.STRING, Symbol.FILE_STREAM,
-                         Symbol.JAR_STREAM, Symbol.URL_STREAM));
+    type_error(arg, list(Symbol.OR,
+                           Symbol.STRING,
+                           Symbol.PATHNAME, Symbol.JAR_PATHNAME, Symbol.URL_PATHNAME,
+                           Symbol.FILE_STREAM, Symbol.JAR_STREAM, Symbol.URL_STREAM));
     // Not reached.
     return null;
   }
@@ -2910,4 +2911,5 @@ public final class Lisp
     }
   }
 
+  public static java.lang.Object UNREACHED = null;
 }

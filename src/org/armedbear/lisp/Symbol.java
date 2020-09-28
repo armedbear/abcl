@@ -3110,6 +3110,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("JAR-STREAM");
   public static final Symbol LAYOUT =
     PACKAGE_SYS.addExternalSymbol("LAYOUT");
+  public static final Symbol MATCH_WILD_JAR_PATHNAME =
+    PACKAGE_SYS.addExternalSymbol("MATCH-WILD-JAR-PATHNAME");
   public static final Symbol NAME =
     PACKAGE_SYS.addExternalSymbol("NAME");
   public static final Symbol NAMED_LAMBDA =
