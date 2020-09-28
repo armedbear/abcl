@@ -1,4 +1,4 @@
-(in-package #:abcl.test.lisp)
+(in-package #:abcl/test/lisp)
 
 (defparameter *tmp-directory* nil)
 (defparameter *tmp-directory-whitespace* nil)
@@ -47,9 +47,9 @@
          (temp-dir (make-pathname :directory (append 
                                               (pathname-directory (pathname temp-file))
                                               '("jar-pathname-tests")))))
-    (jar-file-init temp-file temp-dir)))
+    (jar-file-init temp-dir)))
 
-(defun jar-file-init (temp-file temp-dir)
+(defun jar-file-init (temp-dir)
   "Create the jar archives used for testing.
 Returns the two values of the pathnames of the created archives."
   (ensure-directories-exist temp-dir)
@@ -118,79 +118,94 @@ Returns the two values of the pathnames of the created archives."
   `(progn 
      (unless (and *tmp-jar-path* (probe-file *tmp-jar-path*))
        (create-jar))
-     (let ((*default-pathname-defaults* *tmp-directory*))
+     (let ((*default-pathname-defaults* *tmp-directory*)) ;; why do we need this?
        ,@body)))
 
-(defun jar-pathname-escaped (jar path)
-  (pathname (format nil "jar:file:~A!/~A" 
-                    (ext:uri-encode (namestring jar)) path)))
-
-(defmacro load-from-jar (jar path) 
-  `(with-jar-file-init 
-       (load (jar-pathname-escaped ,jar ,path))))
-
-;;; XXX Figure out correct use of macros so this isn't necessary
-#|
-(push 'jar-pathname.load.init *expected-failures*)
-(deftest jar-pathname.load.init
-    (with-jar-file-init
-        nil)
-  t)
-|#
+(defun load-from-jar (jar entry) 
+  (let ((jar-pathname (if (ext:pathname-jar-p jar)
+                          jar
+                          (make-pathname :device (list jar)))))
+    (load (merge-pathnames entry jar-pathname))))
 
 (deftest jar-pathname.load.1
-    (load-from-jar *tmp-jar-path* "__loader__._")
+  (with-jar-file-init 
+    (load-from-jar *tmp-jar-path* "__loader__._"))
   t)
 
+;; Needs nested jars implementation
+(pushnew 'jar-pathname.load.2 *expected-failures*)
 (deftest jar-pathname.load.2
-    (load-from-jar *tmp-jar-path* "bar")
+  (with-jar-file-init
+      (load-from-jar *tmp-jar-path* "bar"))
   t)
 
+;; Needs nested jars implementation
+(pushnew 'jar-pathname.load.3 *expected-failures*)
 (deftest jar-pathname.load.3
-    (load-from-jar *tmp-jar-path* "bar.abcl")
+  (with-jar-file-init
+    (load-from-jar *tmp-jar-path* "bar.abcl"))
   t)
 
 (deftest jar-pathname.load.4
-    (load-from-jar *tmp-jar-path* "eek")
+  (with-jar-file-init
+    (load-from-jar *tmp-jar-path* "eek"))
   t)
 
 (deftest jar-pathname.load.5
-    (load-from-jar *tmp-jar-path* "eek.lisp")
+  (with-jar-file-init
+      (load-from-jar *tmp-jar-path* "eek.lisp"))
   t)
 
-#+(or)
 (deftest jar-pathname.load.6
-    (load-from-jar *tmp-jar-path* "foo")
+  (signals-error 
+   (load-from-jar *tmp-jar-path* "this doesn't exist")
+   'file-error)
   t)
 
+;; Needs nested jars implementation
+(pushnew 'jar-pathname.load.7 *expected-failures*)
 (deftest jar-pathname.load.7
-    (load-from-jar *tmp-jar-path* "a/b/bar")
+  (with-jar-file-init
+      (load-from-jar *tmp-jar-path* "a/b/bar"))
   t)
 
+;; Needs nested jars implementation
+(pushnew 'jar-pathname.load.8 *expected-failures*)
 (deftest jar-pathname.load.8
-    (load-from-jar *tmp-jar-path* "a/b/bar.abcl")
+  (with-jar-file-init
+      (load-from-jar *tmp-jar-path* "a/b/bar.abcl"))
   t)
 
 (deftest jar-pathname.load.9
-    (load-from-jar *tmp-jar-path* "a/b/eek")
+  (with-jar-file-init
+      (load-from-jar *tmp-jar-path* "a/b/eek"))
   t)
 
 (deftest jar-pathname.load.10
-    (load-from-jar *tmp-jar-path* "a/b/eek.lisp")
+  (with-jar-file-init
+    (load-from-jar *tmp-jar-path* "a/b/eek.lisp"))
   t)
 
+;; Needs nested jars implementation
+(pushnew 'jar-pathname.load.11 *expected-failures*)
 (deftest jar-pathname.load.11
-    (load-from-jar *tmp-jar-path* "d/e+f/bar.abcl")
+  (with-jar-file-init
+      (load-from-jar *tmp-jar-path* "d/e+f/bar.abcl"))
   t)
 
+;; Needs nested jars implementation
+(pushnew 'jar-pathname.load.12 *expected-failures*)
 (deftest jar-pathname.load.12
-    (load-from-jar *tmp-jar-path* "a/b/foo%20bar.abcl")
+  (with-jar-file-init
+      (load-from-jar *tmp-jar-path* "a/b/foo%20bar.abcl"))
   t)
 
+;; Needs nested jars implementation
+(pushnew 'jar-pathname.load.13 *expected-failures*)
 (deftest jar-pathname.load.13
-    (signals-error 
-     (load-from-jar *tmp-jar-path* "a/b/foo bar.abcl")
-     'error)
+  (signals-error 
+   (load-from-jar *tmp-jar-path* "a/b/foo bar.abcl")
+   'error)
   t)
 
 (deftest jar-pathname.load.14
@@ -198,42 +213,43 @@ Returns the two values of the pathnames of the created archives."
   t)
 
 (deftest jar-pathname.load.15
-    (signals-error
-     (load-from-jar *tmp-jar-path-whitespace* "a/b/foo bar.abcl")
-     'error)
+  (signals-error
+   (load-from-jar *tmp-jar-path-whitespace* "a/b/foo bar.abcl")
+   'error)
   t)
 
+;; Needs nested jars implementation
+(pushnew 'jar-pathname.load.16 *expected-failures*)
 (deftest jar-pathname.load.16
     (load-from-jar *tmp-jar-path-whitespace* "a/b/foo%20bar.abcl")
   t)
 
 (defparameter *url-jar-pathname-base*
-  "jar:https://abcl.org/releases/1.7.1/abcl-bin-1.7.1.zip!/")
+  #p"jar:https://abcl.org/releases/1.7.1/abcl-contrib.jar!/")
 
 (deftest jar-pathname.url.https.1
-    (probe-file *url-jar-pathname-base*)
-  *url-jar-pathname-base*)
+  (equalp
+   *url-jar-pathname-base*
+   (probe-file *url-jar-pathname-base*))
+  t)
 
 (deftest jar-pathname.probe-file.1
-    (let ((result 
-           (with-jar-file-init
-               (probe-file "jar:file:baz.jar!/eek.lisp"))))
-      (string=
-       (if result (namestring result) "")
-       (format nil "jar:file:~Abaz.jar!/eek.lisp" 
-               (namestring *tmp-directory*))))
+  (with-jar-file-init
+      (let ((p 
+              (merge-pathnames "eek.lisp"
+                               (make-pathname :device (list *tmp-jar-path*)))))
+        (not (null (probe-file p)))))
   t)
 
 (deftest jar-pathname.probe-file.2
-    (let ((result 
-          (with-jar-file-init
-              (probe-file "jar:file:baz.jar!/a/b/bar.abcl"))))
-      (string=
-       (if result (namestring result) "")
-       (format nil "jar:file:~Abaz.jar!/a/b/bar.abcl" 
-               (namestring *tmp-directory*))))
+  (with-jar-file-init
+      (let ((p 
+              (merge-pathnames "a/b/bar.abcl"
+                               (make-pathname :device (list *tmp-jar-path*)))))
+        (not (null (probe-file p)))))
   t)
 
+#+(or) ;; needs nested pathnames
 (deftest jar-pathname.probe-file.3
     (let ((result 
           (with-jar-file-init
@@ -244,80 +260,70 @@ Returns the two values of the pathnames of the created archives."
                (namestring *tmp-directory*))))
   t)
 
-
-(push 'jar-pathname.probe-file.4 *expected-failures*)
 (deftest jar-pathname.probe-file.4
-    (let ((result 
-          (with-jar-file-init
-              (probe-file "jar:file:baz.jar!/a/b"))))
-      (string=
-       (if result (namestring result) "")
-       (format nil "jar:file:~Abaz.jar!/a/b/"
-               (namestring *tmp-directory*))))
+    (with-jar-file-init
+      (let ((p 
+              (merge-pathnames "a/b/bar.abcl"
+                               (make-pathname :device (list *tmp-jar-path*)))))
+        (not (null (probe-file p)))))
   t)
 
-(push 'jar-pathname.probe-file.5 *expected-failures*)
 (deftest jar-pathname.probe-file.5
-    (let ((result 
-          (with-jar-file-init
-              (probe-file "jar:file:baz.jar!/a/b/"))))
-      (string=
-       (if result (namestring result) "")
-       (format nil "jar:file:~Abaz.jar!/a/b/"
-               (namestring *tmp-directory*))))
+  (with-jar-file-init
+      (let ((p 
+              (merge-pathnames "a/b/"
+                               (make-pathname :device (list *tmp-jar-path*)))))
+        (not (null (probe-file p)))))
   t)
 
 
 (deftest jar-pathname.probe-file.6
-    (let ((result 
-          (with-jar-file-init
-              (probe-file "jar:file:baz.jar!/d/e+f/bar.abcl"))))
-      (string=
-       (if result (namestring result) "")
-       (format nil "jar:file:~Abaz.jar!/d/e+f/bar.abcl"
-               (namestring *tmp-directory*))))
+  (with-jar-file-init
+      (let ((p 
+              (merge-pathnames "d/e+f/bar.abcl/"
+                               (make-pathname :device (list *tmp-jar-path*)))))
+        (not (null (probe-file p)))))
   t)
 
+
 (deftest jar-pathname.merge-pathnames.1
-    (merge-pathnames 
-     "/bar.abcl" #p"jar:file:baz.jar!/foo")
-  #p"jar:file:baz.jar!/bar.abcl")
+  (merge-pathnames 
+   "/bar.abcl" #p"jar:file:/baz.jar!/foo")
+  #p"jar:file:/baz.jar!/bar.abcl")
 
 (deftest jar-pathname.merge-pathnames.2
-    (merge-pathnames 
-     "bar.abcl" #p"jar:file:baz.jar!/foo/baz")
-  #p"jar:file:baz.jar!/foo/bar.abcl")
+  (merge-pathnames 
+   "bar.abcl" #p"jar:file:/baz.jar!/foo/baz")
+  #p"jar:file:/baz.jar!/foo/bar.abcl")
 
 (deftest jar-pathname.merge-pathnames.3
     (merge-pathnames 
-     "jar:file:baz.jar!/foo" "bar")
-  #p"jar:file:baz.jar!/foo")
+     "jar:file:/baz.jar!/foo" "bar")
+  #p"jar:file:/baz.jar!/foo")
 
 (deftest jar-pathname.merge-pathnames.4
     (merge-pathnames 
-     "jar:file:baz.jar!/foo" "/a/b/c")
+     "jar:file:/baz.jar!/foo" "/a/b/c")
   #p"jar:file:/a/b/baz.jar!/foo")
-
 
 ;;; Under win32, we get the device in the merged path
 #+windows 
 (push 'jar-pathname.merge-pathnames.5 *expected-failures*)
-
 (deftest jar-pathname.merge-pathnames.5
-    (merge-pathnames "jar:file:/a/b/c/foo.jar!/bar/baz.lisp")
+  (merge-pathnames "jar:file:/a/b/c/foo.jar!/bar/baz.lisp")
   #p"jar:file:/a/b/c/foo.jar!/bar/baz.lisp")
 
 (deftest jar-pathname.truename.1
-    (signals-error (truename "jar:file:baz.jar!/foo")
-                   'file-error)
+  (signals-error (truename "jar:file:baz.jar!/foo")
+                 'file-error)
   t)
 
 (deftest jar-pathname.1
-    (let* ((p #p"jar:file:foo/baz.jar!/")
+    (let* ((p #p"jar:file:/foo/baz.jar!/")
            (d (first (pathname-device p))))
       (values
        (pathname-directory d) (pathname-name d) (pathname-type d)))
-  (:relative "foo") "baz" "jar")
+  (:absolute "foo") "baz" "jar")
 
 (deftest jar-pathname.2
     (let* ((p #p"jar:file:baz.jar!/foo.abcl")
@@ -418,7 +424,7 @@ Returns the two values of the pathnames of the created archives."
   t)
 
 (deftest jar-pathname.11
-    (let ((s (string-downcase "jar:file:/foo/bar/a%20space%3f/that!/this")))
+    (let ((s (string-downcase "jar:file:///foo/bar/a%20space%3f/that!/this")))
       (string= s
                (string-downcase (namestring (pathname s)))))
   t)
