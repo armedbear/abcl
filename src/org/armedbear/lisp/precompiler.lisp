@@ -406,8 +406,12 @@
 	 (simple-arglist? (not (or (memq '&KEY arglist) (memq '&OPTIONAL arglist) (memq '&REST arglist)))))
     (or
      ;;give a chance for someone to transform single-form function bodies
-     (and (= (length body) 1) (consp (car body)) (get (caar body) 'sys::function-position-lambda-transform)
-	  (funcall (get (caar body) 'sys::function-position-lambda-transform) (caar body) (car body) (mapcar #'precompile1 args)))
+     (and (= (length body) 1)
+          (consp (car body))
+          (symbolp (caar body))
+          (get (caar body) 'sys::function-position-lambda-transform)
+	  (funcall (get (caar body) 'sys::function-position-lambda-transform)
+                   (caar body) (car body) (mapcar #'precompile1 args)))
      (and simple-arglist?
 	  (let ((arglist-length (if (memq '&aux arglist) (position '&aux arglist) (length arglist))))
 	    (if (= (length args) arglist-length)
