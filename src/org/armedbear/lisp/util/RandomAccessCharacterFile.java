@@ -48,6 +48,7 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderMalfunctionError;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.UnsupportedCharsetException;
@@ -386,12 +387,21 @@ public class RandomAccessCharacterFile {
 
     final int read(char[] cb, int off, int len) throws IOException {
         CharBuffer cbuf = CharBuffer.wrap(cb, off, len);
+        cdec.reset();
         boolean decodeWasUnderflow = false;
         boolean atEof = false;
         while ((cbuf.remaining() > 0) && ! atEof) {
             int oldRemaining = cbuf.remaining();
             atEof = ! ensureReadBbuf(decodeWasUnderflow);
-            CoderResult r = cdec.decode(bbuf, cbuf, atEof );
+            CoderResult r;
+            try {
+              r = cdec.decode(bbuf, cbuf, atEof );
+            } catch (IllegalStateException e) {
+              throw new IOException("CharsetDecoder failed", e);
+            } catch (CoderMalfunctionError e) {
+              throw new IOException("CharsetDecoder malfunction", e);
+            }
+              
             if (oldRemaining == cbuf.remaining()
                 && CoderResult.OVERFLOW == r) {
                 // if this happens, the decoding failed
