@@ -28,7 +28,7 @@ public class PathnameTest
     } catch (MalformedURLException e) {
         System.out.println(e.getMessage());
     }
-    Pathname pathname = (Pathname)Pathname.create(url);
+    Pathname pathname = (Pathname)PathnameURL.create(url);
     assertNotNull(pathname);
     assertNotNull(pathname.getNamestring());
     assertNotNull(pathname.getName());
@@ -93,17 +93,18 @@ public class PathnameTest
       assertTrue(r.getNamestring().equals("/foo/bar.abcl-tmp"));
   }
 
-  @Test
-  public void mergePathnames4() {
-    Pathname p = (Pathname)Pathname.create("jar:file:foo.jar!/bar.abcl");
-    Pathname d = (Pathname)Pathname.create("/a/b/c/");
-    Pathname r = (Pathname)Pathname.mergePathnames(p, d);
-    String s = r.getNamestring();
-    assertTrue(s.equals("jar:file:/a/b/c/foo.jar!/bar.abcl"));
-  }
+// Currently we disallow construction of relative pathname JARs
+//  @Test
+//  public void mergePathnames4() {
+//    Pathname p = (Pathname)Pathname.create("jar:file:foo.jar!/bar.abcl");
+//    Pathname d = (Pathname)Pathname.create("/a/b/c/");
+//    Pathname r = (Pathname)Pathname.mergePathnames(p, d);
+//    String s = r.getNamestring();
+//    assertTrue(s.equals("jar:file:///a/b/c/foo.jar!/bar.abcl"));
+//  }
   @Test 
   public void constructorFileDirectory() {
-    Pathname p = (Pathname)Pathname.create("file://tmp/");
+    Pathname p = (Pathname)Pathname.create("file:///tmp/");
     assertTrue(p.getNamestring().endsWith("/"));
   }
   @Test 
@@ -117,7 +118,7 @@ public class PathnameTest
   // Necessary for ASDF output translations to work
   @Test
   public void wildInferiorsJars() {
-    String namestring = "jar:file:/**/*.jar!/**/*.*";
+    String namestring = "jar:file:///**/*.jar!/**/*.*";
     Pathname p = (Pathname)Pathname.create(namestring);
     String parsedNamestring = p.getNamestring();
     assertTrue(parsedNamestring.equals(namestring));
@@ -125,13 +126,13 @@ public class PathnameTest
   
   @Test
   public void equality() {
-    Pathname p1 = (Pathname)Pathname.create("file://tmp/");
-    Pathname p2 = (Pathname)Pathname.create("file://tmp/");
+    Pathname p1 = (Pathname)Pathname.create("file:///tmp/");
+    Pathname p2 = (Pathname)Pathname.create("file:///tmp/");
     boolean result = p1.equals(p2);
     assertTrue("Java equals() for Pathname", result);
 
-    PathnameJar p3 = (PathnameJar)Pathname.create("jar:file:/abcl.jar!/tmp/");
-    PathnameJar p4 = (PathnameJar)Pathname.create("jar:file:/abcl.jar!/tmp/");
+    PathnameJar p3 = (PathnameJar)Pathname.create("jar:file:///abcl.jar!/tmp/");
+    PathnameJar p4 = (PathnameJar)Pathname.create("jar:file:///abcl.jar!/tmp/");
     result = p3.equals(p4);
     assertTrue("Java equals() for PathnameJar", result);
   }
