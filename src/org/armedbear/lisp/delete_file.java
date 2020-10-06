@@ -77,7 +77,7 @@ public final class delete_file extends Primitive
                 System.gc();
                 Thread.yield();
             }
-            Pathname truename = new Pathname(file.getAbsolutePath());
+            Pathname truename = Pathname.create(file.getAbsolutePath());
             StringBuilder sb = new StringBuilder("Unable to delete ");
             sb.append(file.isDirectory() ? "directory " : "file ");
             sb.append(truename.princToString());
