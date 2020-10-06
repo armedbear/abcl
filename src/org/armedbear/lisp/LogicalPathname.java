@@ -57,14 +57,25 @@ public final class LogicalPathname extends Pathname
     return false;
   }
 
+  protected LogicalPathname() {
+  }
+  
+  // Used in Pathname._makePathname to indicate type for namestring 
+  public static LogicalPathname create() {
+    return new LogicalPathname();
+  }
+
   public static LogicalPathname create(String namestring) {
     // parse host out then call create(host, rest);
+    LogicalPathname result = null;
     if (LogicalPathname.isValidLogicalPathname(namestring)) {
       String h = LogicalPathname.getHostString(namestring);
-      return LogicalPathname.create(h,
-                                    namestring.substring(namestring.indexOf(':') + 1));
+      result = LogicalPathname.create(h,
+                                      namestring.substring(namestring.indexOf(':') + 1));
+      return result;
     }
-    return null;  // Ugh.  I bet this is gonna cause problems. Tighten entrance points
+    error(new LispError("Failed to create a LogicalPathname from '" + namestring + "'")); // FIXME: choose correct error
+    return result;  // unreached
   }
 
   public static LogicalPathname create(String host, String rest) {
