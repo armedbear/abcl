@@ -111,12 +111,13 @@ public class PathnameURL
         path += "/";
       }
       final Pathname p = (Pathname)Pathname.create(path);
-      result.setHost(p.getHost());
-      result.setDevice(p.getDevice());
-      result.setDirectory(p.getDirectory());
-      result.setName(p.getName());
-      result.setType(p.getType());
-      result.setVersion(p.getVersion());
+      result
+        .setHost(p.getHost())
+        .setDevice(p.getDevice())
+        .setDirectory(p.getDirectory())
+        .setName(p.getName())
+        .setType(p.getType())
+        .setVersion(p.getVersion());
       return result;  
     }
     Debug.assertTrue(scheme != null);
