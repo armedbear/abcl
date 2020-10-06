@@ -49,7 +49,7 @@ import java.net.URL;
  * Use HTTP/1.1 HEAD to retrieve the specified header field.
  */
 public class HttpHead {
-    static private String get(String urlString, String key) throws IOException {
+    static public String get(String urlString, String key) throws IOException {
         URL url = null;
         try {
             url = new URL(urlString);
