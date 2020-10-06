@@ -158,17 +158,10 @@ public class Pathname extends LispObject implements Serializable {
     }
 
   /** 
-   *  Coerces Pathname types by copying structure
+   *  Coerces type between descendents of Pathname types by copying structure
    */
   static public LispObject ncoerce(Pathname orig, Pathname dest) {
-    dest.setHost(orig.getHost());
-    dest.setDevice(orig.getDevice());
-    dest.setDirectory(orig.getDirectory());
-    dest.setName(orig.getName());
-    dest.setType(orig.getType());
-    dest.setVersion(orig.getVersion());
-
-    return dest;
+    return dest.copyFrom(orig); 
   }
 
   /**
