@@ -52,6 +52,10 @@ public final class probe_file
         public LispObject execute(LispObject arg)
         {
           Pathname p = coerceToPathname(arg);
+          if (p.isWild()) {
+            return error(new FileError("Cannot find the TRUENAME for a wild pathname.",
+                                       p));
+          }
           // TODO: refactor Pathname{,Jar,URL}.truename() to be non-static?
           if (p instanceof PathnameJar) {
             return PathnameJar.truename((PathnameJar)p, false);
