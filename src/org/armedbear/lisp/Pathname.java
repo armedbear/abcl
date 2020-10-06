@@ -39,7 +39,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
@@ -86,13 +85,6 @@ public class Pathname extends LispObject implements Serializable {
     return LogicalPathname.create(s, host);
   }
 
-  public static LispObject create(URL url) {
-    return Pathname.create(url.toString());
-  }
-
-  public static LispObject create(URI uri) {
-    return Pathname.create(uri.toString());
-  }
   protected LispObject host = NIL;
   public LispObject getHost() {
     return host;
@@ -906,19 +898,6 @@ public class Pathname extends LispObject implements Serializable {
         return true;
     }
 
-    URLConnection getURLConnection() {
-        Debug.assertTrue(isURL());
-        URL url = this.toURL();
-        URLConnection result = null;
-        try {
-            result = url.openConnection();
-        } catch (IOException e) {
-            error(new FileError("Failed to open URL connection.",
-                                this));
-        }
-        return result;
-    }
-
     public static LispObject parseNamestring(AbstractString namestring) {
         // Check for a logical pathname host.
         String s = namestring.getStringValue();
@@ -1494,15 +1473,18 @@ public class Pathname extends LispObject implements Serializable {
                 }
                 for (int i = files.length; i-- > 0;) {
                   File file = files[i];
-                  Pathname p;
                   String path;
                   if (resolveSymlinks == NIL) {
                     path = file.getAbsolutePath();
                   } else {
                     path = file.getCanonicalPath();
                   }
-                  URI pathURI = (new File(path)).toURI();
-                  p = (Pathname)Pathname.create(pathURI);
+                  if (file.isDirectory()
+                      && !path.endsWith("/")) {
+                    path += "/";
+                  }
+                  Pathname p;
+                  p = (Pathname)Pathname.create(path);
                   result = new Cons(p, result);
                 }
               } catch (IOException e) {
@@ -1531,6 +1513,7 @@ public class Pathname extends LispObject implements Serializable {
         return false;
     }
 
+  // FIXME This should be named JAR-PATHNAME-P
     @DocString(name="pathname-jar-p",
                args="pathname",
                returns="generalized-boolean",
@@ -1542,8 +1525,12 @@ public class Pathname extends LispObject implements Serializable {
         }
         @Override
         public LispObject execute(LispObject arg) {
+          if (arg instanceof Pathname) {
             Pathname p = coerceToPathname(arg);
             return p.isJar() ? T : NIL;
+          } else {
+            return NIL;
+          }
         }
     }
 
@@ -1551,6 +1538,7 @@ public class Pathname extends LispObject implements Serializable {
         return (getDevice() instanceof Cons);
     }
 
+  /// FIXME should be named URL-PATHNAME-P
     @DocString(name="pathname-url-p",
                args="pathname",
                returns="generalized-boolean",
@@ -1563,8 +1551,12 @@ public class Pathname extends LispObject implements Serializable {
         }
         @Override
         public LispObject execute(LispObject arg) {
+          if (arg instanceof Pathname) {
             Pathname p = coerceToPathname(arg);
             return p.isURL() ? T : NIL;
+          } else {
+            return NIL;
+          }
         }
     }
 

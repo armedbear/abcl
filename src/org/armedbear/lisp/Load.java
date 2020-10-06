@@ -333,7 +333,7 @@ public final class Load
                                            + " in boot classpath."));
             }                
             if (!bootPath.equals(NIL)) {
-              Pathname urlPathname = (Pathname)Pathname.create(url);
+              Pathname urlPathname = (Pathname)PathnameURL.create(url);
               loadableFile = findLoadableFile(urlPathname);
               truename = (Pathname)Symbol.PROBE_FILE.execute(loadableFile);
               if (truename.equals(NIL)) {
