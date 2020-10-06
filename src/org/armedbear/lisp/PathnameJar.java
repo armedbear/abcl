@@ -34,6 +34,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.File;
 import java.net.URL;
@@ -41,21 +42,50 @@ import java.net.URI;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class PathnameJar
   extends PathnameURL
 {
+  static final public String JAR_URI_SUFFIX = "!/";
+  static final public String JAR_URI_PREFIX = "jar:";
+
   protected PathnameJar() {}
 
   public static PathnameJar create(PathnameJar p) {
     return (PathnameJar)PathnameJar.create(p.getNamestring());
   }
 
-  static final public String JAR_URI_SUFFIX = "!/";
-  static final public String JAR_URI_PREFIX = "jar:";
+  public static LispObject createFromPathname(Pathname p) {
+    if (p instanceof PathnameURL) {
+      return PathnameJar.create(JAR_URI_PREFIX + ((PathnameURL)p).getNamestringAsURI() + JAR_URI_SUFFIX);
+    } else if (p instanceof Pathname) {
+      // FIXME: not going to work with namestrings with characters that need URI escaping
+      return PathnameJar.create(JAR_URI_PREFIX + "file://" + p.getNamestring() + JAR_URI_SUFFIX);
+    } else {
+      return p;
+    }
+  }
 
+  static public LispObject createFromFile(String s) {
+    return PathnameJar.create("jar:file:" + s + JAR_URI_SUFFIX);
+  }
+
+  static public LispObject createEntryFromFile(String jar, String entry) {
+    return PathnameJar.create("jar:file:" + jar + JAR_URI_SUFFIX + entry);
+  }
+
+  static public LispObject createEntryFromJar(PathnameJar jar, String entry) {
+    if (jar.isArchiveEntry()) {
+      return simple_error("Failed to create the entry ~a in ~a", entry, jar);
+    }
+    return PathnameJar.create(jar.getNamestring() + entry);
+  }
   /** 
    *  Enumerate the components of a jar namestring 
    */
@@ -100,16 +130,19 @@ public class PathnameJar
       return result;
     }
 
-    // the first value is not a jar Pathname, 
+    // The root, non-PathnameJar location of this reference
+    // For files, possibly either a relative or absolute directory
     result.add(parts[0]);
 
-    // the references to jars, all suffixed with JAR_URI_SUFFIX
+    // The references to the pathnames of archives located within the
+    // root jar.
+    // These will be relative directory paths suffixed with JAR_URI_SUFFIX
     for (int j = 1; j < prefixCount; j++) {
       String ns = parts[j] + JAR_URI_SUFFIX;
       result.add(ns);
     }
 
-    // possibly return the path inside the last jar
+    // possibly return the path inside the last jar as an absolute path
     if (parts.length == (prefixCount + 1)) {
       result.add("/" + parts[parts.length - 1]);
     }
@@ -163,6 +196,9 @@ public class PathnameJar
     return result;
   }
 
+  static public Pathname create() {
+    return new PathnameJar();
+  }
   static public LispObject create(String s) {
     if (!s.startsWith(JAR_URI_PREFIX)) {
       return parse_error("Cannot create a PATHNAME-JAR from namestring: " + s);
@@ -173,6 +209,7 @@ public class PathnameJar
     if (contents == null) {
       return parse_error("Couldn't parse PATHNAME-JAR from namestring: " + s);
     }
+    
     PathnameJar result = new PathnameJar();
 
     LispObject rootPathname = Pathname.create(contents.get(0));
@@ -267,40 +304,83 @@ public class PathnameJar
     return sb.toString();
   }
 
+  LispObject getRootJar() {
+    return getDevice().car();
+  }
+
+  LispObject getJars() {
+    return getDevice();
+  }
 
   public static final LispObject truename(PathnameJar pathname,
                                           boolean errorIfDoesNotExist) {
-    // PathnameJar result 
-    //   = (PathnameJar) mergePathnames(pathname,
-    //                                  coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()),
-    //                                  NIL);
-
     PathnameJar result = pathname;
-    
-    LispObject enclosingJars = NIL;
-    LispObject current = pathname.getDevice();
 
-    while (current instanceof PathnameJar){
-      enclosingJars = enclosingJars.push(current);
-      current = ((PathnameJar)current).getDevice();
+    LispObject jars = pathname.getJars();
+    Pathname rootJar = (Pathname) pathname.getRootJar();
+    LispObject enclosingJars = jars.cdr();
+
+    if (!rootJar.isLocalFile()) {
+      // FIXME implement me
+      simple_error("Unimplemented TRUENAME for non-file root jar.");
+    } else {
+      rootJar = (Pathname)Symbol.MERGE_PATHNAMES.execute(rootJar);
     }
 
-    LispObject outerJar = Pathname.truename(current, errorIfDoesNotExist);
+    rootJar = (Pathname)Symbol.TRUENAME.execute(rootJar);
 
-    String outerJarNamestring = ((Pathname)outerJar).getNamestring();
-    try {
-      ZipFile jarFile = new ZipFile(outerJarNamestring);
-      while (enclosingJars.car() != NIL) {
-        LispObject jar = enclosingJars.car();
-        String ns = ((Pathname)jar).getNamestring();
-        ZipFile f = new ZipFile(ns);
-        enclosingJars = enclosingJars.cdr();
+    PathnameJar p = new PathnameJar();
+    p.copyFrom(pathname);
+    p.setDevice(new Cons(rootJar, enclosingJars));
+
+    if (!p.isArchiveEntry()) {
+      ZipCache.Archive archive = ZipCache.getArchive(p);
+      if (archive == null) {
+        if (errorIfDoesNotExist) {
+          return simple_error("Accessible TRUENAME can't be determined for: ~a", pathname); //time !?
+        } else {
+          return NIL;
+        }
       }
-    } catch (IOException e) {
-      return Pathname.doTruenameExit(result, errorIfDoesNotExist);
+      return p;
     }
 
-    return result;
+    ZipEntry entry = ZipCache.getZipEntry(p);
+    if (entry == null) {
+      if (errorIfDoesNotExist) {
+        return simple_error("Accessible TRUENAME can't be determined for: ~a", pathname); //time !?
+      } else {
+        return NIL;
+      }
+    }
+    return p;
+  }
+
+  public boolean isLocalFile() {
+    Pathname p = (Pathname) getRootJar();
+    if (p.isLocalFile()) {
+      return true;
+    }
+    return super.isLocalFile();
+  }
+
+  public boolean isArchiveEntry() {
+    return !(getDirectory().equals(NIL)
+             && getName().equals(NIL)
+             && getType().equals(NIL));
+  }
+
+  public PathnameJar getArchive() {
+    if (!isArchiveEntry()) {
+      return (PathnameJar)simple_error("Pathname already represents an archive.");
+    }
+    PathnameJar archive = new PathnameJar();
+    archive.copyFrom(this);
+    archive
+      .setDirectory(NIL)
+      .setName(NIL)
+      .setType(NIL);
+    return archive;
   }
 
   public LispObject classOf() {
@@ -312,7 +392,206 @@ public class PathnameJar
     return Symbol.JAR_PATHNAME;
   }
 
-        //   jarfile: {
+  public InputStream getInputStream() {
+    String entryPath = asEntryPath();
+    // XXX We only return the bytes of an entry in a JAR
+    if (!isArchiveEntry()) {
+      simple_error("Can only get input stream for an entry in a JAR-PATHNAME.", this);
+    }
+    InputStream result = ZipCache.getEntryAsInputStream(this);
+    if (result == null) {
+      error(new FileError("Failed to get InputStream", this));
+    }
+    return result;
+  }
+
+  /** List the contents of the directory */
+  static public LispObject listDirectory(PathnameJar pathname) {
+    String directory = pathname.asEntryPath();
+    // We should only be listing directories
+    if (pathname.getDirectory() == NIL) {
+      return simple_error("Not a directory in a jar ~a", pathname);
+    }
+
+    // if (pathname.getDevice().cdr() instanceof Cons) {
+    //   return error(new FileError("Unimplemented directory listing of JAR within JAR.", pathname));
+    // }
+    
+    if (directory.length() == 0) {
+      directory = "/*";
+    } else {
+      if (directory.endsWith("/")) {
+        directory = "/" + directory + "*";
+      } else {
+        directory = "/" + directory + "/*";
+      }
+    }
+
+    Pathname wildcard = (Pathname)Pathname.create(directory);
+    //    String wildcard = new SimpleString(directory);
+    // directories in a a jar aren't marked with a suffixed slash
+    //    SimpleString wildcardDirectory = new SimpleString(directory + "/");
+
+    LispObject result = NIL;
+    //LispObject matches;
+    
+    Iterator<Map.Entry<PathnameJar,ZipEntry>> iterator = ZipCache.getEntriesIterator(pathname);
+    while (iterator.hasNext()) {
+      Map.Entry<PathnameJar,ZipEntry> e = iterator.next();
+      PathnameJar entry = e.getKey();
+      // PathnameJar jarPath = (PathnameJar)PathnameJar.create(e.getKey());
+      // ZipEntry entry = e.getValue();
+      
+      // if (entryName.endsWith("/")) {
+      //   matches = Symbol.PATHNAME_MATCH_P
+      //     .execute(new SimpleString(entryName), wildcardDirectory);
+      // } else {
+      //   matches = Symbol.PATHNAME_MATCH_P.
+      //     execute(new SimpleString(entryName), wildcard);
+      // }
+      if (!Symbol.PATHNAME_MATCH_P.execute(entry, wildcard).equals(NIL)) {
+        result = result.push(entry);
+      }
+    }
+    return result.nreverse();
+  }
+
+  @DocString(name="match-wild-jar-pathname",
+             args="wild-jar-pathname",
+             returns="pathnames",
+  doc="Returns the pathnames matching WILD-JAR-PATHNAME which must be both wild and a JAR-PATHNAME")
+  static final Primitive MATCH_WILD_JAR_PATHNAME = new pf_match_wild_jar_pathname();
+
+  private static class pf_match_wild_jar_pathname extends Primitive {
+    pf_match_wild_jar_pathname() {
+      super(Symbol.MATCH_WILD_JAR_PATHNAME, "wild-jar-pathname");
+    }
+    @Override
+    public LispObject execute(LispObject arg) {
+      Pathname pathname = coerceToPathname(arg);
+      if (pathname instanceof LogicalPathname) {
+        pathname = LogicalPathname.translateLogicalPathname((LogicalPathname) pathname);
+      }
+      if (!pathname.isJar()) {
+        return new FileError("Not a jar pathname.", pathname);
+      }
+      if (!pathname.isWild()) {
+        return new FileError("Not a wild pathname.", pathname);
+      }
+      if (!((PathnameJar)pathname).getJars().cdr().equals(NIL)) {
+        return simple_error("Unimplemented match on contents of inner jars"); // FIXME
+      }
+
+      PathnameJar jarPathname = new PathnameJar();
+      jarPathname.copyFrom(pathname);
+      jarPathname
+        .setDirectory(NIL)
+        .setName(NIL)
+        .setType(NIL);
+      PathnameJar wildcard = (PathnameJar)Symbol.TRUENAME.execute(jarPathname);
+      Iterator<Map.Entry<PathnameJar,ZipEntry>> iterator
+        = ZipCache.getEntriesIterator(wildcard);
+      wildcard
+        .setDirectory(pathname.getDirectory())
+        .setName(pathname.getName())
+        .setType(pathname.getType());
+            
+      LispObject result = NIL;
+      while (iterator.hasNext()) {
+        Map.Entry<PathnameJar,ZipEntry> e = iterator.next();
+        PathnameJar entry = e.getKey();
+        LispObject matches
+          = Symbol.PATHNAME_MATCH_P.execute(entry, wildcard);
+          
+        if (!matches.equals(NIL)) {
+          result = new Cons(entry, result);
+        }
+      }
+
+      // FIXME implement recursive jars
+      // if (pathname.getDevice().cdr() instanceof Cons) {
+      //   ZipFile outerJar = ZipCache.get((Pathname)pathname.getDevice().car());
+      //   String entryPath = ((Pathname)pathname.getDevice().cdr().car()).getNamestring(); //???
+      //   if (entryPath.startsWith("/")) {
+      //     entryPath = entryPath.substring(1);
+      //   }
+      //   ZipEntry entry = outerJar.getEntry(entryPath);
+      //   InputStream inputStream = null;
+      //   try {
+      //     inputStream = outerJar.getInputStream(entry);
+      //   } catch (IOException e) {
+      //     return new FileError("Failed to read zip input stream inside zip.",
+      //                          pathname);
+      //   }
+      //   ZipInputStream zipInputStream
+      //     = new ZipInputStream(inputStream);
+
+      //   try {
+      //     while ((entry = zipInputStream.getNextEntry()) != null) {
+      //       String entryName = "/" + entry.getName();
+      //       LispObject matches = Symbol.PATHNAME_MATCH_P
+      //         .execute(new SimpleString(entryName), wildcard);
+            
+      //       if (!matches.equals(NIL)) {
+      //         String namestring = new String(pathname.getNamestring());
+      //         namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
+      //           + entry.getName();
+      //         Pathname p = (Pathname)Pathname.create(namestring);
+      //         result = new Cons(p, result);
+      //       }
+      //     }
+      //   } catch (IOException e) {
+      //     return new FileError("Failed to seek through zip inputstream inside zip.",
+      //                          pathname);
+      //   }
+      // } else {
+      // }
+      return result;
+    }
+  }
+
+  public long getLastModified() {
+    if (!isArchiveEntry()) {
+      ZipCache.Archive archive = ZipCache.getArchive(this);
+      if (archive != null) {
+        return archive.lastModified;
+      }
+    } else {
+      ZipEntry entry = ZipCache.getZipEntry(this);
+      if (entry != null) {
+        return entry.getTime();
+      }
+    }
+    return -1; // shouldn't be reached
+  }
+}
+      
+
+    // String rootJarNamestring = ((Pathname)rootJar).getNamestring();
+    // try {
+    //   ZipFile jarFile = new ZipFile(rootJarNamestring);
+    //   ZipFileInputStream inputStream = null;
+    //   while (enclosingJars.car() != NIL) {
+    //     LispObject jar = enclosingJars.car();
+    //     String ns = ((Pathname)jar).getNamestring();
+    //     ZipEntry entry = currentZip.getEntry(ns);
+    //     if (entry == null) {
+    //       return simple_error("Failed to find entry ~a in ~a", ns, pathname);
+    //     }
+    //     InputStream i = entry.getInputStream();
+    //     ZipInputStream zi = new ZipInputStream(i);
+    //     enclosingJars = enclosingJars.cdr();
+    //   }
+    // } catch (IOException e) {
+    //   return Pathname.doTruenameExit(result, errorIfDoesNotExist);
+    // }
+
+
+
+
+
+  // truename
+  //   jarfile: {
         //     // Possibly canonicalize jar file directory
         //     LispObject o = pathname.getDevice();
         //     if (!(o instanceof Pathname)) {
@@ -395,6 +674,107 @@ public class PathnameJar
         //     }
         // }
 
-}
 
-                                 
+
+
+// Pathname.init()
+          // A JAR file
+
+
+            // LispObject jars = NIL;
+            // int i = s.lastIndexOf(jarSeparator, s.length() - jarSeparator.length() - 1);
+            // String jar = null;
+            // if (i == -1) {
+            //     jar = s;
+            // } else {
+            //     // There can be no more than two jar references and the
+            //     // inner one must be a file reference within the outer.
+            //     jar = "jar:file:" + s.substring(i + jarSeparator.length());
+            //     s = s.substring("jar:".length(), i + jarSeparator.length());
+            //     Pathname p = (Pathname) Pathname.create(s);
+            //     jars = jars.push(p.getDevice().car());
+            // }
+            // if (jar.startsWith("jar:file:")) { // PathnameJar should handle this part…
+            //     String file
+            //         = jar.substring("jar:file:".length(),
+            //                         jar.length() - jarSeparator.length());
+            //     Pathname jarPathname;
+            //     if (file.length() > 0) {
+            //         URL url = null;
+            //         URI uri = null;
+            //         try {
+            //             url = new URL("file:" + file);
+            //             uri = url.toURI();
+            //         } catch (MalformedURLException e1) {
+            //             error(new SimpleError("Failed to create URI from "
+            //                                 + "'" + file + "'"
+            //                                 + ": " + e1.getMessage()));
+            //         } catch (URISyntaxException e2) {
+            //             error(new SimpleError("Failed to create URI from "
+            //                                 + "'" + file + "'"
+            //                                 + ": " + e2.getMessage()));
+            //         }
+            //         String path = uri.getPath();
+            //         if (path == null) {
+            //             // We allow "jar:file:baz.jar!/" to construct a relative
+            //             // path for jar files, so MERGE-PATHNAMES means something.
+            //           jarPathname = (Pathname)Pathname.create(uri.getSchemeSpecificPart());
+            //         } else {
+            //           jarPathname = (Pathname)Pathname.create((new File(path)).getPath());
+            //         }
+            //     } else {
+            //       jarPathname = (Pathname)Pathname.create("");
+            //     }
+            //     jars = jars.push(jarPathname);
+            // } else {
+            //     URL url = null;
+            //     try {
+            //         url = new URL(jar.substring("jar:".length(), jar.length() - 2));
+            //         Pathname p = (Pathname)Pathname.create(url);
+            //         jars = jars.push(p);
+            //     } catch (MalformedURLException e) {
+            //         error(new LispError("Failed to parse URL "
+            //                             + "'" + url + "'"
+            //                             + e.getMessage()));
+            //     }
+            // }
+            // jars = jars.nreverse();
+            // setDevice(jars);
+            // invalidateNamestring();
+            // return;
+
+
+        // // An entry in a JAR file
+        // final int separatorIndex = s.lastIndexOf(jarSeparator);
+        // if (separatorIndex > 0 && s.startsWith("jar:")) {
+        //   return PathnameJar.create(s);
+        // }
+        //     final String jarURL = s.substring(0, separatorIndex + jarSeparator.length());
+        //     URL url = null;
+        //     try {
+        //         url = new URL(jarURL);
+        //     } catch (MalformedURLException ex) {
+        //         error(new LispError("Failed to parse URL "
+        //                             + "'" + jarURL + "'"
+        //                             + ex.getMessage()));
+        //     }
+        //     Pathname d = (Pathname)Pathname.create(url);
+        //     if (getDevice() instanceof Cons) {
+        //         LispObject[] jars = d.copyToArray();
+        //         //  XXX Is this ever reached?  If so, need to append lists
+        //         Debug.assertTrue(false);
+        //     } else {
+        //         setDevice(d.getDevice());
+        //     }
+        //     s = "/" + s.substring(separatorIndex + jarSeparator.length());
+        //     Pathname p = (Pathname)Pathname.create("file:" + s); // Use URI escaping rules
+        //     setDirectory(p.getDirectory());
+        //     setName(p.getName());
+        //     setType(p.getType());
+        //     setVersion(p.getVersion());
+        //     return;
+        // }
+
+
+
+
