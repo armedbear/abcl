@@ -433,14 +433,15 @@ public class Pathname extends LispObject implements Serializable {
 
     @Override
     public LispObject getParts() {
-        LispObject parts = NIL;
-        parts = parts.push(new Cons("HOST", getHost()));
-        parts = parts.push(new Cons("DEVICE", getDevice()));
-        parts = parts.push(new Cons("DIRECTORY", getDirectory()));
-        parts = parts.push(new Cons("NAME", getName()));
-        parts = parts.push(new Cons("TYPE", getType()));
-        parts = parts.push(new Cons("VERSION", getVersion()));
-        return parts.nreverse();
+        LispObject parts 
+          = NIL
+          .push(new Cons("HOST", getHost()))
+          .push(new Cons("DEVICE", getDevice()))
+          .push(new Cons("DIRECTORY", getDirectory()))
+          .push(new Cons("NAME", getName()))
+          .push(new Cons("TYPE", getType()))
+          .push(new Cons("VERSION", getVersion()));
+        return parts.nreverse(); // FIXME just construct it that way in the push().push() stanza?
     }
 
     @Override
