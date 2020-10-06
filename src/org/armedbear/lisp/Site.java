@@ -49,7 +49,7 @@ public final class Site
             if (!s.endsWith(fileSeparator)) {
                 s += fileSeparator;
             }
-            LISP_HOME = new Pathname(s);
+            LISP_HOME = Pathname.create(s);
             return;
         }
         URL url = Lisp.class.getResource("boot.lisp");
@@ -57,9 +57,9 @@ public final class Site
             if (!Pathname.isSupportedProtocol(url.getProtocol())) {
                 LISP_HOME = NIL;
             } else {
-                Pathname p = new Pathname(url);
-                p.name = NIL;
-                p.type = NIL;
+                Pathname p = Pathname.create(url);
+                p.setName(NIL);
+                p.setType(NIL);
                 p.invalidateNamestring();
                 LISP_HOME = p;
             }
