@@ -66,7 +66,6 @@ public final class unzip
         Pathname directory = coerceToPathname(second);
         directory.setName(NIL);
         directory.setType(NIL);
-        directory.invalidateNamestring();
         return unzipToDirectory(zipFile, directory);
     }
   

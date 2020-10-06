@@ -318,66 +318,72 @@ public class PathnameURL
   public long getLastModified() {
     return getURLConnection().getLastModified();
   }
+
+    @DocString(name="uri-decode",
+             args="string",
+             returns="string",
+  doc="Decode STRING percent escape sequences in the manner of URI encodings.")
+  private static final Primitive URI_DECODE = new pf_uri_decode();
+  private static final class pf_uri_decode extends Primitive {
+    pf_uri_decode() {
+      super("uri-decode", PACKAGE_EXT, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg) {
+      if (!(arg instanceof AbstractString)) {
+        return type_error(arg, Symbol.STRING);
+      }
+      String result = uriDecode(((AbstractString)arg).toString());
+      return new SimpleString(result);
+    }
+  };
+
+  static String uriDecode(String s) {
+    try {
+      URI uri = new URI("file://foo?" + s);
+      return uri.getQuery();
+    } catch (URISyntaxException e) {}
+    return null;  // Error
+  }
+    
+  @DocString(name="uri-encode",
+             args="string",
+             returns="string",
+  doc="Encode percent escape sequences in the manner of URI encodings.")
+  private static final Primitive URI_ENCODE = new pf_uri_encode();
+  private static final class pf_uri_encode extends Primitive {
+    pf_uri_encode() {
+      super("uri-encode", PACKAGE_EXT, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg) {
+      if (!(arg instanceof AbstractString)) {
+        return type_error(arg, Symbol.STRING);
+      }
+      String result = uriEncode(((AbstractString)arg).toString());
+      return new SimpleString(result);
+    }
+  };
+
+  static String uriEncode(String s) {
+    // The constructor we use here only allows absolute paths, so
+    // we manipulate the input and output correspondingly.
+    String u;
+    if (!s.startsWith("/")) {
+      u = "/" + s;
+    } else {
+      u = new String(s);
+    }
+    try {
+      URI uri = new URI("file", "", u, "");
+      String result = uri.getRawPath();
+      if (!s.startsWith("/")) {
+        return result.substring(1);
+      } 
+      return result;
+    } catch (URISyntaxException e) {
+      Debug.assertTrue(false);
+    }
+    return null; // Error
+  }
 }
-                                 
-
-
-// From Pathname.init()
-        // A URL 
-        // if (isValidURL(s)) {
-        //     URL url = null;
-        //     try {
-        //         url = new URL(s);
-        //     } catch (MalformedURLException e) {
-        //         Debug.assertTrue(false);
-        //     }
-        //     String scheme = url.getProtocol();
-        //     if (scheme.equals("file")) {
-        //         URI uri = null;
-        //         try {
-        //             uri = new URI(s);
-        //         } catch (URISyntaxException ex) {
-        //             error(new SimpleError("Improper URI syntax for "
-        //                             + "'" + url.toString() + "'"
-        //                             + ": " + ex.toString()));
-        //         }
-            
-        //         String uriPath = uri.getPath();
-        //         if (null == uriPath) {
-        //                           // Under Windows, deal with pathnames containing
-        //                           // devices expressed as "file:z:/foo/path"
-        //                           uriPath = uri.getSchemeSpecificPart();
-        //                           if (uriPath == null || uriPath.equals("")) {
-        //             error(new LispError("The URI has no path: " + uri));
-        //           }
-        //         }
-        //         final File file = new File(uriPath);
-        //         String path = file.getPath();
-        //         if (uri.toString().endsWith("/") && !path.endsWith("/")) {
-        //           path += "/";
-        //         }
-        //         final Pathname p = (Pathname)Pathname.create(path);
-        //         this.setHost(p.getHost());
-        //         this.setDevice(p.getDevice());
-        //         this.setDirectory(p.getDirectory());
-        //         this.setName(p.getName());
-        //         this.setType(p.getType());
-        //         this.setVersion(p.getVersion());
-        //         return;
-        //     }
-        //     Debug.assertTrue(scheme != null);
-        //     URI uri = null;
-        //     try { 
-        //         uri = url.toURI().normalize();
-        //     } catch (URISyntaxException e) {
-        //         error(new LispError("Couldn't form URI from "
-        //                             + "'" + url + "'"
-        //                             + " because: " + e));
-        //     }
-        //     String authority = uri.getAuthority();
-        // if (authority == null) {
-        //   authority = url.getAuthority();
-        //   if (authority == null) {
-        //     Debug.trace(MessageFormat.format("{0} has a null authority.", url));
-        //   }
-        // }
