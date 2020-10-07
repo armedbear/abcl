@@ -49,6 +49,6 @@ public final class file_error_pathname extends Primitive
         return arg instanceof FileError ? ((FileError)arg).getPathname() : NIL;
     }
 
-    private static final file_error_pathname FILE_ERROR_PATHNAME =
-        new file_error_pathname();
+    private static final file_error_pathname FILE_ERROR_PATHNAME
+      = new file_error_pathname();
 }
