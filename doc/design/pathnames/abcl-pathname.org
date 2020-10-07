@@ -395,6 +395,13 @@ PATHNAME-JAR (they don't have a DEVICE which is a cons), so just make
 them pathnames.
 
 
+* Re-introducing relative URL-PATHNAME for 'file' scheme
+
+URIs don't allow relative pathnames, so to be more strict I
+implemented stripped out the abilty to create relative URL-PATHNAMEs.
+
+
+
 * Colophon
   #+begin_example
   Mark Evenson  
