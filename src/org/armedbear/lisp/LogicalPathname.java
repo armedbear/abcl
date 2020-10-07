@@ -80,8 +80,6 @@ public final class LogicalPathname extends Pathname
     return result;
   }
 
-
-
   public static LogicalPathname create(String namestring) {
     // parse host out then call create(host, rest);
     LogicalPathname result = null;
@@ -93,9 +91,9 @@ public final class LogicalPathname extends Pathname
     }
     error(new FileError("Failed to find a valid logical Pathname host in '" + namestring + "'",
                         NIL));  // ??? return NIL as we don't have a
-                               // PATHNAME.  Maybe signal a different
-                               // condition?
-    return (LogicalPathname)null;
+                                // PATHNAME.  Maybe signal a different
+                                // condition?
+    return (LogicalPathname)UNREACHED;
   }
 
   public static LogicalPathname create(String host, String rest) {
