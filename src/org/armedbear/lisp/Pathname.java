@@ -1782,9 +1782,12 @@ public class Pathname extends LispObject implements Serializable {
         }
       }
 
-      // This part I no longer understand
+      // Merge the directory of a relative JAR-PATHNAME with the
+      // default directory.  
       // if (pathname.isJar()) {
-      //   Cons jars = (Cons)result.getDevice();
+      //   Pathname root = ((PathnameJar)result).getRootJar();
+        
+
       //   LispObject jar = jars.car;
       //   if (jar instanceof Pathname) {
       //     Pathname defaults = Pathname.create(d);
@@ -1802,7 +1805,12 @@ public class Pathname extends LispObject implements Serializable {
       // } else {
       //   result.setDirectory(mergeDirectories(p.getDirectory(), d.getDirectory()));
       // }
-      result.setDirectory(mergeDirectories(p.getDirectory(), d.getDirectory()));
+
+      if (pathname.isJar()) {
+        result.setDirectory(p.getDirectory());
+      } else {
+        result.setDirectory(mergeDirectories(p.getDirectory(), d.getDirectory()));
+      }
       
       if (pathname.getName() != NIL) {
         result.setName(p.getName());
