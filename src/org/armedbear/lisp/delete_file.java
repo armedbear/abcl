@@ -49,44 +49,44 @@ public final class delete_file extends Primitive
     @Override
     public LispObject execute(LispObject arg)
     {
-        // Don't follow symlinks! We want to delete the symlink itself, not
-        // the linked-to file.
-        Pathname pathname = coerceToPathname(arg);
-        if (arg instanceof Stream)
-            ((Stream)arg)._close();
-        if (pathname instanceof LogicalPathname)
-            pathname = LogicalPathname.translateLogicalPathname((LogicalPathname)pathname);
-        if (pathname.isWild())
-            return error(new FileError("Bad place for a wild pathname.",
-                                        pathname));
-        final Pathname defaultedPathname =
-            Pathname.mergePathnames(pathname,
-                                    coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()),
-                                    NIL);
-        final String namestring = defaultedPathname.getNamestring();
-        if (namestring == null)
-            return error(new FileError("Pathname has no namestring: " + defaultedPathname.princToString(),
-                                        defaultedPathname));
-        final File file = new File(namestring);
-	ZipCache.remove(file);
-        if (file.exists()) {
-            // File exists.
-            for (int i = 0; i < 5; i++) {
-                if (file.delete())
-                    return T;
-                System.gc();
-                Thread.yield();
-            }
-            Pathname truename = (Pathname)Pathname.create(file.getAbsolutePath());
-            StringBuilder sb = new StringBuilder("Unable to delete ");
-            sb.append(file.isDirectory() ? "directory " : "file ");
-            sb.append(truename.princToString());
-            sb.append('.');
-            return error(new FileError(sb.toString(), truename));
-        } else {
-            // File does not exist.
+      // Don't follow symlinks! We want to delete the symlink itself, not
+      // the linked-to file.
+      Pathname pathname = coerceToPathname(arg);
+      if (arg instanceof Stream)
+        ((Stream)arg)._close();
+      if (pathname instanceof LogicalPathname)
+        pathname = LogicalPathname.translateLogicalPathname((LogicalPathname)pathname);
+      if (pathname.isWild())
+        return error(new FileError("Bad place for a wild pathname.",
+                                   pathname));
+      final Pathname defaultedPathname 
+              = (Pathname)Pathname.mergePathnames(pathname,
+                                coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()),
+                                NIL);
+      final String namestring = defaultedPathname.getNamestring();
+      if (namestring == null)
+        return error(new FileError("Pathname has no namestring: " + defaultedPathname.princToString(),
+                                   defaultedPathname));
+      final File file = new File(namestring);
+
+      if (file.exists()) {
+        // File exists.
+        for (int i = 0; i < 5; i++) {
+          if (file.delete())
             return T;
+          System.gc();
+          Thread.yield();
         }
+        Pathname truename = (Pathname)Pathname.create(file.getAbsolutePath());
+        StringBuilder sb = new StringBuilder("Unable to delete ");
+        sb.append(file.isDirectory() ? "directory " : "file ");
+        sb.append(truename.princToString());
+        sb.append('.');
+        return error(new FileError(sb.toString(), truename));
+      } else {
+        // File does not exist.
+        return T;
+      }
     }
 
     private static final Primitive DELETE_FILE = new delete_file();
