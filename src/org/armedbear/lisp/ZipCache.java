@@ -427,19 +427,32 @@ public class ZipCache {
       root.setDevice(new Cons(rootJar, NIL));
       ArchiveFile rootArchiveFile = (ArchiveFile)getArchiveFile(root);
 
-      PathnameJar inner = new PathnameJar();
+      PathnameJar innerArchive = new PathnameJar();
       Pathname nextJar = (Pathname)innerJars.car();
       LispObject jars = list(rootJar, nextJar);
-      inner.setDevice(jars);
+      innerArchive.setDevice(jars);
 
-      ZipEntry entry = rootArchiveFile.getEntry(inner);
-      InputStream inputStream = rootArchiveFile.getEntryAsInputStream(inner);
+      PathnameJar innerArchiveAsEntry = new PathnameJar();
+      innerArchiveAsEntry
+        .setDevice(new Cons(rootJar, NIL))
+        .setDirectory(nextJar.getDirectory())
+        .setName(nextJar.getName())
+        .setType(nextJar.getType());
+
+      ZipEntry entry = rootArchiveFile.getEntry(innerArchiveAsEntry);
+      if (entry == null) {
+        return null;
+      }
+      InputStream inputStream = rootArchiveFile.getEntryAsInputStream(innerArchiveAsEntry);
+      if (inputStream == null) {
+        return null;
+      }
       ArchiveStream stream = new ArchiveStream();
       stream.source = new ZipInputStream(inputStream);
-      stream.root = inner;
+      stream.root = innerArchive;
       stream.lastModified = entry.getTime();
       result = stream;
-      cache.put(inner, result); 
+      cache.put(innerArchive, result); 
       
       innerJars = innerJars.cdr();
       while (innerJars.car() != NIL) {

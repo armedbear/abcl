@@ -220,7 +220,6 @@ public class PathnameJar
 
     return T;
   }
-    
 
   public String getNamestring() {
     StringBuffer sb = new StringBuffer();
@@ -228,13 +227,13 @@ public class PathnameJar
     LispObject jars = getDevice();
 
     if (jars.equals(NIL) || jars.equals(Keyword.UNSPECIFIC)) { 
-      type_error("JAR-PATHNAME has bad DEVICE",
-                 jars,
-                 list(Symbol.NOT,
-                      list(Symbol.OR,
-                           list(Symbol.EQL, NIL),
-                           list(Symbol.EQL, Keyword.UNSPECIFIC))));
-      return (String)UNREACHED;
+      // type_error("JAR-PATHNAME has bad DEVICE",
+      //            jars,
+      //            list(Symbol.NOT,
+      //                 list(Symbol.OR,
+      //                      list(Symbol.EQL, NIL),
+      //                      list(Symbol.EQL, Keyword.UNSPECIFIC))));
+      return null;
     }
 
     for (int i = 0; i < jars.length() - 1; i++) {
@@ -317,15 +316,15 @@ public class PathnameJar
 
   public static final LispObject truename(PathnameJar pathname,
                                           boolean errorIfDoesNotExist) {
-    PathnameJar result = pathname;
-
-    LispObject jars = pathname.getJars();
-    Pathname rootJar = (Pathname) pathname.getRootJar();
-    LispObject enclosingJars = jars.cdr();
-
     PathnameJar p = new PathnameJar();
     p.copyFrom(pathname);
-    p.setDevice(new Cons(rootJar, enclosingJars));
+
+    Pathname rootJar = (Pathname) p.getRootJar();
+    if (rootJar.isLocalFile()) {
+      rootJar = (Pathname) Symbol.TRUENAME.execute(rootJar);
+      LispObject otherJars = p.getJars().cdr();
+      p.setDevice(new Cons(rootJar, otherJars));
+    }
 
     if (!p.isArchiveEntry()) {
       ZipCache.Archive archive = ZipCache.getArchive(p);
