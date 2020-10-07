@@ -210,17 +210,50 @@ public class ZipCache {
   static public class ArchiveStream
     extends Archive
   {
-    InputStream source;
+    ZipInputStream source;
+
+    // TODO wrap in a weak reference to allow JVM to possibly reclaim memory
+    LinkedHashMap<PathnameJar, ByteArrayOutputStream> contents
+      = new LinkedHashMap<PathnameJar, ByteArrayOutputStream>();
 
     public InputStream getEntryAsInputStream(PathnameJar entry) {
+      ByteArrayOutputStream bytes = contents.get(entry);
+      if (bytes != null) {
+        return new ByteArrayInputStream(bytes.toByteArray());
+      }
       return null;
     }
+
+    boolean populated = false;
 
     public ZipEntry getEntry(PathnameJar entry) {
-      return null;
+      if (!populated) {
+        populateAllEntries();
+      }
+      ZipEntry result = entries.get(entry);
+      return result;
     }
 
-    void populateAllEntries() {}
+    void populateAllEntries() {
+      if (populated) {
+        return;
+      }
+      ZipEntry entry;
+      try {
+        while ((entry = source.getNextEntry()) != null) {
+          String name = entry.getName();
+          PathnameJar entryPathname
+            = (PathnameJar)PathnameJar.createEntryFromJar(root, name);
+          entries.put(entryPathname, entry);
+          ByteArrayOutputStream bytes
+            = readEntry(source);
+          contents.put(entryPathname, bytes);
+        }
+        populated = true;
+      } catch (IOException e) {
+        simple_error("Failed to read entries from zip archive", root);
+      }
+    }
 
     void close () {
       if (source != null) {
@@ -322,7 +355,7 @@ public class ZipCache {
 
       try { 
         result = file.getInputStream(zipEntry);
-      } catch (IOException e) {}
+      } catch (IOException e) {} // FIXME how to signal a meaningful error?
 
       return result;
     }
@@ -335,7 +368,6 @@ public class ZipCache {
       }
     }
   }
-  
 
   static boolean cacheEnabled = true;
   private final static Primitive DISABLE_ZIP_CACHE = new disable_zip_cache();
@@ -367,7 +399,6 @@ public class ZipCache {
     return set.iterator();
   }
 
-
   static ZipEntry getZipEntry(PathnameJar archiveEntry) {
     PathnameJar archiveJar = archiveEntry.getArchive();
     Archive zip = getArchive(archiveJar);
@@ -375,10 +406,11 @@ public class ZipCache {
     return entry;
   }
 
+  // ??? we assume that DIRECTORY, NAME, and TYPE components are NIL
   synchronized public static Archive getArchive(PathnameJar jar) {
-    Archive cached = cache.get(jar);
-    if (cached != null) {
-      return cached;
+    Archive result = cache.get(jar);
+    if (result != null) {
+      return result;
     }
 
     Pathname rootJar = (Pathname) jar.getRootJar();
@@ -391,27 +423,31 @@ public class ZipCache {
     if (innerJars.equals(NIL)) {
       return getArchiveFile(jar);
     } else {
-      PathnameJar rootPathname = (PathnameJar)PathnameJar.createFromPathname(rootJar);
+      PathnameJar root = new PathnameJar();
+      root.setDevice(new Cons(rootJar, NIL));
+      ArchiveFile rootArchiveFile = (ArchiveFile)getArchiveFile(root);
 
-      Archive current = ZipCache.getArchive(rootPathname);
+      PathnameJar inner = new PathnameJar();
+      Pathname nextJar = (Pathname)innerJars.car();
+      LispObject jars = list(rootJar, nextJar);
+      inner.setDevice(jars);
 
-      // FIXME
-      //while (innerJars.car() != NIL) {
-      // TODO Finish me!
-      // Pathname next = (Pathname)innerJars.car();
-      //  String entryPath = next.asEntryPath();
-      // InputStream source;
-      // if (current instanceof ArchiveFile) {
-      //   ArchiveFile zipFile = ((ArchiveFile)current).get();
-      //   ZipEntry entry = zipFile.getEntry(entryPath);
-      //   source = zipFile.getInputStream(entry);
-      //   ArchiveStream stream = new ArchiveStream();
-      //   stream.source = source;
-      // }
-      // }
+      ZipEntry entry = rootArchiveFile.getEntry(inner);
+      InputStream inputStream = rootArchiveFile.getEntryAsInputStream(inner);
+      ArchiveStream stream = new ArchiveStream();
+      stream.source = new ZipInputStream(inputStream);
+      stream.root = inner;
+      stream.lastModified = entry.getTime();
+      result = stream;
+      cache.put(inner, result); 
+      
+      innerJars = innerJars.cdr();
+      while (innerJars.car() != NIL) {
+        simple_error("Currently unimplemented nested zip archive of depth greater than two: ~a" , jar);
+        return (Archive)UNREACHED;
+      }
 
-      simple_error("Currently unimplemented recursive archive: ~a" , jar);
-      return (Archive)UNREACHED;
+      return result;
     }
   }
 
