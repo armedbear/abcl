@@ -429,14 +429,14 @@ public class Pathname extends LispObject implements Serializable {
 
     @Override
     public LispObject getParts() {
-        LispObject parts = NIL;
-        parts = parts.push(new Cons("HOST", getHost()));
-        parts = parts.push(new Cons("DEVICE", getDevice()));
-        parts = parts.push(new Cons("DIRECTORY", getDirectory()));
-        parts = parts.push(new Cons("NAME", getName()));
-        parts = parts.push(new Cons("TYPE", getType()));
-        parts = parts.push(new Cons("VERSION", getVersion()));
-        return parts.nreverse();
+        LispObject parts 
+          = list(new Cons("HOST", getHost()),
+                 new Cons("DEVICE", getDevice()),
+                 new Cons("DIRECTORY", getDirectory()),
+                 new Cons("NAME", getName()),
+                 new Cons("TYPE", getType()),
+                 new Cons("VERSION", getVersion()));
+        return parts; 
     }
 
     @Override
