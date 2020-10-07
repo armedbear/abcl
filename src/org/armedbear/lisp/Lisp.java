@@ -456,6 +456,12 @@ public final class Lisp
     return error(new TypeError(datum, expectedType));
   }
 
+  public static final LispObject type_error(String message,
+                                            LispObject datum,
+                                            LispObject expectedType)  {
+    return error(new TypeError(message, datum, expectedType));
+  }
+
   public static final LispObject program_error(String message)
   {
     return error(new ProgramError(message));
@@ -1921,9 +1927,9 @@ public final class Lisp
     if (arg instanceof URLStream)
       return ((URLStream)arg).getPathname();
     type_error(arg, list(Symbol.OR,
-                           Symbol.STRING,
-                           Symbol.PATHNAME, Symbol.JAR_PATHNAME, Symbol.URL_PATHNAME,
-                           Symbol.FILE_STREAM, Symbol.JAR_STREAM, Symbol.URL_STREAM));
+                         Symbol.STRING,
+                         Symbol.PATHNAME, Symbol.JAR_PATHNAME, Symbol.URL_PATHNAME,
+                         Symbol.FILE_STREAM, Symbol.JAR_STREAM, Symbol.URL_STREAM));
     // Not reached.
     return null;
   }
