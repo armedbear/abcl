@@ -605,10 +605,10 @@ public class ZipCache {
     @Override
     public LispObject execute(LispObject arg) {
       Pathname p = coerceToPathname(arg);
-      if (!(p instanceof PathnameJar)) {
-        type_error(arg, Symbol.JAR_PATHNAME);
-      }
-      boolean result = ZipCache.remove((PathnameJar)p);
+      boolean result = false;
+      if (p instanceof PathnameJar) {
+        result = ZipCache.remove((PathnameJar)p);
+      } 
       return result ? T : NIL;
     }
   }
