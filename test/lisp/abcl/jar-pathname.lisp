@@ -208,53 +208,11 @@ Returns the two values of the pathnames of the created archives."
   t)
 
 (defparameter *url-jar-pathname-base*
-  "jar:http://abcl.org/fasl/42/baz-20140105a-fasl-42.jar!/")
-;; fasl 41  "jar:http://abcl-dynamic-install.googlecode.com/files/baz-20130403a.jar!/")
+  "jar:https://abcl.org/releases/1.7.1/abcl-bin-1.7.1.zip!/")
 
-(defmacro load-url-relative (path) 
-  `(load (probe-file (format nil "~A~A" *url-jar-pathname-base* ,path))))
-
-;;; wrapped in PROGN for easy disabling without a network connection
-(progn 
-  (deftest jar-pathname.load.http.1
-      (load-url-relative "foo")
-    t)
-
-  (deftest jar-pathname.load.http.2
-      (load-url-relative "bar")
-    t)
-
-  (deftest jar-pathname.load.http.3
-      (load-url-relative "bar.abcl")
-    t)
-
-  (deftest jar-pathname.load.http.4
-      (load-url-relative "eek")
-    t)
-
-  (deftest jar-pathname.load.http.5
-      (load-url-relative "eek.lisp")
-    t)
-
-  (deftest jar-pathname.load.http.6
-      (load-url-relative "a/b/foo")
-    t)
-
-  (deftest jar-pathname.load.http.7
-      (load-url-relative "a/b/bar")
-    t)
-
-  (deftest jar-pathname.load.http.8
-      (load-url-relative "a/b/bar.abcl")
-    t)
-
-  (deftest jar-pathname.load.http.9
-      (load-url-relative "a/b/eek")
-    t)
-
-  (deftest jar-pathname.load.http.10
-      (load-url-relative "a/b/eek.lisp")
-    t))
+(deftest jar-pathname.url.https.1
+    (probe-file *url-jar-pathname-base*)
+  *url-jar-pathname-base*)
 
 (deftest jar-pathname.probe-file.1
     (let ((result 
