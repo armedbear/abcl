@@ -37,27 +37,43 @@
   (when (and *warn-on-redefinition* (fboundp name) (not (autoloadp name)))
     (when (and (symbolp name)
                (source-pathname name))
-      ;; SOURCE-PATHNAME is badly named as it is either a PATHNAMAE
-      ;; or the symbol :TOP-LEVEL
-      (let ((old-source 
-             (if (keywordp (source-pathname name))
-                 (source-pathname name)
-                 (probe-file (source-pathname name))))
-            (current-source 
-             (if (not *source*) 
-                 :top-level
-                 (probe-file *source*))))
-        (cond ((equal old-source 
-                      current-source)) ; OK
-              (t
-               (if (eq current-source :top-level)
-                   (style-warn "redefining ~S at top level" name)
-                   (let ((*package* +cl-package+))
-                     (if (eq old-source :top-level)
-                         (style-warn "redefining ~S in ~S (previously defined at top level)"
-                                     name current-source)
-                         (style-warn "redefining ~S in ~S (previously defined in ~S)"
-                                     name current-source old-source))))))))))
+      ;; SOURCE-PATHNAME is badly named as it is either a PATHNAME,
+      ;; the keyword :TOP-LEVEL.
+      ;; 
+      ;; Unfortunately, as of SLIME v2.26 the pathname may have a
+      ;; device containing the string "emacs-buffer" whose PATHNAME
+      ;; name denotes the buffer, which often contain wild-pathname
+      ;; characters (e.g. "*slime-scratch*").  We code around that
+      ;; situation with the following convolution of intelligibility.
+      (flet ((truename-no-error (p)
+               (if (and (pathnamep p)
+			(not (and
+			      (stringp (pathname-device p))
+			      (string= (pathname-device p)
+				       "emacs-buffer")))
+                        (not (wild-pathname-p p)))
+                   (probe-file p)
+                   p)))
+        (let ((source (source-pathname name)))
+          (let ((old-source 
+                  (if (keywordp source)
+                      source
+                      (truename-no-error source)))
+                (current-source
+                  (if (not *source*) 
+                      :top-level
+                      (truename-no-error source))))
+            (cond ((equal old-source 
+                          current-source)) ; OK
+                  (t
+                   (if (eq current-source :top-level)
+                       (style-warn "redefining ~S at top level" name)
+                       (let ((*package* +cl-package+))
+                         (if (eq old-source :top-level)
+                             (style-warn "redefining ~S in ~S (previously defined at top level)"
+                                         name current-source)
+                             (style-warn "redefining ~S in ~S (previously defined in ~S)"
+                                     name current-source old-source))))))))))))
 
 ;;; DEPRECATED:  to be removed in abcl-1.7
 (defun record-source-information (name &optional source-pathname source-position)
