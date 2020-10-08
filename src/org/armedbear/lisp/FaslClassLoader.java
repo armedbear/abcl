@@ -105,7 +105,7 @@ public class FaslClassLoader extends JavaClassLoader {
     public InputStream getResourceAsStream(String resourceName) {
       final LispThread thread = LispThread.currentThread();
 
-      Pathname name = new Pathname(resourceName.substring("org/armedbear/lisp/".length()));
+      Pathname name = Pathname.create(resourceName.substring("org/armedbear/lisp/".length()));
       LispObject truenameFasl = Symbol.LOAD_TRUENAME_FASL.symbolValue(thread);
       LispObject truename = Symbol.LOAD_TRUENAME.symbolValue(thread);
       
