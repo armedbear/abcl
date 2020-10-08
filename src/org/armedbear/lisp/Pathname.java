@@ -49,23 +49,37 @@ import java.util.zip.ZipInputStream;
 
 public class Pathname extends LispObject implements Serializable {
 
-  protected static Pathname create(Pathname p) {
-    return new Pathname(p);
-  }
-
   protected static Pathname create() {
     return new Pathname();
+  }
+
+  protected static Pathname create(Pathname p) {
+    if (p instanceof PathnameJar) {
+      return (PathnameJar)PathnameJar.create(p.getNamestring());
+    } else if (p instanceof PathnameURL) {
+      return (PathnameURL)PathnameURL.create(((PathnameURL)p).getNamestringAsURI());
+    } else {
+      return new Pathname(p);
+    }
   }
 
   public static LispObject create(String s) {
     // TODO distinguish between logical hosts and schemes for URLs
     // which we can meaningfully parse.
-    if (!isValidURL(s)) {
+
+    if (s.startsWith(PathnameJar.JAR_URI_PREFIX)) {
+        return PathnameJar.create(s);
+    }
+    if (isValidURL(s)) {
+      return PathnameURL.create(s);
+    } else {
       if (LogicalPathname.isValidLogicalPathname(s)) {
         return LogicalPathname.create(s);
       }
     }
-    return new Pathname(s);
+    Pathname result = new Pathname();
+    result.init(s);
+    return result;
   }
 
   public static Pathname create(String s, String host) {
@@ -672,24 +686,24 @@ public class Pathname extends LispObject implements Serializable {
 
     @Override
     public LispObject typeOf() {
-        if (isURL()) {
-            return Symbol.URL_PATHNAME;
-        } 
-        if (isJar()) {
-            return Symbol.JAR_PATHNAME;
-        }
-        return Symbol.PATHNAME;
+      if (isJar()) {
+        return Symbol.JAR_PATHNAME;
+      }
+      if (isURL()) {
+        return Symbol.URL_PATHNAME;
+      } 
+      return Symbol.PATHNAME;
     }
 
     @Override
     public LispObject classOf() {
-        if (isURL()) {
-            return BuiltInClass.URL_PATHNAME;
-        } 
-        if (isJar()) {
-            return BuiltInClass.JAR_PATHNAME;
-        }
-        return BuiltInClass.PATHNAME;
+      if (isJar()) {
+        return BuiltInClass.JAR_PATHNAME;
+      }
+      if (isURL()) {
+        return BuiltInClass.URL_PATHNAME;
+      } 
+      return BuiltInClass.PATHNAME;
     }
 
     @Override
@@ -1121,15 +1135,6 @@ public class Pathname extends LispObject implements Serializable {
         }
         return true;
     }
-
-//    public static URL toURL(Pathname p) {
- //       try {
-//            return p.toURL();
-//        } catch (MalformedURLException e) {
-//            Debug.assertTrue(false);
-//            return null; // not reached
-//        }
-//    }
 
     URLConnection getURLConnection() {
         Debug.assertTrue(isURL());
@@ -2417,9 +2422,14 @@ public class Pathname extends LispObject implements Serializable {
             if (pathname.isURL()) {
                 result = new URL(pathname.getNamestring());
             } else {
-                // XXX Properly encode Windows drive letters and UNC paths
-                // XXX ensure that we have cannonical path?
-                result = new URL("file://" + pathname.getNamestring());
+              // XXX Properly encode Windows drive letters and UNC paths
+              // XXX ensure that we have cannonical path?
+              String ns = pathname.getNamestring();
+              if (ns.startsWith("/"))  {
+                result = new URL("file://" + ns);
+              } else { // "relative" path
+                result = new URL("file:" + ns);
+              }
             }
         } catch (MalformedURLException e) {
             Debug.trace("Could not form URL from " + pathname);
@@ -2831,22 +2841,4 @@ public class Pathname extends LispObject implements Serializable {
             return null;
         }
     }
-
-  // BEGIN REMOVE ME use standard Factory pattern create() method instead
-  public static Pathname make(String s) {
-    Pathname p = Pathname.create();
-    p.init(s);
-    return p;
-  }
-
-  public static Pathname makeFrom(Pathname p) {
-    return Pathname.create(p);
-  }
-
-  public static Pathname makeFrom(Pathname p, String s) {
-    p.init(s);
-    return p;
-  }
-  // END REMOVE ME
 }
-
