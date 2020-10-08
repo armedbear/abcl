@@ -224,7 +224,7 @@ public class PathnameJar
   public String getNamestring() {
     StringBuffer sb = new StringBuffer();
 
-    LispObject jars = getDevice();
+    LispObject jars = getJars();
 
     if (jars.equals(NIL) || jars.equals(Keyword.UNSPECIFIC)) { 
       // type_error("JAR-PATHNAME has bad DEVICE",
@@ -240,7 +240,7 @@ public class PathnameJar
       sb.append(JAR_URI_PREFIX);
     }
 
-    LispObject root = jars.car();
+    LispObject root = getRootJar();
 
     if (root instanceof PathnameURL) {
       String ns = ((PathnameURL)root).getNamestringAsURI();
@@ -257,18 +257,16 @@ public class PathnameJar
       simple_error("Unable to generate namestring for jar with root pathname ~a", root); 
     }
 
-    if (jars.length() > 1) {
-      LispObject innerJars = jars.cdr();
-      while (innerJars.car() != NIL) {
-        Pathname jar = (Pathname)innerJars.car();
-        Pathname p = new Pathname();
-        p.copyFrom(jar)
-         .setDevice(NIL);
-        String ns = p.getNamestring();
-        sb.append(ns)
-          .append(JAR_URI_SUFFIX);
-        innerJars = innerJars.cdr();
-      }
+    LispObject innerJars = jars.cdr();
+    while (innerJars.car() != NIL) {
+      Pathname jar = (Pathname)innerJars.car();
+      Pathname p = new Pathname();
+      p.copyFrom(jar)
+        .setDevice(NIL);
+      String ns = p.getNamestring();
+      sb.append(ns)
+        .append(JAR_URI_SUFFIX);
+      innerJars = innerJars.cdr();
     }
 
     if (getDirectory() != NIL
