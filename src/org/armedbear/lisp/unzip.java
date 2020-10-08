@@ -72,10 +72,10 @@ public final class unzip
   
     private LispObject unzipToDirectory(Pathname zipPath, Pathname dirPath) {
         if (!zipPath.isAbsolute()) {
-            zipPath = Pathname.mergePathnames(zipPath,
+            zipPath = (Pathname)Pathname.mergePathnames(zipPath,
                                               coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()));
         }
-        LispObject o = Pathname.truename(zipPath, false);
+        LispObject o = Symbol.PROBE_FILE.execute(zipPath);
         if (!(o instanceof Pathname)) {
             return error(new FileError("No file found: " + zipPath, zipPath));
         }
