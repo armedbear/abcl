@@ -171,7 +171,13 @@ public class PathnameJar
     
     PathnameJar result = new PathnameJar();
 
-    LispObject rootPathname = Pathname.create(contents.get(0));
+    // Normalize the root jar to be a URL
+    String rootNamestring = contents.get(0);
+    if (!isValidURL(rootNamestring)) {
+      rootNamestring = "file:" + rootNamestring;
+    }
+
+    PathnameURL rootPathname = (PathnameURL)PathnameURL.create(rootNamestring);
 
     LispObject jars = NIL;
     jars = jars.push(rootPathname);
@@ -206,6 +212,16 @@ public class PathnameJar
     }
 
     LispObject jars = getDevice();
+
+    LispObject rootJar = getRootJar();
+    if (!(rootJar instanceof PathnameURL)) {
+        return type_error("The first element in the DEVICE component of a JAR-PATHNAME is not of expected type",
+                          rootJar,
+                          Symbol.URL_PATHNAME);
+    }
+
+    jars = jars.cdr();
+    
     while (!jars.car().equals(NIL)) {
       LispObject jar = jars.car();
       if (!((jar instanceof Pathname)

@@ -70,6 +70,11 @@ public class PathnameURL
     return PathnameURL.create(uri.toString());
   }
 
+  public static LispObject createFromFile(Pathname p) {
+    String ns = "file:" + p.getNamestring();
+    return create(ns);
+  }
+
   public static LispObject create(String s) {
     if (!isValidURL(s)) {
       parse_error("Cannot form a PATHNAME-URL from " + s);
