@@ -165,7 +165,10 @@ public class Pathname extends LispObject implements Serializable {
     return dest.copyFrom(orig); 
   }
 
-  void copyFrom(Pathname p) {
+  /**
+   *
+   */
+  Pathname copyFrom(Pathname p) {
         if (p.host != NIL) {
             if (p.host instanceof SimpleString) {
               setHost(new SimpleString(((SimpleString)p.getHost()).getStringValue()));
@@ -240,6 +243,7 @@ public class Pathname extends LispObject implements Serializable {
           simple_error("Failed to copy version in pathname ~a", p);
         }
     }
+    return this;
   }
 
     public static boolean isSupportedProtocol(String protocol) {
@@ -2135,8 +2139,10 @@ public class Pathname extends LispObject implements Serializable {
     return false;
   }
 
-  /** @return The representation of this pathname suitable for
-   *  referencing an entry in a Zip/JAR file 
+  /** @return The representation of the DIRECTORY/NAME/TYPE elements
+   *  of pathname suitable for referencing an entry in a Zip/JAR file.
+   *
+   *  This representation is always a relative path.
    */
   protected String asEntryPath() {
     Pathname p = Pathname.create();

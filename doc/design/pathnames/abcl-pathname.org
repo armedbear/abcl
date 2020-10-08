@@ -305,24 +305,6 @@ to merge things succesfully.
 (merge-pathnames "jar:file:foo.jar!/bar.abcl" "/a/b/c/")
 #+end_src
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 What do we do when MERGE-PATHNAME gets two PATHNAME-JAR arguments?
 
 #+begin_src lisp
