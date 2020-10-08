@@ -72,6 +72,16 @@ public final class LogicalPathname extends Pathname
     return new LogicalPathname();
   }
 
+  public static LogicalPathname create(LogicalPathname p) {
+    Pathname pathname = new Pathname();
+    pathname.copyFrom(p);
+    LogicalPathname result = new LogicalPathname();
+    Pathname.ncoerce(pathname, result);
+    return result;
+  }
+
+
+
   public static LogicalPathname create(String namestring) {
     // parse host out then call create(host, rest);
     LogicalPathname result = null;
