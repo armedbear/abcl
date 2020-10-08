@@ -58,6 +58,10 @@ public class PathnameURL
     return new PathnameURL();
   }
 
+  public static PathnameURL create(Pathname p) {
+    return (PathnameURL)createFromFile((Pathname)p);
+  }
+
   public static PathnameURL create(PathnameURL p) {
     return (PathnameURL) PathnameURL.create(p.getNamestring());
   }

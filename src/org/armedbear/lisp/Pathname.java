@@ -185,13 +185,17 @@ public class Pathname extends LispObject implements Serializable {
                 device = new SimpleString(((SimpleString)p.getDevice()).getStringValue());
             } else if (p.getDevice() instanceof Cons) {
               LispObject jars = p.getDevice();
-              jars = jars.reverse();
-              device = NIL;
+              setDevice(NIL);
+              PathnameURL root = PathnameURL.create((Pathname)jars.car());
+              device = device.push(root);
+              jars = jars.cdr();
               while (jars.car() != NIL) {
-                Pathname jar = (Pathname) Pathname.create(((Pathname)jars.car()).getNamestring());
+                Pathname jar
+                  = (Pathname) Pathname.create(((Pathname)jars.car()).getNamestring());
                 device = device.push(jar);
                 jars = jars.cdr();
               }
+              device.nreverse();
             } else if (p.device instanceof Symbol) { // When is this the case?
                 device = p.device;
             } else {

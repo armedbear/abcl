@@ -333,9 +333,9 @@ public class PathnameJar
     PathnameJar p = new PathnameJar();
     p.copyFrom(pathname);
 
-    Pathname rootJar = (Pathname) p.getRootJar();
+    PathnameURL rootJar = (PathnameURL) p.getRootJar();
     if (rootJar.isLocalFile()) {
-      rootJar = (Pathname) Symbol.TRUENAME.execute(rootJar);
+      rootJar = (PathnameURL) PathnameURL.truename(rootJar, errorIfDoesNotExist);
       LispObject otherJars = p.getJars().cdr();
       p.setDevice(new Cons(rootJar, otherJars));
     }
