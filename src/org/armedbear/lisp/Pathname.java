@@ -2168,4 +2168,20 @@ public class Pathname extends LispObject implements Serializable {
     return result.toString();
   }
 
+  boolean isRemote() {
+    if (this instanceof PathnameURL) {
+      PathnameURL p = (PathnameURL) this;
+      LispObject scheme = Symbol.GETF.execute(p.getHost(), SCHEME, NIL);
+      if (scheme.equals(NIL)
+          || p.getHost().getStringValue().equals("file")) {
+        return false;
+      }
+      return true;
+    } else if (this instanceof PathnameJar) {
+      Pathname root = (Pathname) ((PathnameJar)this).getRootJar();
+      return root.isRemote();
+    } else {
+      return false;
+    }
+  }
 }
