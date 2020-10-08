@@ -752,34 +752,34 @@ public class Pathname extends LispObject implements Serializable {
 
         sb.append("PATHNAME (with no namestring) ");
         if (getHost() != NIL) {
-            sb.append(":HOST ");
-            sb.append(getHost().printObject());
-            sb.append(" ");
+            sb.append(":HOST ")
+              .append(getHost().printObject())
+              .append(" ");
         }
         if (getDevice() != NIL) {
-            sb.append(":DEVICE ");
-            sb.append(getDevice().printObject());
-            sb.append(" ");
+            sb.append(":DEVICE ")
+              .append(getDevice().printObject())
+              .append(" ");
         }
         if (getDirectory() != NIL) {
-            sb.append(":DIRECTORY ");
-            sb.append(getDirectory().printObject());
-            sb.append(" ");
+            sb.append(":DIRECTORY ")
+              .append(getDirectory().printObject())
+              .append(" ");
         }
         if (getName() != NIL) {
-            sb.append(":NAME ");
-            sb.append(getName().printObject());
-            sb.append(" ");
+            sb.append(":NAME ")
+              .append(getName().printObject())
+              .append(" ");
         }
         if (getType() != NIL) {
-            sb.append(":TYPE ");
-            sb.append(getType().printObject());
-            sb.append(" ");
+            sb.append(":TYPE ")
+              .append(getType().printObject())
+              .append(" ");
         }
         if (getVersion() != NIL) {
-            sb.append(":VERSION ");
-            sb.append(getVersion().printObject());
-            sb.append(" ");
+            sb.append(":VERSION ")
+              .append(getVersion().printObject())
+              .append(" ");
         }
         if (sb.charAt(sb.length() - 1) == ' ') { 
             sb.setLength(sb.length() - 1);

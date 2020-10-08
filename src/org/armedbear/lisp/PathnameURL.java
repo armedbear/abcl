@@ -189,26 +189,24 @@ public class PathnameURL
 
     // Use the output of Pathname
     Pathname p = new Pathname();
-    p.copyFrom(this);
-    Pathname.ncoerce(this, p);
-    p.setHost(NIL);
-    p.setDevice(NIL);
-    p.setDirectory(NIL);
+    p.copyFrom(this)
+      .setHost(NIL)
+      .setDevice(NIL)
+      .setDirectory(NIL);
     String nameTypeVersion = p.getNamestring();
     sb.append(nameTypeVersion);
 
     LispObject o = Symbol.GETF.execute(getHost(), QUERY, NIL);
     if (o != NIL) {
-      sb.append("?");
-      sb.append(o.getStringValue());
+      sb.append("?")
+        .append(o.getStringValue());
     }
     o = Symbol.GETF.execute(getHost(), FRAGMENT, NIL);
     if (o != NIL) {
-      sb.append("#");
-      sb.append(o.getStringValue());
+      sb.append("#")
+        .append(o.getStringValue());
     }
 
-    //namestring = sb.toString();
     return sb.toString();
   }
 
@@ -315,15 +313,14 @@ public class PathnameURL
     return result;
   }
 
-
   public long getLastModified() {
     return getURLConnection().getLastModified();
   }
 
-    @DocString(name="uri-decode",
+  @DocString(name="uri-decode",
              args="string",
              returns="string",
-  doc="Decode STRING percent escape sequences in the manner of URI encodings.")
+             doc="Decode STRING percent escape sequences in the manner of URI encodings.")
   private static final Primitive URI_DECODE = new pf_uri_decode();
   private static final class pf_uri_decode extends Primitive {
     pf_uri_decode() {
@@ -350,7 +347,7 @@ public class PathnameURL
   @DocString(name="uri-encode",
              args="string",
              returns="string",
-  doc="Encode percent escape sequences in the manner of URI encodings.")
+             doc="Encode percent escape sequences in the manner of URI encodings.")
   private static final Primitive URI_ENCODE = new pf_uri_encode();
   private static final class pf_uri_encode extends Primitive {
     pf_uri_encode() {
