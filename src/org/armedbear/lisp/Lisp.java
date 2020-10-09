@@ -2906,4 +2906,8 @@ public final class Lisp
     }
   }
 
+  // A synonym for the null reference which indicates to the reader of
+  // the code that we have performed a non-local exit via the
+  // condition system before this reference is reached.
+  public static java.lang.Object UNREACHED = null;
 }
