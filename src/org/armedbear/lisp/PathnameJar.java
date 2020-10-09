@@ -80,6 +80,21 @@ public class PathnameJar
     }
   }
 
+  /** Transform an entry in a jar to a reference as a jar */
+  public static PathnameJar createFromEntry(PathnameJar p) {
+    PathnameJar result = new PathnameJar();
+    result
+      .copyFrom(p)
+      .setDirectory(NIL)
+      .setName(NIL)
+      .setType(NIL);
+    Pathname entryPath = p.getEntryPath();
+    LispObject device = p.getDevice();
+    device = device.nreverse().push(entryPath).nreverse();
+    result.setDevice(device);
+    return result;
+  }
+    
   static public PathnameJar createFromFile(String s) {
     return PathnameJar.create(JAR_URI_PREFIX + "file:" + s + JAR_URI_SUFFIX);
   }
@@ -401,7 +416,6 @@ public class PathnameJar
   }
 
   public InputStream getInputStream() {
-    String entryPath = asEntryPath();
     // XXX We only return the bytes of an entry in a JAR
     if (!isArchiveEntry()) {
       simple_error("Can only get input stream for an entry in a JAR-PATHNAME.", this);
