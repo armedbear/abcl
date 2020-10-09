@@ -260,13 +260,6 @@ public class Pathname extends LispObject implements Serializable {
         }
     }
 
-    static final Symbol SCHEME = internKeyword("SCHEME");
-    static final Symbol AUTHORITY = internKeyword("AUTHORITY");
-    static final Symbol QUERY = internKeyword("QUERY");
-    static final Symbol FRAGMENT = internKeyword("FRAGMENT");
-
-    static final private String jarSeparator = "!/";
-
   private static final Pathname init(String s) { 
       Pathname result = new Pathname();
         if (s == null) {
@@ -315,13 +308,14 @@ public class Pathname extends LispObject implements Serializable {
         }
         
         // A JAR file
-        if (s.startsWith("jar:") && s.endsWith(jarSeparator)) {
+        if (s.startsWith(PathnameJar.JAR_URI_PREFIX)
+            && s.endsWith(PathnameJar.JAR_URI_SUFFIX)) {
           return (PathnameJar)PathnameJar.create(s);
         }
 
         // An entry in a JAR file
-        final int separatorIndex = s.lastIndexOf(jarSeparator);
-        if (separatorIndex > 0 && s.startsWith("jar:")) {
+        final int separatorIndex = s.lastIndexOf(PathnameJar.JAR_URI_SUFFIX);
+        if (separatorIndex > 0 && s.startsWith(PathnameJar.JAR_URI_PREFIX)) {
           return (PathnameJar)PathnameJar.create(s);
         }
 
@@ -503,8 +497,8 @@ public class Pathname extends LispObject implements Serializable {
             Debug.assertTrue(getHost() instanceof AbstractString 
                              || isURL());
             if (isURL()) {
-                LispObject scheme = Symbol.GETF.execute(getHost(), SCHEME, NIL);
-                LispObject authority = Symbol.GETF.execute(getHost(), AUTHORITY, NIL);
+                LispObject scheme = Symbol.GETF.execute(getHost(), PathnameURL.SCHEME, NIL);
+                LispObject authority = Symbol.GETF.execute(getHost(), PathnameURL.AUTHORITY, NIL);
                 Debug.assertTrue(scheme != NIL);
                 sb.append(scheme.getStringValue());
                 sb.append(":");
@@ -2164,7 +2158,7 @@ public class Pathname extends LispObject implements Serializable {
   boolean isRemote() {
     if (this instanceof PathnameURL) {
       PathnameURL p = (PathnameURL) this;
-      LispObject scheme = Symbol.GETF.execute(p.getHost(), SCHEME, NIL);
+      LispObject scheme = Symbol.GETF.execute(p.getHost(), PathnameURL.SCHEME, NIL);
       if (scheme.equals(NIL)
           || p.getHost().getStringValue().equals("file")) {
         return false;
