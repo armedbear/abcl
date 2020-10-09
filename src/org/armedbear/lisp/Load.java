@@ -153,7 +153,7 @@ public final class Load
         if (!pathname.isAbsolute() && !pathname.isJar()) {
             Pathname pathnameDefaults 
                 = coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue());
-            mergedPathname = (Pathname)Pathname.mergePathnames(pathname, pathnameDefaults);
+            mergedPathname = Pathname.mergePathnames(pathname, pathnameDefaults);
         }
         Pathname loadableFile = findLoadableFile(mergedPathname != null ? mergedPathname : pathname);
         Pathname truename = (loadableFile != null
@@ -170,51 +170,40 @@ public final class Load
         }
 
         if (ZipCache.checkZipFile(truename)) {
-            // String n = truename.getNamestring();
-            // String name = Pathname.uriEncode(truename.getName().getStringValue());
-            // if (n.startsWith("jar:")) {
-            //     n = "jar:" + n + "!/" + name + "."
-            //         + COMPILE_FILE_INIT_FASL_TYPE;
-	    // } else if (n.startsWith("zip:")) {
-            //     n = "zip:" + n + "!/" + name + "."
-            //         + COMPILE_FILE_INIT_FASL_TYPE;
-            // } else {
-            //     n = "jar:file:" + Pathname.uriEncode(n) + "!/" + name + "."
-            //         + COMPILE_FILE_INIT_FASL_TYPE;
-            // }
-            // if (!((mergedPathname = (Pathname)Pathname.create(n)) instanceof Pathname)) {
-            //   return error(new FileError((MessageFormat.format("Failed to address JAR-PATHNAME truename {0} for name {1}", truename.princToString(), name)), truename));
-            // }
-          truename = (Pathname) PathnameJar.createFromPathname(truename);
-          Pathname loader = (Pathname)Pathname.create("__loader__._"); // FIXME use constants
+          if (truename instanceof PathnameJar) {
+            truename = PathnameJar.createFromEntry((PathnameJar)truename);
+          } else {
+            truename = PathnameJar.createFromPathname(truename);
+          }
+          Pathname loader = Pathname.create("__loader__._"); // FIXME use constants
           mergedPathname = (Pathname)Symbol.MERGE_PATHNAMES.execute(loader, truename);
 
-            LispObject initTruename = Symbol.PROBE_FILE.execute(mergedPathname);
-            if (initTruename.equals(NIL)) {
-                // Maybe the enclosing JAR has been renamed?
-                Pathname p = Pathname.create(mergedPathname);
-                p.setName(Keyword.WILD);
-                LispObject result = Symbol.MATCH_WILD_JAR_PATHNAME.execute(p);
-
-                if (result instanceof Cons
-                    && ((Cons)result).length() == 1
-                    && ((Cons)result).car() instanceof Pathname) {
-                    initTruename = (Pathname)result.car();
-                } else {
-                  String errorMessage
-                      = "Loadable FASL not found for "
-                      + "'" + pathname.printObject() + "'"
-                      + " in "
-                      + "'" + mergedPathname.printObject() + "'";
-                  if (ifDoesNotExist) {
-                      return error(new FileError(errorMessage, mergedPathname));
-                  } else {
-                      Debug.trace(errorMessage);
-                      return NIL;
-                  }
-                }
+          LispObject initTruename = Symbol.PROBE_FILE.execute(mergedPathname);
+          if (initTruename.equals(NIL)) {
+            // Maybe the enclosing JAR has been renamed?
+            Pathname p = Pathname.create(mergedPathname);
+            p.setName(Keyword.WILD);
+            LispObject result = Symbol.MATCH_WILD_JAR_PATHNAME.execute(p);
+            
+            if (result instanceof Cons
+                && ((Cons)result).length() == 1
+                && ((Cons)result).car() instanceof Pathname) {
+              initTruename = (Pathname)result.car();
+            } else {
+              String errorMessage
+                = "Loadable FASL not found for "
+                + pathname.printObject() 
+                + " in "
+                + mergedPathname.printObject();
+              if (ifDoesNotExist) {
+                return error(new FileError(errorMessage, mergedPathname));
+              } else {
+                Debug.trace(errorMessage);
+                return NIL;
+              }
             }
-            truename = (Pathname)initTruename;
+          }
+          truename = (Pathname)initTruename;
         } 
 				
         InputStream in = truename.getInputStream();

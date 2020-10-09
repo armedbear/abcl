@@ -165,23 +165,11 @@ public class ZipCache {
   }
 
   public static InputStream getEntryAsInputStream(PathnameJar archiveEntry) {
-    InputStream result = null;
-    if (archiveEntry.getDevice().length() > 1) {
-      simple_error("Unimplemented retrieval of InputStream from a nested jar reference");
-      return (InputStream)UNREACHED;
-      // Pathname inner = (Pathname) getDevice().cdr().car();
-      // InputStream input = ZipCache.getInputStream(jarFile, inner);
-      // ZipInputStream zipInputStream = new ZipInputStream(input);
-      // result =  ZipCache.getEntryAsInputStream(zipInputStream, entryPath);
-    } else {
-      Archive archive = ZipCache.getArchive(archiveEntry);
-      // ZipFile zipFile = archive.file;
-      // ZipEntry entry = archive.getEntry(archiveEntry);
-      
-      result = archive.getEntryAsInputStream(archiveEntry);
-      if (result == null) {
-        simple_error("Failed to get InputStream for ~a", archiveEntry);
-      }
+    PathnameJar archiveJar = archiveEntry.getArchive();
+    Archive archive = ZipCache.getArchive(archiveJar);
+    InputStream result = archive.getEntryAsInputStream(archiveEntry);
+    if (result == null) {
+      simple_error("Failed to get InputStream for ~a", archiveEntry);
     }
     return result;
   }

@@ -62,7 +62,7 @@ public class Pathname extends LispObject implements Serializable {
     }
   }
 
-  public static LispObject create(String s) {
+  public static Pathname create(String s) {
     // TODO distinguish between logical hosts and schemes for URLs
     // which we can meaningfully parse.
 
@@ -1616,13 +1616,13 @@ public class Pathname extends LispObject implements Serializable {
         }
     }
 
-  public static final LispObject mergePathnames(Pathname pathname, Pathname defaultPathname) {
+  public static final Pathname mergePathnames(Pathname pathname, Pathname defaultPathname) {
     return mergePathnames(pathname, defaultPathname, Keyword.NEWEST);
   }
     
-  public static final LispObject mergePathnames(final Pathname pathname,
-                                                final Pathname defaultPathname,
-                                                final LispObject defaultVersion) {
+  public static final Pathname mergePathnames(final Pathname pathname,
+                                              final Pathname defaultPathname,
+                                              final LispObject defaultVersion) {
     Pathname result;
     Pathname p = Pathname.create(pathname);
     Pathname d;
@@ -2146,12 +2146,16 @@ public class Pathname extends LispObject implements Serializable {
     return false;
   }
 
+  Pathname getEntryPath() {
+    return Pathname.create(asEntryPath());
+  }
+
   /** @return The representation of the DIRECTORY/NAME/TYPE elements
    *  of pathname suitable for referencing an entry in a Zip/JAR file.
    *
    *  This representation is always a relative path.
    */
-  protected String asEntryPath() {
+  String asEntryPath() {
     Pathname p = Pathname.create();
     p.setDirectory(getDirectory())
       .setName(getName())
