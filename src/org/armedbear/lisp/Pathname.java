@@ -1754,8 +1754,17 @@ public class Pathname extends LispObject implements Serializable {
         result.setHost(d.getHost());
       }
 
-      if (pathname.getDevice() != NIL) { 
-        result.setDevice(p.getDevice());
+      if (pathname.getDevice() != NIL) {
+        if (!Utilities.isPlatformWindows) {
+          result.setDevice(p.getDevice());
+        } else {
+          if (d instanceof PathnameJar
+	      && p instanceof PathnameJar) {
+            result.setDevice(d.getDevice());
+          } else { 
+            result.setDevice(p.getDevice());
+          }
+        }
       } else {
         // If the defaults contain a JAR-PATHNAME, and the pathname
         // to be be merged is not a JAR-PATHNAME, does not have a

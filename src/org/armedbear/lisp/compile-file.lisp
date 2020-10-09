@@ -971,7 +971,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                  while (not (eq line :eof))
 		    do (write-line line out)))))
         (delete-file temp-file)
-        (when (find :windows *features*)
+        (when (subtypep (type-of output-file) 'jar-pathname)
           (remove-zip-cache-entry output-file))
         (rename-file temp-file2 output-file)
 
