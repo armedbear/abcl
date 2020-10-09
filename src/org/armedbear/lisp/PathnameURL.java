@@ -74,7 +74,7 @@ public class PathnameURL
     if (!isValidURL(s)) {
       parse_error("Cannot form a PATHNAME-URL from " + s);
     }
-    if (s.startsWith("jar:")) {
+    if (s.startsWith(PathnameJar.JAR_URI_PREFIX)) {
       return PathnameJar.create(s);
     }
 
