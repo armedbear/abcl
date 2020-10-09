@@ -58,6 +58,10 @@ public class PathnameURL
     return new PathnameURL();
   }
 
+  public static PathnameURL create(Pathname p) {
+    return (PathnameURL)createFromFile((Pathname)p);
+  }
+
   public static PathnameURL create(PathnameURL p) {
     return (PathnameURL) PathnameURL.create(p.getNamestring());
   }
@@ -70,7 +74,12 @@ public class PathnameURL
     return PathnameURL.create(uri.toString());
   }
 
-  public static LispObject create(String s) {
+  public static LispObject createFromFile(Pathname p) {
+    String ns = "file:" + p.getNamestring();
+    return create(ns);
+  }
+
+  public static PathnameURL create(String s) {
     if (!isValidURL(s)) {
       parse_error("Cannot form a PATHNAME-URL from " + s);
     }
@@ -83,7 +92,8 @@ public class PathnameURL
     try {
       url = new URL(s);
     } catch (MalformedURLException e) {
-      return parse_error("Malformed URL in namestring '" + s + "': " + e.toString());
+      parse_error("Malformed URL in namestring '" + s + "': " + e.toString());
+      return (PathnameURL) UNREACHED;
     }
     String scheme = url.getProtocol();
     if (scheme.equals("file")) {
@@ -91,9 +101,10 @@ public class PathnameURL
       try {
         uri = new URI(s);
       } catch (URISyntaxException ex) {
-        return parse_error("Improper URI syntax for "
-                           + "'" + url.toString() + "'"
-                           + ": " + ex.toString());
+        parse_error("Improper URI syntax for "
+		    + "'" + url.toString() + "'"
+		    + ": " + ex.toString());
+	return (PathnameURL)UNREACHED;
       }
             
       String uriPath = uri.getPath();
@@ -102,7 +113,8 @@ public class PathnameURL
         // devices expressed as "file:z:/foo/path"
         uriPath = uri.getSchemeSpecificPart();
         if (uriPath == null || uriPath.equals("")) {
-          return parse_error("The namestring URI has no path: " + uri);
+          parse_error("The namestring URI has no path: " + uri);
+	  return (PathnameURL)UNREACHED;
         }
       }
       final File file = new File(uriPath);
@@ -125,9 +137,10 @@ public class PathnameURL
     try { 
       uri = url.toURI().normalize();
     } catch (URISyntaxException e) {
-      return parse_error("Couldn't form URI from "
-                         + "'" + url + "'"
-                         + " because: " + e);
+      parse_error("Couldn't form URI from "
+		  + "'" + url + "'"
+		  + " because: " + e);
+      return (PathnameURL)UNREACHED;
     }
     String authority = uri.getAuthority();
     if (authority == null) {
@@ -264,10 +277,16 @@ public class PathnameURL
     return BuiltInClass.URL_PATHNAME;
   }
 
+  public static LispObject truename(Pathname p, boolean errorIfDoesNotExist) {
+    PathnameURL pathnameURL = (PathnameURL)PathnameURL.createFromFile(p);
+    return PathnameURL.truename(pathnameURL, errorIfDoesNotExist);
+  }
+
   public static LispObject truename(PathnameURL p, boolean errorIfDoesNotExist) {
     if (p.getHost().equals(NIL)
-        || Symbol.GETF.execute(p.getHost(), PathnameURL.SCHEME, NIL).equals("file")) {
-      return Pathname.truename((Pathname)p, errorIfDoesNotExist);
+     || Symbol.GETF.execute(p.getHost(), PathnameURL.SCHEME, NIL)
+          .equals("file")) {
+      return Pathname.truename(p, errorIfDoesNotExist);
     }
         
     if (p.getInputStream() != null) {
