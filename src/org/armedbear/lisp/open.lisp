@@ -121,7 +121,7 @@
     (when (wild-pathname-p pathname)
       (error 'file-error
 	     :pathname pathname
-	     :format-control "Bad place for a wild pathname."))
+	     :format-control "Cannot OPEN a wild pathname."))
     (when (memq direction '(:output :io))
       (unless if-exists-given
         (setf if-exists

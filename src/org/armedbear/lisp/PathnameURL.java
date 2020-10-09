@@ -53,6 +53,10 @@ public class PathnameURL
 
   protected PathnameURL() {}
 
+  public static Pathname create() {
+    return new PathnameURL();
+  }
+
   public static PathnameURL create(PathnameURL p) {
     return (PathnameURL) PathnameURL.create(p.getNamestring());
   }
@@ -67,7 +71,7 @@ public class PathnameURL
 
   public static LispObject create(String s) {
     if (!isValidURL(s)) {
-      error(new SimpleError("Cannot form a PATHNAME-URL from " + s));
+      parse_error("Cannot form a PATHNAME-URL from " + s);
     }
     if (s.startsWith("jar:")) {
       return PathnameJar.create(s);
@@ -78,7 +82,7 @@ public class PathnameURL
     try {
       url = new URL(s);
     } catch (MalformedURLException e) {
-      Debug.assertTrue(false);
+      return parse_error("Malformed URL in namestring '" + s + "': " + e.toString());
     }
     String scheme = url.getProtocol();
     if (scheme.equals("file")) {
@@ -86,9 +90,9 @@ public class PathnameURL
       try {
         uri = new URI(s);
       } catch (URISyntaxException ex) {
-        error(new SimpleError("Improper URI syntax for "
-                              + "'" + url.toString() + "'"
-                              + ": " + ex.toString()));
+        return parse_error("Improper URI syntax for "
+                           + "'" + url.toString() + "'"
+                           + ": " + ex.toString());
       }
             
       String uriPath = uri.getPath();
@@ -97,7 +101,7 @@ public class PathnameURL
         // devices expressed as "file:z:/foo/path"
         uriPath = uri.getSchemeSpecificPart();
         if (uriPath == null || uriPath.equals("")) {
-          error(new LispError("The URI has no path: " + uri));
+          return parse_error("The namestring URI has no path: " + uri);
         }
       }
       final File file = new File(uriPath);
@@ -119,9 +123,9 @@ public class PathnameURL
     try { 
       uri = url.toURI().normalize();
     } catch (URISyntaxException e) {
-      error(new LispError("Couldn't form URI from "
-                          + "'" + url + "'"
-                          + " because: " + e));
+      return parse_error("Couldn't form URI from "
+                         + "'" + url + "'"
+                         + " because: " + e);
     }
     String authority = uri.getAuthority();
     if (authority == null) {
