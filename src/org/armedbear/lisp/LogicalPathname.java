@@ -37,249 +37,262 @@ import static org.armedbear.lisp.Lisp.*;
 
 import java.util.HashMap;
 import java.util.StringTokenizer;
+import java.text.MessageFormat;
 
 public final class LogicalPathname extends Pathname
 {
-    private static final String LOGICAL_PATHNAME_CHARS =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-;*.";
+  public static final String LOGICAL_PATHNAME_CHARS
+    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-;*.";
+  private static final HashMap map
+    = new HashMap();
 
-    private static final HashMap map = new HashMap();
+  static public boolean isValidLogicalPathname(String namestring) {
+    if (!isValidURL(namestring)) {
+      String host = getHostString(namestring);
+      if (host != null
+       && LOGICAL_PATHNAME_TRANSLATIONS.get(new SimpleString(host)) != null) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-    protected LogicalPathname()
-    {
+  public static LogicalPathname create(String namestring) {
+    // parse host out then call create(host, rest);
+    if (LogicalPathname.isValidLogicalPathname(namestring)) {
+      String h = LogicalPathname.getHostString(namestring);
+      return LogicalPathname.create(h,
+                                    namestring.substring(namestring.indexOf(':') + 1));
+    }
+    return null;  // Ugh.  I bet this is gonna cause problems. Tighten entrance points
+  }
+
+  public static LogicalPathname create(String host, String rest) {
+    // This may be "too late" in the creation chain to be meaningful?
+    SimpleString h = new SimpleString(host);
+    if (LOGICAL_PATHNAME_TRANSLATIONS.get(h) == null) {
+      // Logical pathnames are only valid when it's host exists
+      String message = MessageFormat.format("'{0}' is not a defined logical host", host);
+      error(new SimpleError(message));
+    }
+    LogicalPathname result = new LogicalPathname();
+    final int limit = rest.length();
+    for (int i = 0; i < limit; i++) {
+      char c = rest.charAt (i);
+      if (LOGICAL_PATHNAME_CHARS.indexOf(c) < 0) {
+        error(new ParseError("The character #\\" + c + " is not valid in a logical pathname."));
+
+      }
     }
 
-    protected LogicalPathname(Pathname p) {
-        super(p);
-    }
+    result.setHost(h);
 
-    public LogicalPathname(String host, String rest)
-    {
-        final int limit = rest.length();
-        for (int i = 0; i < limit; i++) {
-            char c = rest.charAt(i);
-            if (LOGICAL_PATHNAME_CHARS.indexOf(c) < 0) {
-                error(new ParseError("The character #\\" + c + " is not valid in a logical pathname."));
-                return;
-            }
-        }
+    // "The device component of a logical pathname is always :UNSPECIFIC;
+    // no other component of a logical pathname can be :UNSPECIFIC."
+    result.setDevice(Keyword.UNSPECIFIC);
 
-        this.host = new SimpleString(host);
-
-        // "The device component of a logical pathname is always :UNSPECIFIC;
-        // no other component of a logical pathname can be :UNSPECIFIC."
-        device = Keyword.UNSPECIFIC;
-
-        int semi = rest.lastIndexOf(';');
-        if (semi >= 0) {
-            // Directory.
-            String d = rest.substring(0, semi + 1);
-            directory = parseDirectory(d);
-            rest = rest.substring(semi + 1);
-        } else {
-            // "If a relative-directory-marker precedes the directories, the
-            // directory component parsed is as relative; otherwise, the
+    int semi = rest.lastIndexOf(';');
+    if (semi >= 0) {
+      // Directory.
+      String d = rest.substring(0, semi + 1);
+      result.setDirectory(parseDirectory(d));
+      rest = rest.substring(semi + 1);
+    } else {
+      // "If a relative-directory-marker precedes the directories, the
+      // directory component parsed is as relative; otherwise, the
             // directory component is parsed as absolute."
-            directory = new Cons(Keyword.ABSOLUTE);
-        }
+          result.setDirectory(new Cons(Keyword.ABSOLUTE));
+    }
 
-        int dot = rest.indexOf('.');
-        if (dot >= 0) {
-            String n = rest.substring(0, dot);
-            if (n.equals("*"))
-                name = Keyword.WILD;
-            else
-                name = new SimpleString(n.toUpperCase());
-            rest = rest.substring(dot + 1);
-            dot = rest.indexOf('.');
-            if (dot >= 0) {
-                String t = rest.substring(0, dot);
-                if (t.equals("*"))
-                    type = Keyword.WILD;
-                else
-                    type = new SimpleString(t.toUpperCase());
-                // What's left is the version.
-                String v = rest.substring(dot + 1);
-                if (v.equals("*"))
-                    version = Keyword.WILD;
-                else if (v.equals("NEWEST") || v.equals("newest"))
-                    version = Keyword.NEWEST;
-                else
-                    version = PACKAGE_CL.intern("PARSE-INTEGER").execute(new SimpleString(v));
-            } else {
-                String t = rest;
-                if (t.equals("*"))
-                    type = Keyword.WILD;
-                else
-                    type = new SimpleString(t.toUpperCase());
-            }
+    int dot = rest.indexOf('.');
+    if (dot >= 0) {
+      String n = rest.substring(0, dot);
+      if (n.equals("*")) {
+        result.setName(Keyword.WILD);
+      } else {
+        result.setName(new SimpleString(n.toUpperCase()));
+      }
+      rest = rest.substring(dot + 1);
+      dot = rest.indexOf('.');
+      if (dot >= 0) {
+        String t = rest.substring(0, dot);
+        if (t.equals("*")) {
+          result.setType(Keyword.WILD);
         } else {
-            String n = rest;
-            if (n.equals("*"))
-                name = Keyword.WILD;
-            else if (n.length() > 0)
-                name = new SimpleString(n.toUpperCase());
+          result.setType(new SimpleString(t.toUpperCase()));
         }
-    }
-
-    private static final String LOGICAL_PATHNAME_COMPONENT_CHARS =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-";
-
-    public static final SimpleString canonicalizeStringComponent(AbstractString s)
-
-    {
-        final int limit = s.length();
-        for (int i = 0; i < limit; i++) {
-            char c = s.charAt(i);
-            if (LOGICAL_PATHNAME_COMPONENT_CHARS.indexOf(c) < 0) {
-                error(new ParseError("Invalid character #\\" + c +
-                                      " in logical pathname component \"" + s +
-                                      '"'));
-                // Not reached.
-                return null;
-            }
+        // What's left is the version.
+        String v = rest.substring(dot + 1);
+        if (v.equals("*")) {
+          result.setVersion(Keyword.WILD);
+        } else if (v.equals("NEWEST") || v.equals("newest")) {
+          result.setVersion(Keyword.NEWEST);
+        } else {
+          result.setVersion(PACKAGE_CL.intern("PARSE-INTEGER").execute(new SimpleString(v)));
         }
-        return new SimpleString(s.getStringValue().toUpperCase());
-    }
-
-    public static Pathname translateLogicalPathname(LogicalPathname pathname)
-
-    {
-        return (Pathname) Symbol.TRANSLATE_LOGICAL_PATHNAME.execute(pathname);
-    }
-
-    private static final LispObject parseDirectory(String s)
-
-    {
-        LispObject result;
-        if (s.charAt(0) == ';') {
-            result = new Cons(Keyword.RELATIVE);
-            s = s.substring(1);
-        } else
-            result = new Cons(Keyword.ABSOLUTE);
-        StringTokenizer st = new StringTokenizer(s, ";");
-        while (st.hasMoreTokens()) {
-            String token = st.nextToken();
-            LispObject obj;
-            if (token.equals("*"))
-                obj = Keyword.WILD;
-            else if (token.equals("**"))
-                obj = Keyword.WILD_INFERIORS;
-            else if (token.equals("..")) {
-                if (result.car() instanceof AbstractString) {
-                    result = result.cdr();
-                    continue;
-                }
-                obj= Keyword.UP;
-            } else
-                obj = new SimpleString(token.toUpperCase());
-            result = new Cons(obj, result);
+      } else {
+        String t = rest;
+        if (t.equals("*")) {
+          result.setType(Keyword.WILD);
+        } else {
+          result.setType(new SimpleString(t.toUpperCase()));
         }
-        return result.nreverse();
+      }
+    } else {
+      String n = rest;
+      if (n.equals("*")) {
+        result.setName(Keyword.WILD);
+      } else if (n.length() > 0) {
+        result.setName(new SimpleString(n.toUpperCase()));
+      }
     }
+    return result;
+  }
 
-    @Override
-    public LispObject typeOf()
-    {
-        return Symbol.LOGICAL_PATHNAME;
+  public static final SimpleString canonicalizeStringComponent(AbstractString s) {
+    final int limit = s.length();
+    for (int i = 0; i < limit; i++) {
+      char c = s.charAt(i);
+      if (LOGICAL_PATHNAME_CHARS.indexOf(c) < 0) {
+        error(new ParseError("Invalid character #\\" + c +
+                             " in logical pathname component \"" + s +
+                             '"'));
+        // Not reached.
+        return null;
+      }
     }
+    return new SimpleString(s.getStringValue().toUpperCase());
+  }
 
-    @Override
-    public LispObject classOf()
-    {
-        return BuiltInClass.LOGICAL_PATHNAME;
-    }
+  public static Pathname translateLogicalPathname(LogicalPathname pathname) {
+    return (Pathname) Symbol.TRANSLATE_LOGICAL_PATHNAME.execute(pathname);
+  }
 
-    @Override
-    public LispObject typep(LispObject type)
-    {
-        if (type == Symbol.LOGICAL_PATHNAME)
-            return T;
-        if (type == BuiltInClass.LOGICAL_PATHNAME)
-            return T;
-        return super.typep(type);
-    }
-
-    @Override
-    protected String getDirectoryNamestring()
-    {
-        StringBuilder sb = new StringBuilder();
-        // "If a pathname is converted to a namestring, the symbols NIL and
-        // :UNSPECIFIC cause the field to be treated as if it were empty. That
-        // is, both NIL and :UNSPECIFIC cause the component not to appear in
-        // the namestring." 19.2.2.2.3.1
-        if (directory != NIL) {
-            LispObject temp = directory;
-            LispObject part = temp.car();
-            if (part == Keyword.ABSOLUTE) {
-            } else if (part == Keyword.RELATIVE)
-                sb.append(';');
-            else
-                error(new FileError("Unsupported directory component " + part.princToString() + ".",
-                                     this));
-            temp = temp.cdr();
-            while (temp != NIL) {
-                part = temp.car();
-                if (part instanceof AbstractString)
-                    sb.append(part.getStringValue());
-                else if (part == Keyword.WILD)
-                    sb.append('*');
-                else if (part == Keyword.WILD_INFERIORS)
-                    sb.append("**");
-                else if (part == Keyword.UP)
-                    sb.append("..");
-                else
-                    error(new FileError("Unsupported directory component " + part.princToString() + ".",
-                                         this));
-                sb.append(';');
-                temp = temp.cdr();
-            }
+  private static final LispObject parseDirectory(String s) {
+    LispObject result;
+    if (s.charAt(0) == ';') {
+      result = new Cons(Keyword.RELATIVE);
+      s = s.substring(1);
+    } else
+      result = new Cons(Keyword.ABSOLUTE);
+    StringTokenizer st = new StringTokenizer(s, ";");
+    while (st.hasMoreTokens()) {
+      String token = st.nextToken();
+      LispObject obj;
+      if (token.equals("*"))
+        obj = Keyword.WILD;
+      else if (token.equals("**"))
+        obj = Keyword.WILD_INFERIORS;
+      else if (token.equals("..")) {
+        if (result.car() instanceof AbstractString) {
+          result = result.cdr();
+          continue;
         }
-        return sb.toString();
+        obj= Keyword.UP;
+      } else
+        obj = new SimpleString(token.toUpperCase());
+      result = new Cons(obj, result);
     }
+    return result.nreverse();
+  }
 
-    @Override
-    public String printObject()
-    {
-        final LispThread thread = LispThread.currentThread();
-        boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
-        boolean printEscape = (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL);
-        StringBuilder sb = new StringBuilder();
-        if (printReadably || printEscape)
-            sb.append("#P\"");
-        sb.append(host.getStringValue());
-        sb.append(':');
-        if (directory != NIL)
-            sb.append(getDirectoryNamestring());
-        if (name != NIL) {
-            if (name == Keyword.WILD)
-                sb.append('*');
-            else
-                sb.append(name.getStringValue());
-        }
-        if (type != NIL) {
-            sb.append('.');
-            if (type == Keyword.WILD)
-                sb.append('*');
-            else
-                sb.append(type.getStringValue());
-        }
-        if (version.integerp()) {
-            sb.append('.');
-            int base = Fixnum.getValue(Symbol.PRINT_BASE.symbolValue(thread));
-            if (version instanceof Fixnum)
-                sb.append(Integer.toString(((Fixnum)version).value, base).toUpperCase());
-            else if (version instanceof Bignum)
-                sb.append(((Bignum)version).value.toString(base).toUpperCase());
-        } else if (version == Keyword.WILD) {
-            sb.append(".*");
-        } else if (version == Keyword.NEWEST) {
-            sb.append(".NEWEST");
-        }
-        if (printReadably || printEscape)
-            sb.append('"');
-        return sb.toString();
+  @Override
+  public LispObject typeOf() {
+    return Symbol.LOGICAL_PATHNAME;
+  }
+
+  @Override
+  public LispObject classOf() {
+    return BuiltInClass.LOGICAL_PATHNAME;
+  }
+
+  @Override
+  public LispObject typep(LispObject type) {
+    if (type == Symbol.LOGICAL_PATHNAME)
+      return T;
+    if (type == BuiltInClass.LOGICAL_PATHNAME)
+      return T;
+    return super.typep(type);
+  }
+  
+  @Override
+  protected String getDirectoryNamestring() {
+    StringBuilder sb = new StringBuilder();
+    // "If a pathname is converted to a namestring, the symbols NIL and
+    // :UNSPECIFIC cause the field to be treated as if it were empty. That
+    // is, both NIL and :UNSPECIFIC cause the component not to appear in
+    // the namestring." 19.2.2.2.3.1
+    if (getDirectory() != NIL) {
+      LispObject temp = getDirectory();
+      LispObject part = temp.car();
+      if (part == Keyword.ABSOLUTE) {
+      } else if (part == Keyword.RELATIVE)
+        sb.append(';');
+      else
+        error(new FileError("Unsupported directory component " + part.princToString() + ".",
+                            this));
+      temp = temp.cdr();
+      while (temp != NIL) {
+        part = temp.car();
+        if (part instanceof AbstractString)
+          sb.append(part.getStringValue());
+        else if (part == Keyword.WILD)
+          sb.append('*');
+        else if (part == Keyword.WILD_INFERIORS)
+          sb.append("**");
+        else if (part == Keyword.UP)
+          sb.append("..");
+        else
+          error(new FileError("Unsupported directory component " + part.princToString() + ".",
+                              this));
+        sb.append(';');
+        temp = temp.cdr();
+      }
     }
+    return sb.toString();
+  }
+
+  @Override
+  public String printObject() {
+    final LispThread thread = LispThread.currentThread();
+    boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
+    boolean printEscape = (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL);
+    StringBuilder sb = new StringBuilder();
+    if (printReadably || printEscape)
+      sb.append("#P\"");
+    sb.append(getHost().getStringValue());
+    sb.append(':');
+    if (getDirectory() != NIL)
+      sb.append(getDirectoryNamestring());
+    if (getName() != NIL) {
+      if (getName() == Keyword.WILD)
+        sb.append('*');
+      else
+        sb.append(getName().getStringValue());
+    }
+    if (getType() != NIL) {
+      sb.append('.');
+      if (getType() == Keyword.WILD)
+        sb.append('*');
+      else
+        sb.append(getType().getStringValue());
+    }
+    if (getVersion().integerp()) {
+      sb.append('.');
+      int base = Fixnum.getValue(Symbol.PRINT_BASE.symbolValue(thread));
+      if (getVersion() instanceof Fixnum)
+        sb.append(Integer.toString(((Fixnum)getVersion()).value, base).toUpperCase());
+      else if (getVersion() instanceof Bignum)
+        sb.append(((Bignum)getVersion()).value.toString(base).toUpperCase());
+    } else if (getVersion() == Keyword.WILD) {
+      sb.append(".*");
+    } else if (getVersion() == Keyword.NEWEST) {
+      sb.append(".NEWEST");
+    }
+    if (printReadably || printEscape)
+      sb.append('"');
+    return sb.toString();
+  }
 
     // ### canonicalize-logical-host host => canonical-host
     private static final Primitive CANONICALIZE_LOGICAL_HOST = new canonicalize_logical_host();
@@ -323,12 +336,22 @@ public final class LogicalPathname extends Pathname
                 }
                 if (Pathname.LOGICAL_PATHNAME_TRANSLATIONS.get(new SimpleString(h)) != null) {
                     // A defined logical pathname host.
-                    return new LogicalPathname(h, s.substring(s.indexOf(':') + 1));
+                    return LogicalPathname.create(h, s.substring(s.indexOf(':') + 1));
                 }
             }
             return error(new TypeError("Logical namestring does not specify a host: \"" + s + '"'));
         }
     }
+
+  // "one or more uppercase letters, digits, and hyphens"
+  protected static String getHostString(String s) {
+    int colon = s.indexOf(':');
+    if (colon >= 0) {
+      return s.substring(0, colon).toUpperCase();
+    } else {
+      return null;
+    }
+  }
 
     public long getLastModified() {
         Pathname p = translateLogicalPathname(this);
