@@ -330,7 +330,7 @@ public final class Interpreter
                            arg.equals("--load-system-file")) {
                     if (i + 1 < args.length) {
                         if (arg.equals("--load"))
-                            Load.load(Pathname.mergePathnames(Pathname.create(args[i + 1]),
+                          Load.load(Pathname.mergePathnames((Pathname)Pathname.create(args[i + 1]),
                                     checkPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.getSymbolValue())),
                                       false, false, true);
 
