@@ -318,7 +318,7 @@ public final class Extensions
       try {
         File file = File.createTempFile(prefix, suffix, null);
         if (file != null)
-          return new Pathname(file.getPath());
+          return Pathname.create(file.getPath());
       } catch (IllegalArgumentException e) {
         // "Failed to create temporary file due to argument problems."
         error(new JavaException(e));
@@ -347,7 +347,7 @@ public final class Extensions
         File dir = File.createTempFile("abcl", null);
         dir.delete();
         if (dir.mkdirs()) {
-          return new Pathname(dir + "/");
+          return Pathname.create(dir + "/");
         }
       } catch (Throwable t) {
         Debug.trace(t);

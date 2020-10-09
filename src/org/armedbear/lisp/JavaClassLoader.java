@@ -86,8 +86,8 @@ public class JavaClassLoader extends URLClassLoader {
     
     public byte[] getFunctionClassBytes(String name) {
         Pathname pathname 
-            = new Pathname(name.substring("org/armedbear/lisp/".length()) 
-                           + "." + Lisp._COMPILE_FILE_CLASS_EXTENSION_.symbolValue().getStringValue());
+            = Pathname.create(name.substring("org/armedbear/lisp/".length()) 
+                    + "." + Lisp._COMPILE_FILE_CLASS_EXTENSION_.symbolValue().getStringValue());
         return readFunctionBytes(pathname);
     }
 
@@ -326,7 +326,7 @@ public class JavaClassLoader extends URLClassLoader {
         if (jar instanceof Pathname) {
             jcl.addURL(((Pathname) jar).toURL());
         } else if (jar instanceof AbstractString) {
-            jcl.addURL(new Pathname(jar.toString()).toURL());
+            jcl.addURL(Pathname.create(jar.toString()).toURL());
         } else {
             error(new TypeError(jar + " must be a pathname designator"));
         }
@@ -337,7 +337,7 @@ public class JavaClassLoader extends URLClassLoader {
         if(o instanceof URLClassLoader) {
             LispObject list = NIL;
             for(URL u : ((URLClassLoader) o).getURLs()) {
-                list = list.push(new Pathname(u));
+                list = list.push(Pathname.create(u));
             }
             return new Cons(new JavaObject(o), list.nreverse());
         } else {
