@@ -39,7 +39,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
@@ -86,13 +85,6 @@ public class Pathname extends LispObject implements Serializable {
     return LogicalPathname.create(s, host);
   }
 
-  public static LispObject create(URL url) {
-    return Pathname.create(url.toString());
-  }
-
-  public static LispObject create(URI uri) {
-    return Pathname.create(uri.toString());
-  }
   protected LispObject host = NIL;
   public LispObject getHost() {
     return host;
@@ -151,48 +143,14 @@ public class Pathname extends LispObject implements Serializable {
   }
 
 
-    /** The path component separator used by internally generated
-     * path namestrings.
-     */
-    public final static char separator = '/';
-
-  private volatile String namestring;
-
-    /** The protocol for changing any instance field (i.e. 'host',
-     *  'type', etc.)  is to call this method after changing the field
-     *  to recompute the namestring.  We could do this with
-     *  setter/getters, but that choose not to in order to avoid the
-     *  performance indirection penalty.
-     *
-     *  TODO There is no "perfomance penalty" in contemporary
-     *  compilers which inline such access, so it would be better to
-     *  implement this as setter/getter ME 20110622
-     * 
-     *  Although, given the number of bugs that crop up when this
-     *  protocol is not adhered to, maybe we should consider it.
-     */
-    public void invalidateNamestring() {
-        namestring = null;
-    }
+  /** The path component separator used by internally generated
+   * path namestrings.
+   */
+  public final static char separator = '/';
     
-    private static final Primitive _INVALIDATE_NAMESTRING 
-        = new pf_invalidate_namestring();
-    @DocString(name="%invalidate-namestring",
-               args="pathname",
-               returns="pathname")
-    private static class pf_invalidate_namestring extends Primitive {
-        pf_invalidate_namestring() {
-            super("%invalidate-namestring", PACKAGE_EXT, false);
-        }
-        @Override
-        public LispObject execute(LispObject first) {
-            ((Pathname)coerceToPathname(first)).invalidateNamestring();
-            return first;
-        }
-    }
 
   // If not protected, then inheriting classes cannot invoke their constructors
-    protected Pathname() {}
+  protected Pathname() {}
 
   private Pathname(Pathname p) {
     /** Copy constructor which shares no structure with the original. */
@@ -200,17 +158,10 @@ public class Pathname extends LispObject implements Serializable {
     }
 
   /** 
-   *  Coerces Pathname types by copying structure
+   *  Coerces type between descendents of Pathname types by copying structure
    */
   static public LispObject ncoerce(Pathname orig, Pathname dest) {
-    dest.setHost(orig.getHost());
-    dest.setDevice(orig.getDevice());
-    dest.setDirectory(orig.getDirectory());
-    dest.setName(orig.getName());
-    dest.setType(orig.getType());
-    dest.setVersion(orig.getVersion());
-
-    return dest;
+    return dest.copyFrom(orig); 
   }
 
   void copyFrom(Pathname p) {
@@ -540,15 +491,6 @@ public class Pathname extends LispObject implements Serializable {
     }
 
     public String getNamestring() {
-        // if (namestring != null) {
-        //     return namestring;
-        // }
-      
-      // this makes no sense ???
-        if (getName() == NIL && getType() != NIL) {
-            Debug.assertTrue(namestring == null);
-            return null;
-        }
         if (getDirectory() instanceof AbstractString) {
             Debug.assertTrue(false);
         }
@@ -578,7 +520,7 @@ public class Pathname extends LispObject implements Serializable {
               sb.append("//").append(getHost().getStringValue()).append("/");
             }
         }
-        boolean uriEncoded = false;
+
         if (getDevice() == NIL) {
         } else if (getDevice() == Keyword.UNSPECIFIC) {
         } else if (getDevice() instanceof AbstractString) {
@@ -590,33 +532,20 @@ public class Pathname extends LispObject implements Serializable {
         } else {
           simple_error("Transitional error in pathname: should be a JAR-PATHNAME", this);
         }
+
         String directoryNamestring = getDirectoryNamestring();
-        if (uriEncoded) {
-            directoryNamestring = uriEncode(directoryNamestring);
-        }
-        // if (isJar()) {
-        //     if (directoryNamestring.startsWith("/")) {
-        //         sb.append(directoryNamestring.substring(1));
-        //     } else {
-        //         sb.append(directoryNamestring);
-        //     }
-        // } else {
-            sb.append(directoryNamestring);
-            //        }
+        sb.append(directoryNamestring);
+
         if (getName() instanceof AbstractString) {
             String n = getName().getStringValue();
             if (n.indexOf('/') >= 0) {
-                Debug.assertTrue(namestring == null);
                 return null;
             }
-            if (uriEncoded) {
-                sb.append(uriEncode(n));
-            } else {
-                sb.append(n);
-            }
+            sb.append(n);
         } else if (getName() == Keyword.WILD) {
             sb.append('*');
         }
+        
         if (getType() != NIL && getType() != Keyword.UNSPECIFIC) {
             sb.append('.');
             if (getType() instanceof AbstractString) {
@@ -624,15 +553,10 @@ public class Pathname extends LispObject implements Serializable {
                 // Allow Windows shortcuts to include TYPE
                 if (!(t.endsWith(".lnk") && Utilities.isPlatformWindows)) {
                     if (t.indexOf('.') >= 0) {
-                        Debug.assertTrue(namestring == null);
                         return null;
                     }
                 }
-                if (uriEncoded) {
-                    sb.append(uriEncode(t));
-                } else {
-                    sb.append(t);
-                }
+                sb.append(t);
             } else if (getType() == Keyword.WILD) {
                 sb.append('*');
             } else {
@@ -655,12 +579,7 @@ public class Pathname extends LispObject implements Serializable {
                 sb.append(".NEWEST");
             }
         }
-        namestring = sb.toString();
-        // XXX Decide if this is necessary
-        // if (isURL()) { 
-        //     namestring = Utilities.uriEncode(namestring);
-        // }
-        return namestring;
+        return sb.toString();
     }
 
     protected String getDirectoryNamestring() {
@@ -899,19 +818,6 @@ public class Pathname extends LispObject implements Serializable {
         return true;
     }
 
-    URLConnection getURLConnection() {
-        Debug.assertTrue(isURL());
-        URL url = this.toURL();
-        URLConnection result = null;
-        try {
-            result = url.openConnection();
-        } catch (IOException e) {
-            error(new FileError("Failed to open URL connection.",
-                                this));
-        }
-        return result;
-    }
-
     public static LispObject parseNamestring(AbstractString namestring) {
         // Check for a logical pathname host.
         String s = namestring.getStringValue();
@@ -926,7 +832,6 @@ public class Pathname extends LispObject implements Serializable {
         return Pathname.create(s);
     }
 
-    // XXX was @return Pathname
     public static LogicalPathname parseNamestring(AbstractString namestring,
                                                   AbstractString host) 
     {
@@ -956,8 +861,8 @@ public class Pathname extends LispObject implements Serializable {
 
     static final void checkCaseArgument(LispObject arg) {
         if (arg != Keyword.COMMON && arg != Keyword.LOCAL) {
-            type_error(arg, list(Symbol.MEMBER, Keyword.COMMON,
-              Keyword.LOCAL));
+            type_error(arg, list(Symbol.MEMBER,
+                                 Keyword.COMMON, Keyword.LOCAL));
         }
     }
 
@@ -1159,9 +1064,6 @@ public class Pathname extends LispObject implements Serializable {
         return (Pathname)Pathname.create(namestring);
     }
 
-
-  // ??? changed to return a LispObject, as we wish to return a
-  // meaningful Java type (Pathname for files, LogicalPathnames for you know…)
     static final LispObject _makePathname(LispObject[] args) {
         if (args.length % 2 != 0) {
             program_error("Odd number of keyword arguments.");
@@ -1469,12 +1371,6 @@ public class Pathname extends LispObject implements Serializable {
             return PathnameJar.listDirectory((PathnameJar)pathname);
           }
 
-          // "All" pathnames are PathnameURLs now, so this condition needs to be tightened
-          // should be all remote URLs can't have directory listings?
-          // if (pathname.isURL()) {
-          //   return error(new LispError("Unimplemented.")); // XXX
-          // }
-
           String s = pathname.getNamestring();
           if (s != null) {
             File f = new File(s);
@@ -1488,15 +1384,18 @@ public class Pathname extends LispObject implements Serializable {
                 }
                 for (int i = files.length; i-- > 0;) {
                   File file = files[i];
-                  Pathname p;
                   String path;
                   if (resolveSymlinks == NIL) {
                     path = file.getAbsolutePath();
                   } else {
                     path = file.getCanonicalPath();
                   }
-                  URI pathURI = (new File(path)).toURI();
-                  p = (Pathname)Pathname.create(pathURI);
+                  if (file.isDirectory()
+                      && !path.endsWith("/")) {
+                    path += "/";
+                  }
+                  Pathname p;
+                  p = (Pathname)Pathname.create(path);
                   result = new Cons(p, result);
                 }
               } catch (IOException e) {
@@ -1504,9 +1403,7 @@ public class Pathname extends LispObject implements Serializable {
                                            + pathname.princToString() + ".",
                                            pathname));
               } catch (SecurityException e) {
-                Debug.trace(e);
-              } catch (NullPointerException e) {
-                Debug.trace(e);
+                return error(new FileError("Unable to list directory: " + e, pathname));
               }
             }
           }
@@ -1525,6 +1422,7 @@ public class Pathname extends LispObject implements Serializable {
         return false;
     }
 
+  // FIXME This should be named JAR-PATHNAME-P
     @DocString(name="pathname-jar-p",
                args="pathname",
                returns="generalized-boolean",
@@ -1536,8 +1434,12 @@ public class Pathname extends LispObject implements Serializable {
         }
         @Override
         public LispObject execute(LispObject arg) {
+          if (arg instanceof Pathname) {
             Pathname p = coerceToPathname(arg);
             return p.isJar() ? T : NIL;
+          } else {
+            return NIL;
+          }
         }
     }
 
@@ -1545,6 +1447,7 @@ public class Pathname extends LispObject implements Serializable {
         return (getDevice() instanceof Cons);
     }
 
+  /// FIXME should be named URL-PATHNAME-P
     @DocString(name="pathname-url-p",
                args="pathname",
                returns="generalized-boolean",
@@ -1557,13 +1460,17 @@ public class Pathname extends LispObject implements Serializable {
         }
         @Override
         public LispObject execute(LispObject arg) {
+          if (arg instanceof Pathname) {
             Pathname p = coerceToPathname(arg);
             return p.isURL() ? T : NIL;
+          } else {
+            return NIL;
+          }
         }
     }
 
     public boolean isURL() {
-        return (getHost() instanceof Cons);
+      return (getHost() instanceof Cons);
     }
 
     public boolean isWild() {
@@ -1986,28 +1893,6 @@ public class Pathname extends LispObject implements Serializable {
         return NIL;
     }
 
-
-    protected static URL makeURL(Pathname pathname) {
-        URL result = null;
-        try {
-            if (pathname.isURL()) {
-                result = new URL(pathname.getNamestring());
-            } else {
-              // XXX Properly encode Windows drive letters and UNC paths
-              // XXX ensure that we have cannonical path?
-              String ns = pathname.getNamestring();
-              if (ns.startsWith("/"))  {
-                result = new URL("file://" + ns);
-              } else { // "relative" path
-                result = new URL("file:" + ns);
-              }
-            }
-        } catch (MalformedURLException e) {
-            Debug.trace("Could not form URL from " + pathname);
-        }
-        return result;
-    }
-
   public static final Primitive GET_INPUT_STREAM = new pf_get_input_stream();
   @DocString(name="get-input-stream",
              args="pathname",
@@ -2022,7 +1907,6 @@ public class Pathname extends LispObject implements Serializable {
       return new JavaObject(p.getInputStream());
     }
   };
-  
 
   public InputStream getInputStream() {
     InputStream result = null;
@@ -2035,8 +1919,6 @@ public class Pathname extends LispObject implements Serializable {
     return result;
   }
 
-
-
   /** @return Time in milliseconds since the UNIX epoch at which the
    * resource was last modified, or 0 if the time is unknown.
    */
@@ -2045,38 +1927,37 @@ public class Pathname extends LispObject implements Serializable {
     return f.lastModified();
   }
 
-
   private static final Primitive MKDIR = new pf_mkdir();
   @DocString(name="mkdir",
              args="pathname",
              returns="generalized-boolean",
              doc="Attempts to create directory at PATHNAME returning the success or failure.")
- private static class pf_mkdir extends Primitive {
-   pf_mkdir() {
-     super("mkdir", PACKAGE_SYS, false, "pathname");
-   }
+  private static class pf_mkdir extends Primitive {
+    pf_mkdir() {
+      super("mkdir", PACKAGE_SYS, false, "pathname");
+    }
 
-   @Override
-   public LispObject execute(LispObject arg) {
-     final Pathname pathname = coerceToPathname(arg);
-     if (pathname.isWild()) {
-       error(new FileError("Bad place for a wild pathname.", pathname));
-     }
-     Pathname defaultedPathname
-       = (Pathname)mergePathnames(pathname,
-                                  coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()),
-                                  NIL);
-     if (defaultedPathname.isURL() || defaultedPathname.isJar()) {
-       return new FileError("Cannot mkdir with a " 
-                            + (defaultedPathname.isURL() ? "URL" : "jar")
-                            + " Pathname.",
-                            defaultedPathname);
-     }
-                    
-     File file = defaultedPathname.getFile();
-     return file.mkdir() ? T : NIL;
-   }
- }
+    @Override
+    public LispObject execute(LispObject arg) {
+      final Pathname pathname = coerceToPathname(arg);
+      if (pathname.isWild()) {
+        error(new FileError("Bad place for a wild pathname.", pathname));
+      }
+      Pathname defaultedPathname
+        = (Pathname)mergePathnames(pathname,
+                                   coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()),
+                                   NIL);
+      if (defaultedPathname.isURL() || defaultedPathname.isJar()) {
+        return new FileError("Cannot mkdir with a " 
+                             + (defaultedPathname.isURL() ? "URL" : "jar")
+                             + " Pathname.",
+                             defaultedPathname);
+      }
+      
+      File file = defaultedPathname.getFile();
+      return file.mkdir() ? T : NIL;
+    }
+  }
 
   private static final Primitive RENAME_FILE = new pf_rename_file();
   @DocString(name="rename-file",
@@ -2222,75 +2103,6 @@ public class Pathname extends LispObject implements Serializable {
   }
 
     
-  @DocString(name="uri-decode",
-             args="string",
-             returns="string",
-  doc="Decode STRING percent escape sequences in the manner of URI encodings.")
-  private static final Primitive URI_DECODE = new pf_uri_decode();
-  private static final class pf_uri_decode extends Primitive {
-    pf_uri_decode() {
-      super("uri-decode", PACKAGE_EXT, true);
-    }
-    @Override
-    public LispObject execute(LispObject arg) {
-      if (!(arg instanceof AbstractString)) {
-        return type_error(arg, Symbol.STRING);
-      }
-      String result = uriDecode(((AbstractString)arg).toString());
-      return new SimpleString(result);
-    }
-  };
-
-  static String uriDecode(String s) {
-    try {
-      URI uri = new URI("file://foo?" + s);
-      return uri.getQuery();
-    } catch (URISyntaxException e) {}
-    return null;  // Error
-  }
-    
-  @DocString(name="uri-encode",
-             args="string",
-             returns="string",
-  doc="Encode percent escape sequences in the manner of URI encodings.")
-  private static final Primitive URI_ENCODE = new pf_uri_encode();
-  private static final class pf_uri_encode extends Primitive {
-    pf_uri_encode() {
-      super("uri-encode", PACKAGE_EXT, true);
-    }
-    @Override
-    public LispObject execute(LispObject arg) {
-      if (!(arg instanceof AbstractString)) {
-        return type_error(arg, Symbol.STRING);
-      }
-      String result = uriEncode(((AbstractString)arg).toString());
-      return new SimpleString(result);
-    }
-  };
-
-  static String uriEncode(String s) {
-    // The constructor we use here only allows absolute paths, so
-    // we manipulate the input and output correspondingly.
-    String u;
-    if (!s.startsWith("/")) {
-      u = "/" + s;
-    } else {
-      u = new String(s);
-    }
-    try {
-      URI uri = new URI("file", "", u, "");
-      String result = uri.getRawPath();
-      if (!s.startsWith("/")) {
-        return result.substring(1);
-      } 
-      return result;
-    } catch (URISyntaxException e) {
-      Debug.assertTrue(false);
-    }
-    return null; // Error
-  }
-
-
   File getFile() {
     String namestring = getNamestring(); // XXX UNC pathnames currently have no namestring
     if (namestring != null) {
@@ -2349,4 +2161,20 @@ public class Pathname extends LispObject implements Serializable {
     return result.toString();
   }
 
+  boolean isRemote() {
+    if (this instanceof PathnameURL) {
+      PathnameURL p = (PathnameURL) this;
+      LispObject scheme = Symbol.GETF.execute(p.getHost(), SCHEME, NIL);
+      if (scheme.equals(NIL)
+          || p.getHost().getStringValue().equals("file")) {
+        return false;
+      }
+      return true;
+    } else if (this instanceof PathnameJar) {
+      Pathname root = (Pathname) ((PathnameJar)this).getRootJar();
+      return root.isRemote();
+    } else {
+      return false;
+    }
+  }
 }

@@ -74,14 +74,10 @@ public class PathnameJarTest
   @Test
   public void roundTrips() {
     String namestrings[] = {
-      "jar:file:foo.jar!/",
-      "jar:file:/foo.jar!/",
-      "jar:jar:file:foo.jar!/baz.abcl!/",
-      "jar:jar:file:/foo.jar!/baz.abcl!/",
-      "jar:jar:file:foo.jar!/baz.abcl!/__loader__._",
-      "jar:jar:file:/foo.jar!/baz.abcl!/__loader__._",
-      "jar:jar:jar:file:a/b/foo.jar!/c/baz.zip!/log4j.jar!/MF/manifest.mf",
-      "jar:jar:jar:file:/a/b/foo.jar!/c/baz.zip!/log4j.jar!/MF/manifest.mf"
+      "jar:file:///foo.jar!/",
+      "jar:jar:file:///foo.jar!/baz.abcl!/",
+      "jar:jar:file:///foo.jar!/baz.abcl!/__loader__._",
+      "jar:jar:jar:file:///a/b/foo.jar!/c/baz.zip!/log4j.jar!/MF/manifest.mf"
     };
 
     for (String namestring  : namestrings) {
@@ -96,8 +92,12 @@ public class PathnameJarTest
   @Test
   public void invalidNamestrings() {
     String namestrings[] = {
+      "jar:file:foo.jar!/",
       "jar:file:foo.jar!/baz.abcl!/",
-      "jar:file:foo.jar!/baz.abcl!/__loader__._"
+      "jar:jar:file:foo.jar!/baz.abcl!/__loader__._",
+      "jar:file:foo.jar!/baz.abcl!/__loader__._",
+      "jar:jar:file:foo.jar!/baz.abcl!/",  
+      "jar:jar:jar:file:a/b/foo.jar!/c/baz.zip!/log4j.jar!/MF/manifest.mf"
     };
 
     // JUnit 4.12 (which is what is available in Netbeans 12) doesn't

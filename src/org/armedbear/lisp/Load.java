@@ -333,7 +333,7 @@ public final class Load
                                            + " in boot classpath."));
             }                
             if (!bootPath.equals(NIL)) {
-              Pathname urlPathname = (Pathname)Pathname.create(url);
+              Pathname urlPathname = (Pathname)PathnameURL.create(url);
               loadableFile = findLoadableFile(urlPathname);
               truename = (Pathname)Symbol.PROBE_FILE.execute(loadableFile);
               if (truename.equals(NIL)) {
@@ -561,7 +561,6 @@ public final class Load
                         }
                         truePathname.setName(enclosingJar.getName());
                         truePathname.setType(enclosingJar.getType());
-                        truePathname.invalidateNamestring();
                     } else {
                         // XXX There is something fishy in the asymmetry
                         // between the "jar:jar:http:" and "jar:jar:file:"
@@ -571,7 +570,6 @@ public final class Load
                           Pathname p = Pathname.create((Pathname)truePathname.getDevice().car());
                           truePathname 
                             = (Pathname) probe_file.PROBE_FILE.execute(p);
-                          truePathname.invalidateNamestring();
                         }
                     }
                     thread.bindSpecial(Symbol.LOAD_TRUENAME, truePathname);

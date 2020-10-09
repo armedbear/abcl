@@ -63,12 +63,25 @@ public final class delete_file extends Primitive
               = (Pathname)Pathname.mergePathnames(pathname,
                                 coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()),
                                 NIL);
-      final String namestring = defaultedPathname.getNamestring();
-      if (namestring == null)
-        return error(new FileError("Pathname has no namestring: " + defaultedPathname.princToString(),
-                                   defaultedPathname));
-      final File file = new File(namestring);
 
+      File file;
+      if (defaultedPathname.isRemote()) {
+        return error(new FileError("Unable to delete remote pathnames", defaultedPathname));
+      } else if (defaultedPathname instanceof PathnameJar) {
+        PathnameJar jar = (PathnameJar)defaultedPathname;
+        Pathname root = (Pathname)jar.getRootJar();
+        Cons jars = (Cons)jar.getJars();
+          
+        if (jar.isArchiveEntry()
+            || jars.length() > 1) {
+          return error(new FileError("Unable to delete entries within JAR-PATHNAME", jar));
+        }
+        ZipCache.remove(jar);
+        file = root.getFile();
+      } else {
+        file = defaultedPathname.getFile();
+      }
+        
       if (file.exists()) {
         // File exists.
         for (int i = 0; i < 5; i++) {
