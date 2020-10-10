@@ -165,7 +165,10 @@ public class Pathname extends LispObject implements Serializable {
     return dest.copyFrom(orig); 
   }
 
-  void copyFrom(Pathname p) {
+  /**
+   *
+   */
+  Pathname copyFrom(Pathname p) {
         if (p.host != NIL) {
             if (p.host instanceof SimpleString) {
               setHost(new SimpleString(((SimpleString)p.getHost()).getStringValue()));
@@ -182,13 +185,17 @@ public class Pathname extends LispObject implements Serializable {
                 device = new SimpleString(((SimpleString)p.getDevice()).getStringValue());
             } else if (p.getDevice() instanceof Cons) {
               LispObject jars = p.getDevice();
-              jars = jars.nreverse();
-              device = NIL;
+              setDevice(NIL);
+              PathnameURL root = PathnameURL.create((Pathname)jars.car());
+              device = device.push(root);
+              jars = jars.cdr();
               while (jars.car() != NIL) {
-                Pathname jar = (Pathname) Pathname.create(((Pathname)jars.car()).getNamestring());
+                Pathname jar
+                  = (Pathname) Pathname.create(((Pathname)jars.car()).getNamestring());
                 device = device.push(jar);
                 jars = jars.cdr();
               }
+              device.nreverse();
             } else if (p.device instanceof Symbol) { // When is this the case?
                 device = p.device;
             } else {
@@ -240,6 +247,7 @@ public class Pathname extends LispObject implements Serializable {
           simple_error("Failed to copy version in pathname ~a", p);
         }
     }
+    return this;
   }
 
     public static boolean isSupportedProtocol(String protocol) {
@@ -1217,11 +1225,14 @@ public class Pathname extends LispObject implements Serializable {
         p.setVersion(version);
         p.validateDirectory(true);
 
-        // TODO:  need to check for downcast to PathnameURL as well
+        // ???  need to check for downcast to PathnameURL as well?
         // Possibly downcast type to PathnameJar
         if (p.getDevice() instanceof Cons) {
           PathnameJar result = new PathnameJar();
-          ncoerce(p, result);
+          result
+            .copyFrom(p)
+            .setDevice(PathnameJar.makeJarDeviceFrom(p));
+          
           // sanity check that the pathname has been constructed correctly
           result.validateComponents();
 
@@ -1826,15 +1837,15 @@ public class Pathname extends LispObject implements Serializable {
         return dir;
     }
 
-    public static final LispObject truename(Pathname pathname) {
+    public static LispObject truename(Pathname pathname) {
         return truename(pathname, false);
     }
 
-    public static final LispObject truename(LispObject arg) {
+    public static LispObject truename(LispObject arg) {
         return truename(arg, false);
     }
 
-    public static final LispObject truename(LispObject arg, boolean errorIfDoesNotExist) {
+    public static LispObject truename(LispObject arg, boolean errorIfDoesNotExist) {
         final Pathname pathname = coerceToPathname(arg);
         return truename(pathname, errorIfDoesNotExist);
     }
@@ -1843,8 +1854,8 @@ public class Pathname extends LispObject implements Serializable {
      * exists, otherwise returns NIL or possibly a subtype of
      * LispError if there are logical problems with the input.
      */
-    public static final LispObject truename(Pathname pathname,
-                                            boolean errorIfDoesNotExist) {
+    public static LispObject truename(Pathname pathname,
+					  boolean errorIfDoesNotExist) {
       if (pathname == null || pathname.equals(NIL)) {  
         return doTruenameExit(pathname, errorIfDoesNotExist); 
       }
@@ -2135,8 +2146,10 @@ public class Pathname extends LispObject implements Serializable {
     return false;
   }
 
-  /** @return The representation of this pathname suitable for
-   *  referencing an entry in a Zip/JAR file 
+  /** @return The representation of the DIRECTORY/NAME/TYPE elements
+   *  of pathname suitable for referencing an entry in a Zip/JAR file.
+   *
+   *  This representation is always a relative path.
    */
   protected String asEntryPath() {
     Pathname p = Pathname.create();

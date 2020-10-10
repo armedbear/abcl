@@ -51,12 +51,19 @@ public final class probe_file
         @Override
         public LispObject execute(LispObject arg)
         {
+	  if (arg == null || arg.equals(NIL)) {
+	    return NIL;
+	  }
           Pathname p = coerceToPathname(arg);
+          if (p.isWild()) {
+            return error(new FileError("Cannot find the TRUENAME for a wild pathname.",
+                                       p));
+          }
           // TODO: refactor Pathname{,Jar,URL}.truename() to be non-static?
           if (p instanceof PathnameJar) {
-            return PathnameJar.truename((PathnameJar)p, false);
+            return PathnameJar.truename(p, false);
           } else if (p instanceof PathnameURL) {
-            return PathnameURL.truename((PathnameURL)p, false);
+            return PathnameURL.truename(p, false);
           } else {
             return Pathname.truename(p, false);
           }
@@ -76,11 +83,16 @@ public final class probe_file
         public LispObject execute(LispObject arg)
         {
           Pathname p = coerceToPathname(arg);
+          if (p.isWild()) {
+            return error(new FileError("Cannot find the TRUENAME for a wild pathname.",
+                                       p));
+          }
+
           // TODO: refactor Pathname{,Jar,URL}.truename() to be non-static?
           if (p instanceof PathnameJar) {
-            return PathnameJar.truename((PathnameJar)p, true);
+            return PathnameJar.truename(p, true);
           } else if (p instanceof PathnameURL) {
-            return PathnameURL.truename((PathnameURL)p, true);
+            return PathnameURL.truename(p, true);
           } else {
             return Pathname.truename(p, true);
           }
