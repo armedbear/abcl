@@ -149,14 +149,12 @@ public class Autoload extends Function
         finally {
             thread.resetSpecialBindings(mark);
         }
-        if (debug) {
-            if (symbol != null) {
-                if (symbol.getSymbolFunction() instanceof Autoload) {
-                    Debug.trace("Unable to autoload " + symbol.princToString());
-                    throw new IntegrityError();
-                }
-            }
-        }
+        // if (debug) {
+        if (symbol != null) {
+          if (symbol.getSymbolFunction() instanceof Autoload) {
+            simple_error("Unable to autoload " + symbol.princToString(), symbol, fileName, className);
+          }
+        } // end if (debug)
     }
 
     protected final String getFileName()
