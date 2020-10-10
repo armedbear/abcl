@@ -1,6 +1,6 @@
-(defpackage #:abcl.test.lisp
+(defpackage #:abcl/test/lisp
   (:use #:cl #:abcl-rt)
-  (:nicknames "ABCL-TEST-LISP" "ABCL-TEST" "ABCL/TEST/LISP")
+  (:nicknames #:abcl-test-lisp #:abcl-test #:abcl.test.lisp)
   (:export 
    #:run 
    #:do-test 
