@@ -57,7 +57,7 @@ public final class Load
     public static final LispObject load(String filename)
     {
         final LispThread thread = LispThread.currentThread();
-        return load(new Pathname(filename),
+        return load(Pathname.create(filename),
                     Symbol.LOAD_VERBOSE.symbolValue(thread) != NIL,
                     Symbol.LOAD_PRINT.symbolValue(thread) != NIL,
                     true);
@@ -69,20 +69,20 @@ public final class Load
         LispObject truename  = Pathname.truename(name, false);
         if (truename instanceof Pathname) {
             Pathname t = (Pathname)truename;
-            if (t.name != NIL
-                && t.name != null) {
+            if (t.getName() != NIL
+                && t.getName() != null) {
                 return t;
             }
         }
         final String COMPILE_FILE_TYPE = Lisp._COMPILE_FILE_TYPE_.symbolValue().getStringValue();
-        if (name.type == NIL
-            && (name.name != NIL || name.name != null)) {
-            Pathname lispPathname = new Pathname(name);
-            lispPathname.type = new SimpleString("lisp");
+        if (name.getType() == NIL
+            && (name.getName() != NIL || name.getName() != null)) {
+            Pathname lispPathname = Pathname.create(name);
+            lispPathname.setType(new SimpleString("lisp"));
             lispPathname.invalidateNamestring();
             LispObject lisp = Pathname.truename(lispPathname, false);
-            Pathname abclPathname = new Pathname(name);
-            abclPathname.type = new SimpleString(COMPILE_FILE_TYPE);
+            Pathname abclPathname = Pathname.create(name);
+            abclPathname.setType(new SimpleString(COMPILE_FILE_TYPE));
             abclPathname.invalidateNamestring();
             LispObject abcl = Pathname.truename(abclPathname, false);
             if (lisp instanceof Pathname && abcl instanceof Pathname) {
@@ -102,14 +102,14 @@ public final class Load
             }
         }
         if (name.isJar()) {
-            if (name.type.equals(NIL)) {
-                name.type = COMPILE_FILE_INIT_FASL_TYPE;
+            if (name.getType().equals(NIL)) {
+                name.setType(COMPILE_FILE_INIT_FASL_TYPE);
                 name.invalidateNamestring();
                 Pathname result = findLoadableFile(name);
                 if (result != null) {
                     return result;
                 }
-                name.type = new SimpleString(COMPILE_FILE_TYPE);
+                name.setType(new SimpleString(COMPILE_FILE_TYPE));
                 name.invalidateNamestring();
                 result = findLoadableFile(name);
                 if (result != null) {
@@ -173,7 +173,7 @@ public final class Load
 
         if (Utilities.checkZipFile(truename)) {
             String n = truename.getNamestring();
-            String name = Pathname.uriEncode(truename.name.getStringValue());
+            String name = Pathname.uriEncode(truename.getName().getStringValue());
             if (n.startsWith("jar:")) {
                 n = "jar:" + n + "!/" + name + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;
@@ -184,15 +184,15 @@ public final class Load
                 n = "jar:file:" + Pathname.uriEncode(n) + "!/" + name + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;
             }
-            if (!((mergedPathname = new Pathname(n)) instanceof Pathname)) {
+            if (!((mergedPathname = Pathname.create(n)) instanceof Pathname)) {
               return error(new FileError((MessageFormat.format("Failed to address JAR-PATHNAME truename {0} for name {1}", truename.princToString(), name)), truename));
             }
 
             LispObject initTruename = coercePathnameOrNull(Pathname.truename(mergedPathname));
             if (initTruename == null || initTruename.equals(NIL)) {
                 // Maybe the enclosing JAR has been renamed?
-                Pathname p = new Pathname(mergedPathname);
-                p.name = Keyword.WILD;
+                Pathname p = Pathname.create(mergedPathname);
+                p.setName(Keyword.WILD);
                 p.invalidateNamestring();
                 LispObject result = Pathname.MATCH_WILD_JAR_PATHNAME.execute(p);
 
@@ -293,7 +293,7 @@ public final class Load
         InputStream in = null;
         Pathname pathname = null;
         Pathname truename = null;
-        pathname = new Pathname(filename);
+        pathname = Pathname.create(filename);
         LispObject bootPath = Site.getLispHome();
         Pathname mergedPathname;
         if (bootPath instanceof Pathname) {
@@ -324,7 +324,7 @@ public final class Load
                                            + " in boot classpath."));
             }                
             if (!bootPath.equals(NIL)) {
-                Pathname urlPathname = new Pathname(url);
+                Pathname urlPathname = Pathname.create(url);
 							  loadableFile = findLoadableFile(urlPathname);
 								truename = (Pathname)Pathname.truename(loadableFile);
                 if (truename == null) {
@@ -338,10 +338,10 @@ public final class Load
 
         // Look for a init FASL inside a packed FASL
         if (truename != null
-            && truename.type.princToString().equals(COMPILE_FILE_TYPE) && Utilities.checkZipFile(truename))  {
-            Pathname init = new Pathname(truename.getNamestring());
-            init.type = COMPILE_FILE_INIT_FASL_TYPE;
-            init.name = new SimpleString("__loader__");
+            && truename.getType().princToString().equals(COMPILE_FILE_TYPE) && Utilities.checkZipFile(truename))  {
+            Pathname init = Pathname.create(truename.getNamestring());
+            init.setType(COMPILE_FILE_INIT_FASL_TYPE);
+            init.setName(new SimpleString("__loader__"));
             LispObject t = Pathname.truename(init);
             if (t instanceof Pathname) {
                 truename = (Pathname)t;
@@ -525,41 +525,41 @@ public final class Load
             Pathname truePathname = null;
             if (!truename.equals(NIL)) {
                 if (truename instanceof Pathname) {
-                    truePathname = new Pathname((Pathname)truename);
+                    truePathname = Pathname.create((Pathname)truename);
                 } else if (truename instanceof AbstractString) {
-                    truePathname = new Pathname(truename.getStringValue());
+                    truePathname = Pathname.create(truename.getStringValue());
                 } else {
                     Debug.assertTrue(false);
                 }
-                String type = truePathname.type.getStringValue();
+                String type = truePathname.getType().getStringValue();
                 if (type.equals(Lisp._COMPILE_FILE_TYPE_.symbolValue(thread).getStringValue())
                     || type.equals(COMPILE_FILE_INIT_FASL_TYPE.toString())) {
-                    Pathname truenameFasl = new Pathname(truePathname);
+                    Pathname truenameFasl = Pathname.create(truePathname);
                     thread.bindSpecial(Symbol.LOAD_TRUENAME_FASL, truenameFasl);
                 }
-                if (truePathname.type.getStringValue()
+                if (truePathname.getType().getStringValue()
                     .equals(COMPILE_FILE_INIT_FASL_TYPE.getStringValue())
                     && truePathname.isJar()) {
-                    if (truePathname.device.cdr() != NIL ) {
+                    if (truePathname.getDevice().cdr() != NIL ) {
                         // We set *LOAD-TRUENAME* to the argument that
                         // a user would pass to LOAD.
-                        Pathname enclosingJar = (Pathname)truePathname.device.cdr().car();
-                        truePathname.device = new Cons(truePathname.device.car(), NIL);
-                        truePathname.host = NIL;
-                        truePathname.directory = enclosingJar.directory;
-                        if (truePathname.directory.car().equals(Keyword.RELATIVE)) {
-                            truePathname.directory.setCar(Keyword.ABSOLUTE);
+                        Pathname enclosingJar = (Pathname)truePathname.getDevice().cdr().car();
+                        truePathname.setDevice(new Cons(truePathname.getDevice().car(), NIL));
+                        truePathname.setHost(NIL);
+                        truePathname.setDirectory(enclosingJar.getDirectory());
+                        if (truePathname.getDirectory().car().equals(Keyword.RELATIVE)) {
+                            truePathname.getDirectory().setCar(Keyword.ABSOLUTE);
                         }
-                        truePathname.name = enclosingJar.name;
-                        truePathname.type = enclosingJar.type;
+                        truePathname.setName(enclosingJar.getName());
+                        truePathname.setType(enclosingJar.getType());
                         truePathname.invalidateNamestring();
                     } else {
                         // XXX There is something fishy in the asymmetry
                         // between the "jar:jar:http:" and "jar:jar:file:"
                         // cases but this currently passes the tests.
                         if (!(truePathname.device.car() instanceof AbstractString)) {
-                          assert truePathname.device.car() instanceof Pathname;
-                          Pathname p = new Pathname((Pathname)truePathname.device.car());
+                          assert truePathname.getDevice().car() instanceof Pathname;
+                          Pathname p = Pathname.create((Pathname)truePathname.getDevice().car());
                           truePathname 
                             = (Pathname) probe_file.PROBE_FILE.execute(p);
                           truePathname.invalidateNamestring();
