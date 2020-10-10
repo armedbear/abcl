@@ -237,6 +237,21 @@ public class ZipCache {
     extends ArchiveFile
   {
     JarURLConnection connection;
+
+    public ArchiveURL(PathnameJar jar)
+      throws java.io.IOException
+    {
+      String rootJarURLString = jar.getRootJarAsURLString();
+      URL rootJarURL = new URL(rootJarURLString);
+      JarURLConnection jarConnection
+        = (JarURLConnection) rootJarURL.openConnection();
+
+      this.root = root;
+      this.connection = connection;
+      this.file = (ZipFile)connection.getJarFile();
+      this.lastModified = connection.getLastModified();
+    }
+    
     void close() {
       super.close();
       // TODO: do we need to clean up from the connection?
@@ -249,6 +264,17 @@ public class ZipCache {
     ZipFile file;
 
     ZipFile get() { return file;}
+
+    ArchiveFile() {}
+
+    public ArchiveFile(PathnameJar jar)
+      throws ZipException, IOException
+    {
+      File f = ((Pathname)jar.getRootJar()).getFile();
+      this.root = jar;
+      this.file = new ZipFile(f);
+      this.lastModified = f.lastModified();
+    }
 
     public ZipEntry getEntry(PathnameJar entryPathname) {
       ZipEntry result = entries.get(entryPathname);
@@ -368,11 +394,12 @@ public class ZipCache {
       PathnameJar rootPathname = (PathnameJar)PathnameJar.createFromPathname(rootJar);
 
       Archive current = ZipCache.getArchive(rootPathname);
-      
-      while (innerJars.car() != NIL) {
+
+      // FIXME
+      //while (innerJars.car() != NIL) {
       // TODO Finish me!
       // Pathname next = (Pathname)innerJars.car();
-      // String entryPath = next.asEntryPath();
+      //  String entryPath = next.asEntryPath();
       // InputStream source;
       // if (current instanceof ArchiveFile) {
       //   ArchiveFile zipFile = ((ArchiveFile)current).get();
@@ -381,8 +408,8 @@ public class ZipCache {
       //   ArchiveStream stream = new ArchiveStream();
       //   stream.source = source;
       // }
-      }
-      // FIXME
+      // }
+
       simple_error("Currently unimplemented recursive archive: ~a" , jar);
       return (Archive)UNREACHED;
     }
@@ -390,23 +417,15 @@ public class ZipCache {
 
   public static Archive getArchiveURL(PathnameJar jar) {
     Pathname rootJar = (Pathname) jar.getRootJar();
-    String rootJarURLString = jar.getRootJarAsURLString();
+
     URL rootJarURL = null;
     try {
-      rootJarURL = new URL(rootJarURLString);
-      JarURLConnection jarConnection
-        = (JarURLConnection) rootJarURL.openConnection();
-
-      ArchiveURL result = new ArchiveURL();
-      result.root = jar;
-      result.connection = jarConnection;
-      result.file = (ZipFile)jarConnection.getJarFile();
-      result.lastModified = 0; // FIXME
+      ArchiveURL result = new ArchiveURL(jar);
       cache.put(jar, result);
       return result;
     } catch (MalformedURLException e) {
-      simple_error("Failed to form root URL for ~a: ~a", jar, rootJarURLString);
-       return (Archive)UNREACHED;      
+      simple_error("Failed to form root URL for ~a", jar);
+      return (Archive)UNREACHED;      
     } catch (IOException e) {
       simple_error("Failed to fetch ~a: ~a", jar, e);
       return (Archive)UNREACHED;      
@@ -415,11 +434,7 @@ public class ZipCache {
 
   static public Archive getArchiveFile(PathnameJar jar) {
     try {
-      ArchiveFile result = new ArchiveFile();
-      File f = ((Pathname)jar.getRootJar()).getFile();
-      result.root = jar;
-      result.file = new ZipFile(f);
-      result.lastModified = f.lastModified();
+      ArchiveFile result = new ArchiveFile(jar);
       cache.put(jar, result);
       return result;
     } catch (ZipException e) {
@@ -434,70 +449,7 @@ public class ZipCache {
     }
   }
 
-  // Archive archive  = cache.getArchive(jar);
-
-  //   // Check that the cache entry still accesses a valid ZipFile
-  //   if (entry != null) {
-  //     // Simplest way to call private ZipFile.ensureOpen()
-  //     try {
-  //       int size = archive.file.size(); 
-  //     } catch (IllegalStateException e) {
-  //       cache.remove(jar);
-  //       entry = null;
-  //     }
-  //   }
-
-  //   if (entry != null) {
-  //     if (url.getProtocol().equals("file")) {
-  //       File f = new File(url.getPath());
-  //       long current = f.lastModified();
-  //       if (current > entry.lastModified) {
-  //         try {
-  //           entry.file = new ZipFile(f);
-  //           entry.lastModified = current;
-  //         } catch (IOException e) {
-  //           Debug.trace(e.toString()); // XXX
-  //         }
-  //       }
-  //     } else if (url.getProtocol().equals("http")) {
-  //       checkRemoteLastModified();
-  //     } else {
-  //       entry = fetchURL(url, false);
-  //       zipCache.put(url, entry);
-  //     }
-  //   } else {
-  //     if (url.getProtocol().equals("file")) {
-  //       entry = new Entry();
-  //       String path = url.getPath();
-        
-  //       if (Utilities.isPlatformWindows) {
-  //         String authority = url.getAuthority();
-  //         if (authority != null) {
-  //           path = authority + path;
-  //         }
-  //       }
-  //       File f = new File(path);
-  //       entry.lastModified = f.lastModified();
-  //       try {
-  //         entry.file = new ZipFile(f);
-  //       } catch (ZipException e) {
-  //         error(new FileError("Failed to get cached ZipFile"
-  //                             + " because " + e,
-  //                             Pathname.makePathname(f)));
-  //       } catch (IOException e) {
-  //         error(new FileError("Failed to get cached ZipFile"
-  //                             + " because " + e,
-  //                             Pathname.makePathname(f)));
-  //       }
-  //     } else {
-  //       entry = fetchURL(url, true);
-  //     }
-  //     zipCache.put(url, entry);
-  //   }
-  //   return entry.file;
-  // }
-
-
+  // unused
   static void checkRemoteLastModified(ArchiveURL archive) {
     // Unfortunately, the Apple JDK under OS X doesn't do
     // HTTP HEAD requests, instead refetching the entire
@@ -553,49 +505,6 @@ public class ZipCache {
     }
   }
 
-  // FIXME recode once local fileaccesses are working
-  static private ZipFile getRemote(PathnameJar url) {
-    ZipFile result = null;
-    URL jarURL = null;
-    try {
-      jarURL = new URL("jar:" + url.getRootJar() + "!/");
-    } catch (MalformedURLException e) {
-      error(new LispError("Failed to form a jar: URL from "
-                          + "'" + url + "'" 
-                          + " because " + e));
-    }
-    URLConnection connection = null;
-    try {
-      connection = jarURL.openConnection();
-    } catch (IOException e) {
-      error(new LispError("Failed to open "
-                          + "'" + jarURL + "'"
-                          + " with exception " 
-                          + e));
-    }
-    if (!(connection instanceof JarURLConnection)) {
-      error(new LispError("Could not get a URLConnection from " 
-                          + "'" + jarURL + "'"));
-    }
-    JarURLConnection jarURLConnection = (JarURLConnection) connection;
-    //    jarURLConnection.setUseCaches(useCaches);
-    try {
-      result = jarURLConnection.getJarFile();
-    } catch (IOException e) {
-      error(new LispError("Failed to fetch URL "
-                          + "'" + jarURLConnection + "'"
-                          + " because " + e));
-    }
-    if (cacheEnabled) {
-      ArchiveURL archive = new ArchiveURL();
-      archive.file = result;
-      archive.lastModified = jarURLConnection.getLastModified();
-      archive.root = url;
-      cache.put(url, archive);
-    }
-    return result;
-  }
-
   // ## remove-zip-cache-entry pathname => boolean
   private static final Primitive REMOVE_ZIP_CACHE_ENTRY = new remove_zip_cache_entry();
   private static class remove_zip_cache_entry extends Primitive { 
@@ -622,63 +531,5 @@ public class ZipCache {
     }
     return false;
   }
-
-  static public long getLastModified(PathnameJar p) {
-    return 0; // FIXME
-    // JAR cases
-    // 0.  JAR from URL 
-    // 1.  JAR
-    // 2.  JAR in JAR
-    // 3.  Entry in JAR
-    // 4.  Entry in JAR in JAR
-    // String entryPath = p.asEntryPath();
-
-    // LispObject jars = p.getDevice();
-    // if (jars.cdr().equals(NIL)) {
-    //   if (entryPath.length() == 0) {
-    //     LispObject o = jars.car();
-    //     // 0. JAR from URL
-    //     // 1. JAR
-    //     return ((Pathname)o).getLastModified();
-    //   } else {
-    //     // 3. Entry in JAR
-    //     final ZipEntry entry 
-    //       = ZipCache.get((Pathname)getDevice().car()).getEntry(entryPath);
-    //     if (entry == null) {
-    //       return 0;
-    //     }
-    //     final long time = entry.getTime();
-    //     if (time == -1) {
-    //       return 0;
-    //     }
-    //     return time;
-    //   }
-    // } else {
-    //   ZipFile outerJar = ZipCache.get((Pathname)d.car());
-    //   if (entryPath.length() == 0) {
-    //     // 4.  JAR in JAR
-    //     String jarPath = ((Pathname)d.cdr()).asEntryPath();
-    //     final ZipEntry entry = outerJar.getEntry(jarPath);
-    //     final long time = entry.getTime();
-    //     if (time == -1) {
-    //       return 0;
-    //     }
-    //     return time;
-    //   } else {
-    //     // 5. Entry in JAR in JAR
-    //     String innerJarPath = ((Pathname)d.cdr()).asEntryPath();
-    //     ZipEntry entry = outerJar.getEntry(entryPath);
-    //     ZipInputStream innerJarInputStream
-    //       = ZipCache.getZipInputStream(outerJar, innerJarPath);
-    //     ZipEntry innerEntry = ZipCache.getEntry(innerJarInputStream,
-    //                                             entryPath);
-    //     long time = innerEntry.getTime();
-    //     if (time == -1) {
-    //       return 0;
-    //     }
-    //     return time;
-    //   }
-    // }
-  }
-
 }
+
