@@ -77,11 +77,11 @@ public class PathnameJar
   }
 
   static public LispObject createFromFile(String s) {
-    return PathnameJar.create("jar:file:" + s + JAR_URI_SUFFIX);
+    return PathnameJar.create(JAR_URI_PREFIX + "file:" + s + JAR_URI_SUFFIX);
   }
 
   static public LispObject createEntryFromFile(String jar, String entry) {
-    return PathnameJar.create("jar:file:" + jar + JAR_URI_SUFFIX + entry);
+    return PathnameJar.create(JAR_URI_PREFIX + "file:" + jar + JAR_URI_SUFFIX + entry);
   }
 
   static public LispObject createEntryFromJar(PathnameJar jar, String entry) {
@@ -98,7 +98,7 @@ public class PathnameJar
 
     int i = s.lastIndexOf(JAR_URI_PREFIX);
     if (i == -1) {
-      parse_error("Failed to find any occurence of 'jar:' prefixes:" + s);
+      parse_error("Failed to find any occurence of '" + JAR_URI_PREFIX + "' prefixes:" + s);
       return null; // not reached
     }
     i += JAR_URI_PREFIX.length(); // advance index to end of "jar:jar:jar:..."
