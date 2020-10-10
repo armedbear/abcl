@@ -46,31 +46,52 @@ public final class LogicalPathname extends Pathname
   private static final HashMap map
     = new HashMap();
 
+  // A logical host is represented as the string that names it.
+  // (defvar *logical-pathname-translations* (make-hash-table :test 'equal))
+  public static HashTable TRANSLATIONS
+    = HashTable.newEqualHashTable(LOGICAL_PATHNAME_CHARS.length(), NIL, NIL);
+  private static final Symbol _TRANSLATIONS_
+    = exportSpecial("*LOGICAL-PATHNAME-TRANSLATIONS*", PACKAGE_SYS, TRANSLATIONS);
+
   static public boolean isValidLogicalPathname(String namestring) {
     if (!isValidURL(namestring)) {
       String host = getHostString(namestring);
       if (host != null
-       && LOGICAL_PATHNAME_TRANSLATIONS.get(new SimpleString(host)) != null) {
+       && LogicalPathname.TRANSLATIONS.get(new SimpleString(host)) != null) {
         return true;
       }
     }
     return false;
   }
 
+  protected LogicalPathname() {
+  }
+  
+  // Used in Pathname._makePathname to indicate type for namestring 
+  public static LogicalPathname create() {
+    return new LogicalPathname();
+  }
+
   public static LogicalPathname create(String namestring) {
     // parse host out then call create(host, rest);
+    LogicalPathname result = null;
     if (LogicalPathname.isValidLogicalPathname(namestring)) {
       String h = LogicalPathname.getHostString(namestring);
-      return LogicalPathname.create(h,
-                                    namestring.substring(namestring.indexOf(':') + 1));
+      result
+        = LogicalPathname.create(h, namestring.substring(namestring.indexOf(':') + 1));
+      return result;
     }
-    return null;  // Ugh.  I bet this is gonna cause problems. Tighten entrance points
+    error(new FileError("Failed to find a valid logical Pathname host in '" + namestring + "'",
+                        NIL));  // ??? return NIL as we don't have a
+                                // PATHNAME.  Maybe signal a different
+                                // condition?
+    return (LogicalPathname)UNREACHED;
   }
 
   public static LogicalPathname create(String host, String rest) {
     // This may be "too late" in the creation chain to be meaningful?
     SimpleString h = new SimpleString(host);
-    if (LOGICAL_PATHNAME_TRANSLATIONS.get(h) == null) {
+    if (LogicalPathname.TRANSLATIONS.get(h) == null) {
       // Logical pathnames are only valid when it's host exists
       String message = MessageFormat.format("'{0}' is not a defined logical host", host);
       error(new SimpleError(message));
@@ -334,7 +355,7 @@ public final class LogicalPathname extends Pathname
                     return error(new LispError("Invalid logical host name: \"" +
                                                 h + '"'));
                 }
-                if (Pathname.LOGICAL_PATHNAME_TRANSLATIONS.get(new SimpleString(h)) != null) {
+                if (LogicalPathname.TRANSLATIONS.get(new SimpleString(h)) != null) {
                     // A defined logical pathname host.
                     return LogicalPathname.create(h, s.substring(s.indexOf(':') + 1));
                 }
