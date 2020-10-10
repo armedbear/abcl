@@ -57,7 +57,7 @@ public class PathnameJar
 
   protected PathnameJar() {}
 
-  public static Pathname create() {
+  public static PathnameJar create() {
     return new PathnameJar();
   }
 
@@ -65,7 +65,7 @@ public class PathnameJar
     return (PathnameJar)PathnameJar.create(p.getNamestring());
   }
 
-  public static LispObject createFromPathname(Pathname p) {
+  public static PathnameJar createFromPathname(Pathname p) {
     if (p instanceof PathnameURL) {
       return PathnameJar.create(JAR_URI_PREFIX
                                 + ((PathnameURL)p).getNamestringAsURI()
@@ -76,21 +76,22 @@ public class PathnameJar
                                 + "file://" + p.getNamestring()
                                 + JAR_URI_SUFFIX);
     } else {
-      return p;
+      return (PathnameJar)p;
     }
   }
 
-  static public LispObject createFromFile(String s) {
+  static public PathnameJar createFromFile(String s) {
     return PathnameJar.create(JAR_URI_PREFIX + "file:" + s + JAR_URI_SUFFIX);
   }
 
-  static public LispObject createEntryFromFile(String jar, String entry) {
+  static public PathnameJar createEntryFromFile(String jar, String entry) {
     return PathnameJar.create(JAR_URI_PREFIX + "file:" + jar + JAR_URI_SUFFIX + entry);
   }
 
-  static public LispObject createEntryFromJar(PathnameJar jar, String entry) {
+  static public PathnameJar createEntryFromJar(PathnameJar jar, String entry) {
     if (jar.isArchiveEntry()) {
-      return simple_error("Failed to create the entry ~a in ~a", entry, jar);
+      simple_error("Failed to create the entry ~a in ~a", entry, jar);
+      return (PathnameJar)UNREACHED;
     }
     return PathnameJar.create(jar.getNamestring() + entry);
   }
@@ -158,20 +159,28 @@ public class PathnameJar
     return result;
   }
 
-  static public LispObject create(String s) {
+  static public PathnameJar create(String s) {
     if (!s.startsWith(JAR_URI_PREFIX)) {
-      return parse_error("Cannot create a PATHNAME-JAR from namestring: " + s);
+      parse_error("Cannot create a PATHNAME-JAR from namestring: " + s);
+      return (PathnameJar)UNREACHED;
     }
     
     List<String> contents = PathnameJar.enumerate(s);
 
     if (contents == null) {
-      return parse_error("Couldn't parse PATHNAME-JAR from namestring: " + s);
+      parse_error("Couldn't parse PATHNAME-JAR from namestring: " + s);
+      return (PathnameJar)UNREACHED;
     }
     
     PathnameJar result = new PathnameJar();
 
-    LispObject rootPathname = Pathname.create(contents.get(0));
+    // Normalize the root jar to be a URL
+    String rootNamestring = contents.get(0);
+    if (!isValidURL(rootNamestring)) {
+      rootNamestring = "file:" + rootNamestring;
+    }
+
+    PathnameURL rootPathname = (PathnameURL)PathnameURL.create(rootNamestring);
 
     LispObject jars = NIL;
     jars = jars.push(rootPathname);
@@ -206,6 +215,16 @@ public class PathnameJar
     }
 
     LispObject jars = getDevice();
+
+    LispObject rootJar = getRootJar();
+    if (!(rootJar instanceof PathnameURL)) {
+        return type_error("The first element in the DEVICE component of a JAR-PATHNAME is not of expected type",
+                          rootJar,
+                          Symbol.URL_PATHNAME);
+    }
+
+    jars = jars.cdr();
+    
     while (!jars.car().equals(NIL)) {
       LispObject jar = jars.car();
       if (!((jar instanceof Pathname)
@@ -220,28 +239,27 @@ public class PathnameJar
 
     return T;
   }
-    
 
   public String getNamestring() {
     StringBuffer sb = new StringBuffer();
 
-    LispObject jars = getDevice();
+    LispObject jars = getJars();
 
     if (jars.equals(NIL) || jars.equals(Keyword.UNSPECIFIC)) { 
-      type_error("JAR-PATHNAME has bad DEVICE",
-                 jars,
-                 list(Symbol.NOT,
-                      list(Symbol.OR,
-                           list(Symbol.EQL, NIL),
-                           list(Symbol.EQL, Keyword.UNSPECIFIC))));
-      return (String)UNREACHED;
+      // type_error("JAR-PATHNAME has bad DEVICE",
+      //            jars,
+      //            list(Symbol.NOT,
+      //                 list(Symbol.OR,
+      //                      list(Symbol.EQL, NIL),
+      //                      list(Symbol.EQL, Keyword.UNSPECIFIC))));
+      return null;
     }
 
     for (int i = 0; i < jars.length() - 1; i++) {
       sb.append(JAR_URI_PREFIX);
     }
 
-    LispObject root = jars.car();
+    LispObject root = getRootJar();
 
     if (root instanceof PathnameURL) {
       String ns = ((PathnameURL)root).getNamestringAsURI();
@@ -258,18 +276,16 @@ public class PathnameJar
       simple_error("Unable to generate namestring for jar with root pathname ~a", root); 
     }
 
-    if (jars.length() > 1) {
-      LispObject innerJars = jars.cdr();
-      while (innerJars.car() != NIL) {
-        Pathname jar = (Pathname)innerJars.car();
-        Pathname p = new Pathname();
-        p.copyFrom(jar)
-         .setDevice(NIL);
-        String ns = p.getNamestring();
-        sb.append(ns)
-          .append(JAR_URI_SUFFIX);
-        innerJars = innerJars.cdr();
-      }
+    LispObject innerJars = jars.cdr();
+    while (innerJars.car() != NIL) {
+      Pathname jar = (Pathname)innerJars.car();
+      Pathname p = new Pathname();
+      p.copyFrom(jar)
+        .setDevice(NIL);
+      String ns = p.getNamestring();
+      sb.append(ns)
+        .append(JAR_URI_SUFFIX);
+      innerJars = innerJars.cdr();
     }
 
     if (getDirectory() != NIL
@@ -315,21 +331,23 @@ public class PathnameJar
     return getDevice();
   }
 
-  public static final LispObject truename(PathnameJar pathname,
-                                          boolean errorIfDoesNotExist) {
-    PathnameJar result = pathname;
-
-    LispObject jars = pathname.getJars();
-    Pathname rootJar = (Pathname) pathname.getRootJar();
-    LispObject enclosingJars = jars.cdr();
-
-    // if (!rootJar.isLocalFile()) {
-        
-    // } 
-
+  public static LispObject truename(Pathname pathname,
+				    boolean errorIfDoesNotExist) {
+    if (!(pathname instanceof PathnameJar)) {
+      return PathnameURL.truename(pathname, errorIfDoesNotExist);
+    }
     PathnameJar p = new PathnameJar();
     p.copyFrom(pathname);
-    p.setDevice(new Cons(rootJar, enclosingJars));
+
+    PathnameURL rootJar = (PathnameURL) p.getRootJar();
+    if (rootJar.isLocalFile()) {
+      LispObject trueRootJar = PathnameURL.truename(rootJar, errorIfDoesNotExist);
+      if (trueRootJar.equals(NIL)) {
+	return Pathname.doTruenameExit(rootJar, errorIfDoesNotExist);
+      }
+      LispObject otherJars = p.getJars().cdr();
+      p.setDevice(new Cons(trueRootJar, otherJars));
+    }
 
     if (!p.isArchiveEntry()) {
       ZipCache.Archive archive = ZipCache.getArchive(p);
@@ -395,7 +413,7 @@ public class PathnameJar
     return result;
   }
 
-  /** List the contents of the directory */
+  /** List the contents of a directory within a JAR archive */
   static public LispObject listDirectory(PathnameJar pathname) {
     String directory = pathname.asEntryPath();
     // We should only be listing directories
@@ -403,10 +421,6 @@ public class PathnameJar
       return simple_error("Not a directory in a jar ~a", pathname);
     }
 
-    // if (pathname.getDevice().cdr() instanceof Cons) {
-    //   return error(new FileError("Unimplemented directory listing of JAR within JAR.", pathname));
-    // }
-    
     if (directory.length() == 0) {
       directory = "/*";
     } else {
@@ -418,27 +432,13 @@ public class PathnameJar
     }
 
     Pathname wildcard = (Pathname)Pathname.create(directory);
-    //    String wildcard = new SimpleString(directory);
-    // directories in a a jar aren't marked with a suffixed slash
-    //    SimpleString wildcardDirectory = new SimpleString(directory + "/");
 
     LispObject result = NIL;
-    //LispObject matches;
     
     Iterator<Map.Entry<PathnameJar,ZipEntry>> iterator = ZipCache.getEntriesIterator(pathname);
     while (iterator.hasNext()) {
       Map.Entry<PathnameJar,ZipEntry> e = iterator.next();
       PathnameJar entry = e.getKey();
-      // PathnameJar jarPath = (PathnameJar)PathnameJar.create(e.getKey());
-      // ZipEntry entry = e.getValue();
-      
-      // if (entryName.endsWith("/")) {
-      //   matches = Symbol.PATHNAME_MATCH_P
-      //     .execute(new SimpleString(entryName), wildcardDirectory);
-      // } else {
-      //   matches = Symbol.PATHNAME_MATCH_P.
-      //     execute(new SimpleString(entryName), wildcard);
-      // }
       if (!Symbol.PATHNAME_MATCH_P.execute(entry, wildcard).equals(NIL)) {
         result = result.push(entry);
       }
@@ -468,13 +468,10 @@ public class PathnameJar
       if (!pathname.isWild()) {
         return new FileError("Not a wild pathname.", pathname);
       }
-      if (!((PathnameJar)pathname).getJars().cdr().equals(NIL)) {
-        return simple_error("Unimplemented match on contents of inner jars"); // FIXME
-      }
 
       PathnameJar jarPathname = new PathnameJar();
-      jarPathname.copyFrom(pathname);
       jarPathname
+        .copyFrom(pathname)
         .setDirectory(NIL)
         .setName(NIL)
         .setType(NIL);
@@ -498,44 +495,6 @@ public class PathnameJar
         }
       }
 
-      // FIXME implement recursive jars
-      // if (pathname.getDevice().cdr() instanceof Cons) {
-      //   ZipFile outerJar = ZipCache.get((Pathname)pathname.getDevice().car());
-      //   String entryPath = ((Pathname)pathname.getDevice().cdr().car()).getNamestring(); //???
-      //   if (entryPath.startsWith("/")) {
-      //     entryPath = entryPath.substring(1);
-      //   }
-      //   ZipEntry entry = outerJar.getEntry(entryPath);
-      //   InputStream inputStream = null;
-      //   try {
-      //     inputStream = outerJar.getInputStream(entry);
-      //   } catch (IOException e) {
-      //     return new FileError("Failed to read zip input stream inside zip.",
-      //                          pathname);
-      //   }
-      //   ZipInputStream zipInputStream
-      //     = new ZipInputStream(inputStream);
-
-      //   try {
-      //     while ((entry = zipInputStream.getNextEntry()) != null) {
-      //       String entryName = "/" + entry.getName();
-      //       LispObject matches = Symbol.PATHNAME_MATCH_P
-      //         .execute(new SimpleString(entryName), wildcard);
-            
-      //       if (!matches.equals(NIL)) {
-      //         String namestring = new String(pathname.getNamestring());
-      //         namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
-      //           + entry.getName();
-      //         Pathname p = (Pathname)Pathname.create(namestring);
-      //         result = new Cons(p, result);
-      //       }
-      //     }
-      //   } catch (IOException e) {
-      //     return new FileError("Failed to seek through zip inputstream inside zip.",
-      //                          pathname);
-      //   }
-      // } else {
-      // }
       return result;
     }
   }
@@ -553,5 +512,40 @@ public class PathnameJar
       }
     }
     return 0;
+  }
+
+  static PathnameJar joinEntry(PathnameJar root, Pathname entry) {
+    PathnameJar result = new PathnameJar();
+    result
+      .copyFrom(root)
+      .setDirectory(entry.getDirectory())
+      .setName(entry.getName())
+      .setType(entry.getType()); // ??? VERSION
+    return result;
+  }
+
+  static LispObject makeDeviceFrom(PathnameJar p) {
+    PathnameJar result = new PathnameJar();
+    result.copyFrom(p);
+    Pathname rootJar = (Pathname)result.getRootJar();
+    if (!rootJar.equals(NIL)
+        && (rootJar instanceof Pathname)) {
+      rootJar = (Pathname)PathnameURL.createFromFile(rootJar);
+      result.setDevice(new Cons(rootJar, result.getJars().cdr()));
+    }
+    return result;
+  }
+
+  static LispObject makeJarDeviceFrom(Pathname p) {
+    PathnameJar result = new PathnameJar();
+    result.copyFrom(p);
+    Pathname rootJar = (Pathname)result.getRootJar();
+    // Ensure
+    if (!rootJar.equals(NIL)
+        && (rootJar instanceof Pathname)) {
+      rootJar = (Pathname)PathnameURL.createFromFile(rootJar);
+      result.setDevice(new Cons(rootJar, result.getJars().cdr()));
+    }
+    return result.getDevice();
   }
 }

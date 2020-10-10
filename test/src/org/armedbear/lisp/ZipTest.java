@@ -19,8 +19,12 @@ public class ZipTest
 {
   // FIXME These need to be created as part of executing the tests
   String zipFile = "/Users/evenson/work/abcl/dist/abcl-contrib.jar";
+  // created via
+  //   (require :abcl-contrib)
+  //   (asdf:load-system :asdf-jar)
+  //   (asdf-jar:package :cl-ppcre)
+  String nestedJarFile = "/var/tmp/cl-ppcre-all-2.1.1.jar";
   PathnameJar zip;
-  String nestedJarFile = "/var/tmp/cl-ppcre-2.1.1.jar";
   PathnameJar nestedJar;
 
   @Before
@@ -60,13 +64,20 @@ public class ZipTest
                entry.equals(entry2));
   }
 
-
   @Test
-  public void nestedJar() {
-    String nestedNamestring = "jar:jar:file:/var/tmp/cl-ppcre-2.1.1.jar!/cl-ppcre/packages.abcl!/__loader__._";
-    Pathname nested = (Pathname)PathnameJar.create(nestedNamestring);
+  public void getNestedJar() {
+    String nestedNamestring = "jar:jar:file:/var/tmp/cl-ppcre-all-2.1.1.jar!/cl-ppcre/packages.abcl!/";
+    PathnameJar nested = (PathnameJar)PathnameJar.create(nestedNamestring);
+    ZipCache.Archive archive = ZipCache.getArchive(nested);
+    assertTrue("Able to retrieve nested jar archive",
+               !archive.equals(null));
   }
-  
+
+  //  @Test
+  public void getNestedJarEntry() {
+    String nestedNamestring = "jar:jar:file:/var/tmp/cl-ppcre-all-2.1.1.jar!/cl-ppcre/packages.abcl!/__loader__._";
+  }
+
   
 
 
