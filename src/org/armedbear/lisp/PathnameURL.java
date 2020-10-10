@@ -54,7 +54,7 @@ public class PathnameURL
 
   protected PathnameURL() {}
 
-  public static Pathname create() {
+  public static PathnameURL create() {
     return new PathnameURL();
   }
 
@@ -63,18 +63,20 @@ public class PathnameURL
   }
 
   public static PathnameURL create(PathnameURL p) {
-    return (PathnameURL) PathnameURL.create(p.getNamestring());
+    PathnameURL result = new PathnameURL();
+    result.copyFrom(p);
+    return result;
   }
 
-  public static LispObject create(URL url) {
+  public static PathnameURL create(URL url) {
     return PathnameURL.create(url.toString());
   }
 
-  public static LispObject create(URI uri) {
+  public static PathnameURL create(URI uri) {
     return PathnameURL.create(uri.toString());
   }
 
-  public static LispObject createFromFile(Pathname p) {
+  public static PathnameURL createFromFile(Pathname p) {
     String ns = "file:" + p.getNamestring();
     return create(ns);
   }
@@ -286,7 +288,15 @@ public class PathnameURL
     if (p.getHost().equals(NIL)
      || Symbol.GETF.execute(p.getHost(), PathnameURL.SCHEME, NIL)
           .equals("file")) {
-      return Pathname.truename(p, errorIfDoesNotExist);
+      LispObject fileTruename = Pathname.truename(p, errorIfDoesNotExist);
+      if (fileTruename.equals(NIL)) {
+        return NIL;
+      }
+      if (!(fileTruename instanceof PathnameURL)) {
+        PathnameURL urlTruename = PathnameURL.create((Pathname)fileTruename);
+        return urlTruename;
+      }
+      return fileTruename;
     }
         
     if (p.getInputStream() != null) {
