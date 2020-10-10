@@ -1913,7 +1913,7 @@ public final class Lisp
     if (arg instanceof Pathname)
       return (Pathname) arg;
     if (arg instanceof AbstractString)
-      return Pathname.parseNamestring((AbstractString)arg);
+      return (Pathname)Pathname.parseNamestring((AbstractString)arg);
     if (arg instanceof FileStream)
       return ((FileStream)arg).getPathname();
     if (arg instanceof JarStream)
