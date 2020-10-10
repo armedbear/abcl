@@ -57,7 +57,7 @@ public class Pathname extends LispObject implements Serializable {
     return new Pathname();
   }
 
-  public static Pathname create(String s) {
+  public static LispObject create(String s) {
     // TODO distinguish between logical hosts and schemes for URLs
     // which we can meaningfully parse.
     if (!isValidURL(s)) {
@@ -72,11 +72,11 @@ public class Pathname extends LispObject implements Serializable {
     return LogicalPathname.create(s, host);
   }
 
-  public static Pathname create(URL url) {
+  public static LispObject create(URL url) {
     return new Pathname(url);
   }
 
-  public static Pathname create(URI uri) {
+  public static LispObject create(URI uri) {
     return new Pathname(uri);
   }
   protected LispObject host = NIL;
@@ -180,8 +180,26 @@ public class Pathname extends LispObject implements Serializable {
   // If not protected, then inheriting classes cannot invoke their constructors
     protected Pathname() {}
 
+  private Pathname(Pathname p) {
     /** Copy constructor which shares no structure with the original. */
-    private Pathname(Pathname p) {
+      copyFrom(p);
+    }
+
+  /** 
+   *  Coerces Pathname types by copying structure
+   */
+  static public LispObject ncoerce(Pathname orig, Pathname dest) {
+    dest.setHost(orig.getHost());
+    dest.setDevice(orig.getDevice());
+    dest.setDirectory(orig.getDirectory());
+    dest.setName(orig.getName());
+    dest.setType(orig.getType());
+    dest.setVersion(orig.getVersion());
+
+    return dest;
+  }
+
+  void copyFrom(Pathname p) {
         if (p.host != NIL) {
             if (p.host instanceof SimpleString) {
                 host = new SimpleString(((SimpleString)p.getHost()).getStringValue());
@@ -339,7 +357,7 @@ public class Pathname extends LispObject implements Serializable {
             setHost(new SimpleString(s.substring(2, shareIndex)));
             setDevice(new SimpleString(s.substring(shareIndex + 1, dirIndex)));
 
-            Pathname p = Pathname.create(s.substring(dirIndex));
+            Pathname p = (Pathname)Pathname.create(s.substring(dirIndex));
             setDirectory(p.getDirectory());
             setName(p.getName());
             setType(p.getType());
@@ -361,7 +379,7 @@ public class Pathname extends LispObject implements Serializable {
                 // inner one must be a file reference within the outer.
                 jar = "jar:file:" + s.substring(i + jarSeparator.length());
                 s = s.substring("jar:".length(), i + jarSeparator.length());
-                Pathname p = Pathname.create(s);
+                Pathname p = (Pathname)Pathname.create(s);
                 jars = jars.push(p.getDevice().car());
             }
             if (jar.startsWith("jar:file:")) {
@@ -388,19 +406,19 @@ public class Pathname extends LispObject implements Serializable {
                     if (path == null) {
                         // We allow "jar:file:baz.jar!/" to construct a relative
                         // path for jar files, so MERGE-PATHNAMES means something.
-                        jarPathname = Pathname.create(uri.getSchemeSpecificPart());
+                      jarPathname = (Pathname)Pathname.create(uri.getSchemeSpecificPart());
                     } else {
-                        jarPathname = Pathname.create((new File(path)).getPath());
+                      jarPathname = (Pathname)Pathname.create((new File(path)).getPath());
                     }
                 } else {
-                    jarPathname = Pathname.create("");
+                  jarPathname = (Pathname)Pathname.create("");
                 }
                 jars = jars.push(jarPathname);
             } else {
                 URL url = null;
                 try {
                     url = new URL(jar.substring("jar:".length(), jar.length() - 2));
-                    Pathname p = Pathname.create(url);
+                    Pathname p = (Pathname)Pathname.create(url);
                     jars = jars.push(p);
                 } catch (MalformedURLException e) {
                     error(new LispError("Failed to parse URL "
@@ -426,7 +444,7 @@ public class Pathname extends LispObject implements Serializable {
                                     + "'" + jarURL + "'"
                                     + ex.getMessage()));
             }
-            Pathname d = Pathname.create(url);
+            Pathname d = (Pathname)Pathname.create(url);
             if (getDevice() instanceof Cons) {
                 LispObject[] jars = d.copyToArray();
                 //  XXX Is this ever reached?  If so, need to append lists
@@ -435,7 +453,7 @@ public class Pathname extends LispObject implements Serializable {
                 setDevice(d.getDevice());
             }
             s = "/" + s.substring(separatorIndex + jarSeparator.length());
-            Pathname p = Pathname.create("file:" + s); // Use URI escaping rules
+            Pathname p = (Pathname)Pathname.create("file:" + s); // Use URI escaping rules
             setDirectory(p.getDirectory());
             setName(p.getName());
             setType(p.getType());
@@ -476,7 +494,7 @@ public class Pathname extends LispObject implements Serializable {
                 if (uri.toString().endsWith("/") && !path.endsWith("/")) {
                   path += "/";
                 }
-                final Pathname p = Pathname.create(path);
+                final Pathname p = (Pathname)Pathname.create(path);
                 this.setHost(p.getHost());
                 this.setDevice(p.getDevice());
                 this.setDirectory(p.getDirectory());
@@ -528,7 +546,7 @@ public class Pathname extends LispObject implements Serializable {
                 setHost(getHost().push(FRAGMENT));
                 setHost(getHost().push(new SimpleString(fragment)));
             }
-            Pathname p = Pathname.create(path != null ? path : ""); 
+            Pathname p = (Pathname)Pathname.create(path != null ? path : ""); 
 
             setDirectory(p.getDirectory());
             setName(p.getName());
@@ -698,9 +716,11 @@ public class Pathname extends LispObject implements Serializable {
     }
 
     public String getNamestring() {
-        if (namestring != null) {
-            return namestring;
-        }
+        // if (namestring != null) {
+        //     return namestring;
+        // }
+      
+      // this makes no sense ???
         if (getName() == NIL && getType() != NIL) {
             Debug.assertTrue(namestring == null);
             return null;
@@ -1078,7 +1098,7 @@ public class Pathname extends LispObject implements Serializable {
     }
 
     public static Pathname parseNamestring(String s) {
-        return Pathname.create(s);
+      return (Pathname)Pathname.create(s);
     }
 
     public static boolean isValidURL(String s) {
@@ -1124,7 +1144,7 @@ public class Pathname extends LispObject implements Serializable {
         return result;
     }
 
-    public static Pathname parseNamestring(AbstractString namestring) {
+    public static LispObject parseNamestring(AbstractString namestring) {
         // Check for a logical pathname host.
         String s = namestring.getStringValue();
         if (!isValidURL(s)) {
@@ -1368,7 +1388,7 @@ public class Pathname extends LispObject implements Serializable {
               + "." + file + "'");
             return null;
         }
-        return Pathname.create(namestring);
+        return (Pathname)Pathname.create(namestring);
     }
 
 
@@ -1704,7 +1724,7 @@ public class Pathname extends LispObject implements Serializable {
                         String namestring = new String(pathname.getNamestring());
                         namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
                                  + entry.getName();
-                        Pathname p = Pathname.create(namestring);
+                        Pathname p = (Pathname)Pathname.create(namestring);
                         result = new Cons(p, result);
                     }
                 }
@@ -1736,7 +1756,7 @@ public class Pathname extends LispObject implements Serializable {
                               path = file.getCanonicalPath();
                             }
                             URI pathURI = (new File(path)).toURI();
-                            p = Pathname.create(pathURI);
+                            p = (Pathname)Pathname.create(pathURI);
                             result = new Cons(p, result);
                         }
                     } catch (IOException e) {
@@ -1818,7 +1838,7 @@ public class Pathname extends LispObject implements Serializable {
                             String namestring = new String(pathname.getNamestring());
                             namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
                                 + entry.getName();
-                            Pathname p = Pathname.create(namestring);
+                            Pathname p = (Pathname)Pathname.create(namestring);
                             result = new Cons(p, result);
                         }
                     }
@@ -1840,7 +1860,7 @@ public class Pathname extends LispObject implements Serializable {
                             String namestring = new String(pathname.getNamestring());
                             namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
                                 + entry.getName();
-                            Pathname p = Pathname.create(namestring);
+                            Pathname p = (Pathname)Pathname.create(namestring);
                             result = new Cons(p, result);
                         }
                     }
@@ -2250,6 +2270,12 @@ public class Pathname extends LispObject implements Serializable {
             return error(new FileError("Bad place for a wild pathname.",
                                        pathname));
         }
+        if (pathname instanceof PathnameJar) {
+          return truename((PathnameJar)pathname, errorIfDoesNotExist);
+        }
+        if (pathname instanceof PathnameURL) {
+          return truename((PathnameURL)pathname, errorIfDoesNotExist);
+        }
         if (!(pathname.isJar() || pathname.isURL())) {
             Pathname result 
                 = mergePathnames(pathname,
@@ -2261,7 +2287,7 @@ public class Pathname extends LispObject implements Serializable {
                     result = Pathname.getDirectoryPathname(file);
                 } else {
                     try {
-                        result = Pathname.create(file.getCanonicalPath());
+                      result = (Pathname)Pathname.create(file.getCanonicalPath());
                     } catch (IOException e) {
                         return error(new FileError(e.getMessage(), pathname));
                     }
@@ -2279,7 +2305,7 @@ public class Pathname extends LispObject implements Serializable {
                   && pathname.getType() == NIL
                   && Symbol.GETF.execute(pathname.getHost(), QUERY, NIL) == NIL
                   && Symbol.GETF.execute(pathname.getHost(), FRAGMENT, NIL) == NIL) {
-                Pathname p = Pathname.create(pathname.getNamestring() + "/");
+                Pathname p = (Pathname)Pathname.create(pathname.getNamestring() + "/");
                 if (p.getInputStream() != null) {
                   return p;
                 }
@@ -2374,7 +2400,7 @@ public class Pathname extends LispObject implements Serializable {
       return doTruenameExit(pathname, errorIfDoesNotExist);
     }
     
-    static private LispObject doTruenameExit(Pathname pathname, boolean errorIfDoesNotExist) {
+    static LispObject doTruenameExit(Pathname pathname, boolean errorIfDoesNotExist) {
         if (errorIfDoesNotExist) {
             StringBuilder sb = new StringBuilder("The file ");
             sb.append(pathname.princToString());
@@ -2798,7 +2824,7 @@ public class Pathname extends LispObject implements Serializable {
                     namestring = namestring.concat(File.separator);
                 }
             }
-            return Pathname.create(namestring);
+            return (Pathname)Pathname.create(namestring);
         } catch (IOException e) {
             error(new LispError(e.getMessage()));
             // Not reached.
