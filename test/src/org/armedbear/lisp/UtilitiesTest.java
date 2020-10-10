@@ -41,7 +41,7 @@ public class UtilitiesTest
   @Test
   public void getZipInputStreamZipEntry() throws FileNotFoundException, IOException {
       JarFile jar = new JarFile(zipFile);
-      Pathname pathname = new Pathname("a/b/bar.abcl");
+      Pathname pathname = Pathname.create("a/b/bar.abcl");
       InputStream entryInputStream = Utilities.getInputStream(jar, pathname);
       assertNotNull(entryInputStream);
       ZipInputStream zip = new ZipInputStream(entryInputStream);
