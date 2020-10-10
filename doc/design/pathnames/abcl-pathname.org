@@ -1,0 +1,410 @@
+#+TITLE: Design and Implementation of the ABCL PATHNAME
+* The ABCL PATHNAME Implementation
+
+An ongoing document eventually to be published as a paper.
+
+** Needs within ABCL
+
+*** Pathname refactoring
+
+    My original sin consisted in hacking Pathname.java and
+    LogicalPathname.java to contain four distinct Lisp types PATHNAME,
+    LOGICAL-PATHNAME, URL-PATHNAME, and JAR-PATHNAME.
+
+    
+    
+    
+    We want to replace =org.lisp.armedbear.Pathname= with some
+    sort of abstraction that allows easier maintainence and understanding
+    of the code.  
+
+#+caption: Proposed class hierachy 
+#+begin_example
+cl:logical-pathname  a cl:pathname
+ext:pathname-url     a cl:pathname
+ext:pathname-jar     a ext:pathname-jar
+#+end_example
+
+**** Analysis
+We naively begin by attempting to outline reasons one can't replace
+with an interface.
+
+***** constructors
+
+These would be present for all =ext:url-pathname= 
+
+#+BEGIN_SRC java
+     new Pathname(namestring)
+#+END_SRC
+
+#+BEGIN_SRC java
+    Pathname Pathname.create(namestring)
+#+END_SRC
+
+***** Use Builder or Factory?
+<http://stackoverflow.com/questions/757743/what-is-the-difference-between-builder-design-pattern-and-factory-design-pattern>
+
+Decide to use a modified Builder so we can chain method setting
+invocations to contruct a complicated PATHNAME object by specifying
+one piece of information at a time.
+
+
+#+begin_src java
+      Pathname result = new PathnameBuilder()
+        .setDirectory("/foo/bar/") // I don't think we allow this sort of thing currently
+        .setName("baz")
+        .setType("bat").build();
+#+end_src
+
+In any event, the Pathname constructors would be deprecated, and
+perhaps made =private=.  Currently they are =protected=.
+
+
+***** DONE Encapsulate fields with getter/setters
+     CLOSED: [2020-06-19 Fri 17:42]
+
+     - CLOSING NOTE [2020-06-19 Fri 17:42] \\
+       Done in pathname-2-build.patch
+***** DONE figure out what to do with invalidateNamestring()?
+      CLOSED: [2020-09-22 Tue 12:59]
+
+      - CLOSING NOTE [2020-09-22 Tue 12:59] \\
+        Don't implement a caching strategy:  always recompute.
+Cache result of calling =getNamestring=?
+
+Unsure what this would gain.  For now, just always run the namestring
+computation routine.  
+
+** Description of Current Problems
+
+As noted from <[[file:jar-pathnames.markdown][file:./jar-pathnames.markdown]]>.
+
+Goals:
+
+1.  All objects descending from =URL-PATHNAME= can roundtrip their
+    namestring().  WORKING
+
+2.  Able to represent archives within archives arbitrarily
+
+   INCOMPLETE: only implementing functionality as it exists post
+   abcl-1.5.0
+
+*** Archives within archives
+
+Figure the hierarchy out abstractly, and then concretely in Java and Lisp.
+
+Idea:  use =DEVICE= components to represent a pathname that is an archive
+
+#+caption: Example of an archive in an archive
+#+begin_example
+jar:jar:file:/abcl/dist/abcl.jar!/something.abcl!/__loader__._
+#+end_example
+
+#+begin_example
+[file:/abcl/dist/abcl.jar] 
+  ^--has-device-- [jar:file:/abcl/dist/abcl.jar!/
+     ^--has-device-- [ jar:jar:file:/abcl/dist/abcl.jar!/something.abcl!/]
+        ^--has-device-- [/__loader__._]
+#+end_example
+
+All the following pathnames should be valid:
+#+begin_example
+#p"file:/tmp/foo.jar" 
+#p"jar:file:/tmp/foo.jar!/"
+#p"jar:file:/tmp/foo.jar!/a/path/something.abcl"
+#p"jar:file:/tmp/foo.jar!/a/path/something.abcl!/"
+#p"jar:file:/tmp/foo.jar!/a/path/something.abcl!/__loader__._"
+#+end_example
+
+#+NAME: Parsing the namestring 
+#+begin_src lisp
+(pathname "jar:jar:file:/tmp/abcl/dist/abcl.jar!/something.abcl!/__loader__._")
+#+end_src
+
+would create four pathnames:
+
+#+begin_src lisp
+  #1# #p(:device #2# :name "__loader__" :type "_")
+
+  #2# #p(:device #3#: :name "something" :type "abcl"
+                 :directory (:absolute))
+
+  #3# #p(:device #4# :name nil :type nil
+         :directory nil :host nil :version nil)
+
+  #4# #p"/tmp/abcl/dist/abcl.jar"
+#+end_src
+
+| reference | namestring                                                         | Java Type    |
+|-----------+--------------------------------------------------------------------+--------------|
+| #1#       | jar:jar:file:/tmp/abcl/dist/abcl.jar!/something.abcl!/__loader__._ | pathname-jar |
+| #2#       | jar:jar:file:/tmp/abcl/dist/abcl.jar!/something.abcl!/             | pathname-jar |
+| #3#       | jar:file:/tmp/abcl/dist/abcl.jar!/                                 | pathname-jar |
+| #4#       | file:/tmp/abcl/dist/abcl.jar                                       | pathname-url |
+
+
+
+#4# has to have a device of nil in order to possibly be a DOS drive letter
+under Windows.
+
+Problems:
+
+#3# is both a file and an archive source.  The namestring of #2#
+encapsulates this, but should a naked reference to #3# be able to be
+target of a DIRECTORY operation?
+
+No, there is a difference between:
+
+| namestring                         | type         |
+|------------------------------------+--------------|
+| jar:file:/tmp/abcl/dist/abcl.jar!/ | pathname-jar |
+| file:/tmp/abcl/dist/abcl.jar       | pathname-url |
+
+
+So, any =JAR-PATHNAME= whose =:directory= is =(:absolute)= can be operated on
+via =MERGE-PATHNAMES= to =DIRECTORY= if it names a valid file or directory.
+
+#+begin_src 
+(directory #p"jar:file:/tmp/abcl/dist/abcl.jar!/*.*")
+#+end_src
+
+**** TODO Does this use of =DIRECTORY= clash with current ways of distinguishing files and directories?
+
+*** Fix the representation in CL:PATHNAME of objects to reflect this hierarchy.
+
+IN-PROGRESS mega-patch exists <https://github.com/armedbear/abcl/pull/289> which passes the tests.
+**** TODO Refactor the Java 
+
+Use hybrid Builder/Factory pattern.  Don't use constructors, but
+rather =Pathname.create()= and the five =Pathname.setDirectory()=
+=Pathname.setDevice()= calls, which may chained.  This introduces an
+asymmetry between the setCOMPONENT() / getCOMPONENT() entries, but
+seems workable.
+
+
+** TODO Rename existing Java hierarchy?
+
+Too destructive?!
+| current      | new                                                        |
+|--------------+------------------------------------------------------------|
+| pathname-jar | pathname-archive pathname-zip-archive pathname-jar-archive |
+| pathname-url | pathname-url                                               |
+
+* Gotchas
+
+** Should error: "jar:" prefix needs suffixed "!/"
+  #+begin_src 
+#p"jar:file:foo.jar"  
+  #+end_src
+
+* Scratch
+** Algorithim to enumerate jars in a namestring
+
+Count the prefixed occurrences of "jar:".
+
+Return 
+   
+   The pathname of the root jar as the first value
+   
+   For each enclosed jar, the pathname suffixed with "!/.
+   
+   If there is a path within the last jar, return it as an absolute value
+
+  #+begin_example
+  jar:jar:file:abcl.jar!/time.abcl!/time_1.cls
+       =>
+       file:abcl.jar
+       /time.abcl!/
+       /time_1.cls
+  #+end_example
+
+  #+begin_example
+  jar:jar:https://abcl.org/releases/current/abcl.jar!/a-fasl.abcl!/__loader__._
+       =>
+       https://abcl.org/releases/current/abcl.jar!/
+       /a-fasl.abcl!/
+       /__loader__._
+  #+end_example
+
+  #+begin_example
+  jar:jar:jar:file:abcl-aio.jar!/abcl-contrib.jar!/enclosed.abcl!/__loader__._
+       =>
+       file:abcl-aio.jar
+       /abcl-contrib.jar!/
+       /enclosed.abcl!/
+       /__loader__._
+  #+end_example
+
+* Tests
+** Problem with abcl-1.5.0 
+
+   #+begin_src 
+   #p"jar:jar:file:/a/baz.jar!/b/c/foo.abcl!/"
+   #+end_src
+
+Refers to three =CL:PATHNAME= objects:
+
+|-----+-----------------------------------------+--------+--------------|
+| Ref | Namestring                              | Device | Type         |
+|-----+-----------------------------------------+--------+--------------|
+| #1# | file:/a/baz.jar                         | nil    | PATHNAME-URL |
+| #2# | jar:file:/a/baz.jar!/                   | #1#    | PATHNAME-JAR |
+| #3# | jar:jar:file:/a/baz.jar!/b/c/foo.abcl!/ | #2#    | PATHNAME-JAR |
+|-----+-----------------------------------------+--------+--------------|
+
+   #+begin_src 
+   #p"jar:jar:file:/a/baz.jar!/b/c/foo.abcl!/a.cls"
+   #+end_src
+
+|-----+----------------------------------------------+--------+--------------|
+| Ref | Namestring                                   | Device | Type         |
+|-----+----------------------------------------------+--------+--------------|
+| #1# | file:/a/baz.jar                              | nil    | PATHNAME-URL |
+| #2# | jar:file:/a/baz.jar!/                        | #1#    | PATHNAME-JAR |
+| #3# | jar:jar:file:/a/baz.jar!/b/c/foo.abcl!/      | #2#    | PATHNAME-JAR |
+| #4# | jar:jar:file:/a/baz.jar!/b/c/foo.abcl!/a.cls | #3#    | PATHNAME-JAR |
+|-----+----------------------------------------------+--------+--------------|
+
+#+begin_src 
+#p"jar:file:foo.jar!/bar.abcl"
+#+end_src
+
+|-----+----------------------------+--------+--------------|
+| Ref | Namestring                 | Device | Type         |
+|-----+----------------------------+--------+--------------|
+| #1# | file:foo.jar               | nil    | PATHNAME-URL |
+| #2# | jar:file:foo.jar!/bar.abcl | #1#    | PATHNAME-JAR |
+
+
+** From the ABCL junit tests
+
+*** TODO Necessary for ASDF jar translations to work
+
+   #+begin_src 
+   #p"jar:file:/**/*.jar!/**/*.*"
+   #+end_src
+
+|-----+----------------------------+--------+--------------|
+| Ref | Namestring                 | Device | Type         |
+|-----+----------------------------+--------+--------------|
+| #1# | file:/**/*.jar             | nil    | PATHNAME-URL |
+| #2# | jar:file:/**/*.jar!/       | #1#    | PATHNAME-JAR |
+| #3# | jar:file:/**/*.jar!/**/*.* | #2#    | PATHNAME-JAR |
+|-----+----------------------------+--------+--------------|
+
+
+*** Merging 
+
+A =PATHNAME_JAR= may have its root jar as a relative pathname in order
+to merge things succesfully.
+
+
+   #+begin_src java
+   Pathname p = (Pathname)Pathname.create("jar:file:foo.jar!/bar.abcl");
+   Pathname d = (Pathname)Pathname.create("/a/b/c/");
+   Pathname r = (Pathname)Pathname.mergePathnames(p, d);
+   String s = r.getNamestring();
+   assertTrue(s.equals("jar:file:/a/b/c/foo.jar!/bar.abcl"));
+   #+end_src
+
+| "jar:file:foo.jar!/bar.abcl"       | addressing bar.abcl as a file |
+| "jar:jar:file:foo.jar!/bar.abcl!/" | addressing bar.abcl as a jar  |
+|                                    |                               |
+
+#+begin_src lisp
+(merge-pathnames "jar:file:foo.jar!/bar.abcl" "/a/b/c/")
+#+end_src
+
+What do we do when MERGE-PATHNAME gets two PATHNAME-JAR arguments?
+
+#+begin_src lisp
+(merge-pathname "jar:file:abcl-contrib.jar!/init.lisp" 
+                "jar:file:/a/b/abcl.jar!/")
+#+end_src
+==>
+"jar:jar:file:/a/b/abcl.jar!/abcl-contrib.jar/init.lisp"
+
+#+begin_src lisp
+(merge-pathname "jar:file:/abcl-contrib.jar!/init.lisp" 
+                "jar:file:/a/b/abcl.jar!/foo/jar")
+#+end_src
+==>
+"jar:file:/abcl-contrib.jar!/init.lisp"
+
+
+This one I no longer understand
+#+begin_src lisp
+(merge-pathname "jar:file:!/init.lisp" 
+                "jar:file:/a/b/abcl.jar!/load/path/")
+#+end_src
+==>
+"jar:file:/a/b/abcl.jar!/load/path/init.lisp"
+
+Should be 
+#+begin_src lisp
+(merge-pathname "init.lisp" 
+                "jar:file:/a/b/abcl.jar!/load/path/")
+#+end_src
+==>
+"jar:file:/a/b/abcl.jar!/load/path/init.lisp"
+
+* Misc
+** PATHNAME-URL have implicit "file:" scheme
+Not recorded in host; not emitted as namestring.  This is the current behavior.
+
+* Have to rework?
+
+Unfortunately using a chain of devices to represent things doesn't
+seem to work.
+
+How to repesent the difference between the two?
+
+| #1# | "jar:jar:file:abcl.jar!/a/fasl.abcl!/" |
+| #2# | "jar:file:abcl.jar!/a/fasl.abcl"       |
+
+They both denote an entry in an archive.
+
+#1# denotes the "archive within an archive", something that could be
+as the defaults for a merge pathnames operation.  Or that
+=CL:DIRECTORY= could return hte contents thereof.
+
+#2# denotes the entry as something that could be =CL:OPEN='d.  
+
+But under the current proposal, both would be represented as a
+PATHNAME-JAR whose device was "jar:file:abcl.jar".
+
+If we go back to storing the list of all jar locations in the device
+component, they would look like
+
+#1# (:device ("abcl.jar" "/a/fasl.abcl"))
+
+#2# (:device ("abcl.jar) :name "fasl" :type "abcl")
+
+** What should the type of the pathnames be in the DEVICE?
+
+Even though these are references to paths within jars, they aren't a
+PATHNAME-JAR (they don't have a DEVICE which is a cons), so just make
+them pathnames.
+
+
+* Re-introducing relative URL-PATHNAME for 'file' scheme
+
+URIs don't allow relative pathnames, so to be more strict I
+implemented stripped out the abilty to create relative URL-PATHNAMEs.
+
+
+
+* Re-introducing relative URL-PATHNAME for 'file' scheme
+
+URIs don't allow relative pathnames, so to be more strict I
+implemented stripped out the abilty to create relative URL-PATHNAMEs.
+
+
+
+* Colophon
+  #+begin_example
+  Mark Evenson  
+  Created: 2010
+  Revised: <2020-08-15 Sat 10:06>
+  #+end_example
+
