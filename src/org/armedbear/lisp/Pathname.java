@@ -143,10 +143,11 @@ public class Pathname extends LispObject implements Serializable {
   }
 
 
-  /** The path component separator used by internally generated
+  /** 
+   * The path component separator used by internally generated
    * path namestrings.
    */
-  public final static char separator = '/';
+  public final static char directoryDelimiter = '/';
     
 
   // If not protected, then inheriting classes cannot invoke their constructors
@@ -584,17 +585,16 @@ public class Pathname extends LispObject implements Serializable {
         // is, both NIL and :UNSPECIFIC cause the component not to appear in
         // the namestring." 19.2.2.2.3.1
         if (getDirectory() != NIL && getDirectory() != Keyword.UNSPECIFIC) {
-            final char separatorChar = '/';
             LispObject temp = getDirectory();
             LispObject part = temp.car();
             temp = temp.cdr();
             if (part == Keyword.ABSOLUTE) {
-                sb.append(separatorChar);
+                sb.append(directoryDelimiter);
             } else if (part == Keyword.RELATIVE) {
                 if (temp == NIL) {
                     // #p"./"
                     sb.append('.');
-                    sb.append(separatorChar);
+                    sb.append(directoryDelimiter);
                 }
                 // else: Nothing to do.
             } else {
@@ -613,7 +613,7 @@ public class Pathname extends LispObject implements Serializable {
                 } else if (part == Keyword.UP) {
                     sb.append("..");
                 }
-                sb.append(separatorChar);
+                sb.append(directoryDelimiter);
                 temp = temp.cdr();
             }
         }
@@ -719,6 +719,7 @@ public class Pathname extends LispObject implements Serializable {
                     String n = getName().getStringValue();
                     if (n.equals(".") || n.equals("..")) {
                         useNamestring = false;
+                        // ??? File.separatorChar is platform dependent.  Does this help on Windows?
                     } else if (n.indexOf(File.separatorChar) >= 0) {
                         useNamestring = false;
                     }
@@ -2111,6 +2112,7 @@ public class Pathname extends LispObject implements Serializable {
         try {
             String namestring = file.getCanonicalPath();
             if (namestring != null && namestring.length() > 0) {
+              // ??? do we really want the platform dependent separatorChar?
                 if (namestring.charAt(namestring.length() - 1) != File.separatorChar) {
                     namestring = namestring.concat(File.separator);
                 }
