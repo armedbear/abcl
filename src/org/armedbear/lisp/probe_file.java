@@ -63,7 +63,7 @@ public final class probe_file
           if (p instanceof PathnameJar) {
             return PathnameJar.truename(p, false);
           } else if (p instanceof PathnameURL) {
-            return PathnameURL.truename(p, false);
+            return PathnameURL.truename((PathnameURL)p, false);
           } else {
             return Pathname.truename(p, false);
           }
@@ -92,7 +92,7 @@ public final class probe_file
           if (p instanceof PathnameJar) {
             return PathnameJar.truename(p, true);
           } else if (p instanceof PathnameURL) {
-            return PathnameURL.truename(p, true);
+            return PathnameURL.truename((PathnameURL)p, true);
           } else {
             return Pathname.truename(p, true);
           }

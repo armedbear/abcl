@@ -62,7 +62,9 @@ public class PathnameJar
   }
 
   public static PathnameJar create(PathnameJar p) {
-    return (PathnameJar)PathnameJar.create(p.getNamestring());
+    PathnameJar result = new PathnameJar();
+    result.copyFrom(p);
+    return result;
   }
 
   public static PathnameJar createFromPathname(Pathname p) {
@@ -80,6 +82,21 @@ public class PathnameJar
     }
   }
 
+  /** Transform an entry in a jar to a reference as a jar */
+  public static PathnameJar createFromEntry(PathnameJar p) {
+    PathnameJar result = new PathnameJar();
+    result
+      .copyFrom(p)
+      .setDirectory(NIL)
+      .setName(NIL)
+      .setType(NIL);
+    Pathname entryPath = p.getEntryPath();
+    LispObject device = p.getDevice();
+    device = device.nreverse().push(entryPath).nreverse();
+    result.setDevice(device);
+    return result;
+  }
+    
   static public PathnameJar createFromFile(String s) {
     return PathnameJar.create(JAR_URI_PREFIX + "file:" + s + JAR_URI_SUFFIX);
   }
@@ -339,8 +356,14 @@ public class PathnameJar
     PathnameJar p = new PathnameJar();
     p.copyFrom(pathname);
 
-    PathnameURL rootJar = (PathnameURL) p.getRootJar();
-    if (rootJar.isLocalFile()) {
+    // Run a truename resolution on the path of local jar archives
+    if (p.isLocalFile()) {
+      PathnameURL rootJar = new PathnameURL();
+      rootJar.copyFrom((Pathname)p.getRootJar());
+      // Ensure that we don't return a PathnameJar if the current default is one
+      if (rootJar.getDevice().equals(NIL)) {
+        rootJar.setDevice(Keyword.UNSPECIFIC);
+      }
       LispObject trueRootJar = PathnameURL.truename(rootJar, errorIfDoesNotExist);
       if (trueRootJar.equals(NIL)) {
 	return Pathname.doTruenameExit(rootJar, errorIfDoesNotExist);
@@ -401,7 +424,6 @@ public class PathnameJar
   }
 
   public InputStream getInputStream() {
-    String entryPath = asEntryPath();
     // XXX We only return the bytes of an entry in a JAR
     if (!isArchiveEntry()) {
       simple_error("Can only get input stream for an entry in a JAR-PATHNAME.", this);

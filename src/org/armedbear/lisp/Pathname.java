@@ -62,7 +62,7 @@ public class Pathname extends LispObject implements Serializable {
     }
   }
 
-  public static LispObject create(String s) {
+  public static Pathname create(String s) {
     // TODO distinguish between logical hosts and schemes for URLs
     // which we can meaningfully parse.
 
@@ -1616,13 +1616,13 @@ public class Pathname extends LispObject implements Serializable {
         }
     }
 
-  public static final LispObject mergePathnames(Pathname pathname, Pathname defaultPathname) {
+  public static final Pathname mergePathnames(Pathname pathname, Pathname defaultPathname) {
     return mergePathnames(pathname, defaultPathname, Keyword.NEWEST);
   }
     
-  public static final LispObject mergePathnames(final Pathname pathname,
-                                                final Pathname defaultPathname,
-                                                final LispObject defaultVersion) {
+  public static final Pathname mergePathnames(final Pathname pathname,
+                                              final Pathname defaultPathname,
+                                              final LispObject defaultVersion) {
     Pathname result;
     Pathname p = Pathname.create(pathname);
     Pathname d;
@@ -1632,15 +1632,16 @@ public class Pathname extends LispObject implements Serializable {
       d = Pathname.create(defaultPathname);
     } else {
       if (pathname instanceof PathnameJar
-          // If the defaults contain a JAR-PATHNAME, and the pathname to
-          // be be merged is not a JAR-PATHNAME, does not have a specified
-          // DEVICE, a specified HOST, and doesn't contain a relative
-          // DIRECTORY, then the result will not be a JAR-PATHNAME
+          // If the defaults contain a JAR-PATHNAME, and the pathname
+          // to be be merged is not a JAR-PATHNAME, does not have a
+          // specified DEVICE or a specified HOST and has a NIL or
+          // relative directory then the result will be a JAR-PATHNAME.
           || (defaultPathname instanceof PathnameJar
               && !(pathname instanceof PathnameJar)
+              && pathname.getHost().equals(NIL)
               && pathname.getDevice().equals(NIL)
-              && !(!pathname.getDirectory().equals(NIL)
-                   && pathname.getDirectory().car().equals(Keyword.ABSOLUTE)))) {
+              && (pathname.getDirectory().equals(NIL)
+                  || pathname.getDirectory().car().equals(Keyword.RELATIVE)))) {
         result = PathnameJar.create();
       } else if (pathname instanceof PathnameURL) {
         result = PathnameURL.create();
@@ -1652,7 +1653,7 @@ public class Pathname extends LispObject implements Serializable {
         d = LogicalPathname.translateLogicalPathname((LogicalPathname) defaultPathname);
       } else {
         if (defaultPathname instanceof PathnameJar) {
-          d = PathnameJar.create(defaultPathname);
+          d = PathnameJar.create((PathnameJar)defaultPathname);
         } else if (defaultPathname instanceof PathnameURL) {
           d = PathnameURL.create(defaultPathname);
         } else {
@@ -1685,17 +1686,9 @@ public class Pathname extends LispObject implements Serializable {
         // relative DIRECTORY, then on non-MSDOG, set its device to
         // :UNSPECIFIC.
         if ((d instanceof PathnameJar)
-            && (result instanceof Pathname)) {
-          if (pathname.getHost() == NIL
-              && pathname.getDevice() == NIL
-              && d.isJar()
-              && !Utilities.isPlatformWindows) {
-            if (pathname.getDirectory() != NIL
-                && pathname.getDirectory().car() == Keyword.ABSOLUTE) {
-              result.setDevice(Keyword.UNSPECIFIC);
-            } else {
-              result.setDevice(d.getDevice());
-            }
+            && !(result instanceof PathnameJar)) {
+          if (!Utilities.isPlatformWindows) {
+            result.setDevice(Keyword.UNSPECIFIC);
           } else {
             result.setDevice(d.getDevice());
           }
@@ -2146,12 +2139,16 @@ public class Pathname extends LispObject implements Serializable {
     return false;
   }
 
+  Pathname getEntryPath() {
+    return Pathname.create(asEntryPath());
+  }
+
   /** @return The representation of the DIRECTORY/NAME/TYPE elements
    *  of pathname suitable for referencing an entry in a Zip/JAR file.
    *
    *  This representation is always a relative path.
    */
-  protected String asEntryPath() {
+  String asEntryPath() {
     Pathname p = Pathname.create();
     p.setDirectory(getDirectory())
       .setName(getName())

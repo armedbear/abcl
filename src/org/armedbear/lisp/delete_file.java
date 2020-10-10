@@ -60,7 +60,7 @@ public final class delete_file extends Primitive
         return error(new FileError("Bad place for a wild pathname.",
                                    pathname));
       final Pathname defaultedPathname 
-              = (Pathname)Pathname.mergePathnames(pathname,
+              = Pathname.mergePathnames(pathname,
                                 coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()),
                                 NIL);
 

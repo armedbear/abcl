@@ -71,7 +71,7 @@ public final class unzip
   
     private LispObject unzipToDirectory(Pathname zipPath, Pathname dirPath) {
         if (!zipPath.isAbsolute()) {
-            zipPath = (Pathname)Pathname.mergePathnames(zipPath,
+            zipPath = Pathname.mergePathnames(zipPath,
                                               coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()));
         }
         LispObject o = Symbol.PROBE_FILE.execute(zipPath);
