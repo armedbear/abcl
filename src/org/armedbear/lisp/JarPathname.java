@@ -313,9 +313,10 @@ public class JarPathname
         || getName() != NIL
         || getType() != NIL) {
       
-      Pathname withoutDevice = new Pathname(); 
-      Pathname.ncoerce(this, withoutDevice);
-      withoutDevice.setDevice(NIL);
+      Pathname withoutDevice = new Pathname();
+      withoutDevice
+	.copyFrom(this)
+        .setDevice(NIL);
 
       String withoutDeviceNamestring = withoutDevice.getNamestring(); // need to URI encode?
       if (withoutDeviceNamestring.startsWith("/")) {
