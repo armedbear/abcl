@@ -164,8 +164,8 @@ public class ZipCache {
     return new ByteArrayInputStream(bytes.toByteArray());
   }
 
-  public static InputStream getEntryAsInputStream(PathnameJar archiveEntry) {
-    PathnameJar archiveJar = archiveEntry.getArchive();
+  public static InputStream getEntryAsInputStream(JarPathname archiveEntry) {
+    JarPathname archiveJar = archiveEntry.getArchive();
     Archive archive = ZipCache.getArchive(archiveJar);
     InputStream result = archive.getEntryAsInputStream(archiveEntry);
     if (result == null) {
@@ -181,16 +181,16 @@ public class ZipCache {
   // Unfortunately the relatively simple strategy of extending
   // ZipFile via a CachedZipFile does not work because there is not
   // a null arg constructor for ZipFile.
-  static HashMap<PathnameJar, Archive> cache = new HashMap<PathnameJar, Archive>();
+  static HashMap<JarPathname, Archive> cache = new HashMap<JarPathname, Archive>();
 
   abstract static public class Archive {
-    PathnameJar root;
-    LinkedHashMap<PathnameJar, ZipEntry> entries
-      = new LinkedHashMap<PathnameJar, ZipEntry>();
+    JarPathname root;
+    LinkedHashMap<JarPathname, ZipEntry> entries
+      = new LinkedHashMap<JarPathname, ZipEntry>();
     long lastModified;
 
-    abstract InputStream getEntryAsInputStream(PathnameJar entry);
-    abstract ZipEntry getEntry(PathnameJar entry);
+    abstract InputStream getEntryAsInputStream(JarPathname entry);
+    abstract ZipEntry getEntry(JarPathname entry);
     abstract void populateAllEntries();
     abstract void close();
   }
@@ -201,10 +201,10 @@ public class ZipCache {
     ZipInputStream source;
 
     // TODO wrap in a weak reference to allow JVM to possibly reclaim memory
-    LinkedHashMap<PathnameJar, ByteArrayOutputStream> contents
-      = new LinkedHashMap<PathnameJar, ByteArrayOutputStream>();
+    LinkedHashMap<JarPathname, ByteArrayOutputStream> contents
+      = new LinkedHashMap<JarPathname, ByteArrayOutputStream>();
 
-    public InputStream getEntryAsInputStream(PathnameJar entry) {
+    public InputStream getEntryAsInputStream(JarPathname entry) {
       ByteArrayOutputStream bytes = contents.get(entry);
       if (bytes != null) {
         return new ByteArrayInputStream(bytes.toByteArray());
@@ -214,7 +214,7 @@ public class ZipCache {
 
     boolean populated = false;
 
-    public ZipEntry getEntry(PathnameJar entry) {
+    public ZipEntry getEntry(JarPathname entry) {
       if (!populated) {
         populateAllEntries();
       }
@@ -230,8 +230,8 @@ public class ZipCache {
       try {
         while ((entry = source.getNextEntry()) != null) {
           String name = entry.getName();
-          PathnameJar entryPathname
-            = (PathnameJar)PathnameJar.createEntryFromJar(root, name);
+          JarPathname entryPathname
+            = (JarPathname)JarPathname.createEntryFromJar(root, name);
           entries.put(entryPathname, entry);
           ByteArrayOutputStream bytes
             = readEntry(source);
@@ -259,7 +259,7 @@ public class ZipCache {
   {
     JarURLConnection connection;
 
-    public ArchiveURL(PathnameJar jar)
+    public ArchiveURL(JarPathname jar)
       throws java.io.IOException
     {
       String rootJarURLString = jar.getRootJarAsURLString();
@@ -288,7 +288,7 @@ public class ZipCache {
 
     ArchiveFile() {}
 
-    public ArchiveFile(PathnameJar jar)
+    public ArchiveFile(JarPathname jar)
       throws ZipException, IOException
     {
       File f = ((Pathname)jar.getRootJar()).getFile();
@@ -297,7 +297,7 @@ public class ZipCache {
       this.lastModified = f.lastModified();
     }
 
-    public ZipEntry getEntry(PathnameJar entryPathname) {
+    public ZipEntry getEntry(JarPathname entryPathname) {
       ZipEntry result = entries.get(entryPathname);
       if (result != null) {
         return result;
@@ -331,13 +331,13 @@ public class ZipCache {
       while (e.hasMoreElements()) {
         ZipEntry entry = e.nextElement();
         String name = entry.getName();
-        PathnameJar entryPathname
-          = (PathnameJar)PathnameJar.createEntryFromJar(root, name);
+        JarPathname entryPathname
+          = (JarPathname)JarPathname.createEntryFromJar(root, name);
         entries.put(entryPathname, entry);
       }
     }
 
-    InputStream getEntryAsInputStream(PathnameJar entry) {
+    InputStream getEntryAsInputStream(JarPathname entry) {
       InputStream result = null;
       ZipEntry zipEntry = getEntry(entry);
 
@@ -375,27 +375,27 @@ public class ZipCache {
     cache.clear();  
   }
 
-  synchronized public static LinkedHashMap<PathnameJar,ZipEntry> getEntries(PathnameJar jar) {
+  synchronized public static LinkedHashMap<JarPathname,ZipEntry> getEntries(JarPathname jar) {
     Archive archive = getArchive(jar);
     archive.populateAllEntries(); // Very expensive for jars with large number of entries
     return archive.entries;
   }
 
-  synchronized public static Iterator<Map.Entry<PathnameJar,ZipEntry>> getEntriesIterator(PathnameJar jar) {
-    LinkedHashMap<PathnameJar,ZipEntry> entries = getEntries(jar);
-    Set<Map.Entry<PathnameJar,ZipEntry>> set = entries.entrySet();
+  synchronized public static Iterator<Map.Entry<JarPathname,ZipEntry>> getEntriesIterator(JarPathname jar) {
+    LinkedHashMap<JarPathname,ZipEntry> entries = getEntries(jar);
+    Set<Map.Entry<JarPathname,ZipEntry>> set = entries.entrySet();
     return set.iterator();
   }
 
-  static ZipEntry getZipEntry(PathnameJar archiveEntry) {
-    PathnameJar archiveJar = archiveEntry.getArchive();
+  static ZipEntry getZipEntry(JarPathname archiveEntry) {
+    JarPathname archiveJar = archiveEntry.getArchive();
     Archive zip = getArchive(archiveJar);
     ZipEntry entry = zip.getEntry(archiveEntry);
     return entry;
   }
 
   // ??? we assume that DIRECTORY, NAME, and TYPE components are NIL
-  synchronized public static Archive getArchive(PathnameJar jar) {
+  synchronized public static Archive getArchive(JarPathname jar) {
     Archive result = cache.get(jar);
     if (result != null) {
       return result;
@@ -411,16 +411,16 @@ public class ZipCache {
     if (innerJars.equals(NIL)) {
       return getArchiveFile(jar);
     } else {
-      PathnameJar root = new PathnameJar();
+      JarPathname root = new JarPathname();
       root.setDevice(new Cons(rootJar, NIL));
       ArchiveFile rootArchiveFile = (ArchiveFile)getArchiveFile(root);
 
-      PathnameJar innerArchive = new PathnameJar();
+      JarPathname innerArchive = new JarPathname();
       Pathname nextJar = (Pathname)innerJars.car();
       LispObject jars = list(rootJar, nextJar);
       innerArchive.setDevice(jars);
 
-      PathnameJar innerArchiveAsEntry = new PathnameJar();
+      JarPathname innerArchiveAsEntry = new JarPathname();
       innerArchiveAsEntry
         .setDevice(new Cons(rootJar, NIL))
         .setDirectory(nextJar.getDirectory())
@@ -452,7 +452,7 @@ public class ZipCache {
     }
   }
 
-  public static Archive getArchiveURL(PathnameJar jar) {
+  public static Archive getArchiveURL(JarPathname jar) {
     Pathname rootJar = (Pathname) jar.getRootJar();
 
     URL rootJarURL = null;
@@ -469,7 +469,7 @@ public class ZipCache {
     }
   }
 
-  static public Archive getArchiveFile(PathnameJar jar) {
+  static public Archive getArchiveFile(JarPathname jar) {
     try {
       ArchiveFile result = new ArchiveFile(jar);
       cache.put(jar, result);
@@ -527,7 +527,7 @@ public class ZipCache {
 
     // Replace older item in cache
     if (date == null || date.getTime() > archive.lastModified) {
-      PathnameJar root = archive.root;
+      JarPathname root = archive.root;
       Archive entry = getArchiveURL(root);
       cache.put(root, entry);
     }
@@ -552,14 +552,14 @@ public class ZipCache {
     public LispObject execute(LispObject arg) {
       Pathname p = coerceToPathname(arg);
       boolean result = false;
-      if (p instanceof PathnameJar) {
-        result = ZipCache.remove((PathnameJar)p);
+      if (p instanceof JarPathname) {
+        result = ZipCache.remove((JarPathname)p);
       } 
       return result ? T : NIL;
     }
   }
       
-  synchronized public static boolean remove(PathnameJar p) {
+  synchronized public static boolean remove(JarPathname p) {
     Archive archive = cache.get(p.getNamestring());
     if (archive != null) {
       archive.close();

@@ -337,7 +337,7 @@ public class JavaClassLoader extends URLClassLoader {
         if(o instanceof URLClassLoader) {
             LispObject list = NIL;
             for(URL u : ((URLClassLoader) o).getURLs()) {
-                list = list.push(PathnameURL.create(u));
+                list = list.push(URLPathname.create(u));
             }
             return new Cons(new JavaObject(o), list.nreverse());
         } else {

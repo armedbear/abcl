@@ -28,7 +28,7 @@ public class PathnameTest
     } catch (MalformedURLException e) {
         System.out.println(e.getMessage());
     }
-    Pathname pathname = (Pathname)PathnameURL.create(url);
+    Pathname pathname = (Pathname)URLPathname.create(url);
     assertNotNull(pathname);
     assertNotNull(pathname.getNamestring());
     assertNotNull(pathname.getName());
@@ -131,8 +131,8 @@ public class PathnameTest
     boolean result = p1.equals(p2);
     assertTrue("Java equals() for Pathname", result);
 
-    PathnameJar p3 = (PathnameJar)Pathname.create("jar:file:///abcl.jar!/tmp/");
-    PathnameJar p4 = (PathnameJar)Pathname.create("jar:file:///abcl.jar!/tmp/");
+    JarPathname p3 = (JarPathname)Pathname.create("jar:file:///abcl.jar!/tmp/");
+    JarPathname p4 = (JarPathname)Pathname.create("jar:file:///abcl.jar!/tmp/");
     result = p3.equals(p4);
     assertTrue("Java equals() for PathnameJar", result);
   }

@@ -24,13 +24,13 @@ public class ZipTest
   //   (asdf:load-system :asdf-jar)
   //   (asdf-jar:package :cl-ppcre)
   String nestedJarFile = "/var/tmp/cl-ppcre-all-2.1.1.jar";
-  PathnameJar zip;
-  PathnameJar nestedJar;
+  JarPathname zip;
+  JarPathname nestedJar;
 
   @Before
   public void setup() {
-    zip = (PathnameJar) PathnameJar.createFromFile(zipFile);
-    nestedJar = (PathnameJar) PathnameJar.createFromFile(nestedJarFile);
+    zip = (JarPathname) JarPathname.createFromFile(zipFile);
+    nestedJar = (JarPathname) JarPathname.createFromFile(nestedJarFile);
   }
 
   @Test
@@ -39,8 +39,8 @@ public class ZipTest
     assertTrue("Get ZipArchive from pathname",
                archive1 instanceof ZipCache.ArchiveFile
                && ((ZipCache.ArchiveFile)archive1).file != null);
-    PathnameJar zip2
-      = (PathnameJar) PathnameJar.createFromFile(zipFile);
+    JarPathname zip2
+      = (JarPathname) JarPathname.createFromFile(zipFile);
     ZipCache.Archive archive2 = ZipCache.getArchive(zip2);
     assertTrue("Get cached ZipArchive from pathname",
                archive2 instanceof ZipCache.ArchiveFile
@@ -52,13 +52,13 @@ public class ZipTest
   @Test
   public void getEntry() {
     String entryPath = "abcl-asdf/abcl-asdf-tests.asd";
-    PathnameJar entryPathname
-      = (PathnameJar) PathnameJar.createEntryFromFile(zipFile, entryPath);
+    JarPathname entryPathname
+      = (JarPathname) JarPathname.createEntryFromFile(zipFile, entryPath);
     ZipEntry entry = ZipCache.getZipEntry(entryPathname);
     assertTrue("Getting entry from jar",
                entry.getName().equals(entryPath));
-    PathnameJar entryPathname2
-      = (PathnameJar) PathnameJar.createEntryFromFile(zipFile, entryPath);
+    JarPathname entryPathname2
+      = (JarPathname) JarPathname.createEntryFromFile(zipFile, entryPath);
     ZipEntry entry2 = ZipCache.getZipEntry(entryPathname2);
     assertTrue("Cached ZipEntry returns same object",
                entry.equals(entry2));
@@ -67,7 +67,7 @@ public class ZipTest
   @Test
   public void getNestedJar() {
     String nestedNamestring = "jar:jar:file:/var/tmp/cl-ppcre-all-2.1.1.jar!/cl-ppcre/packages.abcl!/";
-    PathnameJar nested = (PathnameJar)PathnameJar.create(nestedNamestring);
+    JarPathname nested = (JarPathname)JarPathname.create(nestedNamestring);
     ZipCache.Archive archive = ZipCache.getArchive(nested);
     assertTrue("Able to retrieve nested jar archive",
                !archive.equals(null));

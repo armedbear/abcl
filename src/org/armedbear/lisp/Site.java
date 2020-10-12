@@ -57,7 +57,7 @@ public final class Site
             if (!Pathname.isSupportedProtocol(url.getProtocol())) {
                 LISP_HOME = NIL;
             } else {
-              Pathname p = (Pathname)PathnameURL.create(url);
+              Pathname p = (Pathname)URLPathname.create(url);
               p.setName(NIL).setType(NIL);
               LISP_HOME = p;
             }

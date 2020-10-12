@@ -53,10 +53,10 @@ public class Pathname extends LispObject implements Serializable {
   }
 
   protected static Pathname create(Pathname p) {
-    if (p instanceof PathnameJar) {
-      return (PathnameJar)PathnameJar.create(p.getNamestring());
-    } else if (p instanceof PathnameURL) {
-      return (PathnameURL)PathnameURL.create(((PathnameURL)p).getNamestringAsURI());
+    if (p instanceof JarPathname) {
+      return (JarPathname)JarPathname.create(p.getNamestring());
+    } else if (p instanceof URLPathname) {
+      return (URLPathname)URLPathname.create(((URLPathname)p).getNamestringAsURI());
     } else {
       return new Pathname(p);
     }
@@ -66,11 +66,11 @@ public class Pathname extends LispObject implements Serializable {
     // TODO distinguish between logical hosts and schemes for URLs
     // which we can meaningfully parse.
 
-    if (s.startsWith(PathnameJar.JAR_URI_PREFIX)) {
-        return PathnameJar.create(s);
+    if (s.startsWith(JarPathname.JAR_URI_PREFIX)) {
+        return JarPathname.create(s);
     }
     if (isValidURL(s)) {
-      return PathnameURL.create(s);
+      return URLPathname.create(s);
     } else {
       if (LogicalPathname.isValidLogicalPathname(s)) {
         return LogicalPathname.create(s);
@@ -186,7 +186,7 @@ public class Pathname extends LispObject implements Serializable {
             } else if (p.getDevice() instanceof Cons) {
               LispObject jars = p.getDevice();
               setDevice(NIL);
-              PathnameURL root = PathnameURL.create((Pathname)jars.car());
+              URLPathname root = URLPathname.create((Pathname)jars.car());
               device = device.push(root);
               jars = jars.cdr();
               while (jars.car() != NIL) {
@@ -317,21 +317,21 @@ public class Pathname extends LispObject implements Serializable {
         }
         
         // A JAR file
-        if (s.startsWith(PathnameJar.JAR_URI_PREFIX)
-            && s.endsWith(PathnameJar.JAR_URI_SUFFIX)) {
-          return (PathnameJar)PathnameJar.create(s);
+        if (s.startsWith(JarPathname.JAR_URI_PREFIX)
+            && s.endsWith(JarPathname.JAR_URI_SUFFIX)) {
+          return (JarPathname)JarPathname.create(s);
         }
 
         // An entry in a JAR file
-        final int separatorIndex = s.lastIndexOf(PathnameJar.JAR_URI_SUFFIX);
-        if (separatorIndex > 0 && s.startsWith(PathnameJar.JAR_URI_PREFIX)) {
-          return (PathnameJar)PathnameJar.create(s);
+        final int separatorIndex = s.lastIndexOf(JarPathname.JAR_URI_SUFFIX);
+        if (separatorIndex > 0 && s.startsWith(JarPathname.JAR_URI_PREFIX)) {
+          return (JarPathname)JarPathname.create(s);
         }
 
         // A URL (anything with a scheme that is not a logical
         // pathname, and not a JAR file or an entry in a JAR file)
         if (isValidURL(s)) {
-          return (PathnameURL)PathnameURL.create(s);
+          return (URLPathname)URLPathname.create(s);
         }
 
         if (Utilities.isPlatformWindows) {
@@ -506,8 +506,8 @@ public class Pathname extends LispObject implements Serializable {
             Debug.assertTrue(getHost() instanceof AbstractString 
                              || isURL());
             if (isURL()) {
-                LispObject scheme = Symbol.GETF.execute(getHost(), PathnameURL.SCHEME, NIL);
-                LispObject authority = Symbol.GETF.execute(getHost(), PathnameURL.AUTHORITY, NIL);
+                LispObject scheme = Symbol.GETF.execute(getHost(), URLPathname.SCHEME, NIL);
+                LispObject authority = Symbol.GETF.execute(getHost(), URLPathname.AUTHORITY, NIL);
                 Debug.assertTrue(scheme != NIL);
                 sb.append(scheme.getStringValue());
                 sb.append(":");
@@ -1225,13 +1225,13 @@ public class Pathname extends LispObject implements Serializable {
         p.setVersion(version);
         p.validateDirectory(true);
 
-        // ???  need to check for downcast to PathnameURL as well?
-        // Possibly downcast type to PathnameJar
+        // ???  need to check for downcast to URLPathname as well?
+        // Possibly downcast type to JarPathname
         if (p.getDevice() instanceof Cons) {
-          PathnameJar result = new PathnameJar();
+          JarPathname result = new JarPathname();
           result
             .copyFrom(p)
-            .setDevice(PathnameJar.makeJarDeviceFrom(p));
+            .setDevice(JarPathname.makeJarDeviceFrom(p));
           
           // sanity check that the pathname has been constructed correctly
           result.validateComponents();
@@ -1374,7 +1374,7 @@ public class Pathname extends LispObject implements Serializable {
 
           LispObject result = NIL;
           if (pathname.isJar()) {
-            return PathnameJar.listDirectory((PathnameJar)pathname);
+            return JarPathname.listDirectory((JarPathname)pathname);
           }
 
           String s = pathname.getNamestring();
@@ -1631,20 +1631,20 @@ public class Pathname extends LispObject implements Serializable {
       result = LogicalPathname.create();
       d = Pathname.create(defaultPathname);
     } else {
-      if (pathname instanceof PathnameJar
+      if (pathname instanceof JarPathname
           // If the defaults contain a JAR-PATHNAME, and the pathname
           // to be be merged is not a JAR-PATHNAME, does not have a
           // specified DEVICE or a specified HOST and has a NIL or
           // relative directory then the result will be a JAR-PATHNAME.
-          || (defaultPathname instanceof PathnameJar
-              && !(pathname instanceof PathnameJar)
+          || (defaultPathname instanceof JarPathname
+              && !(pathname instanceof JarPathname)
               && pathname.getHost().equals(NIL)
               && pathname.getDevice().equals(NIL)
               && (pathname.getDirectory().equals(NIL)
                   || pathname.getDirectory().car().equals(Keyword.RELATIVE)))) {
-        result = PathnameJar.create();
-      } else if (pathname instanceof PathnameURL) {
-        result = PathnameURL.create();
+        result = JarPathname.create();
+      } else if (pathname instanceof URLPathname) {
+        result = URLPathname.create();
       } else {
         result = Pathname.create();
       }
@@ -1652,10 +1652,10 @@ public class Pathname extends LispObject implements Serializable {
       if (defaultPathname instanceof LogicalPathname) {
         d = LogicalPathname.translateLogicalPathname((LogicalPathname) defaultPathname);
       } else {
-        if (defaultPathname instanceof PathnameJar) {
-          d = PathnameJar.create((PathnameJar)defaultPathname);
-        } else if (defaultPathname instanceof PathnameURL) {
-          d = PathnameURL.create(defaultPathname);
+        if (defaultPathname instanceof JarPathname) {
+          d = JarPathname.create((JarPathname)defaultPathname);
+        } else if (defaultPathname instanceof URLPathname) {
+          d = URLPathname.create(defaultPathname);
         } else {
           d = Pathname.create(defaultPathname);
         }
@@ -1672,8 +1672,8 @@ public class Pathname extends LispObject implements Serializable {
         if (!Utilities.isPlatformWindows) {
           result.setDevice(p.getDevice());
         } else {
-          if (d instanceof PathnameJar
-	      && p instanceof PathnameJar) {
+          if (d instanceof JarPathname
+	      && p instanceof JarPathname) {
             result.setDevice(d.getDevice());
           } else { 
             result.setDevice(p.getDevice());
@@ -1685,8 +1685,8 @@ public class Pathname extends LispObject implements Serializable {
         // specified DEVICE, a specified HOST, and doesn't contain a
         // relative DIRECTORY, then on non-MSDOG, set its device to
         // :UNSPECIFIC.
-        if ((d instanceof PathnameJar)
-            && !(result instanceof PathnameJar)) {
+        if ((d instanceof JarPathname)
+            && !(result instanceof JarPathname)) {
           if (!Utilities.isPlatformWindows) {
             result.setDevice(Keyword.UNSPECIFIC);
           } else {
@@ -1700,7 +1700,7 @@ public class Pathname extends LispObject implements Serializable {
       // Merge the directory of a relative JAR-PATHNAME with the
       // default directory.  
       // if (pathname.isJar()) {
-      //   Pathname root = ((PathnameJar)result).getRootJar();
+      //   Pathname root = ((JarPathname)result).getRootJar();
         
 
       //   LispObject jar = jars.car;
@@ -2133,7 +2133,7 @@ public class Pathname extends LispObject implements Serializable {
   // addressed as a JAR-PATHNAME
   public boolean isLocalFile() {
     if (getHost().equals(NIL)
-        || Symbol.GETF.execute(getHost(), PathnameURL.SCHEME, NIL).equals("file")) {
+        || Symbol.GETF.execute(getHost(), URLPathname.SCHEME, NIL).equals("file")) {
       return true;
     }
     return false;
@@ -2168,16 +2168,16 @@ public class Pathname extends LispObject implements Serializable {
   }
 
   boolean isRemote() {
-    if (this instanceof PathnameURL) {
-      PathnameURL p = (PathnameURL) this;
-      LispObject scheme = Symbol.GETF.execute(p.getHost(), PathnameURL.SCHEME, NIL);
+    if (this instanceof URLPathname) {
+      URLPathname p = (URLPathname) this;
+      LispObject scheme = Symbol.GETF.execute(p.getHost(), URLPathname.SCHEME, NIL);
       if (scheme.equals(NIL)
           || p.getHost().getStringValue().equals("file")) {
         return false;
       }
       return true;
-    } else if (this instanceof PathnameJar) {
-      Pathname root = (Pathname) ((PathnameJar)this).getRootJar();
+    } else if (this instanceof JarPathname) {
+      Pathname root = (Pathname) ((JarPathname)this).getRootJar();
       return root.isRemote();
     } else {
       return false;
