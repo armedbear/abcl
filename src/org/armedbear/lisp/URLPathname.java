@@ -162,7 +162,8 @@ public class URLPathname
     if (fragment != null) {
       host = host.push(FRAGMENT).push(new SimpleString(fragment));
     }
-    result.setHost(host.nreverse());
+    host = host.nreverse();
+    result.setHost(host);
 
     // URI encode necessary characters
     String path = uri.getRawPath();
