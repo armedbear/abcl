@@ -68,18 +68,24 @@ public class JarPathname
   }
 
   public static JarPathname createFromPathname(Pathname p) {
+    JarPathname result = new JarPathname();
+    Pathname rootDevice = new Pathname();
+
     if (p instanceof URLPathname) {
-      return JarPathname.create(JAR_URI_PREFIX
-                                + ((URLPathname)p).getNamestringAsURL()
-                                + JAR_URI_SUFFIX);
+      rootDevice.copyFrom(p);
     } else if (p instanceof Pathname) {
-      // FIXME: not going to work with namestrings with characters that need URI escaping
-      return JarPathname.create(JAR_URI_PREFIX
-                                + "file://" + p.getNamestring()
-                                + JAR_URI_SUFFIX);
+      // FIXME: not going to work with namestrings with characters
+      // that need URI escaping
+      URLPathname r = new URLPathname();
+      r.copyFrom(p);
+      rootDevice = r;
     } else {
-      return (JarPathname)p;
+      simple_error("Argument is already a JAR-PATHNAME: ~a", p);
     }
+
+    result.setDevice(new Cons(rootDevice, NIL));
+
+    return result;
   }
 
   /** Transform an entry in a jar to a reference as a jar */
