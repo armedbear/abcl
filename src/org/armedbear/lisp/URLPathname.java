@@ -199,6 +199,11 @@ public class URLPathname
         sb.append(authority.getStringValue());
       }
     }
+    if (Utilities.isPlatformWindows
+	&& getDevice() instanceof SimpleString) {
+      sb.append(getDevice().getStringValue())
+	.append(":");
+    }
     String directoryNamestring = getDirectoryNamestring();
     sb.append(directoryNamestring);
 
@@ -225,7 +230,8 @@ public class URLPathname
     return sb.toString();
   }
 
-  public String getNamestringAsURI() {
+  // TODO URIEncode path components?
+  public String getNamestringAsURL() {
     LispObject schemeProperty = Symbol.GETF.execute(getHost(), SCHEME, NIL);
     LispObject authorityProperty = Symbol.GETF.execute(getHost(), AUTHORITY, NIL);
     LispObject queryProperty = Symbol.GETF.execute(getHost(), QUERY, NIL);
@@ -246,7 +252,12 @@ public class URLPathname
     String path = "";
 
     if (!directory.equals("")) {
-      path = directory + file;
+      if (Utilities.isPlatformWindows
+	  && getDevice() instanceof SimpleString) {
+	path = getDevice().getStringValue() + ":" + directory + file;
+      } else {
+	path = directory + file;
+      }
     } else {
       path = file;
     }
@@ -261,13 +272,25 @@ public class URLPathname
       fragment = fragmentProperty.getStringValue();
     }
 
-    try {
-      URI uri = new URI(scheme, authority, path, query, fragment);
-      return uri.toString();
-    } catch (URISyntaxException e) {
-      simple_error("Failed to construct a URI: ~a", this);
-      return (String)UNREACHED;
+    StringBuffer result = new StringBuffer(scheme);
+    result.append(":");
+    result.append("//");
+    if (authority != null) {
+      result.append(authority);
     }
+    if (!path.startsWith("/")) {
+      result.append("/");
+    }
+    result.append(path);
+
+    if (query != null) {
+      result.append("?").append(query);
+    }
+
+    if (fragment != null) {
+      result.append("#").append(fragment);
+    }
+    return result.toString();
   }
 
   public LispObject typeOf() {
