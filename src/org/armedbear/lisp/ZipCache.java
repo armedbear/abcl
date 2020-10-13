@@ -558,9 +558,14 @@ public class ZipCache {
       return result ? T : NIL;
     }
   }
+
+  synchronized public static boolean remove(Pathname pathname) {
+    JarPathname p = JarPathname.createFromPathname(pathname);
+    return remove(p);
+  }
       
   synchronized public static boolean remove(JarPathname p) {
-    Archive archive = cache.get(p.getNamestring());
+    Archive archive = cache.get(p);
     if (archive != null) {
       archive.close();
       cache.remove(p);

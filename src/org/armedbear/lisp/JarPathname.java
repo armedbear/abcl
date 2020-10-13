@@ -69,16 +69,14 @@ public class JarPathname
 
   public static JarPathname createFromPathname(Pathname p) {
     JarPathname result = new JarPathname();
-    Pathname rootDevice = new Pathname();
+    URLPathname rootDevice = new URLPathname();
 
     if (p instanceof URLPathname) {
       rootDevice.copyFrom(p);
     } else if (p instanceof Pathname) {
       // FIXME: not going to work with namestrings with characters
       // that need URI escaping
-      URLPathname r = new URLPathname();
-      r.copyFrom(p);
-      rootDevice = r;
+      rootDevice.copyFrom(p);
     } else {
       simple_error("Argument is already a JAR-PATHNAME: ~a", p);
     }
