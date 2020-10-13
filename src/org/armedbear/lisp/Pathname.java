@@ -56,7 +56,7 @@ public class Pathname extends LispObject implements Serializable {
     if (p instanceof JarPathname) {
       return (JarPathname)JarPathname.create(p.getNamestring());
     } else if (p instanceof URLPathname) {
-      return (URLPathname)URLPathname.create(((URLPathname)p).getNamestringAsURI());
+      return (URLPathname)URLPathname.create(((URLPathname)p).getNamestringAsURL());
     } else {
       return new Pathname(p);
     }
@@ -1662,20 +1662,20 @@ public class Pathname extends LispObject implements Serializable {
       }
     }
 
-      if (pathname.getHost() != NIL) {
-        result.setHost(p.getHost());
-      } else {
-        result.setHost(d.getHost());
-      }
+    if (pathname.getHost().equals(NIL)) {
+      result.setHost(d.getHost());
+    } else {
+      result.setHost(p.getHost());
+    }
 
-      if (pathname.getDevice() != NIL) {
+      if (!pathname.getDevice().equals(NIL)) {
         if (!Utilities.isPlatformWindows) {
           result.setDevice(p.getDevice());
         } else {
           if (d instanceof JarPathname
 	      && p instanceof JarPathname) {
             result.setDevice(d.getDevice());
-          } else { 
+          } else {
             result.setDevice(p.getDevice());
           }
         }
@@ -1693,7 +1693,11 @@ public class Pathname extends LispObject implements Serializable {
             result.setDevice(d.getDevice());
           }
         } else {
-          result.setDevice(d.getDevice());
+	  if (p.isLocalFile() && d.isLocalFile()) {
+	    result.setDevice(d.getDevice());
+	  } else {
+	    result.setDevice(p.getDevice());
+	  }
         }
       }
 
