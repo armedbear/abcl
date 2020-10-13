@@ -67,8 +67,8 @@ public final class delete_file extends Primitive
       File file;
       if (defaultedPathname.isRemote()) {
         return error(new FileError("Unable to delete remote pathnames", defaultedPathname));
-      } else if (defaultedPathname instanceof PathnameJar) {
-        PathnameJar jar = (PathnameJar)defaultedPathname;
+      } else if (defaultedPathname instanceof JarPathname) {
+        JarPathname jar = (JarPathname)defaultedPathname;
         Pathname root = (Pathname)jar.getRootJar();
         Cons jars = (Cons)jar.getJars();
           
