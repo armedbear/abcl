@@ -70,7 +70,7 @@ public class JarPathname
   public static JarPathname createFromPathname(Pathname p) {
     if (p instanceof URLPathname) {
       return JarPathname.create(JAR_URI_PREFIX
-                                + ((URLPathname)p).getNamestringAsURI()
+                                + ((URLPathname)p).getNamestringAsURL()
                                 + JAR_URI_SUFFIX);
     } else if (p instanceof Pathname) {
       // FIXME: not going to work with namestrings with characters that need URI escaping
@@ -279,7 +279,7 @@ public class JarPathname
     LispObject root = getRootJar();
 
     if (root instanceof URLPathname) {
-      String ns = ((URLPathname)root).getNamestringAsURI();
+      String ns = ((URLPathname)root).getNamestringAsURL();
       sb.append(JAR_URI_PREFIX)
         .append(ns)
         .append(JAR_URI_SUFFIX);
