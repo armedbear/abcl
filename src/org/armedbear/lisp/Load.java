@@ -170,10 +170,10 @@ public final class Load
         }
 
         if (ZipCache.checkZipFile(truename)) {
-          if (truename instanceof PathnameJar) {
-            truename = PathnameJar.createFromEntry((PathnameJar)truename);
+          if (truename instanceof JarPathname) {
+            truename = JarPathname.createFromEntry((JarPathname)truename);
           } else {
-            truename = PathnameJar.createFromPathname(truename);
+            truename = JarPathname.createFromPathname(truename);
           }
           Pathname loader = Pathname.create("__loader__._"); // FIXME use constants
           mergedPathname = (Pathname)Symbol.MERGE_PATHNAMES.execute(loader, truename);
@@ -322,7 +322,7 @@ public final class Load
                                            + " in boot classpath."));
             }                
             if (!bootPath.equals(NIL)) {
-              Pathname urlPathname = (Pathname)PathnameURL.create(url);
+              Pathname urlPathname = (Pathname)URLPathname.create(url);
               loadableFile = findLoadableFile(urlPathname);
               truename = (Pathname)Symbol.PROBE_FILE.execute(loadableFile);
               if (truename.equals(NIL)) {

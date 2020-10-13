@@ -1,5 +1,5 @@
 /* 
- * PathnameJar.java
+ * JarPathname.java
  *
  * Copyright (C) 2020 @easye
  *
@@ -49,42 +49,42 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class PathnameJar
-  extends PathnameURL
+public class JarPathname
+  extends URLPathname
 {
   static final public String JAR_URI_SUFFIX = "!/";
   static final public String JAR_URI_PREFIX = "jar:";
 
-  protected PathnameJar() {}
+  protected JarPathname() {}
 
-  public static PathnameJar create() {
-    return new PathnameJar();
+  public static JarPathname create() {
+    return new JarPathname();
   }
 
-  public static PathnameJar create(PathnameJar p) {
-    PathnameJar result = new PathnameJar();
+  public static JarPathname create(JarPathname p) {
+    JarPathname result = new JarPathname();
     result.copyFrom(p);
     return result;
   }
 
-  public static PathnameJar createFromPathname(Pathname p) {
-    if (p instanceof PathnameURL) {
-      return PathnameJar.create(JAR_URI_PREFIX
-                                + ((PathnameURL)p).getNamestringAsURI()
+  public static JarPathname createFromPathname(Pathname p) {
+    if (p instanceof URLPathname) {
+      return JarPathname.create(JAR_URI_PREFIX
+                                + ((URLPathname)p).getNamestringAsURI()
                                 + JAR_URI_SUFFIX);
     } else if (p instanceof Pathname) {
       // FIXME: not going to work with namestrings with characters that need URI escaping
-      return PathnameJar.create(JAR_URI_PREFIX
+      return JarPathname.create(JAR_URI_PREFIX
                                 + "file://" + p.getNamestring()
                                 + JAR_URI_SUFFIX);
     } else {
-      return (PathnameJar)p;
+      return (JarPathname)p;
     }
   }
 
   /** Transform an entry in a jar to a reference as a jar */
-  public static PathnameJar createFromEntry(PathnameJar p) {
-    PathnameJar result = new PathnameJar();
+  public static JarPathname createFromEntry(JarPathname p) {
+    JarPathname result = new JarPathname();
     result
       .copyFrom(p)
       .setDirectory(NIL)
@@ -97,20 +97,20 @@ public class PathnameJar
     return result;
   }
     
-  static public PathnameJar createFromFile(String s) {
-    return PathnameJar.create(JAR_URI_PREFIX + "file:" + s + JAR_URI_SUFFIX);
+  static public JarPathname createFromFile(String s) {
+    return JarPathname.create(JAR_URI_PREFIX + "file:" + s + JAR_URI_SUFFIX);
   }
 
-  static public PathnameJar createEntryFromFile(String jar, String entry) {
-    return PathnameJar.create(JAR_URI_PREFIX + "file:" + jar + JAR_URI_SUFFIX + entry);
+  static public JarPathname createEntryFromFile(String jar, String entry) {
+    return JarPathname.create(JAR_URI_PREFIX + "file:" + jar + JAR_URI_SUFFIX + entry);
   }
 
-  static public PathnameJar createEntryFromJar(PathnameJar jar, String entry) {
+  static public JarPathname createEntryFromJar(JarPathname jar, String entry) {
     if (jar.isArchiveEntry()) {
       simple_error("Failed to create the entry ~a in ~a", entry, jar);
-      return (PathnameJar)UNREACHED;
+      return (JarPathname)UNREACHED;
     }
-    return PathnameJar.create(jar.getNamestring() + entry);
+    return JarPathname.create(jar.getNamestring() + entry);
   }
   /** 
    *  Enumerate the components of a jar namestring 
@@ -156,7 +156,7 @@ public class PathnameJar
       return result;
     }
 
-    // The root, non-PathnameJar location of this reference
+    // The root, non-JarPathname location of this reference
     // For files, possibly either a relative or absolute directory
     result.add(parts[0]);
 
@@ -176,20 +176,20 @@ public class PathnameJar
     return result;
   }
 
-  static public PathnameJar create(String s) {
+  static public JarPathname create(String s) {
     if (!s.startsWith(JAR_URI_PREFIX)) {
       parse_error("Cannot create a PATHNAME-JAR from namestring: " + s);
-      return (PathnameJar)UNREACHED;
+      return (JarPathname)UNREACHED;
     }
     
-    List<String> contents = PathnameJar.enumerate(s);
+    List<String> contents = JarPathname.enumerate(s);
 
     if (contents == null) {
       parse_error("Couldn't parse PATHNAME-JAR from namestring: " + s);
-      return (PathnameJar)UNREACHED;
+      return (JarPathname)UNREACHED;
     }
     
-    PathnameJar result = new PathnameJar();
+    JarPathname result = new JarPathname();
 
     // Normalize the root jar to be a URL
     String rootNamestring = contents.get(0);
@@ -197,7 +197,7 @@ public class PathnameJar
       rootNamestring = "file:" + rootNamestring;
     }
 
-    PathnameURL rootPathname = (PathnameURL)PathnameURL.create(rootNamestring);
+    URLPathname rootPathname = (URLPathname)URLPathname.create(rootNamestring);
 
     LispObject jars = NIL;
     jars = jars.push(rootPathname);
@@ -234,7 +234,7 @@ public class PathnameJar
     LispObject jars = getDevice();
 
     LispObject rootJar = getRootJar();
-    if (!(rootJar instanceof PathnameURL)) {
+    if (!(rootJar instanceof URLPathname)) {
         return type_error("The first element in the DEVICE component of a JAR-PATHNAME is not of expected type",
                           rootJar,
                           Symbol.URL_PATHNAME);
@@ -245,7 +245,7 @@ public class PathnameJar
     while (!jars.car().equals(NIL)) {
       LispObject jar = jars.car();
       if (!((jar instanceof Pathname)
-            || (jar instanceof PathnameURL))) {
+            || (jar instanceof URLPathname))) {
         return type_error("The value in DEVICE component of a JAR-PATHNAME is not of expected type",
                           jar,
                           list(Symbol.OR,
@@ -278,8 +278,8 @@ public class PathnameJar
 
     LispObject root = getRootJar();
 
-    if (root instanceof PathnameURL) {
-      String ns = ((PathnameURL)root).getNamestringAsURI();
+    if (root instanceof URLPathname) {
+      String ns = ((URLPathname)root).getNamestringAsURI();
       sb.append(JAR_URI_PREFIX)
         .append(ns)
         .append(JAR_URI_SUFFIX);
@@ -338,9 +338,9 @@ public class PathnameJar
 
   String getRootJarAsURLString() {
    return
-     PathnameJar.JAR_URI_PREFIX
+     JarPathname.JAR_URI_PREFIX
      + ((Pathname)getRootJar()).getNamestring()
-     + PathnameJar.JAR_URI_SUFFIX;
+     + JarPathname.JAR_URI_SUFFIX;
   }
 
 
@@ -350,21 +350,21 @@ public class PathnameJar
 
   public static LispObject truename(Pathname pathname,
 				    boolean errorIfDoesNotExist) {
-    if (!(pathname instanceof PathnameJar)) {
-      return PathnameURL.truename(pathname, errorIfDoesNotExist);
+    if (!(pathname instanceof JarPathname)) {
+      return URLPathname.truename(pathname, errorIfDoesNotExist);
     }
-    PathnameJar p = new PathnameJar();
+    JarPathname p = new JarPathname();
     p.copyFrom(pathname);
 
     // Run a truename resolution on the path of local jar archives
     if (p.isLocalFile()) {
-      PathnameURL rootJar = new PathnameURL();
+      URLPathname rootJar = new URLPathname();
       rootJar.copyFrom((Pathname)p.getRootJar());
-      // Ensure that we don't return a PathnameJar if the current default is one
+      // Ensure that we don't return a JarPathname if the current default is one
       if (rootJar.getDevice().equals(NIL)) {
         rootJar.setDevice(Keyword.UNSPECIFIC);
       }
-      LispObject trueRootJar = PathnameURL.truename(rootJar, errorIfDoesNotExist);
+      LispObject trueRootJar = URLPathname.truename(rootJar, errorIfDoesNotExist);
       if (trueRootJar.equals(NIL)) {
 	return Pathname.doTruenameExit(rootJar, errorIfDoesNotExist);
       }
@@ -401,11 +401,11 @@ public class PathnameJar
              && getType().equals(NIL));
   }
 
-  public PathnameJar getArchive() {
+  public JarPathname getArchive() {
     if (!isArchiveEntry()) {
-      return (PathnameJar)simple_error("Pathname already represents an archive.");
+      return (JarPathname)simple_error("Pathname already represents an archive.");
     }
-    PathnameJar archive = new PathnameJar();
+    JarPathname archive = new JarPathname();
     archive.copyFrom(this);
     archive
       .setDirectory(NIL)
@@ -436,7 +436,7 @@ public class PathnameJar
   }
 
   /** List the contents of a directory within a JAR archive */
-  static public LispObject listDirectory(PathnameJar pathname) {
+  static public LispObject listDirectory(JarPathname pathname) {
     String directory = pathname.asEntryPath();
     // We should only be listing directories
     if (pathname.getDirectory() == NIL) {
@@ -457,10 +457,10 @@ public class PathnameJar
 
     LispObject result = NIL;
     
-    Iterator<Map.Entry<PathnameJar,ZipEntry>> iterator = ZipCache.getEntriesIterator(pathname);
+    Iterator<Map.Entry<JarPathname,ZipEntry>> iterator = ZipCache.getEntriesIterator(pathname);
     while (iterator.hasNext()) {
-      Map.Entry<PathnameJar,ZipEntry> e = iterator.next();
-      PathnameJar entry = e.getKey();
+      Map.Entry<JarPathname,ZipEntry> e = iterator.next();
+      JarPathname entry = e.getKey();
       if (!Symbol.PATHNAME_MATCH_P.execute(entry, wildcard).equals(NIL)) {
         result = result.push(entry);
       }
@@ -491,14 +491,14 @@ public class PathnameJar
         return new FileError("Not a wild pathname.", pathname);
       }
 
-      PathnameJar jarPathname = new PathnameJar();
+      JarPathname jarPathname = new JarPathname();
       jarPathname
         .copyFrom(pathname)
         .setDirectory(NIL)
         .setName(NIL)
         .setType(NIL);
-      PathnameJar wildcard = (PathnameJar)Symbol.TRUENAME.execute(jarPathname);
-      Iterator<Map.Entry<PathnameJar,ZipEntry>> iterator
+      JarPathname wildcard = (JarPathname)Symbol.TRUENAME.execute(jarPathname);
+      Iterator<Map.Entry<JarPathname,ZipEntry>> iterator
         = ZipCache.getEntriesIterator(wildcard);
       wildcard
         .setDirectory(pathname.getDirectory())
@@ -507,8 +507,8 @@ public class PathnameJar
             
       LispObject result = NIL;
       while (iterator.hasNext()) {
-        Map.Entry<PathnameJar,ZipEntry> e = iterator.next();
-        PathnameJar entry = e.getKey();
+        Map.Entry<JarPathname,ZipEntry> e = iterator.next();
+        JarPathname entry = e.getKey();
         LispObject matches
           = Symbol.PATHNAME_MATCH_P.execute(entry, wildcard);
           
@@ -536,8 +536,8 @@ public class PathnameJar
     return 0;
   }
 
-  static PathnameJar joinEntry(PathnameJar root, Pathname entry) {
-    PathnameJar result = new PathnameJar();
+  static JarPathname joinEntry(JarPathname root, Pathname entry) {
+    JarPathname result = new JarPathname();
     result
       .copyFrom(root)
       .setDirectory(entry.getDirectory())
@@ -546,26 +546,26 @@ public class PathnameJar
     return result;
   }
 
-  static LispObject makeDeviceFrom(PathnameJar p) {
-    PathnameJar result = new PathnameJar();
+  static LispObject makeDeviceFrom(JarPathname p) {
+    JarPathname result = new JarPathname();
     result.copyFrom(p);
     Pathname rootJar = (Pathname)result.getRootJar();
     if (!rootJar.equals(NIL)
         && (rootJar instanceof Pathname)) {
-      rootJar = (Pathname)PathnameURL.createFromFile(rootJar);
+      rootJar = (Pathname)URLPathname.createFromFile(rootJar);
       result.setDevice(new Cons(rootJar, result.getJars().cdr()));
     }
     return result;
   }
 
   static LispObject makeJarDeviceFrom(Pathname p) {
-    PathnameJar result = new PathnameJar();
+    JarPathname result = new JarPathname();
     result.copyFrom(p);
     Pathname rootJar = (Pathname)result.getRootJar();
     // Ensure
     if (!rootJar.equals(NIL)
         && (rootJar instanceof Pathname)) {
-      rootJar = (Pathname)PathnameURL.createFromFile(rootJar);
+      rootJar = (Pathname)URLPathname.createFromFile(rootJar);
       result.setDevice(new Cons(rootJar, result.getJars().cdr()));
     }
     return result.getDevice();
