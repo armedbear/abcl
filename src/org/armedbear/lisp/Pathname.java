@@ -171,12 +171,20 @@ public class Pathname extends LispObject
    */
   Pathname copyFrom(Pathname p) {
         if (p.host != NIL) {
-            if (p.host instanceof SimpleString) {
-              setHost(new SimpleString(((SimpleString)p.getHost()).getStringValue()));
-            } else  if (p.host instanceof Symbol) {
-              setHost(p.host);
-            } else if (p.host instanceof Cons) {
-                host = new Cons((Cons)p.getHost());
+          LispObject pHost = p.getHost();
+          if (pHost instanceof SimpleString) {
+              setHost(new SimpleString(pHost.getStringValue()));
+            } else if (pHost instanceof Symbol) {
+              setHost(pHost);
+          } else if (pHost instanceof Cons) {
+              LispObject newHost = NIL;
+              LispObject components = pHost.reverse();
+              while (!components.car().equals(NIL)) {
+                LispObject copy = components.car(); // TODO actually make a copy?
+                newHost = newHost.push(copy);
+                components = components.cdr();
+              }
+              setHost(newHost);
             } else {
               simple_error("Failed to copy host in pathname ~a", p);
             }
@@ -187,7 +195,13 @@ public class Pathname extends LispObject
             } else if (p.getDevice() instanceof Cons) {
               LispObject jars = p.getDevice();
               setDevice(NIL);
-              URLPathname root = URLPathname.create((Pathname)jars.car());
+              URLPathname root = null;
+              Pathname rootPathname = (Pathname) jars.car();
+              if (rootPathname instanceof URLPathname) {
+                root = URLPathname.create((URLPathname)rootPathname); 
+              } else {
+                root = URLPathname.create((Pathname)rootPathname);
+              }
               device = device.push(root);
               jars = jars.cdr();
               while (jars.car() != NIL) {
@@ -1236,18 +1250,23 @@ public class Pathname extends LispObject
         // Possibly downcast type to JarPathname
         if (p.getDevice() instanceof Cons) {
           JarPathname result = new JarPathname();
-          result
-            .copyFrom(p)
-            .setDevice(JarPathname.makeJarDeviceFrom(p));
-          
+          result.copyFrom(p);
+          Pathname root = (Pathname)result.getDevice().car();
+          URLPathname rootDevice = null;
+          if (root instanceof URLPathname) {
+            rootDevice = URLPathname.create((URLPathname)root);
+          } else {
+            rootDevice = URLPathname.create(root);
+          }
+          result.setDevice(new Cons(rootDevice, result.getDevice().cdr()));
           // sanity check that the pathname has been constructed correctly
-          result.validateComponents();
 
+          result.validateComponents();
           return result;
         }
-        
         return p;
     }
+
 
     private static final AbstractString validateStringComponent(AbstractString s) {
         final int limit = s.length();
