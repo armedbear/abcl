@@ -46,8 +46,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-public class Pathname extends LispObject implements Serializable {
-
+public class Pathname extends LispObject
+  implements Serializable
+{
   protected static Pathname create() {
     return new Pathname();
   }
@@ -142,7 +143,6 @@ public class Pathname extends LispObject implements Serializable {
     return this;
   }
 
-
   /** 
    * The path component separator used by internally generated
    * path namestrings.
@@ -150,7 +150,8 @@ public class Pathname extends LispObject implements Serializable {
   public final static char directoryDelimiter = '/';
     
 
-  // If not protected, then inheriting classes cannot invoke their constructors
+  // If we don't declare the no-arg constructor protected, then
+  // inheriting classes cannot invoke their constructors !?!
   protected Pathname() {}
 
   private Pathname(Pathname p) {
@@ -166,7 +167,7 @@ public class Pathname extends LispObject implements Serializable {
   }
 
   /**
-   *
+   *  Create a deep copy of all the information referenced by p
    */
   Pathname copyFrom(Pathname p) {
         if (p.host != NIL) {
@@ -270,138 +271,144 @@ public class Pathname extends LispObject implements Serializable {
     }
 
   private static final Pathname init(String s) { 
-      Pathname result = new Pathname();
-        if (s == null) {
-          return (Pathname)parse_error("Refusing to create a PATHNAME for the null reference.");
+    Pathname result = new Pathname();
+    if (s == null) {
+      return (Pathname)parse_error("Refusing to create a PATHNAME for the null reference.");
+    }
+    if (s.equals(".") || s.equals("./")
+        || (Utilities.isPlatformWindows && s.equals(".\\"))) {
+      result.setDirectory(new Cons(Keyword.RELATIVE));
+      return result;
+    } 
+    if (s.equals("..") || s.equals("../")) {
+      result.setDirectory(list(Keyword.RELATIVE, Keyword.UP));
+      return result;
+    }
+    // UNC Windows shares
+    if (Utilities.isPlatformWindows) {
+      if (s.startsWith("\\\\") || s.startsWith("//")) { 
+        // UNC path support
+        int shareIndex;
+        int dirIndex;
+        // match \\<server>\<share>\[directories-and-files]
+        if (s.startsWith("\\\\")) {
+          shareIndex = s.indexOf('\\', 2);
+          dirIndex = s.indexOf('\\', shareIndex + 1);
+          // match //<server>/<share>/[directories-and-files]
+        } else {
+          shareIndex = s.indexOf('/', 2);
+          dirIndex = s.indexOf('/', shareIndex + 1);
         }
-        if (s.equals(".") || s.equals("./")
-          || (Utilities.isPlatformWindows && s.equals(".\\"))) {
-            result.setDirectory(new Cons(Keyword.RELATIVE));
-            return result;
-        } 
-        if (s.equals("..") || s.equals("../")) {
-            result.setDirectory(list(Keyword.RELATIVE, Keyword.UP));
-            return result;
-        }
-        // UNC Windows shares
-        if (Utilities.isPlatformWindows) {
-          if (s.startsWith("\\\\") || s.startsWith("//")) { 
-            // UNC path support
-            int shareIndex;
-            int dirIndex;
-            // match \\<server>\<share>\[directories-and-files]
-            if (s.startsWith("\\\\")) {
-              shareIndex = s.indexOf('\\', 2);
-              dirIndex = s.indexOf('\\', shareIndex + 1);
-              // match //<server>/<share>/[directories-and-files]
-            } else {
-              shareIndex = s.indexOf('/', 2);
-              dirIndex = s.indexOf('/', shareIndex + 1);
-            }
-            if (shareIndex == -1 || dirIndex == -1) {
-              return (Pathname)parse_error("Unsupported UNC path format: \"" + s + '"');
-            }
-
-            result
-              .setHost(new SimpleString(s.substring(2, shareIndex)))
-              .setDevice(new SimpleString(s.substring(shareIndex + 1, dirIndex)));
-
-            Pathname p = (Pathname)Pathname.create(s.substring(dirIndex));
-            result
-              .setDirectory(p.getDirectory())
-              .setName(p.getName())
-              .setType(p.getType())
-              .setVersion(p.getVersion());
-            return result;
-          }
+        if (shareIndex == -1 || dirIndex == -1) {
+          return (Pathname)parse_error("Unsupported UNC path format: \"" + s + '"');
         }
         
-        // A JAR file
-        if (s.startsWith(JarPathname.JAR_URI_PREFIX)
-            && s.endsWith(JarPathname.JAR_URI_SUFFIX)) {
-          return (JarPathname)JarPathname.create(s);
-        }
+        result
+          .setHost(new SimpleString(s.substring(2, shareIndex)))
+          .setDevice(new SimpleString(s.substring(shareIndex + 1, dirIndex)));
 
-        // An entry in a JAR file
-        final int separatorIndex = s.lastIndexOf(JarPathname.JAR_URI_SUFFIX);
-        if (separatorIndex > 0 && s.startsWith(JarPathname.JAR_URI_PREFIX)) {
-          return (JarPathname)JarPathname.create(s);
-        }
-
-        // A URL (anything with a scheme that is not a logical
-        // pathname, and not a JAR file or an entry in a JAR file)
-        if (isValidURL(s)) {
-          return (URLPathname)URLPathname.create(s);
-        }
-
-        if (Utilities.isPlatformWindows) {
-            if (s.contains("\\")) {
-                s = s.replace("\\", "/");
-            } 
-        }
-
-        // Expand user home directories
-        if (Utilities.isPlatformUnix) {
-            if (s.equals("~")) {
-                s = System.getProperty("user.home").concat("/");
-            } else if (s.startsWith("~/")) {
-                s = System.getProperty("user.home").concat(s.substring(1));
-            }
-        }
-        //        namestring = s;
-        if (Utilities.isPlatformWindows) {
-            if (s.length() >= 2 && s.charAt(1) == ':') {
-                result.setDevice(new SimpleString(s.charAt(0)));
-                s = s.substring(2);
-            }
-        }
-        String d = null;
-        // Find last file separator char.
-        for (int i = s.length(); i-- > 0;) {
-            if (s.charAt(i) == '/') {
-                d = s.substring(0, i + 1);
-                s = s.substring(i + 1);
-                break;
-            }
-        }
-        if (d != null) {
-            if (s.equals("..")) {
-                d = d.concat(s);
-                s = "";
-            }
-            result.setDirectory(parseDirectory(d));
-        }
-        if (s.startsWith(".") 
-            // No TYPE can be parsed
-            && (s.indexOf(".", 1) == -1 
-                || s.substring(s.length() -1).equals("."))) {
-            result.setName(new SimpleString(s));
-            return result;
-        }
-        int index = s.lastIndexOf('.');
-        String n = null;
-        String t = null;
-        if (index > 0) {
-            n = s.substring(0, index);
-            t = s.substring(index + 1);
-        } else if (s.length() > 0) {
-            n = s;
-        }
-        if (n != null) {
-            if (n.equals("*")) {
-                result.setName(Keyword.WILD);
-            } else {
-                result.setName(new SimpleString(n));
-            }
-        }
-        if (t != null) {
-            if (t.equals("*")) {
-                result.setType(Keyword.WILD);
-            } else {
-                result.setType(new SimpleString(t));
-            }
-        }
+        Pathname p = (Pathname)Pathname.create(s.substring(dirIndex));
+        result
+          .setDirectory(p.getDirectory())
+          .setName(p.getName())
+          .setType(p.getType())
+          .setVersion(p.getVersion());
         return result;
+      }
+    }
+        
+    // A JAR file
+    if (s.startsWith(JarPathname.JAR_URI_PREFIX)
+        && s.endsWith(JarPathname.JAR_URI_SUFFIX)) {
+      return (JarPathname)JarPathname.create(s);
+    }
+
+    // An entry in a JAR file
+    final int separatorIndex = s.lastIndexOf(JarPathname.JAR_URI_SUFFIX);
+    if (separatorIndex > 0 && s.startsWith(JarPathname.JAR_URI_PREFIX)) {
+      return (JarPathname)JarPathname.create(s);
+    }
+    
+    // A URL (anything with a scheme that is not a logical
+    // pathname, and not a JAR file or an entry in a JAR file)
+    if (isValidURL(s)) {
+      return (URLPathname)URLPathname.create(s);
+    }
+
+    // Normalize path separators to forward slashes
+    if (Utilities.isPlatformWindows) {
+      if (s.contains("\\")) {
+        s = s.replace("\\", "/");
+      } 
+    }
+
+    // Expand user home directories
+    if (Utilities.isPlatformUnix) {
+      if (s.equals("~")) {
+        s = System.getProperty("user.home").concat("/");
+      } else if (s.startsWith("~/")) {
+        s = System.getProperty("user.home").concat(s.substring(1));
+      }
+    }
+
+    // possible MSDOS device
+    if (Utilities.isPlatformWindows) {
+      if (s.length() >= 2 && s.charAt(1) == ':') {
+        result.setDevice(new SimpleString(s.charAt(0)));
+        s = s.substring(2);
+      }
+    }
+
+    String d = null;
+    // Find last file separator char.
+    for (int i = s.length(); i-- > 0;) {
+      if (s.charAt(i) == '/') {
+        d = s.substring(0, i + 1);
+        s = s.substring(i + 1);
+        break;
+      }
+    }
+
+    if (d != null) {
+      if (s.equals("..")) {
+        d = d.concat(s);
+        s = "";
+      }
+      result.setDirectory(parseDirectory(d));
+    }
+
+    if (s.startsWith(".") 
+        // No TYPE can be parsed
+        && (s.indexOf(".", 1) == -1 
+            || s.substring(s.length() -1).equals("."))) {
+      result.setName(new SimpleString(s));
+      return result;
+    }
+
+    int index = s.lastIndexOf('.');
+    String n = null;
+    String t = null;
+    if (index > 0) {
+      n = s.substring(0, index);
+      t = s.substring(index + 1);
+    } else if (s.length() > 0) {
+      n = s;
+    }
+    if (n != null) {
+      if (n.equals("*")) {
+        result.setName(Keyword.WILD);
+      } else {
+        result.setName(new SimpleString(n));
+      }
+        }
+    if (t != null) {
+      if (t.equals("*")) {
+        result.setType(Keyword.WILD);
+      } else {
+        result.setType(new SimpleString(t));
+      }
+    }
+    return result;
   }
 
     private static final LispObject parseDirectory(String d) {
