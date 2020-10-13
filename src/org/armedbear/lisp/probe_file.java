@@ -60,10 +60,10 @@ public final class probe_file
                                        p));
           }
           // TODO: refactor Pathname{,Jar,URL}.truename() to be non-static?
-          if (p instanceof PathnameJar) {
-            return PathnameJar.truename(p, false);
-          } else if (p instanceof PathnameURL) {
-            return PathnameURL.truename((PathnameURL)p, false);
+          if (p instanceof JarPathname) {
+            return JarPathname.truename(p, false);
+          } else if (p instanceof URLPathname) {
+            return URLPathname.truename((URLPathname)p, false);
           } else {
             return Pathname.truename(p, false);
           }
@@ -89,10 +89,10 @@ public final class probe_file
           }
 
           // TODO: refactor Pathname{,Jar,URL}.truename() to be non-static?
-          if (p instanceof PathnameJar) {
-            return PathnameJar.truename(p, true);
-          } else if (p instanceof PathnameURL) {
-            return PathnameURL.truename((PathnameURL)p, true);
+          if (p instanceof JarPathname) {
+            return JarPathname.truename(p, true);
+          } else if (p instanceof URLPathname) {
+            return URLPathname.truename((URLPathname)p, true);
           } else {
             return Pathname.truename(p, true);
           }

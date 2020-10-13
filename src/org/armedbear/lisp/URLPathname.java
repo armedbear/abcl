@@ -1,5 +1,5 @@
 /* 
- * PathnameURL.java
+ * URLPathname.java
  *
  * Copyright (C) 2020 @easye
  *
@@ -44,7 +44,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 
-public class PathnameURL
+public class URLPathname
   extends Pathname
 {
   static final Symbol SCHEME = internKeyword("SCHEME");
@@ -52,50 +52,50 @@ public class PathnameURL
   static final Symbol QUERY = internKeyword("QUERY");
   static final Symbol FRAGMENT = internKeyword("FRAGMENT");
 
-  protected PathnameURL() {}
+  protected URLPathname() {}
 
-  public static PathnameURL create() {
-    return new PathnameURL();
+  public static URLPathname create() {
+    return new URLPathname();
   }
 
-  public static PathnameURL create(Pathname p) {
-    return (PathnameURL)createFromFile((Pathname)p);
+  public static URLPathname create(Pathname p) {
+    return (URLPathname)createFromFile((Pathname)p);
   }
 
-  public static PathnameURL create(PathnameURL p) {
-    PathnameURL result = new PathnameURL();
+  public static URLPathname create(URLPathname p) {
+    URLPathname result = new URLPathname();
     result.copyFrom(p);
     return result;
   }
 
-  public static PathnameURL create(URL url) {
-    return PathnameURL.create(url.toString());
+  public static URLPathname create(URL url) {
+    return URLPathname.create(url.toString());
   }
 
-  public static PathnameURL create(URI uri) {
-    return PathnameURL.create(uri.toString());
+  public static URLPathname create(URI uri) {
+    return URLPathname.create(uri.toString());
   }
 
-  public static PathnameURL createFromFile(Pathname p) {
+  public static URLPathname createFromFile(Pathname p) {
     String ns = "file:" + p.getNamestring();
     return create(ns);
   }
 
-  public static PathnameURL create(String s) {
+  public static URLPathname create(String s) {
     if (!isValidURL(s)) {
       parse_error("Cannot form a PATHNAME-URL from " + s);
     }
-    if (s.startsWith(PathnameJar.JAR_URI_PREFIX)) {
-      return PathnameJar.create(s);
+    if (s.startsWith(JarPathname.JAR_URI_PREFIX)) {
+      return JarPathname.create(s);
     }
 
-    PathnameURL result = new PathnameURL();
+    URLPathname result = new URLPathname();
     URL url = null;
     try {
       url = new URL(s);
     } catch (MalformedURLException e) {
       parse_error("Malformed URL in namestring '" + s + "': " + e.toString());
-      return (PathnameURL) UNREACHED;
+      return (URLPathname) UNREACHED;
     }
     String scheme = url.getProtocol();
     if (scheme.equals("file")) {
@@ -106,7 +106,7 @@ public class PathnameURL
         parse_error("Improper URI syntax for "
 		    + "'" + url.toString() + "'"
 		    + ": " + ex.toString());
-	return (PathnameURL)UNREACHED;
+	return (URLPathname)UNREACHED;
       }
             
       String uriPath = uri.getPath();
@@ -116,7 +116,7 @@ public class PathnameURL
         uriPath = uri.getSchemeSpecificPart();
         if (uriPath == null || uriPath.equals("")) {
           parse_error("The namestring URI has no path: " + uri);
-	  return (PathnameURL)UNREACHED;
+	  return (URLPathname)UNREACHED;
         }
       }
       final File file = new File(uriPath);
@@ -142,7 +142,7 @@ public class PathnameURL
       parse_error("Couldn't form URI from "
 		  + "'" + url + "'"
 		  + " because: " + e);
-      return (PathnameURL)UNREACHED;
+      return (URLPathname)UNREACHED;
     }
     String authority = uri.getAuthority();
     if (authority == null) {
@@ -280,20 +280,20 @@ public class PathnameURL
   }
 
   public static LispObject truename(Pathname p, boolean errorIfDoesNotExist) {
-    PathnameURL pathnameURL = (PathnameURL)PathnameURL.createFromFile(p);
-    return PathnameURL.truename(pathnameURL, errorIfDoesNotExist);
+    URLPathname pathnameURL = (URLPathname)URLPathname.createFromFile(p);
+    return URLPathname.truename(pathnameURL, errorIfDoesNotExist);
   }
 
-  public static LispObject truename(PathnameURL p, boolean errorIfDoesNotExist) {
+  public static LispObject truename(URLPathname p, boolean errorIfDoesNotExist) {
     if (p.getHost().equals(NIL)
-     || Symbol.GETF.execute(p.getHost(), PathnameURL.SCHEME, NIL)
+     || Symbol.GETF.execute(p.getHost(), URLPathname.SCHEME, NIL)
           .equals("file")) {
       LispObject fileTruename = Pathname.truename(p, errorIfDoesNotExist);
       if (fileTruename.equals(NIL)) {
         return NIL;
       }
-      if (!(fileTruename instanceof PathnameURL)) {
-        PathnameURL urlTruename = PathnameURL.create((Pathname)fileTruename);
+      if (!(fileTruename instanceof URLPathname)) {
+        URLPathname urlTruename = URLPathname.create((Pathname)fileTruename);
         return urlTruename;
       }
       return fileTruename;
@@ -304,8 +304,8 @@ public class PathnameURL
       // see if there is URL available "underneath".
       if (p.getName() != NIL 
           && p.getType() == NIL
-          && Symbol.GETF.execute(p.getHost(), PathnameURL.QUERY, NIL) == NIL
-          && Symbol.GETF.execute(p.getHost(), PathnameURL.FRAGMENT, NIL) == NIL) {
+          && Symbol.GETF.execute(p.getHost(), URLPathname.QUERY, NIL) == NIL
+          && Symbol.GETF.execute(p.getHost(), URLPathname.FRAGMENT, NIL) == NIL) {
         if (p.getInputStream() != null) {
           return p;
         }

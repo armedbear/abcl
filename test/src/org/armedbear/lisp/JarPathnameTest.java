@@ -9,12 +9,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class PathnameJarTest
+public class JarPathnameTest
 {
   @Test
   public void enumerate1() {
     String s = "jar:jar:file:/a/foo.jar!/b/baz.abcl!/path/c.lisp";
-    List<String> r = PathnameJar.enumerate(s);
+    List<String> r = JarPathname.enumerate(s);
     assertTrue("3 results", r.size() == 3);
     String parts[] = {
       "file:/a/foo.jar",
@@ -29,7 +29,7 @@ public class PathnameJarTest
   @Test
   public void enumerate2() {
     String s = "jar:jar:file:/a/foo.jar!/b/baz.abcl!/";
-    List<String> r = PathnameJar.enumerate(s);
+    List<String> r = JarPathname.enumerate(s);
     assertTrue("2 results", r.size() == 2);
     String parts[] = {
       "file:/a/foo.jar",
@@ -43,7 +43,7 @@ public class PathnameJarTest
   @Test
   public void enumerate3() {
     String s = "jar:jar:https://example.com/a/foo.jar!/b/baz.abcl!/path/c.lisp";
-    List<String> r = PathnameJar.enumerate(s);
+    List<String> r = JarPathname.enumerate(s);
     assertTrue("3 results", r.size() == 3);
     String parts[] = {
       "https://example.com/a/foo.jar",
@@ -58,7 +58,7 @@ public class PathnameJarTest
   @Test
   public void enumerate4() {
     String s = "jar:jar:jar:file:/a/foo.jar!/b/baz.abcl!/log4j.jar!/MF/manifest.mf";
-    List<String> r = PathnameJar.enumerate(s);
+    List<String> r = JarPathname.enumerate(s);
     assertTrue("4 results", r.size() == 4);
     String parts[] = {
       "file:/a/foo.jar",
