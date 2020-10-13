@@ -391,35 +391,27 @@ public class Pathname extends LispObject
       result.setDirectory(parseDirectory(d));
     }
 
-    if (s.startsWith(".") 
-        // No TYPE can be parsed
-        && (s.indexOf(".", 1) == -1 
-            || s.substring(s.length() -1).equals("."))) {
-      result.setName(new SimpleString(s));
-      return result;
-    }
-
     int index = s.lastIndexOf('.');
-    String n = null;
-    String t = null;
+    String name = null;
+    String type = null;
     if (index > 0) {
-      n = s.substring(0, index);
-      t = s.substring(index + 1);
+      name = s.substring(0, index);
+      type = s.substring(index + 1);
     } else if (s.length() > 0) {
-      n = s;
+      name = s;
     }
-    if (n != null) {
-      if (n.equals("*")) {
+    if (name != null) {
+      if (name.equals("*")) {
         result.setName(Keyword.WILD);
       } else {
-        result.setName(new SimpleString(n));
+        result.setName(new SimpleString(name));
       }
-        }
-    if (t != null) {
-      if (t.equals("*")) {
+    }
+    if (type != null) {
+      if (type.equals("*")) {
         result.setType(Keyword.WILD);
       } else {
-        result.setType(new SimpleString(t));
+        result.setType(new SimpleString(type));
       }
     }
     return result;
