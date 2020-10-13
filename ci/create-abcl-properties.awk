@@ -1,4 +1,4 @@
 /^java.options/ {print $0 " " options; next}
-/^abcl.javac.target/ {print "abcl.javac.target=" target; next}
-/^abcl.javac.source/ {print "abcl.javac.source=" source; next}
+/ant.build.javac.target/ {print "ant.build.javac.target=" target; next}
+/ant.build.javac.source/ {print "ant.build.javac.source=" source; next}
 {print $0}

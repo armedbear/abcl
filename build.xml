@@ -193,11 +193,18 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       </echo>
     </target>
 
-    <!-- For compiling beyond openjdk11, one needs to increment these values in <file:abcl.properties> -->
-    <property name="abcl.javac.target"
-              value="1.6"/>
-    <property name="abcl.javac.source"
-              value="1.6"/>
+    <!-- The Java compilation options are perhaps underspecified in
+         terms of the target JVM in order to support a developer who
+         simply wants to compile and run locally with least hassles.
+	 
+	 When preparing ABCL binaries for wider distribution, the
+	 values of the abcl.build.target.javac and
+	 abcl.build.source.java become more important.  
+
+         The 'abcl.properties.autoconfigure.*' targets use the
+         ci/create-build-properties.bash script to set these options
+         for various openjdk platforms.
+    -->
 
     <target name="abcl.compile.java" 
             depends="abcl.init,abcl.java.warning">
@@ -205,8 +212,6 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <mkdir dir="${build.classes.dir}"/>
       <javac destdir="${build.classes.dir}"
              debug="true"
-             target="${abcl.javac.target}"
-             source="${abcl.javac.source}"
              includeantruntime="false"
              encoding="UTF-8"
              failonerror="true">
@@ -1218,7 +1223,7 @@ JVM System Properties
 </target>
 
     <target name="abcl.release" 
-            depends="abcl.clean,abcl.binary.tar,abcl.source.tar,abcl.binary.zip,abcl.source.zip">
+            depends="abcl.clean,abcl.properties.autoconfigure.openjdk.8,abcl.binary.tar,abcl.source.tar,abcl.binary.zip,abcl.source.zip,abcl.wrapper">
       <copy file="${abcl.jar.path}"
             tofile="${dist.dir}/abcl-${abcl.version}.jar"/>
       <copy file="${abcl-contrib.jar}"
