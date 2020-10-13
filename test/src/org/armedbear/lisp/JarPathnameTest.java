@@ -77,7 +77,8 @@ public class JarPathnameTest
       "jar:file:///foo.jar!/",
       "jar:jar:file:///foo.jar!/baz.abcl!/",
       "jar:jar:file:///foo.jar!/baz.abcl!/__loader__._",
-      "jar:jar:jar:file:///a/b/foo.jar!/c/baz.zip!/log4j.jar!/MF/manifest.mf"
+      "jar:jar:jar:file:///a/b/foo.jar!/c/baz.zip!/log4j.jar!/MF/manifest.mf",
+      "jar:https://abcl.org/releases/1.7.1/abcl-contrib.jar!/"
     };
 
     for (String namestring  : namestrings) {
@@ -113,4 +114,20 @@ public class JarPathnameTest
       }
     }
   }
+
+  @Test
+  public void makePathname() {
+    String urlString = "https://abcl.org/releases/1.7.1/abcl-contrib.jar";
+    URLPathname urlPathname = URLPathname.create(urlString);
+    LispObject args[] = {Keyword.DEVICE, Lisp.list(urlPathname)};
+    LispObject result = Symbol.MAKE_PATHNAME.execute(args);
+    assertTrue("MAKE-PATHNAME created instance of a JAR-PATHNAME", result instanceof JarPathname);
+    String expectedNamestring
+      = MessageFormat.format("jar:{0}!/", urlString);
+    String resultingNamestring
+      = ((JarPathname)result).getNamestring();
+    assertTrue(MessageFormat.format("Namestring '{0}' is '{1}'", expectedNamestring, resultingNamestring),
+               expectedNamestring.equals(resultingNamestring));
+  }
+                                         
 }

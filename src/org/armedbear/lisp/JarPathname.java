@@ -550,29 +550,4 @@ public class JarPathname
       .setType(entry.getType()); // ??? VERSION
     return result;
   }
-
-  static LispObject makeDeviceFrom(JarPathname p) {
-    JarPathname result = new JarPathname();
-    result.copyFrom(p);
-    Pathname rootJar = (Pathname)result.getRootJar();
-    if (!rootJar.equals(NIL)
-        && (rootJar instanceof Pathname)) {
-      rootJar = (Pathname)URLPathname.createFromFile(rootJar);
-      result.setDevice(new Cons(rootJar, result.getJars().cdr()));
-    }
-    return result;
-  }
-
-  static LispObject makeJarDeviceFrom(Pathname p) {
-    JarPathname result = new JarPathname();
-    result.copyFrom(p);
-    Pathname rootJar = (Pathname)result.getRootJar();
-    // Ensure
-    if (!rootJar.equals(NIL)
-        && (rootJar instanceof Pathname)) {
-      rootJar = (Pathname)URLPathname.createFromFile(rootJar);
-      result.setDevice(new Cons(rootJar, result.getJars().cdr()));
-    }
-    return result.getDevice();
-  }
 }
