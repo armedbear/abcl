@@ -145,7 +145,10 @@ Optionally the file to parse may be specified by the FILE argument."
                                           (difference failure-1
                                                       failure-2)))))))
 
-(defun report (test version-1 version-2)
+(defun deprecated/report (test version-1 version-2)
+  (report version-1 version-2 :test test))
+  
+(defun report (version-1 version-2 &key (test 'compileit))
   "Report on the difference of test failures for TEST between VERSION-1 and VERSION-2.
 
 TEST is symbol with a value of 'DOIT specifying the interpreted
@@ -168,6 +171,29 @@ VERSION-1 and VERSION-2 are symbols of two versions contained in the test databa
 (defun full-report (version-1 version-2)
   (let ((interpreted-reports (generate-report 'doit version-1 version-2))
         (compiled-reports (generate-report 'compileit version-1 version-2)))
+    (dolist (interpreted interpreted-reports)
+      (destructuring-bind ((id1 . id2) ((total-failures1 diff-1->2)
+                                        (total-failures2 diff-2->1)))
+          interpreted
+        (format t "~2&Interpreted~%")
+        (format t "~&~20<~A-~A~>~20<~A-~A~>" id1  version-1 id2 version-2)
+        (format t "~&~20<~A failures~>~20<~A failures~>" 
+                total-failures1 total-failures2)
+        (format t "~&~A-~A:~&  ~A" id1 version-1 diff-1->2)
+        (format t "~&~A-~A:~&  ~A" id2 version-2 diff-2->1)))
+    (dolist (compiled compiled-reports)
+      (destructuring-bind ((id1 . id2) ((total-failures1 diff-1->2)
+                                        (total-failures2 diff-2->1)))
+          compiled
+        (format t "~2&Compiled~%")
+        (format t "~&~20<~A-~A~>~20<~A-~A~>" id1  version-1 id2 version-2)
+        (format t "~&~20<~A failures~>~20<~A failures~>" 
+                total-failures1 total-failures2)
+        (format t "~&~A-~A:~&  ~A" id1 version-1 diff-1->2)
+        (format t "~&~A-~A:~&  ~A" id2 version-2 diff-2->1)))))
+
+(defun report-compiled (version-1 version-2)
+  (let ((compiled-reports (generate-report 'compileit version-1 version-2)))
     (dolist (interpreted interpreted-reports)
       (destructuring-bind ((id1 . id2) ((total-failures1 diff-1->2)
                                         (total-failures2 diff-2->1)))
