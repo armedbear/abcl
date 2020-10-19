@@ -199,6 +199,18 @@ public class ZipCache {
     extends Archive
   {
     ZipInputStream source;
+    ZipEntry rootEntry;
+
+    public ArchiveStream(InputStream stream, JarPathname root, ZipEntry rootEntry) {
+      if (!(stream instanceof ZipInputStream)) {
+        this.source = new ZipInputStream(stream);
+      } else {
+        this.source = (ZipInputStream)stream;
+      }
+      this.root = root;
+      this.rootEntry = rootEntry;
+      this.lastModified = rootEntry.getTime(); // FIXME how to re-check time as modified?
+    }  
 
     // TODO wrap in a weak reference to allow JVM to possibly reclaim memory
     LinkedHashMap<JarPathname, ByteArrayOutputStream> contents
@@ -435,10 +447,7 @@ public class ZipCache {
       if (inputStream == null) {
         return null;
       }
-      ArchiveStream stream = new ArchiveStream();
-      stream.source = new ZipInputStream(inputStream);
-      stream.root = innerArchive;
-      stream.lastModified = entry.getTime();
+      ArchiveStream stream = new ArchiveStream(inputStream, innerArchive, entry);
       result = stream;
       cache.put(innerArchive, result); 
       
