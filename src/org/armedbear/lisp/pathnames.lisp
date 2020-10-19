@@ -451,8 +451,7 @@
   (unless (pathname-url-p p)
     (error "~A is not a URL pathname." p))
   (let ((host (pathname-host p)))
-    (setf (getf host :scheme) v))
-  (%invalidate-namestring p))
+    (setf (getf host :scheme) v)))
 
 (defsetf url-pathname-scheme set-url-pathname-scheme)
 
@@ -465,8 +464,8 @@
   (unless (pathname-url-p p)
     (error "~A is not a URL pathname." p))
   (let ((host (pathname-host p)))
-    (setf (getf host :authority) v))
-  (%invalidate-namestring p))
+    (setf (getf host :authority) v)))
+
 
 (defsetf url-pathname-authority set-url-pathname-authority)
 
@@ -479,8 +478,7 @@
   (unless (pathname-url-p p)
     (error "~A is not a URL pathname." p))
   (let ((host (pathname-host p)))
-    (setf (getf host :query) v))
-  (%invalidate-namestring p))
+    (setf (getf host :query) v)))
 
 (defsetf url-pathname-query set-url-pathname-query)
 
@@ -493,8 +491,7 @@
   (unless (pathname-url-p p)
     (error "~A is not a URL pathname." p))
   (let ((host (pathname-host p)))
-    (setf (getf host :fragment) v))
-  (%invalidate-namestring p))
+    (setf (getf host :fragment) v)))
 
 (defsetf url-pathname-fragment set-url-pathname-fragment)
 
