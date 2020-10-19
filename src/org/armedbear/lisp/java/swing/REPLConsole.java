@@ -141,7 +141,7 @@ public class REPLConsole extends DefaultStyledDocument {
         public void run() {
           while(true) {
             replWrapper.execute();
-            yield();
+            java.lang.Thread.yield();
           }
         }
       };
