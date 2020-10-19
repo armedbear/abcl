@@ -132,7 +132,7 @@ public class JarPathname
       parse_error("Failed to parse 'jar:' prefixes:" + s);
       return null;
     }
-    int prefixCount = i / 4; 
+    int prefixCount = i / JAR_URI_PREFIX.length(); 
     String withoutPrefixes = s.substring(i);
 
     String parts[] = withoutPrefixes.split(JAR_URI_SUFFIX);
