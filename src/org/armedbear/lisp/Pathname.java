@@ -1238,7 +1238,6 @@ public class Pathname extends LispObject
         p.setVersion(version);
         p.validateDirectory(true);
 
-        // ???  need to check for downcast to URLPathname as well?
         // Possibly downcast type to JarPathname
         if (p.getDevice() instanceof Cons) {
           JarPathname result = new JarPathname();
@@ -1256,6 +1255,15 @@ public class Pathname extends LispObject
           result.validateComponents();
           return result;
         }
+
+        // Possibly downcast to URLPathname
+        if (p.isURL()) {
+          URLPathname result = new URLPathname();
+          result.copyFrom(p);
+
+          return result;
+        }
+
         return p;
     }
 
