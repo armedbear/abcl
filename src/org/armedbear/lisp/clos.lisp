@@ -2751,9 +2751,7 @@ to ~S with argument list ~S."
 
 (defun compute-method-function (lambda-expression)
   (let ((lambda-list (allow-other-keys (cadr lambda-expression)))
-        (body (cddr lambda-expression))
-        (*call-next-method-p* nil)
-        (*next-method-p-p* nil))
+        (body (cddr lambda-expression)))
     (multiple-value-bind (body declarations) (parse-body body)
       (let ((ignorable-vars '()))
         (dolist (var lambda-list)
@@ -2761,53 +2759,87 @@ to ~S with argument list ~S."
               (return)
               (push var ignorable-vars)))
         (push `(declare (ignorable ,@ignorable-vars)) declarations))
-      (walk-form body)
-      (cond ((or *call-next-method-p* *next-method-p-p*)
-             `(lambda (args next-emfun)
-                (flet ((call-next-method (&rest cnm-args)
-                         (if (null next-emfun)
-                             (error "No next method for generic function.")
-                             (funcall next-emfun (or cnm-args args))))
-                       (next-method-p ()
-                         (not (null next-emfun))))
-                  (declare (ignorable (function call-next-method)
-                                      (function next-method-p)))
-                  (apply #'(lambda ,lambda-list ,@declarations ,@body) args))))
-            ((null (intersection lambda-list '(&rest &optional &key &allow-other-keys &aux)))
+      (if (null (intersection lambda-list '(&rest &optional &key &allow-other-keys &aux)))
              ;; Required parameters only.
              (case (length lambda-list)
                (1
                 `(lambda (args next-emfun)
-                   (declare (ignore next-emfun))
                    (let ((,(%car lambda-list) (%car args)))
                      (declare (ignorable ,(%car lambda-list)))
-                     ,@declarations ,@body)))
+                     ,@declarations
+                     (flet ((call-next-method (&rest cnm-args)
+                              (if (null next-emfun)
+                                  (error "No next method for generic function.")
+                                  (funcall next-emfun (or cnm-args args))))
+                            (next-method-p ()
+                              (not (null next-emfun))))
+                       (declare (ignorable (function call-next-method)
+                                           (function next-method-p)))
+                       ,@body))))
+                     
                (2
                 `(lambda (args next-emfun)
-                   (declare (ignore next-emfun))
                    (let ((,(%car lambda-list) (%car args))
                          (,(%cadr lambda-list) (%cadr args)))
                      (declare (ignorable ,(%car lambda-list)
                                          ,(%cadr lambda-list)))
-                     ,@declarations ,@body)))
+                     ,@declarations
+                     (flet ((call-next-method (&rest cnm-args)
+                              (if (null next-emfun)
+                                  (error "No next method for generic function.")
+                                  (funcall next-emfun (or cnm-args args))))
+                            (next-method-p ()
+                              (not (null next-emfun))))
+                       (declare (ignorable (function call-next-method)
+                                           (function next-method-p)))
+
+                       ,@body))))
                (3
                 `(lambda (args next-emfun)
-                   (declare (ignore next-emfun))
                    (let ((,(%car lambda-list) (%car args))
                          (,(%cadr lambda-list) (%cadr args))
                          (,(%caddr lambda-list) (%caddr args)))
                      (declare (ignorable ,(%car lambda-list)
                                          ,(%cadr lambda-list)
                                          ,(%caddr lambda-list)))
-                     ,@declarations ,@body)))
+                     ,@declarations
+                     (flet ((call-next-method (&rest cnm-args)
+                              (if (null next-emfun)
+                                  (error "No next method for generic function.")
+                                  (funcall next-emfun (or cnm-args args))))
+                            (next-method-p ()
+                              (not (null next-emfun))))
+                       (declare (ignorable (function call-next-method)
+                                           (function next-method-p)))
+                       ,@body))))
                (t
                 `(lambda (args next-emfun)
-                   (declare (ignore next-emfun))
-                   (apply #'(lambda ,lambda-list ,@declarations ,@body) args)))))
-            (t
+                   (apply #'(lambda ,lambda-list
+                              ,@declarations
+                              (flet ((call-next-method (&rest cnm-args)
+                                       (if (null next-emfun)
+                                           (error "No next method for generic function.")
+                                           (funcall next-emfun (or cnm-args args))))
+                                     (next-method-p ()
+                                       (not (null next-emfun))))
+                                (declare (ignorable (function call-next-method)
+                                                    (function next-method-p)))
+                                ,@body))
+                          args))))
              `(lambda (args next-emfun)
-                (declare (ignore next-emfun))
-                (apply #'(lambda ,lambda-list ,@declarations ,@body) args)))))))
+                (apply #'(lambda ,lambda-list
+                           ,@declarations
+                           (flet ((call-next-method (&rest cnm-args)
+                                    (if (null next-emfun)
+                                        (error "No next method for generic function.")
+                                        (funcall next-emfun (or cnm-args args))))
+                                  (next-method-p ()
+                                    (not (null next-emfun))))
+                             (declare (ignorable (function call-next-method)
+                                                 (function next-method-p)))
+                             
+                             ,@body))
+                       args))))))
 
 (defun compute-method-fast-function (lambda-expression)
   (let ((lambda-list (allow-other-keys (cadr lambda-expression))))
@@ -2818,41 +2850,30 @@ to ~S with argument list ~S."
           (*call-next-method-p* nil)
           (*next-method-p-p* nil))
       (multiple-value-bind (body declarations) (parse-body body)
+        ;;; N.b. The WALK-FORM check is bogus for "hidden"
+        ;;; macroizations of CALL-NEXT-METHOD and NEXT-METHOD-P but
+        ;;; the presence of FAST-FUNCTION slots in our CLOS is
+        ;;; currently necessary to bootstrap CLOS in a way I didn't
+        ;;; manage to easily untangle.
         (walk-form body)
         (when (or *call-next-method-p* *next-method-p-p*)
           (return-from compute-method-fast-function nil))
-        (let ((decls `(declare (ignorable ,@lambda-list))))
-          (setf lambda-expression
-                (list* (car lambda-expression)
-                       (cadr lambda-expression)
-                       decls
-                       (cddr lambda-expression))))
-        (case (length lambda-list)
-          (1
-;;            `(lambda (args next-emfun)
-;;               (let ((,(%car lambda-list) (%car args)))
-;;                 (declare (ignorable ,(%car lambda-list)))
-;;                 ,@declarations ,@body)))
-           lambda-expression)
-          (2
-;;            `(lambda (args next-emfun)
-;;               (let ((,(%car lambda-list) (%car args))
-;;                     (,(%cadr lambda-list) (%cadr args)))
-;;                 (declare (ignorable ,(%car lambda-list)
-;;                                     ,(%cadr lambda-list)))
-;;                 ,@declarations ,@body)))
-           lambda-expression)
-;;           (3
-;;            `(lambda (args next-emfun)
-;;               (let ((,(%car lambda-list) (%car args))
-;;                     (,(%cadr lambda-list) (%cadr args))
-;;                     (,(%caddr lambda-list) (%caddr args)))
-;;                 (declare (ignorable ,(%car lambda-list)
-;;                                     ,(%cadr lambda-list)
-;;                                     ,(%caddr lambda-list)))
-;;                 ,@declarations ,@body)))
-          (t
-           nil))))))
+        (let ((declaration `(declare (ignorable ,@lambda-list))))
+          ;;; 2020-10-19 refactored this expression from previous code
+          ;;; that was only declaring a fast function for one or two
+          ;;; element values of lamba-list
+          (if (< 0 (length lambda-list) 3)
+            `(lambda ,(cadr lambda-expression)
+               ,declaration
+               (flet ((call-next-method (&rest args)
+                        (declare (ignore args))
+                        (error "No next method for generic function"))
+                      (next-method-p () nil))
+                 (declare (ignorable (function call-next-method)
+                                    (function next-method-p)))
+                 ,@body))
+            nil))))))
+        
 
 (declaim (notinline make-method-lambda))
 (defun make-method-lambda (generic-function method lambda-expression env)
@@ -2901,9 +2922,9 @@ to ~S with argument list ~S."
                         :lambda-list ',lambda-list
                         :qualifiers ',qualifiers
                         :specializers (canonicalize-specializers ,specializers-form)
-                        ,@(if documentation `(:documentation ,documentation))
+                        ,@(when documentation `(:documentation ,documentation))
                         :function (function ,method-function)
-                        ,@(if fast-function `(:fast-function (function ,fast-function)))
+                        ,@(when fast-function `(:fast-function (function ,fast-function)))
                         )))))
 
 ;;; Reader and writer methods
