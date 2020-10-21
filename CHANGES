@@ -1,11 +1,51 @@
-Version 1.7.2
+Version 1.8.0
 =============
 
-Unreleased
+October 20, 2020
 
-<https://abcl.org/svn/trunk/abcl/>
+<https://abcl.org/svn/tags/1.7.0/>
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
+
+Features
+--------
+
+* [] Overhauled JAR-PATHNAME and URL-PATHNAME subtypes of PATHNAME to
+   fully support recursive addressing of zip within both local and
+   remote zip archives.
+
+Enhancements
+------------
+
+* [r15360] (Alessio) Serialization of top-level, named functions
+
+* [r15353] JCOERCE now works on all arrays of primitive type
+
+* [r15356] ABCL-INTROSPECT adds EXT:READ-CLASS to conveniently read
+  java class bytes from the source referenced by a PATHNAME
+
+
+Fixes
+-----
+
+* [r15359] Fix running openjdk11 compilation on openjdk8
+
+* [r15358] Fix SYS:RUN-PROGRAM issues with openjdk11
+
+* [r15357] Re-work strategy contents CL:*FEATURES* for hosting JVM to
+  include a "JAVA-<n>" where "<n>" is an integer denoting the major
+  version of the platform according to JEP-223.
+
+* [pathnames] ASDF-JAR loading compiled fasls stored in JAR archives
+               now works again.
+
+* [r15351][r15352] Ensure :NIO-BUFFER argument works in all cases, fix
+  :NIO-DIRECT for (unsigned-byte 16) specialized arrays.
+
+Tests
+-----
+
+* 
 
 
 Version 1.7.1
@@ -20,11 +60,11 @@ July 18, 2020
 Fixes
 -----
 
-[r15337] Fix ELT on vectors specialized on (unsigned-byte 32)
+* [r15337] Fix ELT on vectors specialized on (unsigned-byte 32)
 
-[r15327] Restore svref optimizations for SIMPLE-VECTOR sorts
+* [r15327] Restore svref optimizations for SIMPLE-VECTOR sorts
 
-[r15326] Fix sorting vectors of length 0
+* [r15326] Fix sorting vectors of length 0
 
 
 
