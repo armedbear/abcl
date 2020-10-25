@@ -55,7 +55,7 @@ public final class URLStream extends Stream
     private final Reader reader;
     private final int bytesPerUnit;
 
-    public URLStream(Pathname pathname, String namestring,
+    public URLStream(Pathname pathname, 
                      LispObject elementType, LispObject direction,
                      LispObject ifExists, LispObject format)
         throws IOException
