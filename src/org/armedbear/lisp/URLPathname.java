@@ -130,8 +130,9 @@ public class URLPathname
         path += "/";
       }
       final Pathname p = (Pathname)Pathname.create(path);
+      LispObject host = NIL.push(FILE).push(SCHEME);
       result
-        .setHost(p.getHost())
+        .setHost(host)
         .setDevice(p.getDevice())
         .setDirectory(p.getDirectory())
         .setName(p.getName())
@@ -197,12 +198,17 @@ public class URLPathname
     // A scheme of NIL is implicitly "file:", for which we don't emit
     // as part of the usual namestring.  getNamestringAsURI() should
     // emit the 'file:' string
-    if (!scheme.equals(NIL)) {
+    boolean percentEncode = true;
+    if (scheme.equals(NIL)) {
+      percentEncode = false;
+    } else {
       sb.append(scheme.getStringValue());
       sb.append(":");
       if (authority != NIL) {
         sb.append("//");
         sb.append(authority.getStringValue());
+      } else if (scheme.equalp(FILE)) {
+        sb.append("//");
       }
     }
     if (Utilities.isPlatformWindows
@@ -211,6 +217,9 @@ public class URLPathname
 	.append(":");
     }
     String directoryNamestring = getDirectoryNamestring();
+    if (percentEncode) {
+      directoryNamestring = uriEncode(directoryNamestring);
+    }
     sb.append(directoryNamestring);
 
     // Use the output of Pathname
@@ -220,17 +229,20 @@ public class URLPathname
       .setDevice(NIL)
       .setDirectory(NIL);
     String nameTypeVersion = p.getNamestring();
+    if (percentEncode) {
+      nameTypeVersion = uriEncode(nameTypeVersion);
+    }      
     sb.append(nameTypeVersion);
 
     LispObject o = Symbol.GETF.execute(getHost(), QUERY, NIL);
     if (o != NIL) {
       sb.append("?")
-        .append(o.getStringValue());
+        .append(uriEncode(o.getStringValue()));
     }
     o = Symbol.GETF.execute(getHost(), FRAGMENT, NIL);
     if (o != NIL) {
       sb.append("#")
-        .append(o.getStringValue());
+        .append(uriEncode(o.getStringValue()));
     }
 
     return sb.toString();
