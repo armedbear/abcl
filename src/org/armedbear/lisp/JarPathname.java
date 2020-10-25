@@ -363,18 +363,25 @@ public class JarPathname
 
     // Run a truename resolution on the path of local jar archives
     if (p.isLocalFile()) {
-      URLPathname rootJar = new URLPathname();
+      Pathname rootJar;
+      if (URLPathname.hasExplicitFile(p)) {
+        rootJar = new URLPathname();
+      } else {
+        rootJar = new Pathname();
+      }
       rootJar.copyFrom((Pathname)p.getRootJar());
+
       // Ensure that we don't return a JarPathname if the current default is one
       if (rootJar.getDevice().equals(NIL)) {
         rootJar.setDevice(Keyword.UNSPECIFIC);
       }
-      LispObject trueRootJar = URLPathname.truename(rootJar, errorIfDoesNotExist);
-      if (trueRootJar.equals(NIL)) {
+      LispObject rootJarTruename = Pathname.truename(rootJar, errorIfDoesNotExist);
+      if (rootJarTruename.equals(NIL)) {
 	return Pathname.doTruenameExit(rootJar, errorIfDoesNotExist);
       }
-      LispObject otherJars = p.getJars().cdr();
-      p.setDevice(new Cons(trueRootJar, otherJars));
+      LispObject otherJars
+        = p.getJars().cdr();
+      p.setDevice(new Cons(rootJarTruename, otherJars));
     }
 
     if (!p.isArchiveEntry()) {
