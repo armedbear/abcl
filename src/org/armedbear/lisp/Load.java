@@ -523,7 +523,14 @@ public final class Load
             Pathname truePathname = null;
             if (!truename.equals(NIL)) {
                 if (truename instanceof Pathname) {
-                    truePathname = Pathname.create((Pathname)truename);
+                  if (truename instanceof JarPathname) {
+                    truePathname = new JarPathname();
+                  } else if (truename instanceof URLPathname) {
+                    truePathname = new URLPathname();
+                  } else {
+                    truePathname = new Pathname();
+                  }
+                  truePathname.copyFrom((Pathname)truename);
                 } else if (truename instanceof AbstractString) {
                   truePathname = (Pathname)Pathname.create(truename.getStringValue());
                 } else {
