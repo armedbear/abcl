@@ -219,14 +219,23 @@ public class URLPathname
     return result;
   }
 
-  public String getNamestring() {
-    StringBuilder sb = new StringBuilder();
-    return getNamestring(sb);
+  static public boolean isFile(Pathname p) {
+    LispObject scheme = Symbol.GETF.execute(p.getHost(), SCHEME, NIL);
+    if (scheme.equals(NIL)
+        || hasExplicitFile(p)) {
+      return true;
+    }
+    return false;
   }
-
+  
   static public boolean hasExplicitFile(Pathname p) {
     LispObject scheme = Symbol.GETF.execute(p.getHost(), SCHEME, NIL);
     return scheme.equalp(FILE);
+  }
+
+  public String getNamestring() {
+    StringBuilder sb = new StringBuilder();
+    return getNamestring(sb);
   }
   
   public String getNamestring(StringBuilder sb) {
@@ -401,19 +410,16 @@ public class URLPathname
     }
     return Pathname.doTruenameExit(p, errorIfDoesNotExist);
   }
-
-  static public boolean isFile(Pathname p) {
-    LispObject scheme = Symbol.GETF.execute(p.getHost(), SCHEME, NIL);
-    if (scheme.equals(NIL)
-        || hasExplicitFile(p)) {
-      return true;
-    }
-    return false;
-  }
-
   
   public InputStream getInputStream() {
     InputStream result = null;
+
+    if (URLPathname.isFile(this)) {
+      Pathname p = new Pathname();
+      p.copyFrom(this)
+        .setHost(NIL);
+      return p.getInputStream();
+    }
 
     if (URLPathname.isFile(this)) {
       Pathname p = new Pathname();
