@@ -1403,40 +1403,37 @@ public class Pathname extends LispObject
             return JarPathname.listDirectory((JarPathname)pathname);
           }
 
-          String s = pathname.getNamestring();
-          if (s != null) {
-            File f = new File(s);
-            if (f.isDirectory()) {
-              try {
-                File[] files = f.listFiles();
-                if (files == null) {
-                  return error(new FileError("Unable to list directory "
-                                             + pathname.princToString() + ".",
-                                             pathname));
-                }
-                for (int i = files.length; i-- > 0;) {
-                  File file = files[i];
-                  String path;
-                  if (resolveSymlinks == NIL) {
-                    path = file.getAbsolutePath();
-                  } else {
-                    path = file.getCanonicalPath();
-                  }
-                  if (file.isDirectory()
-                      && !path.endsWith("/")) {
-                    path += "/";
-                  }
-                  Pathname p;
-                  p = (Pathname)Pathname.create(path);
-                  result = new Cons(p, result);
-                }
-              } catch (IOException e) {
-                return error(new FileError("Unable to list directory " 
+          File f = pathname.getFile();
+          if (f.isDirectory()) {
+            try {
+              File[] files = f.listFiles();
+              if (files == null) {
+                return error(new FileError("Unable to list directory "
                                            + pathname.princToString() + ".",
                                            pathname));
-              } catch (SecurityException e) {
-                return error(new FileError("Unable to list directory: " + e, pathname));
               }
+              for (int i = files.length; i-- > 0;) {
+                File file = files[i];
+                String path;
+                if (resolveSymlinks == NIL) {
+                  path = file.getAbsolutePath();
+                } else {
+                  path = file.getCanonicalPath();
+                }
+                if (file.isDirectory()
+                    && !path.endsWith("/")) {
+                  path += "/";
+                }
+                Pathname p;
+                p = (Pathname)Pathname.create(path);
+                result = new Cons(p, result);
+              }
+            } catch (IOException e) {
+              return error(new FileError("Unable to list directory " 
+                                         + pathname.princToString() + ".",
+                                         pathname));
+            } catch (SecurityException e) {
+              return error(new FileError("Unable to list directory: " + e, pathname));
             }
           }
           return result;
@@ -2087,27 +2084,6 @@ public class Pathname extends LispObject
     @Override
     public LispObject execute(LispObject arg) {
       return coerceToPathname(arg).getHost(); // XXX URL-PATHNAME
-    }
-  }
-    
-  public URL toURL() {
-    try {
-      if (isURL()) {
-        return new URL(getNamestring());
-      } else {
-        return toFile().toURI().toURL();
-      }
-    } catch (MalformedURLException e) {
-      error(new LispError(getNamestring() + " is not a valid URL"));
-      return null; // not reached
-    }
-  }
-
-  public File toFile() {
-    if(!isURL()) {
-      return new File(getNamestring());
-    } else {
-      throw new RuntimeException(this + " does not represent a file");
     }
   }
 
