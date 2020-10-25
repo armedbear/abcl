@@ -59,10 +59,9 @@ public class URLPathname
   }
 
   public static URLPathname create(Pathname p) {
-    return (URLPathname)createFromFile((Pathname)p);
-  }
-
-  public static URLPathname create(URLPathname p) {
+    if (p instanceof Pathname) {
+      return (URLPathname)createFromFile((Pathname)p);
+    }
     URLPathname result = new URLPathname();
     result.copyFrom(p);
     return result;
@@ -229,6 +228,9 @@ public class URLPathname
   }
   
   static public boolean hasExplicitFile(Pathname p) {
+    if (!p.getHost().listp()) {
+        return false;
+    }
     LispObject scheme = Symbol.GETF.execute(p.getHost(), SCHEME, NIL);
     return scheme.equalp(FILE);
   }

@@ -53,13 +53,15 @@ public class Pathname extends LispObject
     return new Pathname();
   }
 
-  protected static Pathname create(Pathname p) {
+  public static Pathname create(Pathname p) {
     if (p instanceof JarPathname) {
-      return (JarPathname)JarPathname.create(p.getNamestring());
+      return JarPathname.create((JarPathname)p);
     } else if (p instanceof URLPathname) {
-      return (URLPathname)URLPathname.create(((URLPathname)p).getNamestringAsURL());
+      return URLPathname.create((URLPathname)p);
+    } else if (p instanceof LogicalPathname) {
+      return LogicalPathname.create((LogicalPathname)p);
     } else {
-      return new Pathname(p);
+      return new Pathname((Pathname)p);
     }
   }
 
