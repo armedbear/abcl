@@ -363,8 +363,25 @@ public class URLPathname
     return Pathname.doTruenameExit(p, errorIfDoesNotExist);
   }
 
+  static public boolean isFile(Pathname p) {
+    LispObject scheme = Symbol.GETF.execute(p.getHost(), SCHEME, NIL);
+    if (scheme.equals(NIL)
+        || hasExplicitFile(p)) {
+      return true;
+    }
+    return false;
+  }
+
+  
   public InputStream getInputStream() {
     InputStream result = null;
+
+    if (URLPathname.isFile(this)) {
+      Pathname p = new Pathname();
+      p.copyFrom(this)
+        .setHost(NIL);
+      return p.getInputStream();
+    }
 
     URL url = this.toURL();
     try { 
