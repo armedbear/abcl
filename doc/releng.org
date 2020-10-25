@@ -13,7 +13,9 @@ result in providing you with a "JIRA username and a password".
 **** settings.xml
 
 Enter your "JIRA username and a password" in a
-<file:.m2/settings.xml>.  This will authenticate 
+<file:.m2/settings.xml>.  This will be used for authentication when
+the =mvn= tool uploads artifacts to the Sonatype snapshot and staging
+infrastructure.
 
 #+BEGIN_SRC xml
 <settings>
@@ -49,7 +51,8 @@ ant abcl.test
 #+END_SRC
 
 **** Snapshots
-For snapshots - development versions - the version in the POM should look like ~x.y.z-SNAPSHOT~.
+For snapshots (aka development versions) the version in the POM should
+be of the form ~x.y.z-SNAPSHOT~.
 
 #+BEGIN_SRC bash
 keyname='<your_pgp_key@example.com>'
@@ -59,13 +62,12 @@ mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-javadoc.j
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-contrib.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/content/repositories/snapshots/ -DrepositoryId=sonatype-nexus-snapshots 
 #+END_SRC
 
-
 **** Release
-For releases - the version in the POM should look like  ~x.y.z~
+For releases the version in the POM should be of the form  ~x.y.z~
 
 #+BEGIN_SRC bash
-keyname='<evenson.not.org@gmail.com>'
-abcl_version=1.7.1
+keyname='<your_pgg_key@example.com>'
+abcl_version=1.8.0
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-${abcl_version}-sources.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=sources
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-${abcl_version}-javadoc.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc
@@ -75,7 +77,7 @@ abcl-contrib release
 
 #+BEGIN_SRC bash
 keyname='<evenson.not.org@gmail.com>'
-abcl_version=1.7.1
+abcl_version=1.8.0
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-contrib.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging 
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-contrib-${abcl_version}-sources.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=sources
 mvn gpg:sign-and-deploy-file -Dgpg.keyname=${keyname} -Dfile=dist/abcl-contrib-${abcl_version}-javadoc.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc
@@ -99,11 +101,10 @@ mvn org.apache.maven.plugins:maven-dependency-plugin:2.1:get -DrepoUrl=https://o
 
 
 
-
 *** Specifying GPG executable
 
-For specifying gpg executable, use a property specified via
-'-Dgpg.executable=gpg2'.
+For specifying the =gpg= executable used via =mvn= use a property
+specified via the =gpg.executable= property (e.g. '-Dgpg.executable=gpg2'.)
 
 **** Signing binary release
 
@@ -122,6 +123,6 @@ Roswell parses it for release information?
   
   #+begin_example
   Created: ??
-  Revised: <2020-06-05 Fri 08:46>
+  Revised: <2020-10-21 Wed 10:01>
   #+end_example
   

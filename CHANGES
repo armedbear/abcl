@@ -1,11 +1,73 @@
-Version 1.7.2
+Version 1.8.0
 =============
 
-Unreleased
+October 25, 2020
 
-<https://abcl.org/svn/trunk/abcl/>
+<https://abcl.org/svn/tags/1.7.0/>
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
+
+Features
+--------
+
+* [] Overhauled JAR-PATHNAME and URL-PATHNAME subtypes of PATHNAME to
+   fully support recursive addressing of zip within both local and
+   remote zip archives.
+
+Enhancements
+------------
+
+* [r15378] Running on openjdk15 now supported
+
+* [r15360-r15365] (Alessio) Serialization of top-level, named functions
+
+* [r15353] JAVA:JCLASS now works on all arrays of primitive type
+
+* [r15356] ABCL-INTROSPECT adds EXT:READ-CLASS to conveniently read
+  java class bytes from the source referenced by a PATHNAME
+
+* [r15366] The compiler now properly emits make-array for top-level specialized
+  vector forms
+
+* [r15367] Loading ABCL-INTROSPECT now adds the function
+  EXT:STREAM-UNIX-FD which returns the integer of the underlying file
+  descriptor from a socket stream reference
+
+* [r15368] Less cryptic warnings for ignored socket write timeout
+
+* [r15381] JNEW-ARRAY-FROM-ARRAY now capable of constructing all
+  possible arrays of primitive type
+
+
+Fixes
+-----
+
+* [r15359] Fix running openjdk11 compilation on openjdk8
+
+* [r15358] Fix SYS:RUN-PROGRAM issues with openjdk11
+
+* [r15357] Re-work strategy contents CL:*FEATURES* for hosting JVM to
+  include a "JAVA-<n>" where "<n>" is an integer denoting the major
+  version of the platform according to JEP-223.
+
+* [pathnames] ASDF-JAR loading compiled fasls stored in JAR archives
+               now works again.
+
+* [r15351][r15352] Ensure :NIO-BUFFER argument works in all cases, fix
+  :NIO-DIRECT for (unsigned-byte 16) specialized arrays.
+
+* [r15369][r15376] Fix wildcard matching to work on pathnames
+  consisting of only #\* characters.
+
+* [r15377] (Daniel Kochmański) Fix loop destructuring problems
+
+* [r15379] Fix VECTOR-PUSH-EXTEND for (UNSIGNED-BYTE 8)
+
+
+Tests
+-----
+
+* 
 
 
 Version 1.7.1
@@ -20,11 +82,11 @@ July 18, 2020
 Fixes
 -----
 
-[r15337] Fix ELT on vectors specialized on (unsigned-byte 32)
+* [r15337] Fix ELT on vectors specialized on (unsigned-byte 32)
 
-[r15327] Restore svref optimizations for SIMPLE-VECTOR sorts
+* [r15327] Restore svref optimizations for SIMPLE-VECTOR sorts
 
-[r15326] Fix sorting vectors of length 0
+* [r15326] Fix sorting vectors of length 0
 
 
 
