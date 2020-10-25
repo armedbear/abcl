@@ -102,6 +102,7 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
 	      (probe-file (pathname (directory-of entry))))
          (pushnew (pathname (directory-of entry)) result :test 'equal))
         (t
+         #+(or) ;; 
          (format *standard-output*
                  "~&Skipping enumeration of resource '~a' with type '~a'.~%"
                  entry (type-of entry)))))
