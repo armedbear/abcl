@@ -1194,7 +1194,32 @@ public class Pathname extends LispObject
                     error(new LispError("The device component of a logical pathname must be :UNSPECIFIC."));
                 }
             } else {
-              p.setDevice(device);
+              if (device instanceof Cons) {
+                LispObject normalizedDevice = NIL;
+                if (device.car() instanceof SimpleString) {
+                  String rootNamestring = device.car().getStringValue();
+                  URLPathname root = new URLPathname();
+                  if (!isValidURL(rootNamestring)) {
+                    Pathname rootPathname = Pathname.create(rootNamestring);
+                    root = URLPathname.createFromFile(rootPathname);
+                  } else {
+                    root = URLPathname.create(rootNamestring);
+                  }
+                  normalizedDevice = normalizedDevice.push(root);
+                } else {
+                  normalizedDevice = normalizedDevice.push(device.car());
+                }
+                LispObject o = device.cdr();
+                while (!o.car().equals(NIL)) {
+                  Pathname next = coerceToPathname(o.car());
+                  normalizedDevice = normalizedDevice.push(next);
+                  o = o.cdr();
+                }
+                normalizedDevice = normalizedDevice.nreverse();
+                p.setDevice(normalizedDevice);
+              } else {
+                p.setDevice(device);
+              }
             }
         }
         if (directory != NIL) {
