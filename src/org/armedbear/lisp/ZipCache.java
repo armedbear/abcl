@@ -279,8 +279,8 @@ public class ZipCache {
       JarURLConnection jarConnection
         = (JarURLConnection) rootJarURL.openConnection();
 
-      this.root = root;
-      this.connection = connection;
+      this.root = jar;
+      this.connection = jarConnection;
       this.file = (ZipFile)connection.getJarFile();
       this.lastModified = connection.getLastModified();
     }
