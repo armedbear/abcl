@@ -74,9 +74,7 @@ public class JarPathname
     if (p instanceof URLPathname) {
       rootDevice.copyFrom(p);
     } else if (p instanceof Pathname) {
-      // FIXME: not going to work with namestrings with characters
-      // that need URI escaping
-      rootDevice.copyFrom(p);
+      rootDevice = URLPathname.create(p);
     } else {
       simple_error("Argument is already a JAR-PATHNAME: ~a", p);
     }
