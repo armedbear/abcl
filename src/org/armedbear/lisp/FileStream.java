@@ -52,7 +52,7 @@ public final class FileStream extends Stream
     private final Pathname pathname;
     private final int bytesPerUnit;
 
-    public FileStream(Pathname pathname, String namestring,
+    public FileStream(Pathname pathname, 
                       LispObject elementType, LispObject direction,
                       LispObject ifExists, LispObject format)
         throws IOException
@@ -71,7 +71,7 @@ public final class FileStream extends Stream
          *    http://www.weitz.de/flexi-streams/#make-external-format
          */
         super(Symbol.FILE_STREAM);
-        final File file = new File(namestring);
+        final File file = pathname.getFile();
         String mode = null;
         if (direction == Keyword.INPUT) {
             mode = "r";
@@ -309,12 +309,13 @@ public final class FileStream extends Stream
                 } catch (IOException e) {
                     return error(new StreamError(null, e));
                 }
-            } else if (pathname.isURL()) {
+            } else if (pathname instanceof URLPathname
+                       && !(URLPathname.isFile(pathname))) {
                 if (direction != Keyword.INPUT) {
                     error(new FileError("Only direction :INPUT is supported for URLs.", pathname));
                 }
                 try { 
-                    return new URLStream(pathname, namestring.getStringValue(),
+                    return new URLStream(pathname,
                                          elementType, direction, ifExists,
                                          externalFormat);
                 } catch (IOException e) {
@@ -322,7 +323,7 @@ public final class FileStream extends Stream
                 }
             } else {
                 try {
-                    return new FileStream(pathname, namestring.getStringValue(),
+                    return new FileStream(pathname, 
                                           elementType, direction, ifExists,
                                           externalFormat);
                 }
