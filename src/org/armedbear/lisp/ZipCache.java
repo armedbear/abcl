@@ -328,7 +328,7 @@ public class ZipCache {
               || !entryPathname.getType().equals(NIL))) {
         return null;
       }
-      
+
       entries.put(entryPathname, result);
       return result;
     }
