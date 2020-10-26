@@ -35,10 +35,10 @@
              (when (ignore-errors (asdf:find-system :quicklisp))
                (asdf:apply-output-translations
                 (asdf:system-source-directory (asdf:find-system :quicklisp))))))
-      (let ((all-fasls (list setup-fasl
-                             (when asdf-output-root
-                               (directory 
-                                (merge-pathnames "**/*" asdf-output-root))))))
+      (let ((all-fasls (append (list setup-fasl)
+                               (when asdf-output-root
+                                 (directory 
+                                  (merge-pathnames "**/*" asdf-output-root))))))
         (when remove
           (format *load-verbose* "~&;;quicklisp-abcl: deleting ~{~a ~}~%" all-fasls)
           (mapcar #'delete-file all-fasls))
