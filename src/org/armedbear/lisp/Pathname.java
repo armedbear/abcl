@@ -1862,7 +1862,7 @@ public class Pathname extends LispObject
      * LispError if there are logical problems with the input.
      */
     public static LispObject truename(Pathname pathname,
-					  boolean errorIfDoesNotExist) {
+                                      boolean errorIfDoesNotExist) {
       if (pathname == null || pathname.equals(NIL)) {  
         return doTruenameExit(pathname, errorIfDoesNotExist); 
       }
@@ -1878,7 +1878,8 @@ public class Pathname extends LispObject
                                    coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()),
                                    NIL);
       final File file = result.getFile();
-      if (file.exists()) {
+      if (file != null
+          && file.exists()) {
         if (file.isDirectory()) {
           result = Pathname.getDirectoryPathname(file);
         } else {
