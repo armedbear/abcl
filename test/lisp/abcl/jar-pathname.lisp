@@ -242,53 +242,19 @@ Returns the two values of the pathnames of the created archives."
         (not (null (probe-file p)))))
   t)
 
-#|  (make-pathname :device (list (pathname *tmp-jar-path*) #p"a/b/bar.abcl")
-                              :name "bar_2"
-                              :type "cls")
-#P"jar:jar:file:///private/var/folders/yb/xlwjwjfs3l73n3vrcjwqwqs40000gn/T/jar-pathname-tests/baz.jar!/a/b/bar.abcl!/bar_2.cls"
-ABCL-TEST> (setf mp *)
-#P"jar:jar:file:///private/var/folders/yb/xlwjwjfs3l73n3vrcjwqwqs40000gn/T/jar-pathname-tests/baz.jar!/a/b/bar.abcl!/bar_2.cls"
-ABCL-TEST> (probe-file mp)
-NIL
-ABCL-TEST> (probe-file (namestring mp))
-#P"jar:jar:file:///private/var/folders/yb/xlwjwjfs3l73n3vrcjwqwqs40000gn/T/jar-pathname-tests/baz.jar!/a/b/bar.abcl!/bar_2.cls"
-ABCL-TEST> (setf pf-mp *)
-#P"jar:jar:file:///private/var/folders/yb/xlwjwjfs3l73n3vrcjwqwqs40000gn/T/jar-pathname-tests/baz.jar!/a/b/bar.abcl!/bar_2.cls"
-ABCL-TEST> (equal mp pf-mp)
-NIL
-ABCL-TEST> (describe mp)
-#P"jar:jar:file:///private/var/folders/yb/xlwjwjfs3l73n3vrcjwqwqs40000gn/T/jar-pathname-tests/baz.jar!/a/b/bar.abcl!/bar_2.cls" is an object of type EXTENSIONS:JAR-PATHNAME:
-  HOST         NIL
-  DEVICE       (#P"/private/var/folders/yb/xlwjwjfs3l73n3vrcjwqwqs40000gn/T/jar-pathname-tests/baz.jar"
- #P"a/b/bar.abcl")
-  DIRECTORY    NIL
-  NAME         "bar_2"
-  TYPE         "cls"
-  VERSION      NIL
-; No value
-ABCL-TEST> (describe pf-mp)
-#P"jar:jar:file:///private/var/folders/yb/xlwjwjfs3l73n3vrcjwqwqs40000gn/T/jar-pathname-tests/baz.jar!/a/b/bar.abcl!/bar_2.cls" is an object of type EXTENSIONS:JAR-PATHNAME:
-  HOST         NIL
-  DEVICE       (#P"/private/var/folders/yb/xlwjwjfs3l73n3vrcjwqwqs40000gn/T/jar-pathname-tests/baz.jar"
- #P"a/b/bar.abcl")
-  DIRECTORY    (:ABSOLUTE)
-  NAME         "bar_2"
-  TYPE         "cls"
-  VERSION      NIL
-; No value
-|#
 (deftest jar-pathname.probe-file.3
     (with-jar-file-init
         (let ((p (make-pathname :device (list (pathname *tmp-jar-path*) #p"a/b/bar.abcl")
+                                :directory '(:absolute)
                                 :name "bar_1"
                                 :type "cls")))
-          (probe-file p)))
+          (not (null (probe-file p)))))
   t)
 
 (deftest jar-pathname.probe-file.4
     (with-jar-file-init
         (let ((p (merge-jar-entry *tmp-jar-path* "a/b/bar.abcl")))
-        (not (null (probe-file p)))))
+          (not (null (probe-file p)))))
   t)
 
 (deftest jar-pathname.probe-file.5
@@ -315,23 +281,23 @@ ABCL-TEST> (describe pf-mp)
   #p"jar:file:/baz.jar!/bar.abcl")
 
 (deftest jar-pathname.merge-pathnames.2
-  (merge-pathnames "bar.abcl" #p"jar:file:/baz.jar!/foo/baz")
-  #p"jar:file:///baz.jar!/foo/bar.abcl")
+  (namestring (merge-pathnames "bar.abcl" #p"jar:file:///baz.jar!/foo/baz"))
+  "jar:file:///baz.jar!/foo/bar.abcl")
 
 (deftest jar-pathname.merge-pathnames.3
-    (merge-pathnames "jar:file:/baz.jar!/foo" "bar")
-  #p"jar:file:///baz.jar!/foo")
+  (namestring (merge-pathnames "jar:file:///baz.jar!/foo" "bar"))
+  "jar:file:///baz.jar!/foo")
 
 (deftest jar-pathname.merge-pathnames.4
-    (merge-pathnames "jar:file:///baz.jar!/foo" "/a/b/c")
-  #p"jar:file:///a/b/baz.jar!/foo")
+    (namestring (merge-pathnames "jar:file:///baz.jar!/foo" "/a/b/c"))
+  "jar:file:///baz.jar!/foo")
 
 ;;; Under win32, we get the device in the merged path
 #+windows 
 (push 'jar-pathname.merge-pathnames.5 *expected-failures*)
 (deftest jar-pathname.merge-pathnames.5
-  (merge-pathnames "jar:file:/a/b/c/foo.jar!/bar/baz.lisp")
-  #p"jar:file:/a/b/c/foo.jar!/bar/baz.lisp")
+  (namestring (merge-pathnames "jar:file:///a/b/c/foo.jar!/bar/baz.lisp"))
+  "jar:file:///a/b/c/foo.jar!/bar/baz.lisp")
 
 (deftest jar-pathname.truename.1
   (signals-error (truename "jar:file:baz.jar!/foo")
