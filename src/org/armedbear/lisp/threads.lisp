@@ -54,6 +54,7 @@
 (export '(make-mailbox mailbox-send mailbox-empty-p mailbox-read mailbox-peek))
 
 (defstruct mailbox
+  "A first-in-first out queue of messages"
   queue)
 
 (defun mailbox-send (mailbox item)
@@ -102,10 +103,11 @@ calling thread."
 (export '(make-mutex get-mutex release-mutex))
 
 (defstruct mutex
+  "An object used as a mutex lock"
   in-use)
 
 (defun get-mutex (mutex)
-  "Acquires a lock on the `mutex'."
+  "Acquires the lock associated with the MUTEX"
   (synchronized-on mutex
     (loop
        while (mutex-in-use mutex)
@@ -113,14 +115,13 @@ calling thread."
     (setf (mutex-in-use mutex) T)))
 
 (defun release-mutex (mutex)
-  "Releases a lock on the `mutex'."
+  "Releases a lock associated with MUTEX"
   (synchronized-on mutex
     (setf (mutex-in-use mutex) NIL)
     (object-notify mutex)))
 
 (defmacro with-mutex ((mutex) &body body)
-  "Acquires a lock on `mutex', executes the body
-and releases the lock."
+  "Acquires a lock on MUTEX, executes BODY, and then releases the lock"
   (let ((m (gensym)))
     `(let ((,m ,mutex))
        (when (get-mutex ,m)
@@ -135,11 +136,11 @@ and releases the lock."
 ;;
 
 (defun make-thread-lock ()
-  "Returns an object to be used with the `with-thread-lock' macro."
+  "Returns an object to be used with the WITH-THREAD-LOCK macro."
   (gensym))
 
 (defmacro with-thread-lock ((lock) &body body)
-  "Acquires a lock on the `lock', executes `body' and releases the lock."
+  "Acquires the LOCK, executes BODY and releases the LOCK"
   (let ((glock (gensym)))
     `(let ((,glock ,lock))
        (synchronized-on ,glock
