@@ -76,9 +76,14 @@ public class URLPathname
     return URLPathname.create(uri.toString());
   }
 
+  static final LispObject FILE = new SimpleString("file");
   public static URLPathname createFromFile(Pathname p) {
-    String ns = "file:" + p.getNamestring();
-    return create(ns);
+    URLPathname result = new URLPathname();
+    result.copyFrom(p);
+    LispObject scheme = NIL;
+    scheme = scheme.push(FILE).push(SCHEME);
+    result.setHost(scheme);
+    return result;
   }
 
   public static URLPathname create(String s) {
@@ -263,6 +268,8 @@ public class URLPathname
       path = file;
     }
 
+    path = uriEncode(path);
+
     String query = null;
     if (!queryProperty.equals(NIL)) {
       query = queryProperty.getStringValue();
@@ -317,7 +324,7 @@ public class URLPathname
         return NIL;
       }
       if (!(fileTruename instanceof URLPathname)) {
-        URLPathname urlTruename = URLPathname.create((Pathname)fileTruename);
+        URLPathname urlTruename = URLPathname.createFromFile((Pathname)fileTruename);
         return urlTruename;
       }
       return fileTruename;
