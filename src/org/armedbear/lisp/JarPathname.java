@@ -196,12 +196,14 @@ public class JarPathname
     JarPathname result = new JarPathname();
 
     // Normalize the root jar to be a URL
+    URLPathname rootPathname;
     String rootNamestring = contents.get(0);
     if (!isValidURL(rootNamestring)) {
-      rootNamestring = "file:" + rootNamestring;
+      Pathname root = Pathname.create(rootNamestring);
+      rootPathname = URLPathname.createFromFile(root);
+    } else {
+      rootPathname = URLPathname.create(rootNamestring);
     }
-
-    URLPathname rootPathname = (URLPathname)URLPathname.create(rootNamestring);
 
     LispObject jars = NIL;
     jars = jars.push(rootPathname);
