@@ -15,11 +15,12 @@ public class URLPathnameTest {
   @Test
   public void roundTrips() {
     String namestrings[] = {
-      "https://www.youtube.com/user/BlackHatOfficialYT"
+      "https://www.youtube.com/user/BlackHatOfficialYT",
+      "file:///a%20path%20/with/whitespace.lisp"
     };
 
     for (String namestring  : namestrings) {
-      Pathname result = (Pathname) Pathname.create(namestring);
+      URLPathname result = URLPathname.create(namestring);
       String resultingNamestring = result.getNamestring();
       String message = MessageFormat.format("Namestring \"{0}\" failed to roundtrip", namestring);
       assertTrue(message,
