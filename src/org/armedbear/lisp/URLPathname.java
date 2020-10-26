@@ -47,10 +47,10 @@ import java.text.MessageFormat;
 public class URLPathname
   extends Pathname
 {
-  static final Symbol SCHEME = internKeyword("SCHEME");
-  static final Symbol AUTHORITY = internKeyword("AUTHORITY");
-  static final Symbol QUERY = internKeyword("QUERY");
-  static final Symbol FRAGMENT = internKeyword("FRAGMENT");
+  static public final Symbol SCHEME = internKeyword("SCHEME");
+  static public final Symbol AUTHORITY = internKeyword("AUTHORITY");
+  static public final Symbol QUERY = internKeyword("QUERY");
+  static public final Symbol FRAGMENT = internKeyword("FRAGMENT");
 
   protected URLPathname() {}
 
@@ -76,7 +76,7 @@ public class URLPathname
     return URLPathname.create(uri.toString());
   }
 
-  static final LispObject FILE = new SimpleString("file");
+  static public final LispObject FILE = new SimpleString("file");
   public static URLPathname createFromFile(Pathname p) {
     URLPathname result = new URLPathname();
     result.copyFrom(p);
@@ -189,6 +189,11 @@ public class URLPathname
   public String getNamestring() {
     StringBuilder sb = new StringBuilder();
     return getNamestring(sb);
+  }
+
+  static public boolean hasExplicitFile(Pathname p) {
+    LispObject scheme = Symbol.GETF.execute(p.getHost(), SCHEME, NIL);
+    return scheme.equalp(FILE);
   }
   
   public String getNamestring(StringBuilder sb) {
