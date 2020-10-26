@@ -53,13 +53,15 @@ public class Pathname extends LispObject
     return new Pathname();
   }
 
-  protected static Pathname create(Pathname p) {
+  public static Pathname create(Pathname p) {
     if (p instanceof JarPathname) {
-      return (JarPathname)JarPathname.create(p.getNamestring());
+      return JarPathname.create((JarPathname)p);
     } else if (p instanceof URLPathname) {
-      return (URLPathname)URLPathname.create(((URLPathname)p).getNamestringAsURL());
+      return URLPathname.create((URLPathname)p);
+    } else if (p instanceof LogicalPathname) {
+      return LogicalPathname.create((LogicalPathname)p);
     } else {
-      return new Pathname(p);
+      return new Pathname((Pathname)p);
     }
   }
 
@@ -1728,6 +1730,15 @@ public class Pathname extends LispObject
         result.setDirectory(p.getDirectory());
       } else {
         result.setDirectory(mergeDirectories(p.getDirectory(), d.getDirectory()));
+        // Directories are always absolute in a JarPathname
+        if (result instanceof JarPathname) {
+          LispObject directories = result.getDirectory();
+          if ((!directories.car().equals(NIL))
+              && directories.car().equals(Keyword.RELATIVE)) {
+            directories = directories.cdr().push(Keyword.ABSOLUTE);
+            result.setDirectory(directories);
+          }
+        }
       }
       
       if (pathname.getName() != NIL) {
