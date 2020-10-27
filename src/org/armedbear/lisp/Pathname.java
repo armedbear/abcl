@@ -2185,8 +2185,7 @@ public class Pathname extends LispObject
     StringBuilder result = new StringBuilder();
     result.append(path);
 
-    // Entries in jar files are always relative, but Pathname
-    // directories are :ABSOLUTE.
+    // ZipEntry syntax is always relative
     if (result.length() > 1
         && result.substring(0, 1).equals("/")) {
       return result.substring(1);
