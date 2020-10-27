@@ -1178,7 +1178,8 @@ public class Pathname extends LispObject
                 version = defaults.getVersion();
             }
         }
-        Pathname p = new Pathname();
+        Pathname p; // Pathname is always created in following
+                    // resolution for values of HOST
         LispObject logicalHost = NIL;
         if (host != NIL) {
             if (host instanceof AbstractString) {
@@ -1199,11 +1200,13 @@ public class Pathname extends LispObject
         } else {
             p = Pathname.create();
         }
+        
         if (device != NIL) {
             if (p instanceof LogicalPathname) {
                 // "The device component of a logical pathname is always :UNSPECIFIC."
                 if (device != Keyword.UNSPECIFIC) {
-                    error(new LispError("The device component of a logical pathname must be :UNSPECIFIC."));
+                  return type_error("The device component of a logical pathname must be :UNSPECIFIC.",
+                                    p.getDevice(), Keyword.UNSPECIFIC);
                 }
             } else {
               if (device instanceof Cons) {
