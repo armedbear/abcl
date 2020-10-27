@@ -1120,10 +1120,12 @@ public class Pathname extends LispObject
                 } else if (value == Keyword.WILD) {
                     directory = list(Keyword.ABSOLUTE, Keyword.WILD);
                 } else {
-                  // a valid pathname directory is a string, a list of strings, nil, :wild, :unspecific
+                  // a valid pathname directory is a string, a list of
+                  // strings, nil, :wild, :unspecific
+                  //
                   // ??? would be nice to (deftype pathname-arg ()
-                  // '(or (member :wild :unspecific) string (and cons ,(mapcar ...
-                  // Is this possible?
+                  // '(or (member :wild :unspecific) string (and cons
+                  // ,(mapcar ...  Is this possible?
                   if ((value instanceof Cons 
                        // XXX check that the elements of a list are themselves valid
                        || value == Keyword.UNSPECIFIC
