@@ -288,9 +288,10 @@ public final class Load
         Pathname mergedPathname;
         if (bootPath instanceof Pathname) {
           mergedPathname = (Pathname)Symbol.MERGE_PATHNAMES.execute(pathname, bootPath);
-          // So PROBE-FILE won't attempt to merge when
+          // So a PROBE-FILE won't attempt to merge when
           // *DEFAULT-PATHNAME-DEFAULTS* is a JAR
-          if (mergedPathname.getDevice().equals(NIL)) {
+          if (mergedPathname.getDevice().equals(NIL)
+              && !Utilities.isPlatformWindows) {
             mergedPathname.setDevice(Keyword.UNSPECIFIC);
           }
         } else {
