@@ -342,10 +342,10 @@ public class JarPathname
   }
 
   String getRootJarAsURLString() {
-   return
-     JarPathname.JAR_URI_PREFIX
-     + ((Pathname)getRootJar()).getNamestring()
-     + JarPathname.JAR_URI_SUFFIX;
+    return
+      JarPathname.JAR_URI_PREFIX
+      + ((URLPathname)getRootJar()).getNamestring()
+      + JarPathname.JAR_URI_SUFFIX;
   }
 
 
@@ -397,7 +397,7 @@ public class JarPathname
     if (p.isLocalFile()) {
       return true;
     }
-    return super.isLocalFile();
+    return false;
   }
 
   public boolean isArchiveEntry() {
