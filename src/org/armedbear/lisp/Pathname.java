@@ -1168,7 +1168,7 @@ public class Pathname extends LispObject
                 version = defaults.getVersion();
             }
         }
-        Pathname p;
+        Pathname p = new Pathname();
         LispObject logicalHost = NIL;
         if (host != NIL) {
             if (host instanceof AbstractString) {
