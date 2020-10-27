@@ -539,8 +539,9 @@ public class Pathname extends LispObject
             }
         }
 
-        if (getDevice() == NIL) {
-        } else if (getDevice() == Keyword.UNSPECIFIC) {
+        if (getDevice().equals(NIL)
+            || getDevice().equals(Keyword.UNSPECIFIC)) {
+          // nothing emitted for device
         } else if (getDevice() instanceof AbstractString) {
             sb.append(getDevice().getStringValue());
             if (this instanceof LogicalPathname
