@@ -1183,7 +1183,9 @@ public class Pathname extends LispObject
                 p = LogicalPathname.create();
                 p.setHost(logicalHost);
             }
-            p.setDevice(Keyword.UNSPECIFIC);
+            if (!Utilities.isPlatformWindows) {
+              p.setDevice(Keyword.UNSPECIFIC);
+            }
         } else {
             p = Pathname.create();
         }
