@@ -116,8 +116,32 @@ public final class probe_file
                 error(new FileError("Cannot probe a wild pathname as a directory.", pathname));
             }
             Pathname defaultedPathname = (Pathname)Pathname.MERGE_PATHNAMES.execute(pathname);
+            if (defaultedPathname instanceof JarPathname) {
+              if (defaultedPathname.getName().equals(NIL)
+                  && defaultedPathname.getType().equals(NIL)) {
+                return Symbol.PROBE_FILE.execute(defaultedPathname);
+              }
+              SimpleString lastDirectory = (SimpleString)Symbol.FILE_NAMESTRING.execute(defaultedPathname);
+              LispObject appendedDirectory 
+                = defaultedPathname.getDirectory().reverse().push(lastDirectory).reverse();
+              defaultedPathname.setDirectory(appendedDirectory);
+              return Symbol.PROBE_FILE.execute(defaultedPathname);
+            }
+            
             File file = defaultedPathname.getFile();
-            return file.isDirectory() ? Pathname.getDirectoryPathname(file) : NIL;
+            if (file == null || !file.isDirectory()) {
+              return NIL;
+            }
+
+            if (defaultedPathname.getName().equals(NIL)
+                && defaultedPathname.getType().equals(NIL)) {
+              return Symbol.PROBE_FILE.execute(defaultedPathname);
+            }
+            SimpleString lastDirectory = (SimpleString)Symbol.FILE_NAMESTRING.execute(defaultedPathname);
+            LispObject appendedDirectory 
+              = defaultedPathname.getDirectory().reverse().push(lastDirectory).reverse();
+            defaultedPathname.setDirectory(appendedDirectory);
+            return Symbol.PROBE_FILE.execute(defaultedPathname);
         }
     };
 
@@ -132,8 +156,8 @@ public final class probe_file
         }
 
         private LispObject isDirectory(Pathname p) {
-            File file = p.getFile();
-            return file.isDirectory() ? T : NIL;
+          LispObject result = PROBE_DIRECTORY.execute(p);
+          return result.equals(NIL) ? NIL : T;
         }
 
         @Override
