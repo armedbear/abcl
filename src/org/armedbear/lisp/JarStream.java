@@ -55,9 +55,9 @@ public final class JarStream extends Stream
     private final Reader reader;
     private final int bytesPerUnit;
 
-    public JarStream(Pathname pathname, String namestring,
-                          LispObject elementType, LispObject direction,
-                          LispObject ifExists, LispObject format)
+    public JarStream(Pathname pathname, 
+                     LispObject elementType, LispObject direction,
+                     LispObject ifExists, LispObject format)
         throws IOException
     {
         super(Symbol.JAR_STREAM);
