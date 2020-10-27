@@ -258,6 +258,7 @@ public final class Load
     }
 
     private static final Symbol FASL_LOADER = PACKAGE_SYS.intern("*FASL-LOADER*");
+  /** A file with this type in a packed FASL denotes the initial loader */
     static final LispObject COMPILE_FILE_INIT_FASL_TYPE = new SimpleString("_");
 
     private static final Pathname coercePathnameOrNull(LispObject p) {
@@ -523,45 +524,53 @@ public final class Load
             Pathname truePathname = null;
             if (!truename.equals(NIL)) {
                 if (truename instanceof Pathname) {
-                    truePathname = Pathname.create((Pathname)truename);
+                  if (truename instanceof JarPathname) {
+                    truePathname = new JarPathname();
+                  } else if (truename instanceof URLPathname) {
+                    truePathname = new URLPathname();
+                  } else {
+                    truePathname = new Pathname();
+                  }
+                  truePathname.copyFrom((Pathname)truename);
                 } else if (truename instanceof AbstractString) {
                   truePathname = (Pathname)Pathname.create(truename.getStringValue());
                 } else {
                     Debug.assertTrue(false);
                 }
-                String type = truePathname.getType().getStringValue();
-                if (type.equals(Lisp._COMPILE_FILE_TYPE_.symbolValue(thread).getStringValue())
-                    || type.equals(COMPILE_FILE_INIT_FASL_TYPE.toString())) {
+                if (truePathname.getType().equal(Lisp._COMPILE_FILE_TYPE_.symbolValue(thread))
+                    || truePathname.getType().equal(COMPILE_FILE_INIT_FASL_TYPE)) {
                     Pathname truenameFasl = Pathname.create(truePathname);
                     thread.bindSpecial(Symbol.LOAD_TRUENAME_FASL, truenameFasl);
                 }
-                if (truePathname.getType().getStringValue()
-                    .equals(COMPILE_FILE_INIT_FASL_TYPE.getStringValue())
+                if (truePathname.getType().equal(COMPILE_FILE_INIT_FASL_TYPE)
                     && truePathname.isJar()) {
-                    if (truePathname.getDevice().cdr() != NIL ) {
-                        // We set *LOAD-TRUENAME* to the argument that
-                        // a user would pass to LOAD.
-                        Pathname enclosingJar = (Pathname)truePathname.getDevice().cdr().car();
-                        truePathname.setDevice(new Cons(truePathname.getDevice().car(), NIL));
-                        truePathname.setHost(NIL);
-                        truePathname.setDirectory(enclosingJar.getDirectory());
-                        if (truePathname.getDirectory().car().equals(Keyword.RELATIVE)) {
-                            truePathname.getDirectory().setCar(Keyword.ABSOLUTE);
-                        }
-                        truePathname.setName(enclosingJar.getName());
-                        truePathname.setType(enclosingJar.getType());
+                  // We set *LOAD-TRUENAME* to the argument that a
+                  // user would pass to LOAD.
+                  truePathname = (Pathname)probe_file.PROBE_FILE.execute(pathname);
+                  /*
+                  if (truePathname.getDevice().cdr() != NIL ) {
+                    Pathname enclosingJar = (Pathname)truePathname.getDevice().cdr().car();
+                    truePathname.setDevice(new Cons(truePathname.getDevice().car(), NIL));
+                    truePathname.setHost(NIL);
+                    truePathname.setDirectory(enclosingJar.getDirectory());
+                    if (truePathname.getDirectory().car().equals(Keyword.RELATIVE)) {
+                      truePathname.getDirectory().setCar(Keyword.ABSOLUTE);
+                    }
+                    truePathname.setName(enclosingJar.getName());
+                    truePathname.setType(enclosingJar.getType());
                     } else {
                         // XXX There is something fishy in the asymmetry
                         // between the "jar:jar:http:" and "jar:jar:file:"
                         // cases but this currently passes the tests.
                         if (!(truePathname.device.car() instanceof AbstractString)) {
-                          assert truePathname.getDevice().car() instanceof Pathname;
-                          Pathname p = Pathname.create((Pathname)truePathname.getDevice().car());
+                          //                          assert truePathname.getDevice().car() instanceof Pathname;
+                          //                          Pathname p = Pathname.create((Pathname)truePathname.getDevice().car());
                           truePathname 
-                            = (Pathname) probe_file.PROBE_FILE.execute(p);
+                            = (Pathname) probe_file.PROBE_FILE.execute(pathname);
                         }
                     }
-                    thread.bindSpecial(Symbol.LOAD_TRUENAME, truePathname);
+                  */
+                  thread.bindSpecial(Symbol.LOAD_TRUENAME, truePathname);
                 } else {
                     thread.bindSpecial(Symbol.LOAD_TRUENAME, truename);
                 }
