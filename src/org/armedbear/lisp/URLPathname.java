@@ -47,10 +47,10 @@ import java.text.MessageFormat;
 public class URLPathname
   extends Pathname
 {
-  static final Symbol SCHEME = internKeyword("SCHEME");
-  static final Symbol AUTHORITY = internKeyword("AUTHORITY");
-  static final Symbol QUERY = internKeyword("QUERY");
-  static final Symbol FRAGMENT = internKeyword("FRAGMENT");
+  static public final Symbol SCHEME = internKeyword("SCHEME");
+  static public final Symbol AUTHORITY = internKeyword("AUTHORITY");
+  static public final Symbol QUERY = internKeyword("QUERY");
+  static public final Symbol FRAGMENT = internKeyword("FRAGMENT");
 
   protected URLPathname() {}
 
@@ -76,9 +76,14 @@ public class URLPathname
     return URLPathname.create(uri.toString());
   }
 
+  static public final LispObject FILE = new SimpleString("file");
   public static URLPathname createFromFile(Pathname p) {
-    String ns = "file:" + p.getNamestring();
-    return create(ns);
+    URLPathname result = new URLPathname();
+    result.copyFrom(p);
+    LispObject scheme = NIL;
+    scheme = scheme.push(FILE).push(SCHEME);
+    result.setHost(scheme);
+    return result;
   }
 
   public static URLPathname create(String s) {
@@ -125,8 +130,9 @@ public class URLPathname
         path += "/";
       }
       final Pathname p = (Pathname)Pathname.create(path);
+      LispObject host = NIL.push(FILE).push(SCHEME);
       result
-        .setHost(p.getHost())
+        .setHost(host)
         .setDevice(p.getDevice())
         .setDirectory(p.getDirectory())
         .setName(p.getName())
@@ -180,6 +186,53 @@ public class URLPathname
     return result;
   }
 
+  public URI toURI() {
+    String uriString = getNamestringAsURL();
+    try {
+      URI uri = new URI(uriString);
+      return uri;
+    } catch (URISyntaxException eo) {
+      return null;
+    }
+  }
+
+  public URL toURL() {
+    URI uri = toURI();
+    try {
+      if (uri != null) {
+        return uri.toURL();
+      }
+    } catch (MalformedURLException e) { 
+    }
+    return null;
+  }
+  
+  public File getFile() { 
+    if (!hasExplicitFile(this)) {
+      return null; // TODO signal that this is not possible?
+    }
+    URI uri = toURI();
+    if (uri == null) {
+      return null;
+    }
+    File result = new File(uri);
+    return result;
+  }
+
+  static public boolean isFile(Pathname p) {
+    LispObject scheme = Symbol.GETF.execute(p.getHost(), SCHEME, NIL);
+    if (scheme.equals(NIL)
+        || hasExplicitFile(p)) {
+      return true;
+    }
+    return false;
+  }
+  
+  static public boolean hasExplicitFile(Pathname p) {
+    LispObject scheme = Symbol.GETF.execute(p.getHost(), SCHEME, NIL);
+    return scheme.equalp(FILE);
+  }
+
   public String getNamestring() {
     StringBuilder sb = new StringBuilder();
     return getNamestring(sb);
@@ -192,12 +245,17 @@ public class URLPathname
     // A scheme of NIL is implicitly "file:", for which we don't emit
     // as part of the usual namestring.  getNamestringAsURI() should
     // emit the 'file:' string
-    if (!scheme.equals(NIL)) {
+    boolean percentEncode = true;
+    if (scheme.equals(NIL)) {
+      percentEncode = false;
+    } else {
       sb.append(scheme.getStringValue());
       sb.append(":");
       if (authority != NIL) {
         sb.append("//");
         sb.append(authority.getStringValue());
+      } else if (scheme.equalp(FILE)) {
+        sb.append("//");
       }
     }
     if (Utilities.isPlatformWindows
@@ -206,6 +264,9 @@ public class URLPathname
 	.append(":");
     }
     String directoryNamestring = getDirectoryNamestring();
+    if (percentEncode) {
+      directoryNamestring = uriEncode(directoryNamestring);
+    }
     sb.append(directoryNamestring);
 
     // Use the output of Pathname
@@ -215,23 +276,28 @@ public class URLPathname
       .setDevice(NIL)
       .setDirectory(NIL);
     String nameTypeVersion = p.getNamestring();
+    if (percentEncode) {
+      nameTypeVersion = uriEncode(nameTypeVersion);
+    }      
     sb.append(nameTypeVersion);
 
     LispObject o = Symbol.GETF.execute(getHost(), QUERY, NIL);
     if (o != NIL) {
       sb.append("?")
-        .append(o.getStringValue());
+        .append(uriEncode(o.getStringValue()));
     }
     o = Symbol.GETF.execute(getHost(), FRAGMENT, NIL);
     if (o != NIL) {
       sb.append("#")
-        .append(o.getStringValue());
+        .append(uriEncode(o.getStringValue()));
     }
 
     return sb.toString();
   }
 
-  // TODO URIEncode path components?
+  // We need our "own" rules for outputting a URL
+  // 1.  For DOS drive letters
+  // 2.  For relative "file" schemas (??)
   public String getNamestringAsURL() {
     LispObject schemeProperty = Symbol.GETF.execute(getHost(), SCHEME, NIL);
     LispObject authorityProperty = Symbol.GETF.execute(getHost(), AUTHORITY, NIL);
@@ -239,17 +305,22 @@ public class URLPathname
     LispObject fragmentProperty = Symbol.GETF.execute(getHost(), FRAGMENT, NIL);
 
     String scheme;
-    String authority;
+    String authority = null;
     if (!schemeProperty.equals(NIL)) {
       scheme = schemeProperty.getStringValue();
-      authority =  authorityProperty.getStringValue();
+      if (!authorityProperty.equals(NIL)) {
+        authority =  authorityProperty.getStringValue();
+      }
     } else {
       scheme = "file";
-      authority = "";
     }
 
     String directory = getDirectoryNamestring();
-    String file = Symbol.FILE_NAMESTRING.execute(this).getStringValue();
+    String file = "";
+    LispObject fileNamestring = Symbol.FILE_NAMESTRING.execute(this);
+    if (!fileNamestring.equals(NIL)) {
+      file = fileNamestring.getStringValue();
+    }
     String path = "";
 
     if (!directory.equals("")) {
@@ -262,6 +333,8 @@ public class URLPathname
     } else {
       path = file;
     }
+
+    path = uriEncode(path);
 
     String query = null;
     if (!queryProperty.equals(NIL)) {
@@ -310,14 +383,13 @@ public class URLPathname
 
   public static LispObject truename(URLPathname p, boolean errorIfDoesNotExist) {
     if (p.getHost().equals(NIL)
-     || Symbol.GETF.execute(p.getHost(), URLPathname.SCHEME, NIL)
-          .equals("file")) {
+        || hasExplicitFile(p)) {
       LispObject fileTruename = Pathname.truename(p, errorIfDoesNotExist);
       if (fileTruename.equals(NIL)) {
         return NIL;
       }
       if (!(fileTruename instanceof URLPathname)) {
-        URLPathname urlTruename = URLPathname.create((Pathname)fileTruename);
+        URLPathname urlTruename = URLPathname.createFromFile((Pathname)fileTruename);
         return urlTruename;
       }
       return fileTruename;
@@ -338,9 +410,23 @@ public class URLPathname
     }
     return Pathname.doTruenameExit(p, errorIfDoesNotExist);
   }
-
+  
   public InputStream getInputStream() {
     InputStream result = null;
+
+    if (URLPathname.isFile(this)) {
+      Pathname p = new Pathname();
+      p.copyFrom(this)
+        .setHost(NIL);
+      return p.getInputStream();
+    }
+
+    if (URLPathname.isFile(this)) {
+      Pathname p = new Pathname();
+      p.copyFrom(this)
+        .setHost(NIL);
+      return p.getInputStream();
+    }
 
     URL url = this.toURL();
     try { 
