@@ -1111,8 +1111,12 @@ public class Pathname extends LispObject
                 if (!(value instanceof AbstractString
                       || value.equals(Keyword.UNSPECIFIC)
                       || value.equals(NIL)
-                      || value instanceof Cons))
-                  error(new TypeError("DEVICE is not a string, :UNSPECIFIC, NIL, or a list.", value, NIL));
+                      || value instanceof Cons)) {
+                  return type_error("DEVICE is not a string, :UNSPECIFIC, NIL, or a list.",
+                                    value,
+                                    list(Symbol.OR,
+                                         Symbol.STRING, Keyword.UNSPECIFIC, NIL, Symbol.CONS));
+                }
             } else if (key == Keyword.DIRECTORY) {
                 directorySupplied = true;
                 if (value instanceof AbstractString) {
@@ -1132,7 +1136,11 @@ public class Pathname extends LispObject
                        || value.equals(NIL))) {
                       directory = value;
                   } else {
-                      error(new TypeError("DIRECTORY argument not a string, list of strings, nil, :WILD, or :UNSPECIFIC.", value, NIL));
+                    return
+                      type_error("DIRECTORY argument not a string, list of strings, nil, :WILD, or :UNSPECIFIC.",
+                                 value,
+                                 list(Symbol.OR,
+                                      NIL, Symbol.STRING, Symbol.CONS, Keyword.WILD, Keyword.UNSPECIFIC));
                   }
                 }
             } else if (key == Keyword.NAME) {
@@ -1297,6 +1305,7 @@ public class Pathname extends LispObject
 
         return p;
     }
+        
 
 
     private static final AbstractString validateStringComponent(AbstractString s) {
