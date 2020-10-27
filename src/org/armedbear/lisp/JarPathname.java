@@ -381,7 +381,14 @@ public class JarPathname
       }
       LispObject otherJars
         = p.getJars().cdr();
-      p.setDevice(new Cons(rootJarTruename, otherJars));
+      URLPathname newRootJar;
+      if (rootJarTruename instanceof Pathname) {
+        newRootJar = URLPathname.createFromFile((Pathname)rootJarTruename);
+      } else {
+        newRootJar = (URLPathname) rootJarTruename;
+      }
+
+      p.setDevice(new Cons(newRootJar, otherJars));
     }
 
     if (!p.isArchiveEntry()) {
