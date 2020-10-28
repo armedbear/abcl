@@ -260,9 +260,11 @@ public class URLPathname
         sb.append("//");
       }
     }
+    // <https://docs.microsoft.com/en-us/archive/blogs/ie/file-uris-in-windows>
     if (Utilities.isPlatformWindows
 	&& getDevice() instanceof SimpleString) {
-      sb.append(getDevice().getStringValue())
+      sb.append("/")
+        .append(getDevice().getStringValue())
 	.append(":");
     }
     String directoryNamestring = getDirectoryNamestring();
