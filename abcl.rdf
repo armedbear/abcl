@@ -16,13 +16,13 @@
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.7.2#dev> ; # deprecated?
-  dc:identifier         <urn:abcl.org/release/1.7.1#dev> ;
+  dc:identifier         <urn:abcl.org/1.8.0#> ; # deprecated?
+  dc:identifier         <urn:abcl.org/release/1.8.0#> ;
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "18-JUL-2020" ;
-  dc:version           "abcl-1.7.2" ;
-  dc:release           "dev" ;
+  dc:modified          "28-OCT-2020" ;
+  dc:version           "abcl-1.8.0" ;
+  dc:release           "rc10" ;
   abcl:git             <https://github.com/armedbear/abcl/> ;
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
   abcl:svn             <https://abcl.org/svn/trunk/abcl/> . 
@@ -93,12 +93,12 @@ _:user dc:identifier <http://ville.not.org/#me>  ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2> ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
      dc:licenseDocument 
-       <http://abcl.org/svn/tags/1.7.1/src/org/armedbear/COPYING> ;
+       <http://abcl.org/svn/tags/1.8.0/src/org/armedbear/COPYING> ;
 ] .
 
 doap:Project rdfs:seeAlso [
   a rdf:Bag;
-  rdf:_0 <http://abcl.org/releases/1.7.1/abcl-1.7.1.jar> ;
+  rdf:_0 <http://abcl.org/releases/1.8.0/abcl-1.8.0.jar> ;
   rdf:_1 <http://abcl.org/trac/timeline> ;
   rdf:_2 <http://abcl.org/trac/wiki> ;
   rdf:_4 <https://github.com/armedbear/abcl/> ;
@@ -121,6 +121,7 @@ doap:Project rdfs:seeAlso [
      rdf:_13 <http://abcl.org/releases/1.6.0/abcl-1.6.1.jar> ;
      rdf:_17 <http://abcl.org/releases/1.6.0/abcl-1.7.0.jar> ;
      rdf:_19 <http://abcl.org/releases/1.6.0/abcl-1.7.1.jar> ;
+     rdf:_23 <http://abcl.org/releases/1.6.0/abcl-1.8.0.jar> ;
   ] ;
 ] .
 
@@ -160,7 +161,7 @@ doap:Project rdfs:seeAlso
 ] .
 
 abcl:jna
-        dc:version "5.5.0" .
+        dc:version "5.6.0" .
 abcl:asdf
         dc:version "3.3.4" .
 
@@ -191,6 +192,7 @@ abcl:jss
   rdf:_11  openjdk:11 ;
   rdf:_13  openjdk:13 ;
   rdf:_14  openjdk:14 ;
+  rdf:_15  openjdk:15 ;
   rdfs:comment "Compatible Java runtimes" .
 
 [abcl:run _:options]
@@ -204,7 +206,7 @@ abcl:jss
 
 [abcl:build _:options]
     not.org:target "1.8" ;
-    not.org:source "1.6" ;
+#    not.org:source "1.6" ;
     not.org:encoding "UTF-8" ;
     not.org:debug "true" ;
     rdfs:comment "Java build options" .
@@ -220,6 +222,7 @@ abcl:jss
    rdf:_11  openjdk:11 ;
    rdf:_13  openjdk:13 ;
    rdf:_14  openjdk:14 ;
+   rdf:_14  openjdk:15 ;
    rdfs:comment "Supported build platforms" .
 
 

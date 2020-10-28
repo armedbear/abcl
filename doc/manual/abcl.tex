@@ -9,9 +9,9 @@
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.7.2\\
+\date{Version 1.8.0\\
 \smallskip
-Unreleased}
+October 28, 2020}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -81,6 +81,27 @@ additional keyword arguments useful in their construction to
 \code{cl:make-array}.\footnote{See \ref{sec:make-array} on page
 \pageref{sec:make-array}}.
 
+%%Preface to the Ninth edition, abcl-1.8
+\subsection{Preface to the Ninth Edition}
+With the Ninth Edition of the implementation we now support building
+and running with the openjdk15.  This is intended as the last major
+release to support the openjdk6, openjdk7, and openjdk8 platforms.
+
+The implementation of the \code{EXT:JAR-PATHNAME} and
+\code{EXT:URL-PATHNAME} subtypes of \code{cl:PATHNAME} has been fixed
+to the point that arbitrary references to zipfile archives within
+zipfile now work for most read-only operations (\code{CL:PROBE-FILE},
+\code{CL:TRUENAME}, \code{CL:OPEN}, \code{CL:LOAD},
+\code{CL:FILE-WRITE-DATE}, \code{CL:DIRECTORY}, and
+\code{CL:MERGE-PATHNAMES}).  The previous version relied on the
+ability for \code{java.net.URL} to open streams of an archive within
+an archive, behavior that was silently dropped after Java 5, and
+consequently hasn't worked on common platforms supported by the Bear
+in a long time.  This restores the feasiblity of accessing fasls from
+within jar files \footnote{Examine the ASDF-JAR contrib in section
+\ref{sec:asdf-jar} on page \pageref{sec:asdf-jar} for a recipe for
+packaging and accessing such artifacts.}.
+
 \chapter{Introduction}
 
 Armed Bear Common Lisp (\textsc{ABCL}) is an implementation of
@@ -89,11 +110,11 @@ Armed Bear Common Lisp (\textsc{ABCL}) is an implementation of
 \textsc{Java} byte-code\footnote{The class files produced by the
 compiler have a byte-code version of ``49.0''.}, with an efficiency
 that varies upon the hosting JVM implementation.  \textsc{ABCL}
-supports running on the Java 6, Java 7, Java 8, Java 11, Java 13, and
-Java 14 openjdk \textsc{JVM} implementations\footnote{As of April
-2020, the AdoptOpenJDK.net community \url{https://adoptopenjdk.net/}
-provides perhaps the easiest installation of unencumbered openjdk
-implementations}.
+supports building and running on the Java 6, Java 7, Java 8, Java 11,
+Java 13, Java 14 and Java 15 openjdk platforms\textsc{JVM}
+implementations\footnote{As of April 2020, the AdoptOpenJDK.net
+community \url{https://adoptopenjdk.net/} provides perhaps the easiest
+installation of unencumbered openjdk implementations}.
 
 Armed Bear provides the following integration methods for interfacing
 with Java code and libraries:
@@ -145,7 +166,8 @@ implementation due to the following known issues:
   paragraph beginning "If the PATHNAME explicitly specifies a host and
   not a device…").  A future version of the implementation may return
   to conformance by using the \code{HOST} value to reflect the type
-  explicitly.}
+  explicitly. See \ref{sec:jar-pathname} on page
+  \pageref{sec:jar-pathname} for further information.}
 
 \end{itemize}
 
@@ -190,7 +212,7 @@ contemporary Common Lisp.
 \textsc{ABCL} is licensed under the terms of the \textsc{GPL} v2 of
 June 1991 with an added ``classpath-exception'' clause (see the file
 \texttt{COPYING} in the source distribution\footnote{See
-  \url{http://abcl.org/svn/trunk/tags/1.7.1/COPYING}} for the license,
+  \url{http://abcl.org/svn/trunk/tags/1.8.0/COPYING}} for the license,
 term 13 in the same file for the classpath exception).  This license
 broadly means that you must distribute the sources to \textsc{ABCL},
 including any changes you make, together with a program that includes
@@ -217,7 +239,7 @@ course.
 
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-\texttt{abcl.jar} or possibly something like \texttt{abcl-1.7.1.jar} if
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.8.0.jar} if
 using a versioned package on the local file-system from your system
 vendor.  This jar file can be executed from the command line to obtain a
 \textsc{REPL}\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
@@ -937,13 +959,13 @@ chapter documents such extensions beyond ANSI conformation.
 The \code{CL:COMPILE-FILE} interface emits a packed fasl\footnote{The
 term ``fasl'' is short for ``fast loader'', which in \textsc{Common
   Lisp} implementations refers} format whose \code{CL:PATHNAME} has
-the \code{TYPE} ``abcl''.  Structurally, \textsc{ABCL}'s fasls are an
+the \code{TYPE} ``abcl''.  Structurally, \textsc{ABCL}'s fasls are
 operating system neutral byte archives packaged in the zip compression
 format which contain artifacts whose loading \code{CL:LOAD}
 understands.  Internally, our fasls contain a piece of Lisp that
 \code{CL:LOAD} interprets as instructions to load the Java classes
-emitted by the \textsc{ABCL} Lisp compiler.  These ``synthetic''
-classes have a JVM class file version of ``49.0''.
+emitted by the \textsc{ABCL} Lisp compiler.  The classes emitted by
+the \textsc{ABCL} compiler have a JVM class file version of ``49.0''.
 
 % TODO check on what the compiler is currently emitting
 
@@ -972,27 +994,17 @@ on \pageref{abcl-introspect-disassemblers} for further details.
 
 \section{Pathname}
 
-We implement an extension to the \code{CL:PATHNAME} that allows for
-the description and retrieval of resources named in a
-\textsc{URI} \footnote{A \textsc{URI} is essentially a superset of
-  what is commonly understood as a \textsc{URL} We sometimes use the
-  term URL as shorthand in describing the URL Pathnames, even though
-  the corresponding encoding is more akin to a URI as described in
-  RFC3986 \cite{rfc3986}.}  scheme that the \textsc{JVM}
-``understands''.  By definition, support is built-in into the JVM to
-access the ``http'' and ``https'' schemes but additional protocol
-handlers may be installed at runtime by having \textsc{JVM} symbols
-present in the \code{sun.net.protocol.dynamic} package. See
-\cite{maso2000} for more details.
-
-\textsc{ABCL} has created specializations of the ANSI
-\code{CL:PATHNAME} object to enable to use of \textsc{URI}s to address
-dynamically loaded resources for the JVM.  The \code{EXT:URL-PATHNAME}
-specialization has a corresponding \textsc{URI} whose canonical
-representation is defined to be the \code{NAMESTRING} of the
-\code{CL:PATHNAME}. The \code{EXT:JAR-PATHNAME} extension further
-specializes the the \code{EXT:URL-PATHNAME} to provide access to
-components of zip archives.  
+\textsc{ABCL} extends its implementation of \textsc{ANSI}
+\code{PATHNAME} objects in order to allow read-only access to sources
+of bytes available via URIs \footnote{A \textsc{URI} is essentially a
+superset of what is commonly understood as a \textsc{URL}. We
+sometimes use the term URL as shorthand in describing the URL
+Pathnames, even though the corresponding encoding is more akin to a
+URI as described in RFC3986 \cite{rfc3986}.} and to enable the
+addressing of arbitrarily recursive entries within ZIP archives.
+These implementation decisions are encapsulated by the specialization
+of \code{CL:PATHNAME} as the \code{EXT:URL-PATHNAME}
+and the \code{EXT:JAR-PATHNAME} types.
 
 % RDF description of type hierarchy 
 % TODO Render via some LaTeX mode for graphviz?
@@ -1006,102 +1018,62 @@ components of zip archives.
   <cl:logical-pathname> rdfs:subClassOf <cl:pathname> .
 \end{verbatim}
 
+The \code{EXT:URL-PATHAME} object utilizes the standard \textsc{JVM}
+implementation of \code{java.net.URL} to access (minimally) resources
+named by the ``file'', ``http'', ``https'', and ``ftp'' schemes.
+Additional protocol handlers for other may be installed at runtime by
+having \textsc{JVM} symbols present in the
+\code{sun.net.protocol.dynamic}\footnote{See \cite{maso2000} for more
+details.}.  The namestring of a \code{EXT:URL-PATHNAME} specialization
+is equivalent to the string serialization of its representation as defined.
+
+The \code{EXT:JAR-PATHNAME} extension utilizes the specialization of
+\code{EXT:URL-PATHNAME} to provide access to components of
+\textsc{ZIP} archives, of which the \textsc{JAR} (Java ARchive) format
+is a superset.  \footnote{JAR archive utilize the ZIP format for
+packing and compression adding procedures to add supporting metadata
+in a manifest which is standarized text file stored at a canonical
+location within the archive.}  \textsc{JAR} archives are typically
+used to aggregate many Java class files and associated metadata and
+resources (text, images, etc.) into one file for distribution.
+\textsc{ABCL} is typically packaged as a \textsc{JAR} archive and
+emits its fasls as \textsc{ZIP} files.
+
+Both the \code{EXT:URL-PATHNAME} and \code{EXT:JAR-PATHNAME}
+specializations may be broadly used anywhere a \code{CL:PATHNAME} is
+accepted with the general caveat that stream obtained via
+\code{CL:OPEN} on either subtype cannot be the target of write
+operations.
+
+\subsubsection{URL-PATHNAME}
 \label{EXTENSIONS:URL-PATHNAME}
 \index{URL-PATHNAME}
 
-\label{EXTENSIONS:JAR-PATHNAME}
-\index{JAR-PATHNAME}
+A \code{URL-PATHNAME} denotes a source of bytes addressable by its
+corresponding namestring interpreted as a URL.  
 
-Both the \code{EXT:URL-PATHNAME} and \code{EXT:JAR-PATHNAME} objects
-may be used anywhere a \code{CL:PATHNAME} is accepted with the
-following caveats:
+A \code{EXT:URL-PATHNAME} always has a \code{HOST} component that is a
+property list.  The values of the \code{HOST} property list are always
+character strings.  The allowed keys have the following meanings:
 
-\begin{itemize}
+\begin{description}
+\item[:SCHEME] Scheme of URI ("http", "ftp", "bundle", etc.)
+\item[:AUTHORITY] Valid authority according to the URI scheme.  For
+  "http" this could be "example.org:8080". 
+\item[:QUERY] The query of the \textsc{URI} 
+\item[:FRAGMENT] The fragment portion of the \textsc{URI}
+\end{description}
 
-\item A stream obtained via \code{CL:OPEN} on a \code{CL:URL-PATHNAME}
-  cannot be the target of write operations.
-
-\index{URI}
-\item Any results of canonicalization procedures performed on the
-  \textsc{URI} via local or network resolutions are discarded between
-  attempts (i.e. the implementation does not attempt to cache the
-  results of current name resolution of the URI for underlying
-  resource unless it is requested to be resolved.)  Upon resolution,
-  any canonicalization procedures followed in resolving the resource
-  (e.g. following redirects) are discarded.  Users may programatically
-  initiate a new, local computation of the resolution of the resource
-  by applying the \code{CL:TRUENAME} function to a
-  \code{EXT:URL-PATHNAME} object.  Depending on the reliability and
-  properties of your local \textsc{REST} infrastructure, these results
-  may not necessarily be idempotent over time\footnote {See
-    \cite{uri-pathname} for the design and implementation notes for
-    the technical details}.  A future implementation may attempt to
-  expose an API to observer/customize the content negotiation
-  initiated during retrieval of the representation of a given
-  resource, which is currently handled at the application level.
-
-\end{itemize}
-
-The implementation of \code{EXT:URL-PATHNAME} allows the \textsc{ABCL}
-user to dynamically load code from the network.  For example,
-\textsc{Quicklisp} (\cite{quicklisp}) may be completely installed from
-the \textsc{REPL} as the single form:
-
-\begin{listing-lisp}
-  CL-USER> (load "http://beta.quicklisp.org/quicklisp.lisp")
-\end{listing-lisp}
-
-will load and execute the Quicklisp setup code.
-
-The implementation currently breaks \textsc{ANSI} conformance by allowing the
-types able to be \code{CL:READ} for the \code{DEVICE} to return a possible \code{CONS} of
-\code{CL:PATHNAME} objects.  %% citation from CLHS needed.
-
-In order to ``smooth over'' the bit about types being \code{CL:READ}
-from \code{CL:PATHNAME} components, we extend the semantics for the
-usual PATHNAME merge semantics when \code{*DEFAULT-PATHNAME-DEFAULTS*}
-contains a \code{EXT:JAR-PATHNAME} with the ``do what I mean''
-algorithm described in \ref{section:conformance} on page
-\pageref{section:conformance}.
-
-%See \ref{_:quicklisp} on page \pageref{_:quicklisp}.
-
-\subsubsection{Implementation}
-
-The implementation of these extensions stores all the additional
-information in the \code{CL:PATHNAME} object itself in ways that while strictly
-speaking are conformant, nonetheless may trip up libraries that don't
-expect the following:
-
-\begin{itemize}
-\item \code{DEVICE} can be either a string denoting a drive letter
-  under \textsc{DOS} or a list of exactly one or two elements.  If
-  \code{DEVICE} is a list, it denotes a \code{EXT:JAR-PATHNAME}, with
-  the entries containing \code{CL:PATHNAME} objects which describe the
-  outer and (possibly inner) locations of the jar
-  archive \footnote{The case of inner and outer
-    \code{EXT:JAR-PATHNAME} \ref{EXT:JAR-PATHNAME} arises when zip
-    archives themselves contain zip archives which is the case when
-    the ABCL fasl is included in the abcl.jar zip archive.}.
-
-\item A \code{EXT:URL-PATHNAME} always has a \code{HOST} component that is a
-  property list.  The values of the \code{HOST} property list are
-  always character strings.  The allowed keys have the following meanings:
-  \begin{description}
-  \item[:SCHEME] Scheme of URI ("http", "ftp", "bundle", etc.)
-  \item[:AUTHORITY] Valid authority according to the URI scheme.  For
-    "http" this could be "example.org:8080". 
-  \item[:QUERY] The query of the \textsc{URI} 
-  \item[:FRAGMENT] The fragment portion of the \textsc{URI}
-  \end{description}
-
-\item In order to encapsulate the implementation decisions for these
-  meanings, the following functions provide a SETF-able API for
-  reading and writing such values: \code{URL-PATHNAME-QUERY},
-  \code{URL-PATHNAME-FRAGMENT}, \code{URL-PATHNAME-AUTHORITY}, and
-  \code{URL-PATHNAME-SCHEME}.  The specific subtype of a Pathname may
-  be determined with the predicates \code{PATHNAME-URL-P} and
-  \code{PATHNAME-JAR-P}.
+If the :SCHEME property is missing, it is assumed to be ``file''
+denoting a reference to a file on the local filesystem
+  
+In order to encapsulate the implementation decisions for these
+meanings, the following functions provide a SETF-able API for
+reading and writing such values: \code{URL-PATHNAME-QUERY},
+\code{URL-PATHNAME-FRAGMENT}, \code{URL-PATHNAME-AUTHORITY}, and
+\code{URL-PATHNAME-SCHEME}.  The specific subtype of a Pathname may
+be determined with the predicates \code{PATHNAME-URL-P} and
+\code{PATHNAME-JAR-P}.
 
 \label{EXTENSIONS:URL-PATHNAME-SCHEME}
 \index{URL-PATHNAME-SCHEME}
@@ -1118,7 +1090,97 @@ expect the following:
 \label{EXTENSIONS:URL-PATHNAME-QUERY}
 \index{URL-PATHNAME-QUERY}
 
-\end{itemize}
+Any results of canonicalization procedures performed on a object of
+type \code{EXT:URL-PATHNAME} via local or network resolutions
+discarded between attempts (i.e. the implementation does not attempt
+to cache the results of current name resolution of the URI for
+underlying resource unless it is requested to be resolved.)  Upon
+resolution, any canonicalization procedures followed in resolving the
+resource (e.g. following redirects) are discarded.  Users may
+programatically initiate a new, local computation of the resolution of
+the resource by applying the \code{CL:TRUENAME} function to a
+\code{EXT:URL-PATHNAME} object.  Depending on the reliability and
+properties of your local \textsc{REST} infrastructure, these results
+may not necessarily be idempotent over time\footnote {See
+\cite{uri-pathname} for the design and implementation notes for the
+technical details}.  A future implementation may attempt to expose an
+API to observer/customize the content negotiation initiated during
+retrieval of the representation of a given resource, which is
+currently handled at the application level.
+
+The implementation of \code{EXT:URL-PATHNAME} allows the \textsc{ABCL}
+user to dynamically load code from the network.  For example,
+\textsc{Quicklisp} (\cite{quicklisp}) may be completely installed from
+the \textsc{REPL} to download and execute the Quicklisp setup code via:
+
+\begin{listing-lisp}
+  CL-USER> (load "https://beta.quicklisp.org/quicklisp.lisp")
+\end{listing-lisp}
+
+\label{sec:jar-pathname}
+
+\label{EXTENSIONS:JAR-PATHNAME}
+\index{JAR-PATHNAME}
+
+\subsubsection{Implementation of a JAR-PATHNAME}
+
+In \textsc{ABCL}, the \code{DEVICE} can be either a string either
+denoting a drive letter or a UNC mount under \textsc{DOS} or a list of
+one or more elements.  If \code{DEVICE} is a list, it denotes a
+\code{EXT:JAR-PATHNAME}.
+
+The implementation extends the \textsc{ANSI} specification with
+\textsc{EXT:JAR-PATHNAME} by utilizing its \code{DEVICE} to contain a
+list of pathnames denoting the location of and relative address within
+a \textsc{ZIP} archive.  The first member of this list will be a
+\code{EXT:URL-PATHNAME} pointing either to a source of bytes on the
+local filesystem or as a remote source via an stream-oriented
+messaging protocol such as \textsc{https}.  The rest of the list
+contains ``traditional'' \code{CL:PATHNAME} objects denoting
+successive relative archive paths.
+
+Passing any pathname with a \code{DEVICE} that is such a list to
+\code{CL:TRUENAME} will return a object whose Lisp type is
+\code{EXT:JAR-PATHNAME}, and whose \code{DEVICE} will contain
+references to objects normalized to the following contraints.  The
+first entry in the \code{DEVICE} list of \code{EXT:JAR-PATHNAME} will
+be a \code{EXT:URL-PATHNAME} designating the root source of bytes for
+root archive compressed via the ZIP compression algorithm.  If any,
+the remaining elements of the list contain simple \code{CL:PATHNAME}
+objects representing subsequent entries objects \footnote{This allows
+for reference to arbitrarily nested ZIP archives, which is the case
+when the an ABCL fasl is included in in a jar archive.}
+
+  %% citation from CLHS needed
+
+In order to implement useful behavior of merging with pathname
+defaults, the implementation will contain the \code{:unspecific}
+keyword in any truename that wasn't explicitly merging with a
+\code{EXT:JAR-PATHNAME}.  We extend the semantics for the usual
+PATHNAME merge semantics when \code{*DEFAULT-PATHNAME-DEFAULTS*}
+contains a \code{EXT:JAR-PATHNAME} with the ``do what I mean''
+algorithm described in \ref{section:conformance} on page
+\pageref{section:conformance}.
+
+The namestring representation of \code{EXT:JAR-PATHNAME} references
+use successive ``jar'' prefixes and corresponding ``!'' suffixes to
+encapsulate succesive locations.  Described broadly, a
+\code{EXT:JAR-PATHNAME} contains a \textsc{URL} describing the location of the
+archive and a entry within that archive.
+
+\begin{verbatim}
+jar:<url>!/[<entry>]
+\end{verbatim}
+
+The \textsc{URL} usually has the ``file'' scheme, but remote locations
+expressed in the ``https'' or ``http'' are also allowed.
+
+Subsequent entries within an archive are denoted as 
+\begin{verbatim}
+jar:jar:<url>!/[<entry0>]!/[<entry1>
+jar:jar:jar:<url>!/[<entry0>]!/[<entry1]>!/[<entry2]>
+\end{verbatim}
+
 
 \section{Package-Local Nicknames}
 \label{sec:package-local-nicknames}
@@ -1218,8 +1280,6 @@ designated package.
   existed and was removed, and \code{nil} otherwise.
 \end{adjustwidth}
 
-
-         
 \section{Extensible Sequences}
 
 The SEQUENCE package fully implements Christopher Rhodes' proposal for
@@ -1227,7 +1287,6 @@ extensible sequences.  These user extensible sequences are used
 directly in \code{java-collections.lisp} provide these CLOS
 abstractions on the standard Java collection classes as defined by the
 \code{java.util.List} contract.
-
 
 %% an Example of using java.util.Lisp in Lisp would be nice
 
@@ -1275,9 +1334,9 @@ of Pascal Costanza's \code{closer-mop} \ref{closer-mop} \cite{closer-mop}.
 \subsection{Specializing on Java classes}
 
 There is an additional syntax for specializing the parameter of a
-generic function on a java class, viz. \code{(java:jclass CLASS-STRING)}
-where \code{CLASS-STRING} is a string naming a Java class in dotted package
-form.
+generic function on a java class, viz. \code{(java:jclass
+  CLASS-STRING)} where \code{CLASS-STRING} is a string naming a Java
+class in dotted package form.
 
 For instance the following specialization would perhaps allow one to
 print more information about the contents of a \code{java.util.Collection}
@@ -1335,9 +1394,10 @@ long.
 %%                NIL.
 
 
-Note that this sequence is never output by the implementation.  Instead,
-the corresponding Unicode character is output for characters whose
-code is greater than 0x00ff.
+Note that that the reader escaped sequence is never output by the
+implementation.  Instead, the implementation emits the bytes
+corresponding Unicode character is output for characters whose code is
+greater than 0x00ff.
 
 \section{Overloading of the CL:REQUIRE Mechanism}
 
@@ -1375,8 +1435,9 @@ semantics to the execution of \code{REQUIRE} on the following symbols:
         the Java class corresponding ``:classname'' clause of the
         system definition is present.}
 
-      \item[\code{quicklisp-abcl}] Boot a local Quicklisp installation
-        via the ASDF:IRI type introduced via ABCL-ASDF.
+      \item[\code{quicklisp-abcl}] Load Quicklisp, bootstrap a a local
+        Quicklisp installation via the ASDF:IRI type introduced via
+        ABCL-ASDF.
 
       \item[\code{jfli}] A descendant of Rich Hickey's pre-Clojure work
         on the JVM.
@@ -1438,9 +1499,9 @@ CL-USER> (require :asdf)
 \label{sec:make-array}
 
 With the \code{:nio} feature is present\footnote{Available starting in
-abcl-1.7.1 and indicated by the presence of \code{:nio} in
-\code{cl:*features*}}, the implementation adds two keyword arguments
-to \code{cl:make-array}, viz. \code{:nio-buffer} and
+the Eighth Edition (aka abcl-1.7.0) and indicated by the presence of
+\code{:nio} in \code{cl:*features*}}, the implementation adds two
+keyword arguments to \code{cl:make-array}, viz. \code{:nio-buffer} and
 \code{:nio-direct}.
 
 With the \code{:nio-buffer} keyword, the user is able to pass
@@ -1499,7 +1560,7 @@ program performance.
 
 The \textsc{ABCL} contrib is packaged as a separate jar archive usually named
 \code{abcl-contrib.jar} or possibly something like
-\code{abcl-contrib-1.7.1.jar}.  The contrib jar is not loaded by the
+\code{abcl-contrib-1.8.0.jar}.  The contrib jar is not loaded by the
 implementation by default, and must be first initialized by the
 \code{REQUIRE} mechanism before using any specific contrib:
 
@@ -1546,7 +1607,7 @@ abstraction for handling logging systems:
 \subsection{API}
 
 We define an API for \textsc{ABCL-ASDF} as consisting of the following
-ASDF classes:
+\textsc{ASDF} classes:
 
 \code{JAR-DIRECTORY}, \code{JAR-FILE}, and
 \code{CLASS-FILE-DIRECTORY} for JVM artifacts that have a currently
@@ -1590,7 +1651,7 @@ Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
 More extensive documentations and examples can be found at
-\url{http://abcl.org/svn/tags/1.7.1/contrib/abcl-asdf/README.markdown}.
+\url{http://abcl.org/svn/tags/1.8.0/contrib/abcl-asdf/README.markdown}.
 
 \section{asdf-jar}
 \label{sec:asdf-jar}
@@ -1603,7 +1664,7 @@ this package will recursively package all the required source and
 fasls in a jar archive.
 
 The documentation for this contrib can be found at
-\url{http://abcl.org/svn/tags/1.7.1/contrib/asdf-jar/README.markdown}.
+\url{http://abcl.org/svn/tags/1.8.0/contrib/asdf-jar/README.markdown}.
 
 \section{jss}
 \label{section:jss}
@@ -1639,7 +1700,7 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp} %$ <-- un-confuse Emacs font-lock
 
 Some more information on jss can be found in its documentation at
-\url{http://abcl.org/svn/tags/1.7.1/contrib/jss/README.markdown}
+\url{http://abcl.org/svn/tags/1.8.0/contrib/jss/README.markdown}
 
 \section{jfli}
 \label{section:jfli}
@@ -1648,7 +1709,7 @@ The contrib contains a pure-Java version of \textsc{JFLI}, apparently
 a descendant of Rich Hickey's early experimentations with using Java
 from Common Lisp.
 
-\url{http://abcl.org/svn/tags/1.7.1/contrib/jfli/README}.
+\url{http://abcl.org/svn/tags/1.8.0/contrib/jfli/README}.
 
 \section{abcl-introspect}
 \ref{section:abcl-introspect}
@@ -1755,7 +1816,7 @@ NIL
 \end{listing-lisp}
   
 
-\url{http://abcl.org/svn/tags/1.7.1/contrib/abcl-introspect/}.
+\url{http://abcl.org/svn/tags/1.8.0/contrib/abcl-introspect/}.
 
 \section{abcl-build}
 \label{sec:abcl-build}
@@ -1770,6 +1831,7 @@ that uses the same build artifacts as all of the other current builds.
 
 \textsc{ABCL-BUILD} consolidates various utilities that are useful
 for system construction, namely
+
 \begin{itemize}
 
 \item The ability to introspect the invocation of given executable in
@@ -1784,7 +1846,7 @@ for system construction, namely
     archives from the network.
 \end{itemize}
 
-\url{http://abcl.org/svn/tags/1.7.1/contrib/abcl-build/}.
+\url{http://abcl.org/svn/tags/1.8.0/contrib/abcl-build/}.
 
 \section{named-readtables}
 \label{section:named-readtables}
@@ -1795,7 +1857,7 @@ readtables akin to the already-existing namespace of packages.
 
 Originally from \url{https://github.com/melisgl/named-readtables/}.
 
-See \url{http://abcl.org/svn/tags/1.7.1/contrib/named-readtables/} for
+See \url{http://abcl.org/svn/tags/1.8.0/contrib/named-readtables/} for
 more information.
 
 \chapter{History}
@@ -1855,6 +1917,13 @@ using \code{java.nio.Buffer} objects, we deemed the implementation
 worthy to bless with release as abcl-1.7.0 in June 2020.  We released
 abcl-1.7.1 as a maintenance release in July 2020.
 
+In accordance with the fashion of packaging Java applications as
+multiply compressed aritifacts, with abcl-1.8.0 in October 2020 we
+rendered usage of pathnames capable of accessing zip archives within
+archives workable across all supported platforms.  This release
+supports the newly released openjdk15 as the most advanced platform
+baseline.  
+
 \appendix 
 
 \chapter{The MOP Dictionary}
@@ -1864,7 +1933,7 @@ abcl-1.7.1 as a maintenance release in July 2020.
 \chapter{The SYSTEM Dictionary}
 
 The public interfaces in this package are subject to change with
-\textsc{ABCL} 1.8.
+\textsc{ABCL} 1.9
 
 \include{system}
 

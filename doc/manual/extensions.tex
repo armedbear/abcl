@@ -748,6 +748,15 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{EXTENSIONS:READ-CLASS}
+\index{READ-CLASS}
+--- Function: \textbf{read-class} [\textbf{extensions}] \textit{pathname}
+
+\begin{adjustwidth}{5em}{5em}
+Read the file at PATHNAME as a Java byte[] array
+\end{adjustwidth}
+
+\paragraph{}
 \label{EXTENSIONS:READ-TIMEOUT}
 \index{READ-TIMEOUT}
 --- Function: \textbf{read-timeout} [\textbf{extensions}] \textit{socket seconds}
@@ -956,6 +965,17 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{EXTENSIONS:STREAM-UNIX-FD}
+\index{STREAM-UNIX-FD}
+--- Function: \textbf{stream-unix-fd} [\textbf{extensions}] \textit{stream}
+
+\begin{adjustwidth}{5em}{5em}
+Return the integer of the underlying unix file descriptor for STREAM
+
+Added by ABCL-INTROSPECT.
+\end{adjustwidth}
+
+\paragraph{}
 \label{EXTENSIONS:STRING-FIND}
 \index{STRING-FIND}
 --- Function: \textbf{string-find} [\textbf{extensions}] \textit{char string}
@@ -1088,6 +1108,15 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 Returns two values, the first being the value of the weak ref,the second T if the reference is valid, or NIL if it hasbeen cleared.
+\end{adjustwidth}
+
+\paragraph{}
+\label{EXTENSIONS:WRITE-CLASS}
+\index{WRITE-CLASS}
+--- Function: \textbf{write-class} [\textbf{extensions}] \textit{class-bytes pathname}
+
+\begin{adjustwidth}{5em}{5em}
+Write the Java byte[] array CLASS-BYTES to PATHNAME.
 \end{adjustwidth}
 
 \paragraph{}
