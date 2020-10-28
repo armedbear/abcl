@@ -112,7 +112,19 @@ public class JarPathname
       simple_error("Failed to create the entry ~a in ~a", entry, jar);
       return (JarPathname)UNREACHED;
     }
-    return JarPathname.create(jar.getNamestring() + entry);
+    JarPathname result = new JarPathname();
+    result.copyFrom(jar);
+    String path = new String(entry);
+    if (!path.startsWith("/")) {
+      path = "/" + path;
+    }
+    Pathname p = Pathname.create(path);
+    result
+      .setDirectory(p.getDirectory())
+      .setName(p.getName())
+      .setType(p.getType());
+    
+    return result;
   }
   /** 
    *  Enumerate the components of a jar namestring 
@@ -364,7 +376,7 @@ public class JarPathname
     // Run a truename resolution on the path of local jar archives
     if (p.isLocalFile()) {
       Pathname rootJar;
-      if (URLPathname.hasExplicitFile(p)) {
+      if (URLPathname.hasExplicitFile((Pathname)p.getRootJar())) {
         rootJar = new URLPathname();
       } else {
         rootJar = new Pathname();
