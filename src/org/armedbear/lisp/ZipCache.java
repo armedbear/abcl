@@ -279,8 +279,8 @@ public class ZipCache {
       JarURLConnection jarConnection
         = (JarURLConnection) rootJarURL.openConnection();
 
-      this.root = root;
-      this.connection = connection;
+      this.root = jar;
+      this.connection = jarConnection;
       this.file = (ZipFile)connection.getJarFile();
       this.lastModified = connection.getLastModified();
     }
@@ -412,7 +412,6 @@ public class ZipCache {
     if (result != null) {
       return result;
     }
-
     Pathname rootJar = (Pathname) jar.getRootJar();
     LispObject innerJars = jar.getJars().cdr();
 
@@ -423,18 +422,79 @@ public class ZipCache {
     if (innerJars.equals(NIL)) {
       return getArchiveFile(jar);
     } else {
+      result = getArchiveStreamFromFile(jar);
+      cache.put(result.root, result); 
+
+      JarPathname nextArchive = new JarPathname();
+      nextArchive
+        .setDevice(new Cons(rootJar,
+                            new Cons(innerJars.car(), NIL)))
+        .setDirectory(NIL)
+        .setName(NIL)
+        .setType(NIL);
+      
+      innerJars = innerJars.cdr();
+      while (innerJars.car() != NIL) {
+        Pathname nextJarArchive = (Pathname)innerJars.car();
+
+        JarPathname nextAsEntry = new JarPathname();
+        nextAsEntry
+          .setDevice(nextArchive.getDevice())
+          .setDirectory(nextJarArchive.getDirectory())
+          .setName(nextJarArchive.getName())
+          .setType(nextJarArchive.getType());
+        // FIXME 
+        // The pathnames for subsquent entries in a PATHNAME-JAR are relative.  Should they be?
+        if (nextAsEntry.getDirectory().car().equals(Keyword.RELATIVE)) {
+          LispObject directories = nextAsEntry.getDirectory();
+          directories = directories.cdr();
+          directories = directories.push(Keyword.ABSOLUTE);
+          nextAsEntry.setDirectory(directories);
+        }
+        nextArchive.setDevice(nextArchive.getDevice().reverse().push(nextJarArchive).reverse());
+        ArchiveStream stream = (ArchiveStream) result;
+
+        ZipEntry entry = stream.getEntry(nextAsEntry);
+        if (entry == null) {
+          return null;
+        }
+        
+        InputStream inputStream = stream.getEntryAsInputStream(nextAsEntry);
+        if (inputStream == null) {
+          return null;
+        }
+        stream = new ArchiveStream(inputStream, nextArchive, entry);
+        result = stream;
+        cache.put(nextArchive, result); 
+
+        innerJars = innerJars.cdr();
+        if (innerJars.cdr().equals(NIL)
+            && (!jar.getDirectory().equals(NIL)
+                || !jar.getName().equals(NIL)
+                || !jar.getType().equals(NIL))) {
+          simple_error("Currently unimplemented retrieval of an entry in a nested pathnames");
+          return (Archive)UNREACHED;
+        }
+      }
+
+      return result;
+    }
+  }
+
+  static ArchiveStream getArchiveStreamFromFile(JarPathname p) {
       JarPathname root = new JarPathname();
-      root.setDevice(new Cons(rootJar, NIL));
+      root.setDevice(new Cons(p.getRootJar(), NIL));
+      Pathname nextJar = (Pathname)p.getJars().cdr().car();      
       ArchiveFile rootArchiveFile = (ArchiveFile)getArchiveFile(root);
 
       JarPathname innerArchive = new JarPathname();
-      Pathname nextJar = (Pathname)innerJars.car();
-      LispObject jars = list(rootJar, nextJar);
+
+      LispObject jars = list(p.getRootJar(), nextJar);
       innerArchive.setDevice(jars);
 
       JarPathname innerArchiveAsEntry = new JarPathname();
       innerArchiveAsEntry
-        .setDevice(new Cons(rootJar, NIL))
+        .setDevice(new Cons(root, NIL))
         .setDirectory(nextJar.getDirectory())
         .setName(nextJar.getName())
         .setType(nextJar.getType());
@@ -447,19 +507,11 @@ public class ZipCache {
       if (inputStream == null) {
         return null;
       }
-      ArchiveStream stream = new ArchiveStream(inputStream, innerArchive, entry);
-      result = stream;
-      cache.put(innerArchive, result); 
-      
-      innerJars = innerJars.cdr();
-      while (innerJars.car() != NIL) {
-        simple_error("Currently unimplemented nested zip archive of depth greater than two: ~a" , jar);
-        return (Archive)UNREACHED;
-      }
-
+      ArchiveStream result = new ArchiveStream(inputStream, innerArchive, entry);
       return result;
-    }
   }
+    
+  
 
   public static Archive getArchiveURL(JarPathname jar) {
     Pathname rootJar = (Pathname) jar.getRootJar();
@@ -548,6 +600,20 @@ public class ZipCache {
         Debug.trace("Failed to parse Last-Modified date: " +
                     dateString);
       }
+    }
+  }
+
+  // ## clear-zip-cache  => boolean
+  private static final Primitive CLEAR_ZIP_CACHE = new clear_zip_cache();
+  private static class clear_zip_cache extends Primitive { 
+    clear_zip_cache() {
+      super("clear-zip-cache", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute() {
+      int size = cache.size();
+      cache.clear();
+      return size == 0 ? NIL : T;
     }
   }
 
