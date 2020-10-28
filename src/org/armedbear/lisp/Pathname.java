@@ -2160,7 +2160,7 @@ public class Pathname extends LispObject
   // addressed as a JAR-PATHNAME
   public boolean isLocalFile() {
     if (getHost().equals(NIL)
-        || Symbol.GETF.execute(getHost(), URLPathname.SCHEME, NIL).equals("file")) {
+        || Symbol.GETF.execute(getHost(), URLPathname.SCHEME, NIL).equals(URLPathname.FILE)) {
       return true;
     }
     return false;
