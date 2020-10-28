@@ -107,7 +107,7 @@ Returns the two values of the pathnames of the created archives."
       (ensure-directories-exist *tmp-directory-whitespace*)
       (setf *tmp-jar-path-whitespace*
             (merge-pathnames "baz.jar" *tmp-directory-whitespace*))
-      (cl-fad-copy-file *tmp-jar-path* *tmp-jar-path-whitespace*)))
+      (cl-fad-copy-file *tmp-jar-path* *tmp-jar-path-whitespace* :overwrite t)))
   (values *tmp-jar-path* *tmp-jar-path-whitespace*))
 
 (defun clean-jar-tests () 
@@ -122,33 +122,28 @@ Returns the two values of the pathnames of the created archives."
        ,@body)))
 
 (defun load-from-jar (jar entry) 
+  (load (merge-jar-entry jar entry)))
+
+(defun merge-jar-entry (jar entry)
   (let ((jar-pathname (if (ext:pathname-jar-p jar)
                           jar
                           (make-pathname :device (list jar)))))
-    (load (merge-pathnames entry jar-pathname))))
+    (merge-pathnames entry jar-pathname)))
 
-(deftest jar-pathname.load.1
-  (with-jar-file-init 
-    (load-from-jar *tmp-jar-path* "__loader__._"))
-  t)
 
-;; Needs nested jars implementation
-(pushnew 'jar-pathname.load.2 *expected-failures*)
 (deftest jar-pathname.load.2
   (with-jar-file-init
       (load-from-jar *tmp-jar-path* "bar"))
   t)
 
-;; Needs nested jars implementation
-(pushnew 'jar-pathname.load.3 *expected-failures*)
 (deftest jar-pathname.load.3
   (with-jar-file-init
-    (load-from-jar *tmp-jar-path* "bar.abcl"))
+      (load-from-jar *tmp-jar-path* "bar.abcl"))
   t)
 
 (deftest jar-pathname.load.4
   (with-jar-file-init
-    (load-from-jar *tmp-jar-path* "eek"))
+      (load-from-jar *tmp-jar-path* "eek"))
   t)
 
 (deftest jar-pathname.load.5
@@ -162,15 +157,11 @@ Returns the two values of the pathnames of the created archives."
    'file-error)
   t)
 
-;; Needs nested jars implementation
-(pushnew 'jar-pathname.load.7 *expected-failures*)
 (deftest jar-pathname.load.7
   (with-jar-file-init
       (load-from-jar *tmp-jar-path* "a/b/bar"))
   t)
 
-;; Needs nested jars implementation
-(pushnew 'jar-pathname.load.8 *expected-failures*)
 (deftest jar-pathname.load.8
   (with-jar-file-init
       (load-from-jar *tmp-jar-path* "a/b/bar.abcl"))
@@ -183,29 +174,24 @@ Returns the two values of the pathnames of the created archives."
 
 (deftest jar-pathname.load.10
   (with-jar-file-init
-    (load-from-jar *tmp-jar-path* "a/b/eek.lisp"))
+      (load-from-jar *tmp-jar-path* "a/b/eek.lisp"))
   t)
 
-;; Needs nested jars implementation
-(pushnew 'jar-pathname.load.11 *expected-failures*)
 (deftest jar-pathname.load.11
   (with-jar-file-init
       (load-from-jar *tmp-jar-path* "d/e+f/bar.abcl"))
   t)
 
-;; Needs nested jars implementation
-(pushnew 'jar-pathname.load.12 *expected-failures*)
+  
+  #+(or) ;; URI encodings in namestring are not currently interpolated 
 (deftest jar-pathname.load.12
-  (with-jar-file-init
-      (load-from-jar *tmp-jar-path* "a/b/foo%20bar.abcl"))
+    (with-jar-file-init
+        (load-from-jar *tmp-jar-path* "a/b/foo%20bar.abcl"))
   t)
 
-;; Needs nested jars implementation
-(pushnew 'jar-pathname.load.13 *expected-failures*)
 (deftest jar-pathname.load.13
-  (signals-error 
-   (load-from-jar *tmp-jar-path* "a/b/foo bar.abcl")
-   'error)
+    (with-jar-file-init 
+        (load-from-jar *tmp-jar-path* "a/b/foo bar.abcl"))
   t)
 
 (deftest jar-pathname.load.14
@@ -218,8 +204,7 @@ Returns the two values of the pathnames of the created archives."
    'error)
   t)
 
-;; Needs nested jars implementation
-(pushnew 'jar-pathname.load.16 *expected-failures*)
+  #+(or) ;; URI encodings in namestring are not currently interpolated 
 (deftest jar-pathname.load.16
     (load-from-jar *tmp-jar-path-whitespace* "a/b/foo%20bar.abcl")
   t)
@@ -228,90 +213,91 @@ Returns the two values of the pathnames of the created archives."
   #p"jar:https://abcl.org/releases/1.7.1/abcl-contrib.jar!/")
 
 (deftest jar-pathname.url.https.1
-  (equalp
-   *url-jar-pathname-base*
-   (probe-file *url-jar-pathname-base*))
+    (equalp
+     *url-jar-pathname-base*
+     (probe-file *url-jar-pathname-base*))
   t)
 
+(deftest jar-pathname.url.https.2
+     (namestring (merge-pathnames "**" "jar:https://abcl.org/releases/1.7.1/abcl-contrib.jar!/"))
+  "jar:https://abcl.org/releases/1.7.1/abcl-contrib.jar!/**")
+
+(deftest jar-pathname.url.https.3
+    (not (null (probe-file #p"jar:https://abcl.org/releases/1.7.1/abcl-contrib.jar!/README.markdown")))
+  t)
+
+(deftest jar-pathname.url.https.4
+    (< 1 (length (directory #p"jar:https://abcl.org/releases/1.7.1/abcl-contrib.jar!/**/")))
+  t)
+    
 (deftest jar-pathname.probe-file.1
-  (with-jar-file-init
-      (let ((p 
-              (merge-pathnames "eek.lisp"
-                               (make-pathname :device (list *tmp-jar-path*)))))
-        (not (null (probe-file p)))))
+    (with-jar-file-init
+        (let ((p (merge-jar-entry  *tmp-jar-path* "eek.lisp")))
+          (not (null (probe-file p)))))
   t)
 
 (deftest jar-pathname.probe-file.2
   (with-jar-file-init
-      (let ((p 
-              (merge-pathnames "a/b/bar.abcl"
-                               (make-pathname :device (list *tmp-jar-path*)))))
+      (let ((p (merge-jar-entry *tmp-jar-path* "a/b/bar.abcl")))
         (not (null (probe-file p)))))
   t)
 
-#+(or) ;; needs nested pathnames
 (deftest jar-pathname.probe-file.3
-    (let ((result 
-          (with-jar-file-init
-              (probe-file "jar:jar:file:baz.jar!/a/b/bar.abcl!/bar._"))))
-      (string=
-       (if result (namestring result) "")
-       (format nil "jar:jar:file:~Abaz.jar!/a/b/bar.abcl!/bar._" 
-               (namestring *tmp-directory*))))
+    (with-jar-file-init
+        (let ((p (make-pathname :device (list (pathname *tmp-jar-path*) #p"a/b/bar.abcl")
+                                :directory '(:absolute)
+                                :name "bar_1"
+                                :type "cls")))
+          (not (null (probe-file p)))))
   t)
 
 (deftest jar-pathname.probe-file.4
     (with-jar-file-init
-      (let ((p 
-              (merge-pathnames "a/b/bar.abcl"
-                               (make-pathname :device (list *tmp-jar-path*)))))
-        (not (null (probe-file p)))))
+        (let ((p (merge-jar-entry *tmp-jar-path* "a/b/bar.abcl")))
+          (not (null (probe-file p)))))
   t)
 
 (deftest jar-pathname.probe-file.5
   (with-jar-file-init
-      (let ((p 
-              (merge-pathnames "a/b/"
-                               (make-pathname :device (list *tmp-jar-path*)))))
+      (let ((p (merge-jar-entry *tmp-jar-path* "a/b/" )))
         (not (null (probe-file p)))))
   t)
-
 
 (deftest jar-pathname.probe-file.6
   (with-jar-file-init
-      (let ((p 
-              (merge-pathnames "d/e+f/bar.abcl/"
-                               (make-pathname :device (list *tmp-jar-path*)))))
+      (let ((p (merge-jar-entry *tmp-jar-path* "d/e+f/bar.abcl")))
         (not (null (probe-file p)))))
   t)
 
+(deftest jar-pathname.probe-file.7
+  (with-jar-file-init 
+      (not (null (probe-file (merge-jar-entry *tmp-jar-path* "__loader__._")))))
+  t)
 
+
+#+(or) ;; abcl-1.8.0 behavior is not to merge absolute pathname with JAR-PATHNAME defaults
 (deftest jar-pathname.merge-pathnames.1
-  (merge-pathnames 
-   "/bar.abcl" #p"jar:file:/baz.jar!/foo")
+  (merge-pathnames "/bar.abcl" #p"jar:file:/baz.jar!/foo")
   #p"jar:file:/baz.jar!/bar.abcl")
 
 (deftest jar-pathname.merge-pathnames.2
-  (merge-pathnames 
-   "bar.abcl" #p"jar:file:/baz.jar!/foo/baz")
-  #p"jar:file:/baz.jar!/foo/bar.abcl")
+  (namestring (merge-pathnames "bar.abcl" #p"jar:file:///baz.jar!/foo/baz"))
+  "jar:file:///baz.jar!/foo/bar.abcl")
 
 (deftest jar-pathname.merge-pathnames.3
-    (merge-pathnames 
-     "jar:file:/baz.jar!/foo" "bar")
-  #p"jar:file:/baz.jar!/foo")
+  (namestring (merge-pathnames "jar:file:///baz.jar!/foo" "bar"))
+  "jar:file:///baz.jar!/foo")
 
 (deftest jar-pathname.merge-pathnames.4
-    (merge-pathnames 
-     "jar:file:/baz.jar!/foo" "/a/b/c")
-  #p"jar:file:/a/b/baz.jar!/foo")
+    (namestring (merge-pathnames "jar:file:///baz.jar!/foo" "/a/b/c"))
+  "jar:file:///baz.jar!/foo")
 
 ;;; Under win32, we get the device in the merged path
 #+windows 
 (push 'jar-pathname.merge-pathnames.5 *expected-failures*)
 (deftest jar-pathname.merge-pathnames.5
-  (merge-pathnames "jar:file:/a/b/c/foo.jar!/bar/baz.lisp")
-  #p"jar:file:/a/b/c/foo.jar!/bar/baz.lisp")
+  (namestring (merge-pathnames "jar:file:///a/b/c/foo.jar!/bar/baz.lisp"))
+  "jar:file:///a/b/c/foo.jar!/bar/baz.lisp")
 
 (deftest jar-pathname.truename.1
   (signals-error (truename "jar:file:baz.jar!/foo")
@@ -344,7 +330,6 @@ Returns the two values of the pathnames of the created archives."
   "baz" "jar"
   "foo" "abcl")
 
-#+(or) ;;; FIXME 'Nested Jar URLs are not supported' regression from abcl-1.5.0
 (deftest jar-pathname.4
     (let* ((p #p"jar:jar:file:a/baz.jar!/b/c/foo.abcl!/this/that/foo-20.cls")
            (d0 (first (pathname-device p)))
@@ -357,7 +342,6 @@ Returns the two values of the pathnames of the created archives."
   (:relative "b" "c") "foo" "abcl"
   (:absolute "this" "that") "foo-20" "cls")
 
-#+(or) ;;; FIXME 'Nested Jar URLs are not supported' regression from abcl-1.5.0
 (deftest jar-pathname.5
     (let* ((p #p"jar:jar:file:a/foo/baz.jar!/b/c/foo.abcl!/armed/bear/bar-1.cls")
            (d0 (first (pathname-device p)))
@@ -370,7 +354,6 @@ Returns the two values of the pathnames of the created archives."
   (:relative "b" "c") "foo" "abcl"
   (:absolute "armed" "bear") "bar-1" "cls")
 
-#+(or) ;;; FIXME 'Nested Jar URLs are not supported' regression from abcl-1.5.0
 (deftest jar-pathname.6
     (let* ((p #p"jar:http://example.org/abcl.jar!/org/armedbear/lisp/Version.class")
            (d (first (pathname-device p))))
@@ -382,7 +365,6 @@ Returns the two values of the pathnames of the created archives."
   "http://example.org/abcl.jar" 
   (:absolute "org" "armedbear" "lisp") "Version" "class")
 
-#+(or) ;;; FIXME 'Nested Jar URLs are not supported' regression from abcl-1.5.0
 (deftest jar-pathname.7
     (let* ((p #p"jar:jar:http://example.org/abcl.jar!/foo.abcl!/foo-1.cls")
            (d (pathname-device p))
@@ -414,7 +396,7 @@ Returns the two values of the pathnames of the created archives."
   (:relative "a" "b") "foo" "jar"
   (:absolute "c" "d") "foo" "lisp")
 
-;;; 'jar:file:' forms must be URI encoded, meaning whitespace is not allowed
+;;; 'jar:file:' forms currently (abcl-1.8.0) can't be URI encoded, meaning whitespace is not allowed
 (deftest jar-pathname.10
     (signals-error 
      (let ((s "jar:file:/foo/bar/a space/that!/this"))
@@ -423,6 +405,7 @@ Returns the two values of the pathnames of the created archives."
      'error)
   t)
 
+#+(or) ;; URI escaping not returned 
 (deftest jar-pathname.11
     (let ((s (string-downcase "jar:file:///foo/bar/a%20space%3f/that!/this")))
       (string= s
