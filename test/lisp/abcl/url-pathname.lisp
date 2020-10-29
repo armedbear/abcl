@@ -42,3 +42,17 @@
   "example.org"
   "query=this"  
   "that-fragment")
+
+(deftest url-pathname.file.1
+    (signals-error
+     (let ((s "file:///path with /spaces"))
+       (equal s
+              (namestring (pathname s))))
+     'error)
+  t)
+
+(deftest url-pathname.file.2
+    (let ((p "file:///path%20with/uri-escaped/%3fcharacters/"))
+      (pathname-directory p))
+  (:ABSOLUTE "path with" "uri-escaped" "?characters"))
+
