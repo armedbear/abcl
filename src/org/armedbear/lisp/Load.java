@@ -547,7 +547,10 @@ public final class Load
                     && truePathname.isJar()) {
                   // We set *LOAD-TRUENAME* to the argument that a
                   // user would pass to LOAD.
-                  truePathname = (Pathname)probe_file.PROBE_FILE.execute(pathname);
+                  LispObject possibleTruePathname = probe_file.PROBE_FILE.execute(pathname);
+                  if (!possibleTruePathname.equals(NIL)) {
+                    truePathname = (Pathname) possibleTruePathname;
+                  }
                   /*
                   if (truePathname.getDevice().cdr() != NIL ) {
                     Pathname enclosingJar = (Pathname)truePathname.getDevice().cdr().car();
