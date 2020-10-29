@@ -1,0 +1,10 @@
+At the time this writing, in October 2020, current release of the Netbeans IDE
+available from [Apache][netbeans] is Netbeans 12.1
+
+When working with ABCL on older version of Netbeans in may be
+necessary to use the artifacts contained in this directory.  Simply
+copy the three files in this directory to its the parent directory,
+and then ABCL may be opened as a project in older versions of Netbeans.
+
+[netbeans]: https://netbeans.apache.org/
+
