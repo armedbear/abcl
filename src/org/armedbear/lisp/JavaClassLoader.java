@@ -323,13 +323,26 @@ public class JavaClassLoader extends URLClassLoader {
     };
 
     protected static void addURL(JavaClassLoader jcl, LispObject jar) {
-        if (jar instanceof Pathname) {
-            jcl.addURL(((Pathname) jar).toURL());
-        } else if (jar instanceof AbstractString) {
-          jcl.addURL(((Pathname)Pathname.create(jar.toString())).toURL());
+      URLPathname urlPathname = null;
+      if (jar instanceof URLPathname) {
+        urlPathname = (URLPathname)jar;
+      } else if (jar instanceof Pathname) {
+        urlPathname = URLPathname.createFromFile((Pathname)jar);
+      } else if (jar instanceof AbstractString) {
+        String namestring = jar.getStringValue();
+        if (!Pathname.isValidURL(namestring)) {
+          Pathname p = Pathname.create(namestring);
+          if (p != null) {
+            urlPathname = URLPathname.create(p);
+          }
         } else {
-            error(new TypeError(jar + " must be a pathname designator"));
+          urlPathname = URLPathname.create(namestring);
         }
+      }
+      if (urlPathname == null) {
+        error(new TypeError(jar + " must be a pathname designator"));
+      }
+      jcl.addURL(urlPathname.toURL());
     }
 
 
