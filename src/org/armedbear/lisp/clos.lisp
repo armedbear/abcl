@@ -2739,6 +2739,7 @@ to ~S with argument list ~S."
 (defvar *call-next-method-p*)
 (defvar *next-method-p-p*)
 
+;;; FIXME this doesn't work for macroized references
 (defun walk-form (form)
   (cond ((atom form)
          (cond ((eq form 'call-next-method)
@@ -2748,6 +2749,17 @@ to ~S with argument list ~S."
         (t
          (walk-form (%car form))
          (walk-form (%cdr form)))))
+
+(defmacro flet-call-next-method (args next-emfun &body body) 
+  `(flet ((call-next-method (&rest cnm-args)
+            (if (null ,next-emfun)
+                (error "No next method for generic function.")
+                (funcall ,next-emfun (or cnm-args ,args))))
+          (next-method-p ()
+            (not (null ,next-emfun))))
+     (declare (ignorable (function call-next-method)
+                         (function next-method-p)))
+     ,@body))
 
 (defun compute-method-function (lambda-expression)
   (let ((lambda-list (allow-other-keys (cadr lambda-expression)))
@@ -2767,16 +2779,8 @@ to ~S with argument list ~S."
                    (let ((,(%car lambda-list) (%car args)))
                      (declare (ignorable ,(%car lambda-list)))
                      ,@declarations
-                     (flet ((call-next-method (&rest cnm-args)
-                              (if (null next-emfun)
-                                  (error "No next method for generic function.")
-                                  (funcall next-emfun (or cnm-args args))))
-                            (next-method-p ()
-                              (not (null next-emfun))))
-                       (declare (ignorable (function call-next-method)
-                                           (function next-method-p)))
+                     (flet-call-next-method args next-emfun
                        ,@body))))
-                     
                (2
                 `(lambda (args next-emfun)
                    (let ((,(%car lambda-list) (%car args))
@@ -2784,15 +2788,7 @@ to ~S with argument list ~S."
                      (declare (ignorable ,(%car lambda-list)
                                          ,(%cadr lambda-list)))
                      ,@declarations
-                     (flet ((call-next-method (&rest cnm-args)
-                              (if (null next-emfun)
-                                  (error "No next method for generic function.")
-                                  (funcall next-emfun (or cnm-args args))))
-                            (next-method-p ()
-                              (not (null next-emfun))))
-                       (declare (ignorable (function call-next-method)
-                                           (function next-method-p)))
-
+                     (flet-call-next-method args next-emfun 
                        ,@body))))
                (3
                 `(lambda (args next-emfun)
@@ -2803,41 +2799,19 @@ to ~S with argument list ~S."
                                          ,(%cadr lambda-list)
                                          ,(%caddr lambda-list)))
                      ,@declarations
-                     (flet ((call-next-method (&rest cnm-args)
-                              (if (null next-emfun)
-                                  (error "No next method for generic function.")
-                                  (funcall next-emfun (or cnm-args args))))
-                            (next-method-p ()
-                              (not (null next-emfun))))
-                       (declare (ignorable (function call-next-method)
-                                           (function next-method-p)))
+                     (flet-call-next-method args next-emfun 
                        ,@body))))
                (t
                 `(lambda (args next-emfun)
                    (apply #'(lambda ,lambda-list
                               ,@declarations
-                              (flet ((call-next-method (&rest cnm-args)
-                                       (if (null next-emfun)
-                                           (error "No next method for generic function.")
-                                           (funcall next-emfun (or cnm-args args))))
-                                     (next-method-p ()
-                                       (not (null next-emfun))))
-                                (declare (ignorable (function call-next-method)
-                                                    (function next-method-p)))
+                              (flet-call-next-method args next-emfun 
                                 ,@body))
                           args))))
              `(lambda (args next-emfun)
                 (apply #'(lambda ,lambda-list
                            ,@declarations
-                           (flet ((call-next-method (&rest cnm-args)
-                                    (if (null next-emfun)
-                                        (error "No next method for generic function.")
-                                        (funcall next-emfun (or cnm-args args))))
-                                  (next-method-p ()
-                                    (not (null next-emfun))))
-                             (declare (ignorable (function call-next-method)
-                                                 (function next-method-p)))
-                             
+                           (flet-call-next-method args next-emfun
                              ,@body))
                        args))))))
 
@@ -2870,7 +2844,7 @@ to ~S with argument list ~S."
                         (error "No next method for generic function"))
                       (next-method-p () nil))
                  (declare (ignorable (function call-next-method)
-                                    (function next-method-p)))
+                                     (function next-method-p)))
                  ,@body))
             nil))))))
         
