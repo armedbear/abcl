@@ -151,6 +151,11 @@ public final class Cons extends LispObject implements java.io.Serializable
   }
 
   @Override
+  public int hashCode() {
+    return this.sxhash();
+  }
+  
+  @Override
   public final int sxhash()
   {
     return computeHash(this, 4);
