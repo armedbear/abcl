@@ -1727,30 +1727,6 @@ public class Pathname extends LispObject
         }
       }
 
-      // Merge the directory of a relative JAR-PATHNAME with the
-      // default directory.  
-      // if (pathname.isJar()) {
-      //   Pathname root = ((JarPathname)result).getRootJar();
-        
-
-      //   LispObject jar = jars.car;
-      //   if (jar instanceof Pathname) {
-      //     Pathname defaults = Pathname.create(d);
-      //     if (defaults.isJar()) {
-      //       defaults.setDevice(NIL);
-      //     }
-      //     Pathname o = mergePathnames((Pathname)jar, defaults);
-      //     if (o.getDirectory() instanceof Cons
-      //         && ((Cons)o.getDirectory()).length() == 1) { // i.e. (:ABSOLUTE) or (:RELATIVE)
-      //       o.setDirectory(NIL);
-      //     }
-      //     ((Cons)result.device).car = o;
-      //   }
-      //   result.setDirectory(p.getDirectory());
-      // } else {
-      //   result.setDirectory(mergeDirectories(p.getDirectory(), d.getDirectory()));
-      // }
-
       if (pathname.isJar()) {
         result.setDirectory(p.getDirectory());
       } else {
@@ -1821,6 +1797,14 @@ public class Pathname extends LispObject
           result.setType(LogicalPathname.canonicalizeStringComponent((AbstractString) result.getType()));
         }
       }
+      // Downcast to URLPathname if resolving a URLPathname
+      if (result instanceof Pathname
+          && URLPathname.hasExplicitFile(result)) {
+        URLPathname downcastResult = new URLPathname();
+        downcastResult.copyFrom(result);
+        result = downcastResult;
+      }
+          
       return result;
     }
 
