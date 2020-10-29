@@ -194,14 +194,14 @@ Returns the two values of the pathnames of the created archives."
         (load-from-jar *tmp-jar-path* "a/b/foo bar.abcl"))
   t)
 
+#+(or) ;; URI encodings in namestring are not currently interpolated 
 (deftest jar-pathname.load.14
-    (load-from-jar *tmp-jar-path-whitespace* "a/b/bar.abcl")
+    (with-jar-file-init
+	(load-from-jar *tmp-jar-path-whitespace* "a/b/bar.abcl"))  
   t)
-
+#+(or) ;; URI encodings in namestring are not currently interpolated 
 (deftest jar-pathname.load.15
-  (signals-error
-   (load-from-jar *tmp-jar-path-whitespace* "a/b/foo bar.abcl")
-   'error)
+    (load-from-jar *tmp-jar-path-whitespace* "a/b/foo bar.abcl")  
   t)
 
   #+(or) ;; URI encodings in namestring are not currently interpolated 
