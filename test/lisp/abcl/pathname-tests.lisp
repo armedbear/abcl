@@ -1679,19 +1679,6 @@
       (type-error () t))
   t)
 
-(deftest pathname.uri-encoding.1
-    (signals-error
-     (let ((s "file:/path with /spaces"))
-       (equal s
-              (namestring (pathname s))))
-     'error)
-  t)
-
-(deftest pathname.uri-encoding.2
-    (string-equal "/path with/uri-escaped/?characters/"
-                  (namestring (pathname "file:/path%20with/uri-escaped/%3fcharacters/")))
-  t)
-
 (deftest pathname.load.1
     (let ((dir (merge-pathnames "dir+with+plus/"
                                 *abcl-test-directory*)))
