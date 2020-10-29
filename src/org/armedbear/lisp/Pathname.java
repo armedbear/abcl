@@ -539,8 +539,9 @@ public class Pathname extends LispObject
             }
         }
 
-        if (getDevice() == NIL) {
-        } else if (getDevice() == Keyword.UNSPECIFIC) {
+        if (getDevice().equals(NIL)
+            || getDevice().equals(Keyword.UNSPECIFIC)) {
+          // nothing emitted for device
         } else if (getDevice() instanceof AbstractString) {
             sb.append(getDevice().getStringValue());
             if (this instanceof LogicalPathname
@@ -1111,8 +1112,12 @@ public class Pathname extends LispObject
                 if (!(value instanceof AbstractString
                       || value.equals(Keyword.UNSPECIFIC)
                       || value.equals(NIL)
-                      || value instanceof Cons))
-                  error(new TypeError("DEVICE is not a string, :UNSPECIFIC, NIL, or a list.", value, NIL));
+                      || value instanceof Cons)) {
+                  return type_error("DEVICE is not a string, :UNSPECIFIC, NIL, or a list.",
+                                    value,
+                                    list(Symbol.OR,
+                                         Symbol.STRING, Keyword.UNSPECIFIC, NIL, Symbol.CONS));
+                }
             } else if (key == Keyword.DIRECTORY) {
                 directorySupplied = true;
                 if (value instanceof AbstractString) {
@@ -1120,17 +1125,23 @@ public class Pathname extends LispObject
                 } else if (value == Keyword.WILD) {
                     directory = list(Keyword.ABSOLUTE, Keyword.WILD);
                 } else {
-                  // a valid pathname directory is a string, a list of strings, nil, :wild, :unspecific
+                  // a valid pathname directory is a string, a list of
+                  // strings, nil, :wild, :unspecific
+                  //
                   // ??? would be nice to (deftype pathname-arg ()
-                  // '(or (member :wild :unspecific) string (and cons ,(mapcar ...
-                  // Is this possible?
+                  // '(or (member :wild :unspecific) string (and cons
+                  // ,(mapcar ...  Is this possible?
                   if ((value instanceof Cons 
                        // XXX check that the elements of a list are themselves valid
                        || value == Keyword.UNSPECIFIC
                        || value.equals(NIL))) {
                       directory = value;
                   } else {
-                      error(new TypeError("DIRECTORY argument not a string, list of strings, nil, :WILD, or :UNSPECIFIC.", value, NIL));
+                    return
+                      type_error("DIRECTORY argument not a string, list of strings, nil, :WILD, or :UNSPECIFIC.",
+                                 value,
+                                 list(Symbol.OR,
+                                      NIL, Symbol.STRING, Symbol.CONS, Keyword.WILD, Keyword.UNSPECIFIC));
                   }
                 }
             } else if (key == Keyword.NAME) {
@@ -1168,7 +1179,8 @@ public class Pathname extends LispObject
                 version = defaults.getVersion();
             }
         }
-        Pathname p;
+        Pathname p; // Pathname is always created in following
+                    // resolution for values of HOST
         LispObject logicalHost = NIL;
         if (host != NIL) {
             if (host instanceof AbstractString) {
@@ -1183,15 +1195,19 @@ public class Pathname extends LispObject
                 p = LogicalPathname.create();
                 p.setHost(logicalHost);
             }
-            p.setDevice(Keyword.UNSPECIFIC);
+            if (!Utilities.isPlatformWindows) {
+              p.setDevice(Keyword.UNSPECIFIC);
+            }
         } else {
             p = Pathname.create();
         }
+        
         if (device != NIL) {
             if (p instanceof LogicalPathname) {
                 // "The device component of a logical pathname is always :UNSPECIFIC."
                 if (device != Keyword.UNSPECIFIC) {
-                    error(new LispError("The device component of a logical pathname must be :UNSPECIFIC."));
+                  return type_error("The device component of a logical pathname must be :UNSPECIFIC.",
+                                    p.getDevice(), Keyword.UNSPECIFIC);
                 }
             } else {
               if (device instanceof Cons) {
@@ -1293,6 +1309,7 @@ public class Pathname extends LispObject
 
         return p;
     }
+        
 
 
     private static final AbstractString validateStringComponent(AbstractString s) {

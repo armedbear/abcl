@@ -383,8 +383,12 @@ public class JarPathname
       }
       rootJar.copyFrom((Pathname)p.getRootJar());
 
-      // Ensure that we don't return a JarPathname if the current default is one
-      if (rootJar.getDevice().equals(NIL)) {
+      // Ensure that we don't return a JarPathname if the current
+      // default is one when we resolve its TRUENAME.  Under Windows,
+      // the device will get filled in with the DOS drive letter if
+      // applicable.
+      if (rootJar.getDevice().equals(NIL)
+          && !Utilities.isPlatformWindows) {
         rootJar.setDevice(Keyword.UNSPECIFIC);
       }
       LispObject rootJarTruename = Pathname.truename(rootJar, errorIfDoesNotExist);
