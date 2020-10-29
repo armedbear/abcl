@@ -93,8 +93,8 @@ public class JarPathname
       .setName(NIL)
       .setType(NIL);
     Pathname entryPath = p.getEntryPath();
-    LispObject device = p.getDevice();
-    device = device.nreverse().push(entryPath).nreverse();
+    LispObject device = result.getDevice();
+    device = device.reverse().push(entryPath).reverse();
     result.setDevice(device);
     return result;
   }
