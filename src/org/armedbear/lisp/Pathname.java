@@ -1719,7 +1719,7 @@ public class Pathname extends LispObject
             result.setDevice(d.getDevice());
           }
         } else {
-	  if (p.isLocalFile() && d.isLocalFile()) {
+	  if (p.isLocalFile()) {
 	    result.setDevice(d.getDevice());
 	  } else {
 	    result.setDevice(p.getDevice());
