@@ -22,7 +22,7 @@ not-documented
 --- Function: \textbf{get-mutex} [\textbf{threads}] \textit{mutex}
 
 \begin{adjustwidth}{5em}{5em}
-Acquires a lock on the `mutex'.
+Acquires the lock associated with the MUTEX
 \end{adjustwidth}
 
 \paragraph{}
@@ -81,7 +81,7 @@ to wake up for retrieval of that object.
 \paragraph{}
 \label{THREADS:MAKE-MAILBOX}
 \index{MAKE-MAILBOX}
---- Function: \textbf{make-mailbox} [\textbf{threads}] \textit{\&key ((queue g284829) NIL)}
+--- Function: \textbf{make-mailbox} [\textbf{threads}] \textit{\&key ((queue g305040) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -90,7 +90,7 @@ not-documented
 \paragraph{}
 \label{THREADS:MAKE-MUTEX}
 \index{MAKE-MUTEX}
---- Function: \textbf{make-mutex} [\textbf{threads}] \textit{\&key ((in-use g285092) NIL)}
+--- Function: \textbf{make-mutex} [\textbf{threads}] \textit{\&key ((in-use g305303) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -111,7 +111,7 @@ not-documented
 --- Function: \textbf{make-thread-lock} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Returns an object to be used with the `with-thread-lock' macro.
+Returns an object to be used with the WITH-THREAD-LOCK macro.
 \end{adjustwidth}
 
 \paragraph{}
@@ -164,7 +164,7 @@ information.
 --- Function: \textbf{release-mutex} [\textbf{threads}] \textit{mutex}
 
 \begin{adjustwidth}{5em}{5em}
-Releases a lock on the `mutex'.
+Releases a lock associated with MUTEX
 \end{adjustwidth}
 
 \paragraph{}
@@ -200,7 +200,9 @@ Boolean predicate whether THREAD is alive.
 --- Function: \textbf{thread-join} [\textbf{threads}] \textit{thread}
 
 \begin{adjustwidth}{5em}{5em}
-Waits for thread to finish.
+Waits for THREAD to die before resuming execution
+Returns the result of the joined thread as its primary value.
+Returns T if the joined thread finishes normally or NIL if it was interrupted.
 \end{adjustwidth}
 
 \paragraph{}
@@ -227,8 +229,7 @@ not-documented
 --- Macro: \textbf{with-mutex} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Acquires a lock on `mutex', executes the body
-and releases the lock.
+Acquires a lock on MUTEX, executes BODY, and then releases the lock
 \end{adjustwidth}
 
 \paragraph{}
@@ -237,7 +238,7 @@ and releases the lock.
 --- Macro: \textbf{with-thread-lock} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Acquires a lock on the `lock', executes `body' and releases the lock.
+Acquires the LOCK, executes BODY and releases the LOCK
 \end{adjustwidth}
 
 \paragraph{}

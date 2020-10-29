@@ -711,9 +711,18 @@ not-documented
 --- Variable: \textbf{*disassemblers*} [\textbf{system}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Methods of invoking CL:DISASSEMBLE consisting of a pushable list of (name function), where function takes a object to disassemble, returns the results as a string.
+Methods of invoking CL:DISASSEMBLE consisting of a enumeration of (keyword function) pairs
 
-The system is :jad using the venerable-but-still-works JAD. 
+The pairs (keyword function) contain a keyword identifying this
+particulat disassembler, and a symbol designating function takes a
+object to disassemble.
+
+Use SYS:CHOOSE-DISASSEMBLER to install a given disassembler as the one
+used by CL:DISASSEMBLE.  Additional disassemblers/decompilers are
+packaged in the ABCL-INTROSPECT contrib.
+
+The intial default is :javap using the javap command line tool which
+is part of the Java Developement Kit.
 
 \end{adjustwidth}
 
@@ -930,7 +939,7 @@ Returns all charset encodings suitable for passing to a stream constructor avail
 --- Macro: \textbf{aver} [\textbf{system}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Signal simple-error when EXPR is non-NIL.
 \end{adjustwidth}
 
 \paragraph{}
@@ -1011,15 +1020,25 @@ not-documented
 --- Function: \textbf{choose-disassembler} [\textbf{system}] \textit{\&optional name}
 
 \begin{adjustwidth}{5em}{5em}
-Hook to choose invoked behavior of CL:DISASSEMBLE by using one of the methods registered in SYSTEM:*DISASSEMBLERS*. 
+Report current disassembler that would be used by CL:DISASSEMBLE
 
-Optionally, prefer the strategy named NAME if one exists.
+With optional keyword NAME, select the associated disassembler from
+SYS:*DISASSEMBLERS*.
 \end{adjustwidth}
 
 \paragraph{}
 \label{SYSTEM:CLASS-BYTES}
 \index{CLASS-BYTES}
 --- Function: \textbf{class-bytes} [\textbf{system}] \textit{class}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{SYSTEM:CLEAR-ZIP-CACHE}
+\index{CLEAR-ZIP-CACHE}
+--- Function: \textbf{clear-zip-cache} [\textbf{system}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -1257,15 +1276,6 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{SYSTEM:ENSURE-INPUT-STREAM}
-\index{ENSURE-INPUT-STREAM}
---- Function: \textbf{ensure-input-stream} [\textbf{system}] \textit{pathname}
-
-\begin{adjustwidth}{5em}{5em}
-Returns a java.io.InputStream for resource denoted by PATHNAME.
 \end{adjustwidth}
 
 \paragraph{}
@@ -1521,6 +1531,15 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{SYSTEM:GET-INPUT-STREAM}
+\index{GET-INPUT-STREAM}
+--- Function: \textbf{get-input-stream} [\textbf{system}] \textit{pathname}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a java.io.InputStream for resource denoted by PATHNAME.
 \end{adjustwidth}
 
 \paragraph{}
@@ -1851,7 +1870,7 @@ not-documented
 \paragraph{}
 \label{SYSTEM:MAKE-FILE-STREAM}
 \index{MAKE-FILE-STREAM}
---- Function: \textbf{make-file-stream} [\textbf{system}] \textit{pathname namestring element-type direction if-exists external-format}
+--- Function: \textbf{make-file-stream} [\textbf{system}] \textit{pathname element-type direction if-exists external-format}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -1933,6 +1952,15 @@ not-documented
 \label{SYSTEM:MAKE-SYMBOL-MACRO}
 \index{MAKE-SYMBOL-MACRO}
 --- Function: \textbf{make-symbol-macro} [\textbf{system}] \textit{expansion}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{SYSTEM:MATCH-WILD-JAR-PATHNAME}
+\index{MATCH-WILD-JAR-PATHNAME}
+--- Function: \textbf{match-wild-jar-pathname} [\textbf{system}] \textit{wild-jar-pathname}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
