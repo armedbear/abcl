@@ -345,8 +345,7 @@ public class JarPathname
     LispObject jars = getJars();
     if (!(jars instanceof Cons)) {
       type_error("JAR-PATHNAME device is not a cons",
-                 jars,
-                 Symbol.CONS);
+                 jars, Symbol.CONS);
       return (LispObject)UNREACHED;
     }
       
@@ -373,7 +372,7 @@ public class JarPathname
     JarPathname p = new JarPathname();
     p.copyFrom(pathname);
 
-    // Run a truename resolution on the path of local jar archives
+    // Run truename resolution on the path of local jar archives
     if (p.isLocalFile()) {
       Pathname rootJar;
       if (URLPathname.hasExplicitFile((Pathname)p.getRootJar())) {
@@ -395,8 +394,7 @@ public class JarPathname
       if (rootJarTruename.equals(NIL)) {
 	return Pathname.doTruenameExit(rootJar, errorIfDoesNotExist);
       }
-      LispObject otherJars
-        = p.getJars().cdr();
+      LispObject otherJars = p.getJars().cdr();
       URLPathname newRootJar;
       if (rootJarTruename instanceof Pathname) {
         newRootJar = URLPathname.createFromFile((Pathname)rootJarTruename);
@@ -424,8 +422,8 @@ public class JarPathname
 
   public boolean isLocalFile() {
     Pathname p = (Pathname) getRootJar();
-    if (p.isLocalFile()) {
-      return true;
+    if (p != null) {
+      return p.isLocalFile();
     }
     return false;
   }

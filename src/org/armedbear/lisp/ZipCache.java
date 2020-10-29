@@ -421,64 +421,65 @@ public class ZipCache {
     
     if (innerJars.equals(NIL)) {
       return getArchiveFile(jar);
-    } else {
-      result = getArchiveStreamFromFile(jar);
-      cache.put(result.root, result); 
+    } 
 
-      JarPathname nextArchive = new JarPathname();
-      nextArchive
-        .setDevice(new Cons(rootJar,
-                            new Cons(innerJars.car(), NIL)))
-        .setDirectory(NIL)
-        .setName(NIL)
-        .setType(NIL);
+    result = getArchiveStreamFromFile(jar);
+    cache.put(result.root, result); 
+
+    JarPathname nextArchive = new JarPathname();
+    nextArchive
+      .setDevice(new Cons(rootJar,
+                          new Cons(innerJars.car(), NIL)))
+      .setDirectory(NIL)
+      .setName(NIL)
+      .setType(NIL);
       
-      innerJars = innerJars.cdr();
-      while (innerJars.car() != NIL) {
-        Pathname nextJarArchive = (Pathname)innerJars.car();
-
-        JarPathname nextAsEntry = new JarPathname();
-        nextAsEntry
-          .setDevice(nextArchive.getDevice())
-          .setDirectory(nextJarArchive.getDirectory())
-          .setName(nextJarArchive.getName())
-          .setType(nextJarArchive.getType());
-        // FIXME 
-        // The pathnames for subsquent entries in a PATHNAME-JAR are relative.  Should they be?
-        if (nextAsEntry.getDirectory().car().equals(Keyword.RELATIVE)) {
-          LispObject directories = nextAsEntry.getDirectory();
-          directories = directories.cdr();
-          directories = directories.push(Keyword.ABSOLUTE);
-          nextAsEntry.setDirectory(directories);
-        }
-        nextArchive.setDevice(nextArchive.getDevice().reverse().push(nextJarArchive).reverse());
-        ArchiveStream stream = (ArchiveStream) result;
-
-        ZipEntry entry = stream.getEntry(nextAsEntry);
-        if (entry == null) {
-          return null;
-        }
-        
-        InputStream inputStream = stream.getEntryAsInputStream(nextAsEntry);
-        if (inputStream == null) {
-          return null;
-        }
-        stream = new ArchiveStream(inputStream, nextArchive, entry);
-        result = stream;
-        cache.put(nextArchive, result); 
-
-        innerJars = innerJars.cdr();
-        if (innerJars.cdr().equals(NIL)
-            && (!jar.getDirectory().equals(NIL)
-                || !jar.getName().equals(NIL)
-                || !jar.getType().equals(NIL))) {
-          simple_error("Currently unimplemented retrieval of an entry in a nested pathnames");
-          return (Archive)UNREACHED;
-        }
+    innerJars = innerJars.cdr();
+    while (innerJars.car() != NIL) {
+      Pathname nextJarArchive = (Pathname)innerJars.car();
+      
+      JarPathname nextAsEntry = new JarPathname();
+      nextAsEntry
+        .setDevice(nextArchive.getDevice())
+        .setDirectory(nextJarArchive.getDirectory())
+        .setName(nextJarArchive.getName())
+        .setType(nextJarArchive.getType());
+      // FIXME
+      // The pathnames for subsquent entries in a PATHNAME-JAR
+      // are relative.  Should they be?
+      LispObject directories = nextAsEntry.getDirectory();
+      if ( !directories.equals(NIL)
+           && directories.car().equals(Keyword.RELATIVE)) {
+        directories = directories.cdr().push(Keyword.ABSOLUTE);
+        nextAsEntry.setDirectory(directories);
       }
 
-      return result;
+      nextArchive.setDevice(nextArchive.getDevice().reverse().push(nextJarArchive).reverse());
+      ArchiveStream stream = (ArchiveStream) result;
+
+      ZipEntry entry = stream.getEntry(nextAsEntry);
+      if (entry == null) {
+        return null;
+      }
+      
+      InputStream inputStream = stream.getEntryAsInputStream(nextAsEntry);
+      if (inputStream == null) {
+        return null;
+      }
+      stream = new ArchiveStream(inputStream, nextArchive, entry);
+      result = stream;
+      cache.put(nextArchive, result); 
+
+      innerJars = innerJars.cdr();
+      if (innerJars.cdr().equals(NIL)
+          && (!jar.getDirectory().equals(NIL)
+              && jar.getName().equals(NIL)
+              && jar.getType().equals(NIL))) {
+        simple_error("Currently unimplemented retrieval of an entry in a nested pathnames");
+        return (Archive)UNREACHED;
+      }
     }
+    return result;
   }
 
   static ArchiveStream getArchiveStreamFromFile(JarPathname p) {
