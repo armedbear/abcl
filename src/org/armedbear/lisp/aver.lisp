@@ -41,5 +41,6 @@
          :format-arguments (list expr-as-string)))
 
 (defmacro aver (expr)
+  "Signal simple-error when EXPR is non-NIL."
   `(unless ,expr
      (%failed-aver ,(format nil "~A" expr))))

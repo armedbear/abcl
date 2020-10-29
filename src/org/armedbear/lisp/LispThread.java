@@ -1137,7 +1137,9 @@ public final class LispThread extends LispObject
         return unreadableString(sb.toString());
     }
 
-    @DocString(name="make-thread", args="function &key name")
+    @DocString(name="make-thread",
+               args="function &key name",
+               doc="Create a thread of execution running FUNCTION possibly named NAME")
     private static final Primitive MAKE_THREAD =
         new Primitive("make-thread", PACKAGE_THREADS, true, "function &key name")
     {
@@ -1163,8 +1165,9 @@ public final class LispThread extends LispObject
         }
     };
 
-    @DocString(name="threadp", args="object",
-    doc="Boolean predicate testing if OBJECT is a thread.")
+    @DocString(name="threadp",
+               args="object",
+               doc="Boolean predicate returning non-nil if OBJECT is a lisp thread")
     private static final Primitive THREADP =
         new Primitive("threadp", PACKAGE_THREADS, true)
     {
@@ -1175,11 +1178,12 @@ public final class LispThread extends LispObject
         }
     };
 
-    @DocString(name="thread-alive-p", args="thread",
-    doc="Returns T if THREAD is alive.")
+    @DocString(name="thread-alive-p",
+               args="thread",
+               doc="Returns T if THREAD is alive.")
     private static final Primitive THREAD_ALIVE_P =
-        new Primitive("thread-alive-p", PACKAGE_THREADS, true, "thread",
-              "Boolean predicate whether THREAD is alive.")
+      new Primitive("thread-alive-p", PACKAGE_THREADS, true, "thread",
+                    "Boolean predicate whether THREAD is alive.")
     {
         @Override
         public LispObject execute(LispObject arg)
@@ -1195,8 +1199,9 @@ public final class LispThread extends LispObject
         }
     };
 
-    @DocString(name="thread-name", args="thread",
-    doc="Return the name of THREAD, if it has one.")
+    @DocString(name="thread-name",
+               args="thread",
+               doc="Return the name of THREAD, if it has one.")
     private static final Primitive THREAD_NAME =
         new Primitive("thread-name", PACKAGE_THREADS, true)
     {
@@ -1211,13 +1216,15 @@ public final class LispThread extends LispObject
     };
 
     private static final Primitive THREAD_JOIN =
-        new Primitive("thread-join", PACKAGE_THREADS, true, "thread",
-                      "Waits for thread to finish.")
+      new Primitive("thread-join", PACKAGE_THREADS, true, "thread",
+                    "Waits for THREAD to die before resuming execution\n"
+                    + "Returns the result of the joined thread as its primary value.\n"
+                    + "Returns T if the joined thread finishes normally or NIL if it was interrupted.")
     {
         @Override
         public LispObject execute(LispObject arg)
         {
-            // join the thread, and returns it's value.  The second return
+            // join the thread, and returns its value.  The second return
             // value is T if the thread finishes normally, NIL if its 
             // interrupted. 
             if (arg instanceof LispThread) {                
