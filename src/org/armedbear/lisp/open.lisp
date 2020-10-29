@@ -114,10 +114,10 @@
                         '(unsigned-byte 8))
                        (t
                         (upgraded-element-type element-type))))
-  (let* ((pathname (merge-pathnames filename))
-         (namestring (namestring (if (typep pathname 'logical-pathname)
-                                     (translate-logical-pathname pathname)
-                                     pathname))))
+  (let* ((p (merge-pathnames filename))
+         (pathname (if (typep p 'logical-pathname)
+                       (translate-logical-pathname p)
+                       p)))
     (when (wild-pathname-p pathname)
       (error 'file-error
 	     :pathname pathname
@@ -146,13 +146,13 @@
             (error 'file-error
                    :pathname pathname
                    :format-control "The file ~S does not exist."
-                   :format-arguments (list namestring))))
+                   :format-arguments (list pathname))))
          (:create
           ;; CREATE-NEW-FILE "atomically creates a new, empty file named by
           ;; this abstract pathname if and only if a file with this name does
           ;; not yet exist." See java.io.File.createNewFile().
-          (create-new-file namestring)))
-       (make-file-stream pathname namestring element-type :input nil external-format))
+          (create-new-file (namestring pathname))))
+       (make-file-stream pathname element-type :input nil external-format))
       (:probe
        (case if-does-not-exist
          (:error
@@ -160,13 +160,13 @@
             (error 'file-error
                    :pathname pathname
                    :format-control "The file ~S does not exist."
-                   :format-arguments (list namestring))))
+                   :format-arguments (list pathname))))
          (:create
           ;; CREATE-NEW-FILE "atomically creates a new, empty file named by
           ;; this abstract pathname if and only if a file with this name does
           ;; not yet exist." See java.io.File.createNewFile().
-          (create-new-file namestring)))
-       (let ((stream (make-file-stream pathname namestring element-type
+          (create-new-file (namestring pathname))))
+       (let ((stream (make-file-stream pathname element-type
                                        :input nil external-format)))
          (when stream
            (close stream))
@@ -178,7 +178,7 @@
             (error 'file-error
                    :pathname pathname
                    :format-control "The file ~S does not exist."
-                   :format-arguments (list namestring))))
+                   :format-arguments (list pathname))))
          ((nil)
           (unless (probe-file pathname)
             (return-from open nil))))
@@ -188,7 +188,7 @@
             (error 'file-error
                    :pathname pathname
                    :format-control "The file ~S already exists."
-                   :format-arguments (list namestring))))
+                   :format-arguments (list pathname))))
          ((nil)
           (when (probe-file pathname)
             (return-from open nil)))
@@ -199,14 +199,14 @@
               (error 'file-error
                      :pathname pathname
                      :format-control "The file ~S is a directory."
-                     :format-arguments (list namestring)))
-            (let ((backup-name (concatenate 'string namestring ".bak")))
+                     :format-arguments (list pathname)))
+            (let ((backup-name (concatenate 'string (namestring pathname) ".bak")))
               (when (probe-file backup-name)
                 (when (probe-directory backup-name)
                   (error 'file-error
                          :pathname pathname
-                         :format-control "Unable to rename ~S."
-                         :format-arguments (list namestring)))
+                         :format-control "Unable to rename ~S to ~S."
+                         :format-arguments (list pathname backup-name)))
                 (delete-file backup-name))
               (rename-file pathname backup-name))))
          ((:new-version :supersede :overwrite :append)) ; OK to proceed.
@@ -214,13 +214,13 @@
           (error 'simple-error
                  :format-control "Option not supported: ~S."
                  :format-arguments (list if-exists))))
-       (let ((stream (make-file-stream pathname namestring element-type
+       (let ((stream (make-file-stream pathname element-type
                                        direction if-exists external-format)))
          (unless stream
            (error 'file-error
                   :pathname pathname
                   :format-control "Unable to open ~S."
-                  :format-arguments (list namestring)))
+                  :format-arguments (list pathname)))
          stream))
       (t
        (error 'simple-error
