@@ -1,11 +1,131 @@
-Version 1.7.2
+Version 1.8.0
 =============
 
-Unreleased
+October 29, 2020
 
-<https://abcl.org/svn/trunk/abcl/>
+<https://abcl.org/svn/tags/1.8.0/>
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
+
+Features
+--------
+
+* [r15390-r15406][r15408-r15413][r15422-r15425][r15434-r15458][r15460-15463]
+  Overhauled JAR-PATHNAME and URL-PATHNAME subtypes of PATHNAME to fully support
+  recursive addressing of zip within both local and remote zip
+  archives.
+
+Incompatibilities
+-----------------
+
+* [r15414] Change algorithm for determining pathname type from
+  parsing namestrings to be more like SBCL and CCL
+
+     | Expression | NAME   | TYPE |
+     |------------+--------+------|
+     | #p"..."    | ".."   | ""   |
+     | #p".foo"   | ".foo" | NIL  |
+
+Enhancements
+------------
+
+* [r15378][r15421] Support openjdk15 
+
+* [r15360-r15365] (Alessio) Serialization of top-level, named functions.
+
+* [r15353] JAVA:JCLASS now works on all arrays of primitive type.
+
+* [r15356] ABCL-INTROSPECT adds EXT:READ-CLASS to conveniently read
+  java class bytes from the source referenced by a PATHNAME.
+
+* [r15366] The compiler now properly emits make-array for top-level specialized
+  vector forms.
+
+* [r15367] Loading ABCL-INTROSPECT now adds the function
+  EXT:STREAM-UNIX-FD which returns the integer of the underlying file
+  descriptor from a socket stream reference.
+
+* [r15368] Less cryptic warnings for ignored socket write timeout.
+
+* [r15381] JNEW-ARRAY-FROM-ARRAY now capable of constructing all
+  possible arrays of primitive type.
+
+
+Fixes
+-----
+
+* [r15359] Fix running openjdk11 compilation on openjdk8.
+
+* [r15358] Fix SYS:RUN-PROGRAM issues with openjdk11.
+
+* [r15357] Re-work strategy for the denotation of the hosting runtime
+  platform in CL:*FEATURES* to include a "JAVA-<n>" where "<n>" is an
+  integer denoting the major version of the platform according to
+  JEP-223.
+
+* [r15351][r15352] For CL:MAKE-ARRAY, ensure :NIO-BUFFER argument
+  works in all cases, fix :NIO-DIRECT for (unsigned-byte 16)
+  specialized arrays.
+
+* [r15369][r15376] Fix wildcard matching to work on pathnames
+  consisting of only #\* characters.
+
+* [r15377] (Daniel Kochmański) Fix loop destructuring problems.
+
+* [r15379] Fix VECTOR-PUSH-EXTEND for (UNSIGNED-BYTE 8).
+
+* [r15427] Define CALL-NEXT-METHOD and NEXT-METHOD-P as local functions.
+
+* [r15386] Make the pre-compiler be more careful in optimizing lambdas.
+
+* [r15388] Ensure that SYS:CHECK-REDEFINITION does not signal error
+  conditions.
+
+* [r15387] Fix FILE-POSITION by resetting file charset decoder before
+  conversion.
+
+* [r15383] Fix capacity allocation for arrays specialized on
+
+         (or (unsigned-byte 16)
+             (unsigned-byte 32))
+
+  created via an CL:MAKE-ARRAY :NIO-BUFFER argument.
+
+
+Contrib
+-------
+
+* [r15420] Use jna-5.6.0.
+
+* [r15384] quicklisp-abcl attempts to remove all Quicklisp fasls on
+  failure to load.
+
+* ASDF-JAR loading compiled fasls stored in JAR archives
+  now works again.
+
+
+Build
+-----
+
+* [r15426] Ensure that we construct the manual with a proper version.
+
+* [r15407] Building and running a local ABCL hopefully does more of
+  what you mean.
+
+
+Tests
+-----
+
+* [r15416] The default reporting via abcl/test/lisp/parse-ansi-tests is
+  for compiled tests.
+
+* [r15385] Travis CI now uses versions of STATIC-VECTORS, CL+SSL, and
+  CFFI from Quicklisp.  Overhaul ABCL-PROVE system definition
+  explicitly enumerating tests for more deterministic behavior.
+
+* [r15382] Test usage of :NIO-BUFFER keyword in CL:MAKE-ARRAY.
+
+* [r15380] Tests for creating primitive java arrays.
 
 
 Version 1.7.1
@@ -20,11 +140,11 @@ July 18, 2020
 Fixes
 -----
 
-[r15337] Fix ELT on vectors specialized on (unsigned-byte 32)
+* [r15337] Fix ELT on vectors specialized on (unsigned-byte 32)
 
-[r15327] Restore svref optimizations for SIMPLE-VECTOR sorts
+* [r15327] Restore svref optimizations for SIMPLE-VECTOR sorts
 
-[r15326] Fix sorting vectors of length 0
+* [r15326] Fix sorting vectors of length 0
 
 
 
@@ -73,8 +193,8 @@ Fixes
 * [r15287] Attempts to fill specialized 32-bit arrays with elements
    greater than 2^32-1 now properly signals a type error.
      
-* [r15267] ABCL-BUILD:ANT/CALL no longer signals an error on failure instead
-  reporting associated error messages.
+* [r15267] ABCL-BUILD:ANT/CALL no longer signals an error on failure
+  instead reporting associated error messages.
 
 * [r15281] Autoconfiguration for builds on supported platforms extended.
 
@@ -85,17 +205,16 @@ Fixes
   TRAVIS_BUILD_DIR removed decoupling their use from the presence of
   Travis.
 
-
 Tests
 -----
 
 * [r15277] (pdietz) Additional tests for compiler failures.
 
-* [r15278][r15279] (phoe) Added tests for unbound slots DIVISION-BY-ZERO has
-  ARITHMETIC-ERROR-OPERANDS.
+* [r15278][r15279] (phoe) Added tests for unbound slots
+  DIVISION-BY-ZERO has ARITHMETIC-ERROR-OPERANDS.
 
-* [r15284][r15285][r15288] The CI now tests the ability to use OpenSSL via
-  CL+SSL.
+* [r15284][r15285][r15288] The CI now tests the ability to use OpenSSL
+  via CL+SSL.
 
 * [r15289] The CI now tests the version CFFI with
   CFFI-SYS:MAKE-SHAREABLE-BYTE-VECTOR implemented.

@@ -49,16 +49,16 @@ With [Docker Engine][] installed one may execute:
 to get something like
 
     illin:~/work/abcl$ docker run -it YOURID/abcl
-    Armed Bear Common Lisp 1.7.1
-    Java 11.0.7 AdoptOpenJDK    
+    Armed Bear Common Lisp 1.8.0
+    Java 11.0.8 AdoptOpenJDK
     OpenJDK 64-Bit Server VM
     Low-level initialization completed in 0.295 seconds.
     Startup completed in 1.425 seconds.
     Type ":help" for a list of available commands.
     CL-USER(1): (lisp-implementation-version)
-    "1.7.1"
-    "OpenJDK_64-Bit_Server_VM-AdoptOpenJDK-11.0.7+10"
-    "x86_64-Mac_OS_X-10.15.5"
+    "1.8.0"
+    "OpenJDK_64-Bit_Server_VM-AdoptOpenJDK-11.0.8+10"
+    "x86_64-Mac_OS_X-10.15.7"
 
 To install Quicklisp for ABCL in the Docker container run:
 
@@ -78,12 +78,12 @@ After you have downloaded a binary release from either [the
 distributed Maven POM graph][maven-abcl] or from
 [abcl.org][abcl.org-release] archive unpack it into its own
 directory. To run ABCL directly from this directory, make sure the
-Java executable (`java`) (Java 6, 7, 8, 11, 13, and 14 are supported
-by ABCL 1.7.1) is in your shell's path.
+Java executable (`java`) (Java 6, 7, 8, 11, 13, 14, and 15 are
+supported by ABCL 1.7.0) is in your shell's path.
 
-[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.7.1>
-[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.7.1>
-[abcl.org-release]:    <http://abcl.org/releases/1.7.1/>
+[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.8.0>
+[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.8.0>
+[abcl.org-release]:    <http://abcl.org/releases/1.8.0/>
 
 To start ABCL, simply issue the following command:
 
@@ -91,8 +91,8 @@ To start ABCL, simply issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.7.1
-    Java 1.8.0_252 AdoptOpenJDK
+    Armed Bear Common Lisp 1.8.0
+    Java 11.0.8 AdoptOpenJDK
     OpenJDK 64-Bit Server VM
     Low-level initialization completed in 0.222 seconds.
     Startup completed in 1.09 seconds.
@@ -125,10 +125,10 @@ ABCL may be built from its source code by executing the build
 instructions <file:build.xml> expressed by the venerable Apache Ant
 tool.
 
-To build, one must have a Java 6, 7, 8, 11, 13 or 14 Java Development
-Kit (openjdk) installed locally. Just the Java Runtime Environment
-(JRE) isn't enough, as you need the Java compiler ('javac') to compile
-the Java source of the ABCL implementation.
+To build, one must have a Java 6, 7, 8, 11, 13, 14 or 15 Java
+Development Kit (openjdk) installed locally. Just the Java Runtime
+Environment (JRE) isn't enough, as you need the Java compiler
+('javac') to compile the Java source of the ABCL implementation.
 
 Download a binary distribution [Ant version 1.7.1 or greater][ant].
 Unpack the files somewhere convenient, ensuring that the 'ant' (or
@@ -159,7 +159,7 @@ or from the shell as
     bash ci/create-abcl-properties.bash openjdk11
 
 Currently supported platforms are 'openjdk6', 'openjdk7', 'openjdk8',
-'openjdk11', 'openjdk13', and 'openjdk14'.
+'openjdk11', 'openjdk13', 'openjdk14', and 'openjdk15'.
 
 
 Using NetBeans
@@ -191,13 +191,13 @@ ABCL has a [User Manual][manual] stating its conformance to the ANSI
 standard, providing a compliant and practical Common Lisp
 implementation.
 
-[manual]: https://abcl.org/releases/1.7.1/abcl-1.7.1.pdf
+[manual]: https://abcl.org/releases/1.8.0/abcl-1.8.0.pdf
 
 
 Tests
 -----
 
-ABCL 1.7.1 currently fails ~45-46 out of 21848 total tests, whereas ABCL
+ABCL 1.8.0 currently fails ~49 out of 21848 total tests, whereas ABCL
 1.5.0 failed 48 out of 21708 total tests in the [revised and expanded
 ANSI CL test suite][ansi-test] (derived from the tests originally
 written for GCL).
@@ -244,9 +244,9 @@ On behalf of all ABCL development team and contributors,
     slyrus
     vibhu
 
-András Simon
+    András Simon
     Peter Graves
 
 Have fun!
 
-July 2020
+October 2020
