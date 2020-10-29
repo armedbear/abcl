@@ -216,15 +216,19 @@ public class ZipCache {
     LinkedHashMap<JarPathname, ByteArrayOutputStream> contents
       = new LinkedHashMap<JarPathname, ByteArrayOutputStream>();
 
+    boolean populated = false;
+
     public InputStream getEntryAsInputStream(JarPathname entry) {
+      if (!populated) {
+        populateAllEntries();
+      }
+
       ByteArrayOutputStream bytes = contents.get(entry);
       if (bytes != null) {
         return new ByteArrayInputStream(bytes.toByteArray());
       }
       return null;
     }
-
-    boolean populated = false;
 
     public ZipEntry getEntry(JarPathname entry) {
       if (!populated) {
