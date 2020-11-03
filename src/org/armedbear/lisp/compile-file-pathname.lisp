@@ -31,15 +31,9 @@
 
 (in-package #:system)
 
-;; Adapted from SBCL.
-(defun cfp-output-file-default (input-file)
-  (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*))
-	 (retyped (make-pathname :type *compile-file-type* :defaults defaults)))
-    retyped))
+(defun compile-file-pathname (input-file &key output-file &allow-other-keys)
+  (let ((defaults (make-pathname :type *compile-file-type*
+                                 :defaults (merge-pathnames input-file))))
+    (cond ((null output-file) defaults)
+          (t (merge-pathnames output-file defaults)))))
 
-(defun compile-file-pathname (input-file
-                              &key
-                              (output-file (cfp-output-file-default
-                                            input-file))
-                              &allow-other-keys)
-  (merge-pathnames output-file (merge-pathnames input-file) nil))
