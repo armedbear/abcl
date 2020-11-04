@@ -279,7 +279,7 @@ public final class ComplexArray_ByteBuffer
   // FIXME move me to someplace more general
   public static void fill(ByteBuffer buffer, byte value) {
     for (int i = 0; i < ((java.nio.Buffer)buffer).limit(); i++) {
-      buffer.put(value);
+      buffer.put(i, value);
     }
   }
 

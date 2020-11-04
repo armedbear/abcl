@@ -354,7 +354,9 @@ public final class ComplexVector_IntBuffer
         } else {
           newBuffer = IntBuffer.allocate(minCapacity);
         }
+        elements.position(0);
         newBuffer.put(elements);
+        newBuffer.position(0);
         elements = newBuffer;
         capacity = minCapacity;
       }
@@ -436,6 +438,7 @@ public final class ComplexVector_IntBuffer
         }
         newElements.put(elements.array(),
                         0, Math.min(capacity, newCapacity));
+        newElements.position(0);
         elements = newElements;
       }
       // Initialize new elements (if aapplicable).
