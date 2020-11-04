@@ -374,6 +374,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
         } else { 
           newBuffer = ByteBuffer.allocate(minCapacity);
         }
+        elements.position(0);
         newBuffer.put(elements); 
         elements = newBuffer;
         capacity = minCapacity;
