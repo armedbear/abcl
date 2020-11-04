@@ -374,7 +374,9 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
         } else { 
           newBuffer = ByteBuffer.allocate(minCapacity);
         }
-        newBuffer.put(elements); 
+        elements.position(0);
+        newBuffer.put(elements);
+        newbuffer.position(0);
         elements = newBuffer;
         capacity = minCapacity;
       }
@@ -459,7 +461,7 @@ public final class ComplexVector_ByteBuffer extends AbstractVector
       if (initialElement != null) {
         byte b = coerceToJavaByte(initialElement);
         for (int i = capacity; i < newCapacity; i++) {
-          elements.put(b);
+          elements.put(i, b);
         }
       }
     }
