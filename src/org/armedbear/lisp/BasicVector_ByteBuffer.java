@@ -80,7 +80,7 @@ public final class BasicVector_ByteBuffer
     }
     for (int i = array.length; i-- > 0;) {
       // Faster please!
-      elements.put((byte)coerceToJavaByte(array[i]));
+      elements.put(i, (byte)coerceToJavaByte(array[i]));
     }
   }
 
@@ -198,6 +198,7 @@ public final class BasicVector_ByteBuffer
     ((java.nio.Buffer)view).limit(end);
     try {
       v.elements.put(view);
+      v.elements.position(0);
       return v;
     } catch (BufferOverflowException e) {
       return error(new TypeError("Could not form a subseq from " + start + " to " + end));
