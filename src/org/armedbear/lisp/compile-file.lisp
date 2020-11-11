@@ -779,7 +779,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
       (ignore-errors (delete-file pathname)))
     (rename-file zipfile output-file)))
 
-(defun write-fasl-prologue (stream)
+(defun write-fasl-prologue (stream in-package)
   (let ((out stream)
         (*package* (find-package :keyword)))
     ;; write header
@@ -805,9 +805,11 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                      ,(concatenate 'string "org.armedbear.lisp."
                                    (base-classname))))
              :stream out))
+    (%stream-terpri out)
+
+    (write `(in-package ,(package-name in-package))
+	   :stream out)
     (%stream-terpri out)))
-
-
 
 (defvar *binary-fasls* nil)
 (defvar *forms-for-output* nil)
@@ -827,6 +829,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
          (start (get-internal-real-time))
          *fasl-uninterned-symbols*
          (warnings-p nil)
+         (in-package *package*)
          (failure-p nil))
     (when *compile-verbose*
       (format t "; Compiling ~A ...~%" namestring))
@@ -976,7 +979,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               ;;        (*read-default-float-format* 'single-float)
               ;;        (*readtable* (copy-readtable nil))
 
-              (write-fasl-prologue out)
+              (write-fasl-prologue out in-package)
               ;; copy remaining content
               (loop for line = (read-line in nil :eof)
                  while (not (eq line :eof))
