@@ -1022,12 +1022,7 @@ COMPILE-FILE was invoked."
         (when (probe-file pathname)
           (setf input-file pathname))))
     (setf output-file
-          (make-pathname :defaults
-                         (if output-file
-                             (merge-pathnames output-file
-                                              *default-pathname-defaults*)
-                             (compile-file-pathname input-file))
-                         :version nil))
+          (compile-file-pathname input-file :output-file output-file))
     (let* ((*output-file-pathname* output-file)
            (type (pathname-type output-file))
            (temp-file (pathname-with-type output-file type "-tmp"))
