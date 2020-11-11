@@ -943,7 +943,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                :if-does-not-exist :create
                                :if-exists :supersede
                                :external-format *fasl-external-format*)
-            (let ((*package* (find-package '#:cl))
+            (let ((*package* (find-package :keyword))
                   (*print-fasl* t)
                   (*print-array* t)
                   (*print-base* 10)
