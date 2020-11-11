@@ -33,7 +33,6 @@
 
 (require "COMPILER-PASS2")
 
-
 (export 'compile-file-if-needed)
 
 (defvar *fbound-names*)
@@ -223,13 +222,11 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                 (precompiler:precompile-form form nil
                                              *compile-file-environment*))))))
 
-
 (declaim (ftype (function (t stream t) t) process-progn))
 (defun process-progn (forms stream compile-time-too)
   (dolist (form forms)
     (process-toplevel-form form stream compile-time-too))
   nil)
-
 
 (declaim (ftype (function (t t t) t) process-toplevel-form))
 (defun precompile-toplevel-form (form stream compile-time-too)
@@ -239,8 +236,6 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (when compile-time-too
       (eval form))
     form))
-
-
 
 (defun process-toplevel-macrolet (form stream compile-time-too)
   (let ((*compile-file-environment*
@@ -278,7 +273,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               :element-type ',(array-element-type initial-value)
               :initial-contents ',(coerce initial-value 'list)))))
   `(progn
-     (put ',(second form) 'sys::source (cons '(,(second form) ,(namestring *source*) ,*source-position*) (get ',(second form)  'sys::source nil)))
+     (sys:put ',(second form) 'sys::source
+              (cl:cons '(,(second form) ,(namestring *source*) ,*source-position*)
+                       (cl:get ',(second form)  'sys::source nil)))
      ,form))
 
 (declaim (ftype (function (t t t) t) process-toplevel-quote))
@@ -321,8 +318,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (when (quoted-form-p name) (setq name (second name)))
     (when (quoted-form-p type) (setq type (second type)))
     (let ((sym (if (consp name) (second name) name)))
-      `(put ',sym 'sys::source (cons '(,type ,(namestring *source*) ,*source-position*)
-					 (get ',sym  'sys::source nil))))))
+      `(sys:put ',sym 'sys::source
+                (cl:cons '(,type ,(namestring *source*) ,*source-position*)
+			 (cl:get ',sym  'sys::source nil))))))
 
 	  
 (declaim (ftype (function (t t t) t) process-toplevel-mop.ensure-method))
@@ -357,8 +355,6 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                          (t
                           ;; FIXME This should be a warning or error of some sort...
                           (format *error-output* "; Unable to compile method~%"))))))))))
-
-
     (when compile-time-too
       (let* ((copy-form (copy-tree form))
              ;; ### Ideally, the precompiler would leave the forms alone
@@ -397,7 +393,10 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               :element-type ',(array-element-type initial-value)
               :initial-contents ',(coerce initial-value 'list))))
     `(progn 
-       (put ',name 'sys::source (cons (list :variable ,(namestring *source*) ,*source-position*) (get ',name  'sys::source nil)))
+       (sys:put ',name 'sys::source
+                (cl:cons
+                 (list :variable ,(namestring *source*) ,*source-position*)
+                 (cl:get ',name 'sys::source nil)))
        ,form)))
 
 
@@ -412,13 +411,15 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     ;; Force package prefix to be used when dumping form.
     (let ((*package* +keyword-package+))
       (output-form form))
-    ;; a bit ugly here. Since we precompile, and added record-source-information we need to know where it is.
-    ;; The defpackage is at top, so we know where the name is (though it is a string by now)
-    ;; (if it is a defpackage)
+    ;; a bit ugly here. Since we precompile, and added
+    ;; record-source-information we need to know where it is.
+
+    ;; The defpackage is at top, so we know where the name is (though
+    ;; it is a string by now) (if it is a defpackage)
     (if defpackage-name
-	`(put ,defpackage-name 'sys::source
-	      (cons '(:package ,(namestring *source*) ,*source-position*)
-		    (get ,defpackage-name 'sys::source nil)))
+	`(sys:put ,defpackage-name 'sys::source
+	          (cl:cons '(:package ,(namestring *source*) ,*source-position*)
+		           (cl:get ,defpackage-name 'sys::source nil)))
 	nil)))
 
 (declaim (ftype (function (t t t) t) process-toplevel-declare))
@@ -438,7 +439,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   (note-toplevel-form form)
   (eval form)
   `(progn
-     (put ',(second form) 'sys::source (cons '(,(second form) ,(namestring *source*) ,*source-position*) (get ',(second form)  'sys::source nil)))
+     (sys:put ',(second form) 'sys::source
+              (cl:cons '(,(second form) ,(namestring *source*) ,*source-position*)
+                       (cl:get ',(second form) 'sys::source nil)))
      ,form))
 
 (declaim (ftype (function (t t t) t) process-toplevel-eval-when))
@@ -486,17 +489,20 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   (let* ((sym (if (consp (second form)) (second (second form)) (second form))))
     (when (eq (car form) 'defgeneric)
       `(progn
-	 (put ',sym 'sys::source
-	      (cons  '((:generic-function ,(second form)) ,(namestring *source*) ,*source-position*) (get ',sym  'sys::source nil)))
+	 (sys:put ',sym 'sys::source
+	          (cl:cons '((:generic-function ,(second form))
+                             ,(namestring *source*) ,*source-position*)
+                           (cl:get ',sym  'sys::source nil)))
 	 ,@(loop for method-form in (cdddr form)
 		 when (eq (car method-form) :method)
 		   collect
 		   (multiple-value-bind (function-name qualifiers lambda-list specializers documentation declarations body) 
 		       (mop::parse-defmethod `(,(second form) ,@(rest method-form)))
                      ;;; FIXME: style points for refactoring double backquote to "normal" form
-		     `(put ',sym 'sys::source
-			   (cons `((:method ,',sym ,',qualifiers ,',specializers) ,,(namestring *source*) ,,*source-position*)
-				 (get ',sym  'sys::source nil)))))))))
+		     `(sys:put ',sym 'sys::source
+			       (cl:cons `((:method ,',sym ,',qualifiers ,',specializers)
+                                          ,,(namestring *source*) ,,*source-position*)
+				        (cl:get ',sym  'sys::source nil)))))))))
 
 
 (declaim (ftype (function (t t t) t) process-toplevel-locally))
@@ -537,20 +543,21 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
         (return-from process-toplevel-defmacro form))
 
       (if (special-operator-p name)
-          `(put ',name 'macroexpand-macro
-                (make-macro ',name
-                            (sys::get-fasl-function *fasl-loader*
-                                                    ,saved-class-number)))
+          `(sys:put ',name 'macroexpand-macro
+                (sys:make-macro ',name
+                                (sys::get-fasl-function *fasl-loader*
+                                                        ,saved-class-number)))
 	  `(progn
-	     (put ',name 'sys::source
-		  (cons '(:macro  ,(namestring *source*) ,*source-position*) (get ',name  'sys::source nil)))
-	     (fset ',name
-		   (make-macro ',name
-			       (sys::get-fasl-function *fasl-loader*
-						       ,saved-class-number))
-		   ,*source-position*
-		   ',(third form)
-		   ,(%documentation name 'cl:function)))))))
+	     (sys:put ',name 'sys::source
+		      (cl:cons '(:macro ,(namestring *source*) ,*source-position*)
+                               (cl:get ',name  'sys::source nil)))
+	     (sys:fset ',name
+		       (sys:make-macro ',name
+			               (sys::get-fasl-function *fasl-loader*
+						               ,saved-class-number))
+		       ,*source-position*
+		       ',(third form)
+		       ,(%documentation name 'cl:function)))))))
 
 (declaim (ftype (function (t t t) t) process-toplevel-defun))
 (defun process-toplevel-defun (form stream compile-time-too)
@@ -593,13 +600,16 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 	       (let ((sym (if (consp name) (second name) name)))
 		 (setf form
 		       `(progn
-			 (put ',sym 'sys::source (cons '((:function ,name)  ,(namestring *source*) ,*source-position*) (get ',sym  'sys::source nil)))		       
-			 (fset ',name
-                            (sys::get-fasl-function *fasl-loader*
-                                                    ,saved-class-number)
-                            ,*source-position*
-                            ',lambda-list
-                            ,doc)))))
+			  (sys:put ',sym 'sys::source
+                                   (cl:cons '((:function ,name)
+                                              ,(namestring *source*) ,*source-position*)
+                                            (cl:get ',sym  'sys::source nil)))		       
+			  (sys:fset ',name
+                                    (sys::get-fasl-function *fasl-loader*
+                                                            ,saved-class-number)
+                                    ,*source-position*
+                                    ',lambda-list
+                                    ,doc)))))
               (t
                (compiler-warn "Unable to compile function ~A.  Using interpreted form instead.~%" name)
                (when internal-compiler-errors
@@ -610,11 +620,11 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                       (precompiler:precompile-form expr nil
                                                    *compile-file-environment*)))
                  (setf form
-                       `(fset ',name
-                              ,precompiled-function
-                              ,*source-position*
-                              ',lambda-list
-                              ,doc)))
+                       `(sys:fset ',name
+                                  ,precompiled-function
+                                  ,*source-position*
+                                  ',lambda-list
+                                  ,doc)))
                (when compile-time-too
                  (eval form)))))
           (when (and (symbolp name) (eq (get name '%inline) 'INLINE))
@@ -623,13 +633,15 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                   (jvm::generate-inline-expansion block-name
                                                   lambda-list
                                                   (append decls body)))
-            (output-form `(setf (inline-expansion ',name)
-                                ',(inline-expansion name))))))
+            (output-form `(cl:setf (inline-expansion ',name)
+                                   ',(inline-expansion name))))))
     (push name jvm::*functions-defined-in-current-file*)
     (note-name-defined name)
     (push name *toplevel-functions*)
     (when (and (consp name)
-               (eq 'setf (first name)))
+	       (or 
+                (eq 'setf (first name))
+		(eq 'cl:setf (first name))))
       (push (second name) *toplevel-setf-functions*))
     ;; If NAME is not fbound, provide a dummy definition so that
     ;; getSymbolFunctionOrDie() will succeed when we try to verify that
@@ -687,9 +699,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
         (return-from process-toplevel-form))
       (when (and (symbolp operator)
                  (macro-function operator *compile-file-environment*))
-        (when (eq operator 'define-setf-expander) ;; ??? what if the symbol is package qualified?
+        (when (eq operator 'define-setf-expander) 
           (push (second form) *toplevel-setf-expanders*))
-        (when (and (eq operator 'defsetf) ;; ??? what if the symbol is package qualified?
+        (when (and (eq operator 'defsetf) 
                    (consp (third form))) ;; long form of DEFSETF
           (push (second form) *toplevel-setf-expanders*))
         (note-toplevel-form form)
@@ -769,34 +781,41 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
       (ignore-errors (delete-file pathname)))
     (rename-file zipfile output-file)))
 
-(defun write-fasl-prologue (stream)
-  (let ((out stream))
+(defun write-fasl-prologue (stream in-package)
+  "Write the forms that form the fasl to STREAM.  
+
+The last form will use IN-PACKAGE to set the *package* to its value when 
+COMPILE-FILE was invoked."
+  (let ((out stream)
+        (*package* (find-package :keyword)))
     ;; write header
     (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
     (%stream-terpri out)
-    (write (list 'init-fasl :version *fasl-version*) :stream out)
+    (write (list 'sys:init-fasl :version *fasl-version*) :stream out)
     (%stream-terpri out)
-    (write (list 'setq '*source* *compile-file-truename*) :stream out)
+    (write (list 'cl:setq 'sys:*source* *compile-file-truename*) :stream out)
     (%stream-terpri out)
 
     ;; Note: Beyond this point, you can't use DUMP-FORM,
     ;; because the list of uninterned symbols has been fixed now.
     (when *fasl-uninterned-symbols*
-      (write (list 'setq '*fasl-uninterned-symbols*
+      (write (list 'cl:setq 'sys::*fasl-uninterned-symbols*
                    (coerce (mapcar #'car (nreverse *fasl-uninterned-symbols*))
                            'vector))
              :stream out :length nil))
     (%stream-terpri out)
 
     (when (> *class-number* 0)
-      (write (list 'setq '*fasl-loader*
+      (write (list 'cl:setq 'sys:*fasl-loader*
                    `(sys::make-fasl-class-loader
                      ,(concatenate 'string "org.armedbear.lisp."
                                    (base-classname))))
              :stream out))
+    (%stream-terpri out)
+
+    (write `(in-package ,(package-name in-package))
+	   :stream out)
     (%stream-terpri out)))
-
-
 
 (defvar *binary-fasls* nil)
 (defvar *forms-for-output* nil)
@@ -816,6 +835,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
          (start (get-internal-real-time))
          *fasl-uninterned-symbols*
          (warnings-p nil)
+         (in-package *package*)
          (failure-p nil))
     (when *compile-verbose*
       (format t "; Compiling ~A ...~%" namestring))
@@ -932,7 +952,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                :if-does-not-exist :create
                                :if-exists :supersede
                                :external-format *fasl-external-format*)
-            (let ((*package* (find-package '#:cl))
+            (let ((*package* (find-package :keyword))
                   (*print-fasl* t)
                   (*print-array* t)
                   (*print-base* 10)
@@ -965,7 +985,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               ;;        (*read-default-float-format* 'single-float)
               ;;        (*readtable* (copy-readtable nil))
 
-              (write-fasl-prologue out)
+              (write-fasl-prologue out in-package)
               ;; copy remaining content
               (loop for line = (read-line in nil :eof)
                  while (not (eq line :eof))
