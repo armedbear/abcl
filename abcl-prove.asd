@@ -1,3 +1,4 @@
+;;; -*- Mode: LISP; Syntax: COMMON-LISP -*-
 (defsystem :abcl-prove
   :version "1.8.0"
   :defsystem-depends-on (prove-asdf)
@@ -21,7 +22,9 @@
                              (:test-file "print-symbol")
                              (:test-file "read-suppress")
                              (:test-file "run-program")
-                             (:test-file "url-stream")))))
+                             (:test-file "url-stream")
+                             (:test-file "without-use-cl")))))
+
 
 
 
