@@ -378,12 +378,11 @@ public class ZipCache {
   final static class disable_zip_cache extends Primitive {
     disable_zip_cache() {
       super("disable-zip-cache", PACKAGE_SYS, true, "",
-            "Disable all caching of ABCL FASLs and ZIPs.");
+            "Not currently implemented");
     }
     @Override
     public LispObject execute() {
-      ZipCache.disable();
-      return T;
+      return NIL;
     }
   }
   static public synchronized void disable() {
