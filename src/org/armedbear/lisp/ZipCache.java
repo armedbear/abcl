@@ -273,8 +273,7 @@ public class ZipCache {
     }
 
     long getLastModified() {
-      return 0;
-      //      return ((JarPathname)root.getRootJar()).getLastModified();
+      return ((URLPathname)root.getRootJar()).getLastModified();
     }
   }
 
