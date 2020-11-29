@@ -1293,8 +1293,14 @@ public class Pathname extends LispObject
             rootDevice = URLPathname.create(root);
           }
           result.setDevice(new Cons(rootDevice, result.getDevice().cdr()));
-          // sanity check that the pathname has been constructed correctly
 
+          if (result.getDirectory().equals(NIL)
+              && (!result.getName().equals(NIL)
+                  || !result.getType().equals(NIL))) {
+            result.setDirectory(NIL.push(Keyword.ABSOLUTE));
+          }
+
+          // sanity check that the pathname has been constructed correctly
           result.validateComponents();
           return result;
         }
@@ -1793,6 +1799,15 @@ public class Pathname extends LispObject
       } else {
         result.setType(d.getType());
       }
+
+      // JAR-PATHNAME directories are always absolute
+      if ((result instanceof JarPathname)
+          && (!result.getName().equals(NIL)
+              || !result.getType().equals(NIL))
+          && result.getDirectory().equals(NIL)) {
+        result.setDirectory(NIL.push(Keyword.ABSOLUTE));
+      }
+            
       //  CLtLv2 MERGE-PATHNAMES 
     
       // "[T]he missing components in the given pathname are filled
