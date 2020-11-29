@@ -98,6 +98,37 @@ public class JarPathname
     result.setDevice(device);
     return result;
   }
+
+  @DocString(name="as-jar-pathname-archive",
+             args="pathname",
+             returns="jar-pathname",
+             doc="Returns PATHNAME as a reference to a JAR-PATHNAME archive"
+             + "\n"
+             + "If PATHNAME names an ordinary file, the resulting JAR-PATHNAME addresses the"
+             + "file as an archive.  If PATHNAME names an entry in an archive, the resulting"
+             + "JAR-PATHNAME addresses that entry as a zip archive within that archive.")
+  private static final Primitive AS_JAR_PATHNAME_ARCHIVE = new pf_as_jar_pathname_archive();
+  private static class pf_as_jar_pathname_archive extends Primitive {
+    pf_as_jar_pathname_archive() {
+      super("as-jar-pathname-archive", PACKAGE_EXT, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg) {
+      if (arg instanceof AbstractString) {
+        arg = coerceToPathname(arg);
+      }
+      if (arg instanceof JarPathname) {
+        return createFromEntry((JarPathname)arg);
+      } if (arg instanceof Pathname) {
+        return createFromPathname((Pathname)arg);
+      }
+      type_error(arg,
+                 list(Symbol.OR,
+                      Symbol.PATHNAME, Symbol.URL_PATHNAME,
+                      Symbol.JAR_PATHNAME));
+      return (LispObject)UNREACHED;
+    }
+  };
     
   static public JarPathname createFromFile(String s) {
     return JarPathname.create(JAR_URI_PREFIX + "file:" + s + JAR_URI_SUFFIX);
