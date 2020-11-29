@@ -111,7 +111,8 @@ public class JarPathname
       .copyFrom(p)
       .setDirectory(NIL)
       .setName(NIL)
-      .setType(NIL);
+      .setType(NIL)
+      .setVersion(Keyword.NEWEST);
     Pathname entryPath = p.getEntryPath();
     LispObject device = result.getDevice();
     device = device.reverse().push(entryPath).reverse();
@@ -151,11 +152,17 @@ public class JarPathname
   };
     
   static public JarPathname createFromFile(String s) {
-    return JarPathname.create(JAR_URI_PREFIX + "file:" + s + JAR_URI_SUFFIX);
+    JarPathname result
+      = JarPathname.create(JAR_URI_PREFIX + "file:" + s + JAR_URI_SUFFIX);
+    result.setVersion(Keyword.NEWEST);
+    return result;
   }
 
   static public JarPathname createEntryFromFile(String jar, String entry) {
-    return JarPathname.create(JAR_URI_PREFIX + "file:" + jar + JAR_URI_SUFFIX + entry);
+    JarPathname result
+      = JarPathname.create(JAR_URI_PREFIX + "file:" + jar + JAR_URI_SUFFIX + entry);
+    result.setVersion(Keyword.NEWEST);
+    return result;
   }
 
   static public JarPathname createEntryFromJar(JarPathname jar, String entry) {
@@ -173,7 +180,8 @@ public class JarPathname
     result
       .setDirectory(p.getDirectory())
       .setName(p.getName())
-      .setType(p.getType());
+      .setType(p.getType())
+      .setVersion(Keyword.NEWEST);
     
     return result;
   }
