@@ -224,6 +224,7 @@ public class ZipCache {
         populateAllEntries();
       }
 
+      entry.setVersion(Keyword.NEWEST);
       ByteArrayOutputStream bytes = contents.get(entry);
       if (bytes != null) {
         return new ByteArrayInputStream(bytes.toByteArray());
@@ -235,6 +236,7 @@ public class ZipCache {
       if (!populated) {
         populateAllEntries();
       }
+      entry.setVersion(Keyword.NEWEST);
       ZipEntry result = entries.get(entry);
       return result;
     }
@@ -330,6 +332,7 @@ public class ZipCache {
     }
 
     public ZipEntry getEntry(JarPathname entryPathname) {
+      entryPathname.setVersion(Keyword.NEWEST);
       ZipEntry result = entries.get(entryPathname);
       if (result != null) {
         return result;
@@ -371,6 +374,7 @@ public class ZipCache {
 
     InputStream getEntryAsInputStream(JarPathname entry) {
       InputStream result = null;
+      entry.setVersion(Keyword.NEWEST);
       ZipEntry zipEntry = getEntry(entry);
 
       try { 
@@ -427,6 +431,7 @@ public class ZipCache {
 
   // ??? we assume that DIRECTORY, NAME, and TYPE components are NIL
   synchronized public static Archive getArchive(JarPathname jar) {
+    jar.setVersion(Keyword.NEWEST);
     Archive result = cache.get(jar);
     if (result != null) {
       long time = result.getLastModified();
@@ -456,7 +461,8 @@ public class ZipCache {
                           new Cons(innerJars.car(), NIL)))
       .setDirectory(NIL)
       .setName(NIL)
-      .setType(NIL);
+      .setType(NIL)
+      .setVersion(Keyword.NEWEST);
       
     innerJars = innerJars.cdr();
     while (innerJars.car() != NIL) {
@@ -467,7 +473,8 @@ public class ZipCache {
         .setDevice(nextArchive.getDevice())
         .setDirectory(nextJarArchive.getDirectory())
         .setName(nextJarArchive.getName())
-        .setType(nextJarArchive.getType());
+        .setType(nextJarArchive.getType())
+        .setVersion(Keyword.NEWEST);
       // FIXME
       // The pathnames for subsquent entries in a PATHNAME-JAR
       // are relative.  Should they be?
@@ -531,6 +538,7 @@ public class ZipCache {
 
   public static Archive getArchiveURL(JarPathname jar) {
     Pathname rootJar = (Pathname) jar.getRootJar();
+    jar.setVersion(Keyword.NEWEST);
 
     URL rootJarURL = null;
     try {
@@ -547,6 +555,7 @@ public class ZipCache {
   }
 
   static public Archive getArchiveFile(JarPathname jar) {
+    jar.setVersion(Keyword.NEWEST);
     try {
       ArchiveFile result = new ArchiveFile(jar);
       cache.put(jar, result);
@@ -656,6 +665,7 @@ public class ZipCache {
   }
       
   synchronized public static boolean remove(JarPathname p) {
+    p.setVersion(Keyword.NEWEST);
     Archive archive = cache.get(p);
     if (archive != null) {
       archive.close();
