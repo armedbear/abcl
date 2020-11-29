@@ -507,36 +507,27 @@ public class ZipCache {
   }
 
   static ArchiveStream getArchiveStreamFromFile(JarPathname p) {
-      JarPathname root = new JarPathname();
-      root.setDevice(new Cons(p.getRootJar(), NIL));
-      Pathname nextJar = (Pathname)p.getJars().cdr().car();      
-      ArchiveFile rootArchiveFile = (ArchiveFile)getArchiveFile(root);
-
-      JarPathname innerArchive = new JarPathname();
-
-      LispObject jars = list(p.getRootJar(), nextJar);
-      innerArchive.setDevice(jars);
-
-      JarPathname innerArchiveAsEntry = new JarPathname();
-      innerArchiveAsEntry
-        .setDevice(new Cons(root, NIL))
-        .setDirectory(nextJar.getDirectory())
-        .setName(nextJar.getName())
-        .setType(nextJar.getType());
-
-      ZipEntry entry = rootArchiveFile.getEntry(innerArchiveAsEntry);
-      if (entry == null) {
-        return null;
-      }
-      InputStream inputStream = rootArchiveFile.getEntryAsInputStream(innerArchiveAsEntry);
-      if (inputStream == null) {
-        return null;
-      }
-      ArchiveStream result = new ArchiveStream(inputStream, innerArchive, entry);
-      return result;
-  }
+        JarPathname innerArchiveAsEntry = JarPathname.archiveAsEntry(p);
+    JarPathname root = new JarPathname();
+    root = (JarPathname)root.copyFrom(innerArchiveAsEntry);
+    root
+      .setDirectory(NIL)
+      .setName(NIL)
+      .setType(NIL)
+      .setVersion(Keyword.NEWEST);
     
-  
+    ArchiveFile rootArchiveFile = (ArchiveFile)getArchiveFile(root);
+    ZipEntry entry = rootArchiveFile.getEntry(innerArchiveAsEntry);
+    if (entry == null) {
+      return null;
+    }
+    InputStream inputStream = rootArchiveFile.getEntryAsInputStream(innerArchiveAsEntry);
+    if (inputStream == null) {
+      return null;
+    }
+    ArchiveStream result = new ArchiveStream(inputStream, p, entry);
+    return result;
+  }
 
   public static Archive getArchiveURL(JarPathname jar) {
     Pathname rootJar = (Pathname) jar.getRootJar();

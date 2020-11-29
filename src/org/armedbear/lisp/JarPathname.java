@@ -84,6 +84,26 @@ public class JarPathname
     return result;
   }
 
+  /** Transform a reference to a nested Jar to an entry */
+  public static JarPathname archiveAsEntry(JarPathname p) {
+    JarPathname result = new JarPathname();
+    result = (JarPathname)result.copyFrom(p);
+
+    LispObject jars = result.getJars();
+    jars = jars.nreverse();
+    Pathname entry = (Pathname)jars.car();
+    jars = jars.cdr().nreverse();
+
+    result
+      .setDevice(jars)
+      .setDirectory(entry.getDirectory())
+      .setName(entry.getName())
+      .setType(entry.getType());
+    
+    return result;
+  }
+    
+
   /** Transform an entry in a jar to a reference as a jar */
   public static JarPathname createFromEntry(JarPathname p) {
     JarPathname result = new JarPathname();
