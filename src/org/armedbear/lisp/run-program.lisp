@@ -372,9 +372,10 @@ value
 (defun %process-pid (jprocess)
   (if (ext:os-unix-p)
       (let* ((process-class
-              (if (pre-java-11-p)
-                  "java.lang.UNIXProcess"
-                  "java.lang.ProcessImpl"))
+               (java:jclass
+                (if (pre-java-11-p)
+                    "java.lang.UNIXProcess"
+                    "java.lang.ProcessImpl")))
              (field
                (java:jcall "getDeclaredField" process-class "pid")))
         (java:jcall "setAccessible" field java:+true+)
