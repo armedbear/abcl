@@ -193,6 +193,7 @@ public class ZipCache {
     abstract ZipEntry getEntry(JarPathname entry);
     abstract void populateAllEntries();
     abstract void close();
+    abstract long getLastModified();
   }
 
   static public class ArchiveStream
@@ -268,6 +269,11 @@ public class ZipCache {
         }
       }
     }
+
+    long getLastModified() {
+      return 0;
+      //      return ((JarPathname)root.getRootJar()).getLastModified();
+    }
   }
 
   static public class ArchiveURL
@@ -311,6 +317,16 @@ public class ZipCache {
       this.root = jar;
       this.file = new ZipFile(f);
       this.lastModified = f.lastModified();
+    }
+
+    long getLastModified() {
+      long result = 0;
+
+      File f = ((Pathname)root.getRootJar()).getFile();
+      if (f != null) {
+        result = f.lastModified();
+      }
+      return result;
     }
 
     public ZipEntry getEntry(JarPathname entryPathname) {
@@ -413,6 +429,11 @@ public class ZipCache {
   synchronized public static Archive getArchive(JarPathname jar) {
     Archive result = cache.get(jar);
     if (result != null) {
+      long time = result.getLastModified();
+      if (time != result.lastModified) {
+        cache.remove(jar);
+        return getArchive(jar);
+      }
       return result;
     }
     Pathname rootJar = (Pathname) jar.getRootJar();
