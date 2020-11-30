@@ -1,0 +1,95 @@
+name: Build and extensively test ABCL
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        jdk: [openjdk8, openjdk11, openjdk15]
+        
+    steps:
+      - name: Set path for build scripts
+        run: echo "ABCL_ROOT=${GITHUB_WORKSPACE}" >> $GITHUB_ENV
+
+      - name: Set JDK version in environment
+        run: echo "JDK_VERSION=${{ matrix.jdk }}" >> $GITHUB_ENV
+
+      - name: Clone ABCL
+        uses: actions/checkout@v2
+        
+      - name: Install Java base for Ant
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+
+      - name: Setup jenv
+        run: bash -x ./ci/ensure-jenv-is-present.bash && ant abcl.diagnostic
+        
+      - name: Install AdoptJDK
+        run: bash -x ./ci/install-adoptjdk.bash ${JDK_VERSION}
+
+      - name: Set abcl.properties for build
+        run: bash -x ./ci/create-abcl-properties.bash ${JDK_VERSION}
+
+      - name: Build ABCL
+        run: bash -x ./ci/ensure-jenv-is-present.bash && $HOME/.jenv/shims/ant abcl
+
+      - name: Configure ASDF to find abcl
+        run: bash -x ./ci/asdf-finds-abcl.bash
+
+      - name:  Install Jeannie for testing
+        run: bash -x ./ci/install-jeannie.bash
+
+      - name: Install the ANSI-TEST suite
+        run: bash -x ./ci/install-ansi-test.bash
+
+      - name: Install Quicklisp
+        run: |
+          ./abcl \
+            --eval '(require :asdf)' \
+            --eval '(require :abcl-contrib)' \
+            --eval '(asdf:load-system :quicklisp-abcl :force t)' \
+            --eval '(progn (setf ql-util::*do-not-prompt* t)(ql:add-to-init-file))' \
+            --eval '(ext:quit)'
+
+      - name: Test ABCL-PROVE
+        run: ./abcl --batch --load ./ci/test-abcl-prove.lisp
+
+      - name: Test STATIC-VECTORS
+        run: ./abcl --batch --load ./ci/test-static-vectors.lisp
+
+      - name: Test CFFI
+        run: ./abcl --batch --load ./ci/test-cffi.lisp
+
+      - name: Test CL+SSL
+        run: ./abcl --batch --load ./ci/test-cl+ssl.lisp
+
+      - name: Test ABCL-INTROSPECT
+        run: ./abcl --batch --load ./ci/test-abcl-introspect.lisp
+
+      - name: Test Jeannie
+        run: ./abcl --batch --load ./ci/test-jeannie.lisp
+
+      - name: Test ABCL
+        run: ./abcl --batch --load ./ci/test-abcl.lisp
+
+      - name: Test IRONCLAD
+        run: ./abcl --batch --load ./ci/test-ironclad.lisp
+
+      - name: Run ANSI-TEST suite
+        run: ./abcl --batch --load ./ci/test-ansi.lisp
+
+
+          
+
+            
+
+
+
+
+      
+  
