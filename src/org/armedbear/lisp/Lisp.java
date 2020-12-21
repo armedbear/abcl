@@ -2437,9 +2437,9 @@ public final class Lisp
       } catch (NumberFormatException e) {
 	for (int i = 0; i < javaVersion.length(); i++) {
 	  char c = javaVersion.charAt(i); // Unicode?
-	  if (!Character.isDigit(c)) {
-	    // Push the non-conforming keyword for completeness
-	    featureList.push(internKeyword("JAVA-" + javaVersion));
+          if (!Character.isDigit(c)) {
+            // Push the non-conforming keyword for completeness
+            featureList.push(internKeyword("JAVA-" + javaVersion));
 	    platformVersion = javaVersion.substring(0, i);
 	    break;
 	  }
