@@ -1252,6 +1252,24 @@ JVM System Properties
             tofile="${dist.dir}/asdf.pdf"/>
     </target>
 
+    <target name="abcl.properties.autoconfigure.openjdk.6">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        <arg value="openjdk6"/>
+      </exec>
+    </target>
+
+
+    <target name="abcl.properties.autoconfigure.openjdk.7">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        <arg value="openjdk7"/>
+      </exec>
+    </target>
+
+
     <target name="abcl.properties.autoconfigure.openjdk.8">
       <exec executable="/usr/bin/env">
         <arg value="bash"/>
@@ -1281,6 +1299,14 @@ JVM System Properties
         <arg value="bash"/>
         <arg value="ci/create-abcl-properties.bash"/>
         <arg value="openjdk15"/>
+      </exec>
+    </target>
+
+    <target name="abcl.properties.autoconfigure.openjdk.16">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        <arg value="openjdk16"/>
       </exec>
     </target>
 
