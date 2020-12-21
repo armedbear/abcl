@@ -34,6 +34,8 @@
 package org.armedbear.lisp;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 import static org.armedbear.lisp.Lisp.*;
 
 import java.util.Iterator;
@@ -85,6 +87,57 @@ public final class LispThread extends LispObject
         name = new SimpleString(javaThread.getName());
     }
 
+  public static boolean virtualThreadingAvailable() {
+    try {
+      Class clazz = Class.forName("java.lang.Thread");
+      Class[] parameters = { java.lang.Runnable.class };
+      Method method = clazz.getDeclaredMethod("startVirtualThread", parameters);
+      return true;
+    } catch (ClassNotFoundException e1) {
+      Debug.trace("Failed to get java.lang.Thread by name");
+    } catch (NoSuchMethodException e2) {
+      // This is the case in non-Loom JVMs
+    } catch (SecurityException e3) {
+      Debug.trace("SecurityException caught introspecting threading interface: " + e3.toString());
+    }
+    return false;
+  }
+
+  public static Symbol NATIVE_THREADS = internKeyword("NATIVE");
+  public static Symbol VIRTUAL_THREADS = internKeyword("VIRTUAL");
+
+  static {
+    if (virtualThreadingAvailable()) {
+      Symbol._THREADING_MODEL.initializeSpecial(VIRTUAL_THREADS);
+    } else { 
+      Symbol._THREADING_MODEL.initializeSpecial(NATIVE_THREADS);
+    }
+  }
+
+  static Method threadBuilder = null;
+  static Method builderName = null;
+  static Method builderDaemon = null;
+  static Method builderVirtual = null;
+  static Method builderTask = null;
+  static Method builderBuild = null;
+
+  static {
+    try {
+      Class clazz = Class.forName("java.lang.Thread");
+      threadBuilder = clazz.getDeclaredMethod("builder");
+      clazz = Class.forName("java.lang.Thread$Builder");
+      builderDaemon = clazz.getDeclaredMethod("daemon", boolean.class);
+      builderName = clazz.getDeclaredMethod("name", String.class);
+      builderVirtual = clazz.getDeclaredMethod("virtual");
+      builderTask = clazz.getDeclaredMethod("task", java.lang.Runnable.class);
+      builderBuild = clazz.getDeclaredMethod("build");
+    } catch (Exception e) {
+      if (virtualThreadingAvailable()) {
+	Debug.trace("Failed to introspect virtual threading methods: " + e);
+      }
+    }
+  }
+
     LispThread(final Function fun, LispObject name)
     {
         Runnable r = new Runnable() {
@@ -116,13 +169,43 @@ public final class LispThread extends LispObject
                 }
             }
         };
-        javaThread = new Thread(r);
-        this.name = name;
-        map.put(javaThread, this);
-        if (name != NIL)
-            javaThread.setName(name.getStringValue());
-        javaThread.setDaemon(true);
-        javaThread.start();
+	this.name = name;
+
+	Thread thread = null;
+	
+	if (Symbol._THREADING_MODEL.getSymbolValue().equals(NATIVE_THREADS)) {
+	  thread = new Thread(r);
+	  if (name != NIL) {
+            thread.setName(name.getStringValue());
+	  }
+	  thread.setDaemon(true);
+	} else {
+	  synchronized (threadBuilder) { // Thread.Builder isn't thread safe
+	    Object o = null;
+	    try {
+	      o = threadBuilder.invoke(null);
+	      if (name != NIL) {
+		o = builderName.invoke(o, name.getStringValue());
+	      }
+	      o = builderDaemon.invoke(o, true);
+	      o = builderVirtual.invoke(o);
+	      o = builderTask.invoke(o, r);
+	      thread = (java.lang.Thread)builderBuild.invoke(o);
+	    } catch (IllegalAccessException e1) {
+	      Debug.trace("Use of reflection to start virtual thread failed: " + e1.toString());
+	    } catch (InvocationTargetException e2) {
+	      Debug.trace("Failed to invoke method to start virtual thread: " + e2.toString());
+	    }
+	  }
+	}
+	if (thread == null) {
+	  Debug.trace("Failed to create java.lang.Thread");
+	  javaThread = null;
+	} else {
+	  javaThread = thread;
+	  map.put(javaThread, this);
+	  javaThread.start();
+	}
     }
 
     public StackTraceElement[] getJavaStackTrace() {
