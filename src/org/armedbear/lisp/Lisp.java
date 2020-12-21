@@ -39,6 +39,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -2485,6 +2486,13 @@ public final class Lisp
         featureList = featureList.push(internKeyword(osArch));
       }
     }
+
+    // Available Threading models
+
+    if (LispThread.virtualThreadingAvailable()) {
+      featureList = featureList.push(internKeyword("VIRTUAL-THREADS"));
+    }
+    
     Symbol.FEATURES.initializeSpecial(featureList);
   }
 

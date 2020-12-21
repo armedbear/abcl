@@ -3267,6 +3267,9 @@ public class Symbol extends LispObject implements java.io.Serializable
   // THREADS
   public static final Symbol THREAD =
     PACKAGE_THREADS.addExternalSymbol("THREAD");
+  public static final Symbol _THREADING_MODEL =
+    PACKAGE_THREADS.addExternalSymbol("*THREADING-MODEL*");
+    
 
   // JVM
   public static final Symbol _RESIGNAL_COMPILER_WARINGS_ =
