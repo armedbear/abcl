@@ -2429,9 +2429,9 @@ public final class Lisp
             platformVersion = javaVersion;
           }
       }
-      // We wish to declare an integer Java version, but
-      // specialized builds can prefix further information in the
-      // java.version property
+      // We wish to declare an integer Java version, but specialized
+      // builds can suffix further information upon the java.version
+      // property.
       try {
 	Integer.parseInt(javaVersion);
       } catch (NumberFormatException e) {
