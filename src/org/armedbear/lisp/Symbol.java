@@ -3237,6 +3237,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("READERS");
   public static final Symbol REQUIRED_ARGS =
     PACKAGE_SYS.addInternalSymbol("REQUIRED-ARGS");
+  public static final Symbol READ_RANDOM_STATE =
+    PACKAGE_SYS.addInternalSymbol("READ-RANDOM-STATE");
   // DEPRECATED: to be removed with abcl-1.7
   public static final Symbol _SOURCE =
     PACKAGE_SYS.addInternalSymbol("%SOURCE");

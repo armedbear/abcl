@@ -68,6 +68,29 @@ public final class RandomState extends LispObject
         }
     }
 
+    public RandomState(SimpleVector v)
+    {
+        int length = v.capacity;
+        byte[] bytes = new byte[length];
+        for (int i = 0; i < length; ++i) {
+            LispObject obj = v.data[i];
+            if (obj instanceof Fixnum) {
+                bytes[i] = (byte)((Fixnum)obj).value;
+            } else {
+                error(type_error(obj, Symbol.FIXNUM));
+            }
+        }
+        try {
+            ByteArrayInputStream byteIn = new ByteArrayInputStream(bytes);
+            ObjectInputStream in = new ObjectInputStream(byteIn);
+            random = (Random) in.readObject();
+            in.close();
+        }
+        catch (Throwable t) { // ANY exception gets converted to a lisp error
+            error(new LispError("Unable to read random state."));
+        }
+    }
+
     @Override
     public LispObject typeOf()
     {
@@ -93,7 +116,38 @@ public final class RandomState extends LispObject
     @Override
     public String printObject()
     {
-        return unreadableString("RANDOM-STATE");
+        LispThread thread = LispThread.currentThread();
+        StringBuilder sb = new StringBuilder();
+        if (Symbol.PRINT_READABLY.symbolValue(thread) != NIL) {
+            // we need the #. reader macro for now
+            if (Symbol.READ_EVAL.symbolValue(thread) == NIL) {
+                error(new PrintNotReadable(list(Keyword.OBJECT, this)));
+                // Not reached.
+                return null;
+            }
+            int base = Fixnum.getValue(Symbol.PRINT_BASE.symbolValue(thread));
+            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+            try {
+                sb.append("#.(SYSTEM::READ-RANDOM-STATE #(");
+                ObjectOutputStream out = new ObjectOutputStream(byteOut);
+                out.writeObject(random);
+                out.close();
+            }
+            catch (Throwable t) { // ANY exception gets converted to a lisp error
+                error(new LispError("Unable to copy random state."));
+            }
+            byte[] bytes = byteOut.toByteArray();
+            for (int i = 0; i < bytes.length; ++i) {
+                if (i != 0) {
+                    sb.append(" ");
+                }
+                sb.append(Integer.toString(bytes[i], base).toUpperCase());
+            }
+            sb.append("))");
+        } else {
+            return unreadableString("RANDOM-STATE");
+        }
+        return sb.toString();
     }
 
     public LispObject random(LispObject arg)
@@ -172,6 +226,19 @@ public final class RandomState extends LispObject
                 return new RandomState();
             if (arg instanceof RandomState)
                 return new RandomState((RandomState)arg);
+            return type_error(arg, Symbol.RANDOM_STATE);
+        }
+    };
+
+    private static final Primitive READ_RANDOM_STATE =
+        new Primitive(Symbol.READ_RANDOM_STATE, "state")
+    {
+        @Override
+        public LispObject execute(LispObject arg)
+
+        {
+            if (arg instanceof SimpleVector)
+                return new RandomState((SimpleVector)arg);
             return type_error(arg, Symbol.RANDOM_STATE);
         }
     };
