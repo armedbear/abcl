@@ -163,4 +163,7 @@ nil)
      result)
   t)
 
-        
+;;; https://abcl.org/trac/ticket/454
+(deftest bugs.tagbody.1
+    (functionp (compile nil '(lambda () (tagbody (catch 'c 100)))))
+  t)
