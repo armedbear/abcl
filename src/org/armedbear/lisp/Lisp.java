@@ -2499,7 +2499,7 @@ public final class Lisp
         featureList = featureList.push(Keyword.X86);
       } else {
         // just push the value of 'os.arch' as a keyword
-        featureList = featureList.push(internKeyword(osArch));
+        featureList = featureList.push(internKeyword(osArch.toUpperCase()));
       }
     }
 
