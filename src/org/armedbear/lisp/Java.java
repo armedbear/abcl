@@ -1393,7 +1393,9 @@ public final class Java
         } else if (className.startsWith("boolean")) {
           return Class.forName("[Z");
         } else {
-          return Class.forName(className); // Not going to work well
+          final String arrayTypeName
+            = "[L" + className.substring(0, className.length() - 2) + ";";
+          return Class.forName(arrayTypeName); 
         }
       }
     } catch (ClassNotFoundException e) {
