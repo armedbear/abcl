@@ -168,11 +168,16 @@ returns the pathname of the contrib if it can be found."
   section which annotates 'Implementation-Title' whose string value is
   ID."
   (declare (type pathname file))
-  (let* ((jar (java:jnew "java.util.jar.JarFile" (namestring file)))
-         (manifest (java:jcall "getManifest" jar))
-         (entries (java:jcall "toArray"
-                              (java:jcall "entrySet"
-                                          (java:jcall "getEntries" manifest)))))
+  (let* ((jar-file
+           (java:jcall "getFile" (first (pathname-device file))))
+         (jar
+           (java:jnew "java.util.jar.JarFile" jar-file))
+         (manifest
+           (java:jcall "getManifest" jar))
+         (entries
+           (java:jcall "toArray"
+                       (java:jcall "entrySet"
+                                   (java:jcall "getEntries" manifest)))))
     (dolist (entry 
               (loop :for entry :across entries
                  :collecting entry))
@@ -208,9 +213,9 @@ returns the pathname of the contrib if it can be found."
                 (find-name-for-implementation-title system-jar "org.abcl-contrib")))
           (when (and system-jar relative-pathname)
             (merge-pathnames (pathname (concatenate 'string
-                                                   relative-pathname "/"))
-                            (make-pathname
-                             :device (list system-jar))))))
+                                                    relative-pathname "/"))
+                             system-jar))))
+                                       
    (ignore-errors
      (find-contrib-jar))
    (ignore-errors
