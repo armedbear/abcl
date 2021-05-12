@@ -1,6 +1,10 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar cl-user::*before-osgi-starting-hooks* nil)
+  (export 'cl-user::*before-osgi-starting-hooks* 'cl-user))
 (defpackage :jss
   (:nicknames "java-simple-syntax" "java-syntax-sucks")
   (:use :common-lisp :extensions :java)
+  (:import-from "CL-USER" cl-user::*before-osgi-starting-hooks*)
   (:export 
    #:*inhibit-add-to-classpath*
    #:*added-to-classpath*
@@ -12,6 +16,14 @@
 
    #:invoke-add-imports
    #:find-java-class
+
+   #:add-bundle
+   #:find-bundle-class
+   #:ensure-osgi-initialized
+   #:*osgi-cache-location*
+   #:*osgi-configuration*
+   #:*osgi-clean-cache-on-start*
+   
    #:jcmn #:java-class-method-names
    #:japropos
    #:new 
