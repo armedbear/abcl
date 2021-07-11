@@ -1491,14 +1491,14 @@ reader in the definition of the \code{SHARPSIGN-DOUBLE-QUOTE}
 
 \section{ASDF}
 
-asdf-3.3.4 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
-but not initialized by default, as it relies on the \textsc{CLOS} subsystem
-which can take a bit of time to start \footnote{While this time is
-  ``merely'' on the order of seconds for contemporary 2011 machines,
-  for applications that need to initialize quickly, for example a web
-  server, this time might be unnecessarily long}.  The packaged \textsc{ASDF}
-may be loaded by the \textsc{ANSI} \code{REQUIRE} mechanism as
-follows:
+asdf-3.3.5.0.1 (see \cite{asdf}) is packaged as core component of
+\textsc{ABCL}, but not initialized by default, as it relies on the
+\textsc{CLOS} subsystem which can take a bit of time to
+start \footnote{While this time is ``merely'' on the order of seconds
+for contemporary 2011 machines, for applications that need to
+initialize quickly, for example a web server, this time might be
+unnecessarily long}.  The packaged \textsc{ASDF} may be loaded by the
+\textsc{ANSI} \code{REQUIRE} mechanism as follows:
 
 \begin{listing-lisp}
 CL-USER> (require :asdf)
