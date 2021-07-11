@@ -65,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @titlepage
 @title ASDF: Another System Definition Facility
-@subtitle Manual for Version 3.3.4
+@subtitle Manual for Version 3.3.5
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -82,7 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @node Top, Introduction, (dir), (dir)
 @top ASDF: Another System Definition Facility
 @ifnottex
-Manual for Version 3.3.4
+Manual for Version 3.3.5
 @end ifnottex
 
 
@@ -147,6 +147,7 @@ The Object model of ASDF
 * Components::
 * Dependencies::
 * Functions::
+* Parsing system definitions::
 
 Operations
 
@@ -159,7 +160,7 @@ Components
 * Pre-defined subclasses of component::
 * Creating new component types::
 
-properties
+Properties
 
 * Pre-defined subclasses of component::
 * Creating new component types::
@@ -1459,7 +1460,7 @@ Presumably, the 4th form looks like @code{(defparameter *foo-version* "5.6.7")}.
 # @pxref{Complex component names,Complex component names,Complex component names}
 @defrule{complex-component-name} @var{string} | @var{symbol}
 
-@defrule{system-option} :defsystem-depends-on @refrule{system-list}
+@defrule{system-option} :defsystem-depends-on @refrule{dependency-def}
                | :weakly-depends-on @refrule{system-list}
                | :class @var{class-name} # @pxref{System class names}
                | :build-pathname @refrule{pathname-specifier}
@@ -2261,6 +2262,7 @@ customize the behaviour of existing @emph{functions}.
 * Components::
 * Dependencies::
 * Functions::
+* Parsing system definitions::
 @end menu
 
 @node  Operations, Components, The object model of ASDF, The object model of ASDF
@@ -3179,7 +3181,7 @@ CL-USER> (asdf:component-pathname
 
 
 
-@subsubsection properties
+@subsubsection Properties
 
 This attribute is optional.
 
@@ -3352,7 +3354,7 @@ remain at the system level, and are not propagated along the hierarchy,
 but instead do something global on the system.
 
 
-@node Functions,  , Dependencies, The object model of ASDF
+@node Functions, Parsing system definitions, Dependencies, The object model of ASDF
 @comment  node-name,  next,  previous,  up
 @section Functions
 
@@ -3387,6 +3389,62 @@ If needs be, the @code{(:version ...)} syntax for specifying dependencies
 could be in the future extended to specify an exclusive upper bound for compatible versions
 as well as an inclusive lower bound.
 @end defun
+
+@node Parsing system definitions,  , Functions, The object model of ASDF
+@section Parsing system definitions
+@cindex Parsing system definitions
+@cindex Extending ASDF's defsystem parser
+
+Thanks to Eric Timmons, ASDF now provides hooks to extend how it parses
+@code{defsystem} forms.
+
+@strong{Warning!} These interfaces are experimental, and as such are not
+exported from the ASDF package yet. We plan to export them in ASDF
+3.4.0. If you use them before they are exported, please subscribe to
+@url{https://gitlab.common-lisp.net/asdf/asdf/-/issues/76} so you are
+made aware of any changes.
+
+@defun parse-component-form @var{parent} @var{options} &key @var{previous-serial-components}
+
+This is the core function for parsing a system definition. At the
+moment, we do not expect ASDF extenders to modify this function.
+
+When being called on a @code{component} of type @code{system} (i.e.,
+inside the @code{defsystem} macro), @var{parent} will be @code{NIL}.
+@end defun
+
+@deffn {Generic function} compute-component-children @var{component} @var{components} @var{serial-p}
+
+This generic function provides standard means for computing component
+children, but can be extended with additional methods by a programmer.
+
+Returns a list of children (of type @code{component}) for @var{component}.
+@var{components} is a list of the explicitly defined children descriptions.
+@var{serial-p} is non-@code{NIL} if each child in @var{components} should depend on the previous
+children.
+
+
+@end deffn
+
+@deffn {Generic function} class-for-type @var{parent} @var{type-designator}
+
+Return a @code{class} designator to be used to instantiate a component
+whose type is specified by @var{type-designator} in the context of
+@var{parent}, which should be either a @code{parent-component} -- or subclass
+thereof -- or @code{nil} (if the type designator is some class of system).
+
+This generic function provides a means for changing how ASDF translates
+type-designators (like @code{:file}) into CLOS classes.  It is intended
+for programmers to extend by adding new methods.
+
+@strong{Warning!} Adding new methods for @code{class-for-type} is
+typically @emph{not} necessary: much can already be done by using
+@code{:default-component-class} and defining (and explicitly calling
+for) new component types.
+
+@end deffn
+
+
 
 @node Controlling where ASDF searches for systems, Controlling where ASDF saves compiled files, The object model of ASDF, Top
 @comment  node-name,  next,  previous,  up
@@ -5265,8 +5323,8 @@ mailing list (@pxref{Mailing list}).
 @cindex gitlab
 @cindex launchpad
 ASDF bugs are tracked on common-lisp.net's gitlab:: @url{https://gitlab.common-lisp.net/asdf/asdf/issues}.
-Previously, we had done bug-tracking on @code{launchpad.net}, but we are
-now consolidating project management on @code{common-lisp.net}.
+Previously, we had done bug-tracking on @url{https://launchpad.net/asdf},
+but we are now consolidating project management on @code{common-lisp.net}.
 
 If you're unsure about whether something is a bug, or for general discussion,
 use the asdf-devel mailing list (@pxref{Mailing list}).
@@ -5424,7 +5482,9 @@ On the other hand, there are places where systems used to accept namestrings
 where you must now use an explicit pathname object:
 @code{(defsystem ... :pathname "LOGICAL-HOST:PATH;TO;SYSTEM;" ...)}
 must now be written with the @code{#p} syntax:
-@code{(defsystem ... :pathname #p"LOGICAL-HOST:PATH;TO;SYSTEM;" ...)}
+@code{(defsystem ... :pathname #p"LOGICAL-HOST:PATH;TO;SYSTEM;" ...)}.
+We recommend against using pathname objects in general and logical pathnames in particular.
+Your code will be much more portable using ASDF's pathname specifiers.
 
 @xref{Pathname specifiers}.
 
@@ -5494,7 +5554,7 @@ In ASDF 1, you had to use the awkward syntax
 to load a system,
 and similarly for @code{compile-op}, @code{test-op}.
 
-In ASDF 2, you can use shortcuts for the usual operations:
+In ASDF 2 and later, you can use shortcuts for the usual operations:
 @code{(asdf:load-system :foo)}, and
 similarly for @code{compile-system}, @code{test-system}.
 
@@ -5516,8 +5576,11 @@ with fundamental issues in the original model being fixed.
 Timestamps were not propagated at all, and now are.
 The internal model of how actions depend on each other
 is now both consistent and complete.
+As of ASDF 3.3, multiple phases of loading are well supported,
+wherein correctly interpreting `defsystem` statements in some `.asd` files
+itself depends on loading other systems, e.g. via `:defsystem-depends-on`.
 The @code{:version} and
-the @code{:force (system1 .. systemN)} feature have been fixed.
+the @code{:force (system1 .. systemN)} features have been fixed.
 
 @item
 Performance has been notably improved for large systems
@@ -5558,9 +5621,10 @@ People using or writing systems had to either make worst-case assumptions
 as to what features were available and worked,
 or take great pains to have the correct version of ASDF installed.
 
-With ASDF 2, we provide a new stable set of working features
+With ASDF 2 and later, we provide a new stable set of working features
 that everyone can rely on from now on.
-Use @code{#+asdf2} to detect presence of ASDF 2,
+Use @code{#+asdf2}, @code{#+asdf3}, @code{#+asdf3.1} or @code{#+asdf3.3}
+to detect presence of relevant versions of ASDF and their features, or
 @code{(asdf:version-satisfies (asdf:asdf-version) "2.345.67")}
 to check the availability of a version no earlier than required.
 
