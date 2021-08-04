@@ -433,6 +433,7 @@ public final class Java
         }
         try {
             Method m = null;
+            Class c = null;
             LispObject methodRef = args[0];
             List<Method> staticMethods = new ArrayList<Method>();
             String methodName = null;
@@ -446,7 +447,7 @@ public final class Java
                     error(new LispError(methodRef +  "is not a valid reference to a Method"));
                 }
             } else if (methodRef instanceof AbstractString) {
-                Class c = javaClass(args[1]);
+                c = javaClass(args[1]);
                 if (c != null) {
                     methodName = methodRef.getStringValue();
                     Method[] methods = c.getMethods();
@@ -465,8 +466,25 @@ public final class Java
                 m = findMethod(staticMethods.toArray(new Method[staticMethods.size()]),
                                methodName, args, 2);
             }
-            if (m == null)
-                error(new LispError("no such method"));
+            if (m == null) {
+              StringBuilder sb = new StringBuilder("No such static method: ");
+              String className = "<unknown>";
+              if (c != null) {
+                className = c.getName();
+              }
+              sb.append(className);
+              sb.append('.');
+              sb.append(methodName);
+              sb.append('(');
+              for (int i = 2; i < args.length; i++) {
+                LispObject argClass = Symbol.JCLASS_OF.execute(args[i]);
+                sb.append(argClass.princToString());
+                if (i < args.length - 1)
+                  sb.append(',');
+              }
+              sb.append(')');
+              error(new LispError(sb.toString()));
+            }
 
             Object[] methodArgs = new Object[args.length-2];
             Class[] argTypes = m.getParameterTypes();
@@ -484,10 +502,16 @@ public final class Java
             Object result = null;
             if (!m.isVarArgs()) {
               result = m.invoke(null, methodArgs);
-            } else {
+            } else if (argTypes.length == 1) {
               result = m.invoke(null, (Object)methodArgs);
+            } else {
+              Object[] objectArgs = new Object[methodArgs.length];
+              for (int i = 0; i < methodArgs.length; i++) {
+                objectArgs[i] = methodArgs[i];
+              }
+              result = m.invoke(null, objectArgs);
             }
-	    return JavaObject.getInstance(result, translate, m.getReturnType());
+            return JavaObject.getInstance(result, translate, m.getReturnType());
         }
         catch (ControlTransfer c) {
             throw c;
