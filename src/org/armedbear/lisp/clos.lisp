@@ -2178,8 +2178,9 @@ Initialized with the true value near the end of the file.")
 
 (declaim (ftype (function * method) ensure-method))
 (defun ensure-method (name &rest all-keys)
-  (let ((method-lambda-list (getf all-keys :lambda-list))
-        (gf (find-generic-function name nil)))
+  (let* ((method-lambda-list (getf all-keys :lambda-list))
+         (gf (find-generic-function name nil))
+         (gf-lambda-list (copy-tree method-lambda-list)))
     (when (or (eq gf *gf-initialize-instance*)
               (eq gf *gf-allocate-instance*)
               (eq gf *gf-shared-initialize*)
@@ -2189,14 +2190,22 @@ Initialized with the true value near the end of the file.")
       ;; its subclasses from the hash.
       (clrhash *make-instance-initargs-cache*)
       (clrhash *reinitialize-instance-initargs-cache*))
+
+    (let ((plist (analyze-lambda-list method-lambda-list)))
+      (when (getf plist :keywords)
+        ;; remove all keywords arguments for the generic function definition
+        (setf gf-lambda-list
+              (append (subseq gf-lambda-list 0 (position '&key gf-lambda-list))
+                      '(&key) (if (getf plist :auxiliary-args)
+                                  (subseq gf-lambda-list (position '&aux gf-lambda-list)))))))
     (if gf
 	(restart-case
 	    (check-method-lambda-list name method-lambda-list
 				      (generic-function-lambda-list gf))
 	  (unbind-and-try-again () :report (lambda(s) (format s "Undefine generic function #'~a and continue" name))
 	    (fmakunbound name)
-	    (setf gf (ensure-generic-function name :lambda-list method-lambda-list))))
-        (setf gf (ensure-generic-function name :lambda-list method-lambda-list)))
+	    (setf gf (ensure-generic-function name :lambda-list gf-lambda-list))))
+        (setf gf (ensure-generic-function name :lambda-list gf-lambda-list)))
     (let ((method
            (if (eq (generic-function-method-class gf) +the-standard-method-class+)
                (apply #'make-instance-standard-method gf all-keys)
@@ -2347,8 +2356,8 @@ Initialized with the true value near the end of the file.")
               (exact (null (intersection lambda-list
                                          '(&rest &optional &key
                                            &allow-other-keys))))
-              (no-aux (null (some 
-                             (lambda (method) 
+              (no-aux (null (some
+                             (lambda (method)
                                (find '&aux (std-slot-value method 'sys::lambda-list)))
                              methods))))
          (if (and exact
@@ -2483,7 +2492,7 @@ Initialized with the true value near the end of the file.")
         (if knownp (values t t) (values nil nil)))
     (let ((specializer (car specializers)))
       (if (typep specializer 'eql-specializer)
-          (if (eql (class-of (eql-specializer-object specializer)) 
+          (if (eql (class-of (eql-specializer-object specializer))
                    (car classes))
               (setf knownp nil)
               (return (values nil t)))
@@ -2750,7 +2759,7 @@ to ~S with argument list ~S."
          (walk-form (%car form))
          (walk-form (%cdr form)))))
 
-(defmacro flet-call-next-method (args next-emfun &body body) 
+(defmacro flet-call-next-method (args next-emfun &body body)
   `(flet ((call-next-method (&rest cnm-args)
             (if (null ,next-emfun)
                 (error "No next method for generic function.")
@@ -2788,7 +2797,7 @@ to ~S with argument list ~S."
                      (declare (ignorable ,(%car lambda-list)
                                          ,(%cadr lambda-list)))
                      ,@declarations
-                     (flet-call-next-method args next-emfun 
+                     (flet-call-next-method args next-emfun
                        ,@body))))
                (3
                 `(lambda (args next-emfun)
@@ -2799,13 +2808,13 @@ to ~S with argument list ~S."
                                          ,(%cadr lambda-list)
                                          ,(%caddr lambda-list)))
                      ,@declarations
-                     (flet-call-next-method args next-emfun 
+                     (flet-call-next-method args next-emfun
                        ,@body))))
                (t
                 `(lambda (args next-emfun)
                    (apply #'(lambda ,lambda-list
                               ,@declarations
-                              (flet-call-next-method args next-emfun 
+                              (flet-call-next-method args next-emfun
                                 ,@body))
                           args))))
              `(lambda (args next-emfun)
@@ -2847,7 +2856,7 @@ to ~S with argument list ~S."
                                      (function next-method-p)))
                  ,@body))
             nil))))))
-        
+
 
 (declaim (notinline make-method-lambda))
 (defun make-method-lambda (generic-function method lambda-expression env)
@@ -3038,7 +3047,7 @@ generic functions without providing sensible behaviour."
        ,@(loop for method-form in rest
 	       when (eq (car method-form) :method)
 		    collect
-		    (multiple-value-bind (function-name qualifiers lambda-list specializers documentation declarations body) 
+		    (multiple-value-bind (function-name qualifiers lambda-list specializers documentation declarations body)
 			(mop::parse-defmethod `(,function-name ,@(rest method-form)))
 		      `(sys::record-source-information-for-type ',function-name '(:method ,function-name ,qualifiers ,specializers))))
        (let ((gf (symbol-function ',temp-sym)))
@@ -3182,7 +3191,7 @@ instance and, for setters, `new-value' the new value."
                                       metaclass &allow-other-keys))
 
 (defmethod ensure-class-using-class :before (class name  &key direct-slots
-                                             direct-default-initargs 
+                                             direct-default-initargs
                                              &allow-other-keys)
   (check-duplicate-slots direct-slots)
   (check-duplicate-default-initargs direct-default-initargs))
@@ -3322,9 +3331,9 @@ instance and, for setters, `new-value' the new value."
 
 
 ;;; Slot access
-;;; 
+;;;
 ;;; See AMOP pg. 156ff. for an overview.
-;;; 
+;;;
 ;;; AMOP specifies these generic functions to dispatch on slot objects
 ;;; (with the exception of slot-exists-p-using-class), although its
 ;;; sample implementation Closette dispatches on slot names.  We let
@@ -4585,4 +4594,3 @@ or T when any keyword is acceptable due to presence of
   (require "MOP"))
 
 (provide "CLOS")
-
