@@ -66,6 +66,26 @@
 
 ;;; end <https://mailman.common-lisp.net/pipermail/armedbear-devel/2020-February/004037.html>
 
+
+;;; <https://github.com/armedbear/abcl/pull/379>
+(prove:plan 1)
+(prove:isnt
+ (handler-case 
+     (let* ((parameter
+              (jnew-array-from-list "java.lang.String" '("tmp" "passwd")))
+            (class
+              (jclass "java.nio.file.Path"))
+            ;;; N.b. Path.of() only exists starting from openjdk11.  How to test earlier?
+            (method
+              (jmethod "java.nio.file.Path" "of" "java.lang.String" (jclass-of parameter)))
+            (result
+              (jstatic method class "/chroot/" parameter)))
+       result)
+   (error (e)
+     (values :error)))
+ :error
+ "Invoking a method parameterized on String String[].")
+
 (prove:finalize)
 
  
