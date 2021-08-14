@@ -15,6 +15,7 @@
                              (:test-file "decode-float")
                              (:test-file "disassemble")
                              (:test-file "format-dollar")
+                             (:text-file "generic-method")
                              (:test-file "java-arrays")
                              (:test-file "java-call-sites")
                              (:test-file "jcoerce-numerics")
