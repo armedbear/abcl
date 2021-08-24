@@ -1807,7 +1807,7 @@ form suitable for testing with #+."
 (in-package :uiop/version)
 
 (with-upgradability ()
-  (defparameter *uiop-version* "3.3.5.0.1")
+  (defparameter *uiop-version* "3.3.5")
 
   (defun unparse-version (version-list)
     "From a parsed version (a list of natural numbers), compute the version string"
@@ -2836,8 +2836,6 @@ with those keys, removing TYPE DEFAULTS and DOT-DOT.
 When you're manipulating pathnames that are supposed to make sense portably
 even though the OS may not be Unixish, we recommend you use :WANT-RELATIVE T
 to throw an error if the pathname is absolute"
-    #+(or abcl mcl)
-    (declare (ignore defaults))
     (block nil
       (check-type type (or null string (eql :directory)))
       (when ensure-directory
@@ -2862,7 +2860,7 @@ to throw an error if the pathname is absolute"
                  (make-pathname
                   :directory (unless file-only (cons relative path))
                   :name name :type type
-                  :defaults (or #-(or abcl mcl) defaults *nil-pathname*))
+                  :defaults (or #-mcl defaults *nil-pathname*))
                  (remove-plist-keys '(:type :dot-dot :defaults) keys))))))
 
   (defun unix-namestring (pathname)
@@ -7810,7 +7808,7 @@ previously-loaded version of ASDF."
          ;; "3.4.5.67" would be a development version in the official branch, on top of 3.4.5.
          ;; "3.4.5.0.8" would be your eighth local modification of official release 3.4.5
          ;; "3.4.5.67.8" would be your eighth local modification of development version 3.4.5.67
-         (asdf-version "3.3.5.0.1")
+         (asdf-version "3.3.5")
          (existing-version (asdf-version)))
     (setf *asdf-version* asdf-version)
     (when (and existing-version (not (equal asdf-version existing-version)))
