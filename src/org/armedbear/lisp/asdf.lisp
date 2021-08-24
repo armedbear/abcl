@@ -2856,12 +2856,27 @@ to throw an error if the pathname is absolute"
                (values filename type))
               (t
                (split-name-type filename)))
-          (apply 'ensure-pathname
-                 (make-pathname
-                  :directory (unless file-only (cons relative path))
-                  :name name :type type
-                  :defaults (or #-mcl defaults *nil-pathname*))
-                 (remove-plist-keys '(:type :dot-dot :defaults) keys))))))
+          (let* ((directory
+                   (unless file-only (cons relative path)))
+                 (pathname
+                   #-abcl
+                   (make-pathname
+                    :directory directory 
+                    :name name :type type
+                    :defaults (or #-mcl defaults *nil-pathname*))
+                   #+abcl
+                   (if (and defaults
+                            (ext:pathname-jar-p defaults)
+                            (null directory))
+                       ;; When DEFAULTS is a jar, it will have the directory we want
+                       (make-pathname :name name :type type
+                                      :defaults (or defaults *nil-pathname*))
+                       (make-pathname :name name :type type
+                                      :defaults (or defaults *nil-pathname*)
+                                      :directory directory))))
+            (apply 'ensure-pathname
+                   pathname
+                   (remove-plist-keys '(:type :dot-dot :defaults) keys)))))))
 
   (defun unix-namestring (pathname)
     "Given a non-wild PATHNAME, return a Unix-style namestring for it.
@@ -8353,13 +8368,18 @@ typically but not necessarily representing the files in a subdirectory of the bu
     ;; We ought to be able to extract this from the component alone with FILE-TYPE.
     ;; TODO: track who uses it in Quicklisp, and have them not use it anymore;
     ;; maybe issue a WARNING (then eventually CERROR) if the two methods diverge?
-    (parse-unix-namestring
-     (or (and (slot-boundp component 'relative-pathname)
-              (slot-value component 'relative-pathname))
-         (component-name component))
-     :want-relative t
-     :type (source-file-type component (component-system component))
-     :defaults (component-parent-pathname component)))
+    (let ((parent
+            (component-parent-pathname component)))
+      (parse-unix-namestring
+       (or (and (slot-boundp component 'relative-pathname)
+                (slot-value component 'relative-pathname))
+           (component-name component))
+       :want-relative
+       #-abcl t
+       ;; JAR-PATHNAMES always have absolute directories
+       #+abcl (not (ext:pathname-jar-p parent))
+       :type (source-file-type component (component-system component))
+       :defaults parent)))
 
   (defmethod source-file-type ((component parent-component) (system parent-component))
     :directory)
