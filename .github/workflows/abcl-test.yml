@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        jdk: [openjdk8, openjdk11, openjdk15]
+        jdk: [openjdk8, openjdk11, openjdk16]
         
     steps:
       - name: Set path for build scripts
@@ -29,8 +29,8 @@ jobs:
       - name: Setup jenv
         run: bash -x ./ci/ensure-jenv-is-present.bash && ant abcl.diagnostic
         
-      - name: Install AdoptJDK
-        run: bash -x ./ci/install-adoptjdk.bash ${JDK_VERSION}
+      - name: Install OpenJDK
+        run: bash -x ./ci/install-openjdk.bash ${JDK_VERSION}
 
       - name: Set abcl.properties for build
         run: bash -x ./ci/create-abcl-properties.bash ${JDK_VERSION}
