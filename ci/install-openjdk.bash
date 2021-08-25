@@ -12,46 +12,52 @@ fi
 # lexically scoped in their modification.
 topdir=
 dist=
-function determine_adoptjdk() {
+function determine_openjdk() {
     case $(uname) in
         Darwin)
             case $jdk in
                 openjdk8)
-                    topdir=jdk8u265-b01
-                    dist="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u265-b01/OpenJDK8U-jdk_x64_mac_hotspot_8u265b01.tar.gz"
+                    topdir=jdk8u302-b08
+                    dist="https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_x64_mac_hotspot_8u302b08.tar.gz"
                     ;;
                 openjdk11)
-                    topdir=jdk-11.0.8+10
-                    dist="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.8%2B10/OpenJDK11U-jdk_x64_mac_hotspot_11.0.8_10.tar.gz"
+                    topdir=jdk-11.0.12+7
+                    dist="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.12%2B7/OpenJDK11U-jdk_x64_mac_hotspot_11.0.12_7.tar.gz"
                     ;;
-                openjdk14)
+                openjdk14)  # Need version from adoptium
                     topdir=jdk-14.0.2+12
                     dist="https://github.com/AdoptOpenJDK/openjdk14-binaries/releases/download/jdk-14.0.2%2B12/OpenJDK14U-jdk_x64_mac_hotspot_14.0.2_12.tar.gz"
                     ;;
-                openjdk15)
+                openjdk15) # Need version from adoptium
                     topdir=jdk-15+36
                     dist="https://github.com/AdoptOpenJDK/openjdk15-binaries/releases/download/jdk-15%2B36/OpenJDK15U-jdk_x64_mac_hotspot_15_36.tar.gz"
                     ;;
+                openjdk16)
+                    topdir=jdk-16.0.2+7
+                    dist="https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_mac_hotspot_16.0.2_7.tar.gz"
 esac
             ;;
         Linux)
             case $jdk in
                 openjdk8)
-                    topdir=jdk8u265-b01
-                    dist="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u265-b01/OpenJDK8U-jdk_x64_linux_hotspot_8u265b01.tar.gz"
+                    topdir=jdk8u302-b08
+                    dist="https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u302b08.tar.gz"
                     ;;
                 openjdk11)
                     topdir=jdk-11.0.8+10
                     dist="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.8%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.8_10.tar.gz"
                     ;;
-                openjdk14)
+                openjdk14) # Need version from adoptium
                     topdir=jdk-14.0.2+12
                     dist="https://github.com/AdoptOpenJDK/openjdk14-binaries/releases/download/jdk-14.0.2%2B12/OpenJDK14U-jdk_x64_linux_hotspot_14.0.2_12.tar.gz"
                     ;;
-                openjdk15)
+                openjdk15) # Need version from adoptium
                     topdir=jdk-15+36
                     dist="https://github.com/AdoptOpenJDK/openjdk15-binaries/releases/download/jdk-15%2B36/OpenJDK15U-jdk_x64_linux_hotspot_15_36.tar.gz"
                     ;;
+                openjdk16)
+                    topdir=jdk-16.0.2+7
+                    dist="https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_linux_hotspot_16.0.2_7.tar.gz"
 esac
             ;;
         *)
@@ -82,7 +88,7 @@ function add_jdk() {
     esac
 }
 
-determine_adoptjdk
+determine_openjdk
 download_and_extract
 add_jdk
 
