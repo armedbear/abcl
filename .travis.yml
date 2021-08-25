@@ -33,11 +33,11 @@ addons:
 env:
   - ABCL_JDK=openjdk8  ABCL_ROOT=${TRAVIS_BUILD_DIR}
   - ABCL_JDK=openjdk11 ABCL_ROOT=${TRAVIS_BUILD_DIR}
-  - ABCL_JDK=openjdk15 ABCL_ROOT=${TRAVIS_BUILD_DIR}
+  - ABCL_JDK=openjdk16 ABCL_ROOT=${TRAVIS_BUILD_DIR}
 
 install:
   - echo PWD=$(pwd) && echo ABCL_ROOT=${ABCL_ROOT}
-  - bash -x ${ABCL_ROOT}/ci/install-adoptjdk.bash ${ABCL_JDK}
+  - bash -x ${ABCL_ROOT}/ci/install-openjdk.bash ${ABCL_JDK}
 
   # Ensure we can invoke ant
   - . ${ABCL_ROOT}/ci/ensure-jenv-is-present.bash && ant abcl.diagnostic
