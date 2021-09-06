@@ -23,15 +23,6 @@ import org.armedbear.lisp.*;
 
 public class Main
 {
-    /**
-     * This example creates an Interpreter instance, loads our
-     * lisp code from a file and then looks up a function defined
-     * in the loaded lisp file and executes the function. 
-     *
-     * The function takes a single parameter and invokes a java method
-     * on the object provided. We provide our Main object as the parameter.
-     *
-     */
     public static int addTwoNumbers(int a, int b)
     {
 	return a + b;
