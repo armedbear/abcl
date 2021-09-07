@@ -18,6 +18,10 @@
             :pathname "" 
             :components ((:file "maven")
                          (:file "mvn-module"))
-            :depends-on (package)))
+    :depends-on (package))
+   (:module osgi
+            :pathname "" 
+            :components ((:file "asdf-osgi-bundle"))
+    :depends-on (base)))
   :in-order-to ((test-op (test-op abcl-asdf-tests))))
 
