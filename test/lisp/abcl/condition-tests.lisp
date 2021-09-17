@@ -66,6 +66,11 @@
                #+sbcl    'sb-kernel::object)
   nil)
 
+(deftest stream-error.1
+  (let ((c (make-instance 'stream-error :stream (make-string-input-stream "foo"))))
+    (values (read-line (stream-error-stream c))))
+  "foo")
+
 (deftest type-error.1
   (type-error-datum (make-instance 'type-error :datum 42))
   42)
@@ -308,3 +313,12 @@
                              :format-arguments (list "The bear" "armed"))))
       (write-to-string c :escape nil)))
   "The bear is armed.")
+
+#+(or abcl allegro)
+(deftest define-condition.11
+  (progn
+    (setf (find-class 'test-error) nil)
+    (define-condition test-error (stream-error) ())
+    (let ((c (make-condition 'test-error :stream (make-string-input-stream "foo"))))
+      (values (read-line (stream-error-stream c)))))
+  "foo")
