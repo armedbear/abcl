@@ -107,4 +107,20 @@ public class CellError extends LispError
         sb.append(getCellName().princToString());
         return unreadableString(sb.toString());
     }
+
+    // ### cell-error-name
+    private static final Primitive CELL_ERROR_NAME =
+        new Primitive("cell-error-name", "condition")
+    {
+        @Override
+        public LispObject execute(LispObject arg)
+        {
+            if (arg.typep(Symbol.CELL_ERROR) == NIL) {
+                return type_error(arg, Symbol.CELL_ERROR);
+            }
+
+            final StandardObject obj = (StandardObject) arg;
+            return obj.getInstanceSlotValue(Symbol.NAME);
+        }
+    };
 }

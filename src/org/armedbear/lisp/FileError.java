@@ -112,4 +112,20 @@ public final class FileError extends LispError
             return T;
         return super.typep(type);
     }
+
+    // ### file-error-pathname
+    private static final Primitive FILE_ERROR_PATHNAME =
+        new Primitive("file-error-pathname", "condition")
+    {
+        @Override
+        public LispObject execute(LispObject arg)
+        {
+            if (arg.typep(Symbol.FILE_ERROR) == NIL) {
+                return type_error(arg, Symbol.FILE_ERROR);
+            }
+
+            final StandardObject obj = (StandardObject) arg;
+            return obj.getInstanceSlotValue(Symbol.PATHNAME);
+        }
+    };
 }

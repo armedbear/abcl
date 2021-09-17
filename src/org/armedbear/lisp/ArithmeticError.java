@@ -129,14 +129,15 @@ public class ArithmeticError extends LispError
         @Override
         public LispObject execute(LispObject arg)
         {
-            if (arg instanceof ArithmeticError) {
-                return ((ArithmeticError)arg).getOperation();
-            }
-            else {
+            if (arg.typep(Symbol.ARITHMETIC_ERROR) == NIL) {
                 return type_error(arg, Symbol.ARITHMETIC_ERROR);
             }
+
+            final StandardObject obj = (StandardObject) arg;
+            return obj.getInstanceSlotValue(Symbol.OPERATION);
         }
     };
+
     // ### arithmetic-error-operands
     private static final Primitive ARITHMETIC_ERROR_OPERANDS =
         new Primitive("arithmetic-error-operands", "condition")
@@ -144,12 +145,12 @@ public class ArithmeticError extends LispError
         @Override
         public LispObject execute(LispObject arg)
         {
-            if (arg instanceof ArithmeticError) {
-                return ((ArithmeticError)arg).getOperands();
-            }
-            else {
+            if (arg.typep(Symbol.ARITHMETIC_ERROR) == NIL) {
                 return type_error(arg, Symbol.ARITHMETIC_ERROR);
             }
+
+            final StandardObject obj = (StandardObject) arg;
+            return obj.getInstanceSlotValue(Symbol.OPERANDS);
         }
     };
 }
