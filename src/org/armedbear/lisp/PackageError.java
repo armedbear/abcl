@@ -125,4 +125,20 @@ public final class PackageError extends LispError
     {
         setInstanceSlotValue(Symbol.PACKAGE, pkg);
     }
+
+    // ### package-error-package
+    private static final Primitive PACKAGE_ERROR_PACKAGE =
+        new Primitive("package-error-package", "condition")
+    {
+        @Override
+        public LispObject execute(LispObject arg)
+        {
+            if (arg.typep(Symbol.PACKAGE_ERROR) == NIL) {
+                return type_error(arg, Symbol.PACKAGE_ERROR);
+            }
+
+            final StandardObject obj = (StandardObject) arg;
+            return obj.getInstanceSlotValue(Symbol.PACKAGE);
+        }
+    };
 }

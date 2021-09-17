@@ -279,7 +279,7 @@ public class Autoload extends Function
                args="symbol-or-symbols &optional filename",
                doc="Setup the autoload for SYMBOL-OR-SYMBOLS optionally corresponding to FILENAME.")
     private static final class pf_autoload extends Primitive {
-        pf_autoload() {    
+        pf_autoload() {
             super("autoload", PACKAGE_EXT, true);
         }
         @Override
@@ -321,7 +321,7 @@ public class Autoload extends Function
     };
 
     public static final Primitive RESOLVE = new pf_resolve();
-    @DocString(name="resolve", 
+    @DocString(name="resolve",
                args="symbol",
                doc="Resolve the function named by SYMBOL via the autoloader mechanism.\n"
                + "Returns either the function or NIL if no resolution was possible.")
@@ -343,14 +343,14 @@ public class Autoload extends Function
     }
 
     public static final Primitive AUTOLOADP = new pf_autoloadp();
-    @DocString(name="autoloadp", 
+    @DocString(name="autoloadp",
                args="symbol",
                doc="Boolean predicate for whether SYMBOL stands for a function that currently needs to be autoloaded.")
     private static final class pf_autoloadp extends Primitive {
         pf_autoloadp() {
             super("autoloadp", PACKAGE_EXT, true, "symbol");
         }
-                   
+
         @Override
         public LispObject execute(LispObject arg)
         {
@@ -374,7 +374,6 @@ public class Autoload extends Function
         autoload("atanh", "MathFunctions");
         autoload("broadcast-stream-streams", "BroadcastStream");
         autoload("ceiling", "ceiling");
-        autoload("cell-error-name", "cell_error_name");
         autoload("char", "StringFunctions");
         autoload("char-equal", "CharacterFunctions");
         autoload("char-greaterp", "CharacterFunctions");
@@ -397,7 +396,6 @@ public class Autoload extends Function
         autoload("exp", "MathFunctions");
         autoload("expt", "MathFunctions");
         autoload("file-author", "file_author");
-        autoload("file-error-pathname", "file_error_pathname");
         autoload("file-length", "file_length");
         autoload("file-string-length", "file_string_length");
         autoload("file-write-date", "file_write_date");
@@ -464,8 +462,6 @@ public class Autoload extends Function
         autoload("mod", "mod");
         autoload("open-stream-p", "open_stream_p");
         autoload("output-stream-p", "output_stream_p");
-        autoload("package-error-package", "package_error_package");
-        autoload("package-error-package", "package_error_package");
         autoload("package-name", "PackageFunctions");
         autoload("package-nicknames", "PackageFunctions");
         autoload("package-shadowing-symbols", "PackageFunctions");
@@ -670,7 +666,7 @@ public class Autoload extends Function
 	autoload(PACKAGE_SYS, "make-memory-class-loader", "MemoryClassLoader", false);
 	autoload(PACKAGE_SYS, "put-memory-function", "MemoryClassLoader", false);
 	autoload(PACKAGE_SYS, "get-memory-function", "MemoryClassLoader", false);
-        
+
         autoload(Symbol.SET_CHAR, "StringFunctions");
         autoload(Symbol.SET_SCHAR, "StringFunctions");
 
