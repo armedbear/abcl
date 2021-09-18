@@ -161,12 +161,11 @@ public class StreamError extends LispError
         @Override
         public LispObject execute(LispObject arg)
         {
-            final StandardObject obj;
-            if (arg instanceof StandardObject) {
-                obj = (StandardObject) arg;
-            } else {
-                return type_error(arg, Symbol.STANDARD_OBJECT);
+            if (arg.typep(Symbol.STREAM_ERROR) == NIL) {
+                return type_error(arg, Symbol.STREAM_ERROR);
             }
+
+            StandardObject obj = (StandardObject) arg;
             return obj.getInstanceSlotValue(Symbol.STREAM);
         }
     };

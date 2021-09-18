@@ -191,13 +191,11 @@ public class TypeError extends LispError
         @Override
         public LispObject execute(LispObject arg)
         {
-            final StandardObject obj;
-            if (arg instanceof StandardObject) {
-                obj = (StandardObject) arg;
+            if (arg.typep(Symbol.TYPE_ERROR) == NIL) {
+                return type_error(arg, Symbol.TYPE_ERROR);
             }
-            else {
-                return type_error(arg, Symbol.STANDARD_OBJECT);
-            }
+
+            StandardObject obj = (StandardObject) arg;
             return obj.getInstanceSlotValue(Symbol.DATUM);
         }
     };
