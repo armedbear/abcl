@@ -125,7 +125,7 @@ ABCL may be built from its source code by executing the build
 instructions <file:build.xml> expressed by the venerable Apache Ant
 tool.
 
-To build, one must have a Java 6, 7, 8, 11, 13, 14 or 15 Java
+To build, one must have a Java 6, 7, 8, 11, 13, 14, 15, 16 or 17 Java
 Development Kit (openjdk) installed locally. Just the Java Runtime
 Environment (JRE) isn't enough, as you need the Java compiler
 ('javac') to compile the Java source of the ABCL implementation.
@@ -159,7 +159,8 @@ or from the shell as
     bash ci/create-abcl-properties.bash openjdk11
 
 Currently supported platforms are 'openjdk6', 'openjdk7', 'openjdk8',
-'openjdk11', 'openjdk13', 'openjdk14', and 'openjdk15'.
+'openjdk11', 'openjdk13', 'openjdk14', 'openjdk15', 'openjd16', and
+'openjdk17'.
 
 
 Using NetBeans

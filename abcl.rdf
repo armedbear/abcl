@@ -205,6 +205,7 @@ abcl:jss
     openjdk:14 "-XX:CompileThreshold=10" ;
     openjdk:15 "-XX:CompileThreshold=10" ;
     openjdk:16 "-XX:CompileThreshold=10" ;
+    openjdk:17 "-XX:CompileThreshold=10" ;
     rdfs:comment "Java platform runtime options" .
 
 [abcl:build _:options]
@@ -227,6 +228,7 @@ abcl:jss
    rdf:_14  openjdk:14 ;
    rdf:_15  openjdk:15 ;
    rdf:_16  openjdk:16 ;
+   rdf:_17  openjdk:17 ;
    rdfs:comment "Supported build platforms" .
 
 

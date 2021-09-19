@@ -62,6 +62,11 @@ case $jdk in
 	ant_build_javac_target=16
 	ant_build_javac_source=1.8
         ;;
+    17|openjdk17)
+        options="-XX:CompileThreshold=10 ${zgc}"
+	ant_build_javac_target=17
+	ant_build_javac_source=1.8
+        ;;
 esac
 
 cat ${root}/abcl.properties.in \

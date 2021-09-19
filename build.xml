@@ -1324,6 +1324,14 @@ JVM System Properties
       </exec>
     </target>
 
+    <target name="abcl.properties.autoconfigure.openjdk.17">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        <arg value="openjdk17"/>
+      </exec>
+    </target>
+    
     <import file="etc/ant/netbeans-build.xml"
             optional="true"/> 
     <import file="etc/ant/build-snapshot.xml"
