@@ -537,7 +537,7 @@ public final class LispThread extends LispObject
                 thread.specials[index] = null;
             }
 
-            freeSpecialIndices.add(new Integer(index));
+            freeSpecialIndices.add(Integer.valueOf(index));
         }
     }
 
