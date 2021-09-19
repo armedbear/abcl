@@ -84,7 +84,7 @@ public final class JProxy
       String methodName = method.getName();
 
       if (methodName.equals("hashCode"))
-          return new Integer(System.identityHashCode(proxy));
+          return Integer.valueOf(System.identityHashCode(proxy));
       if (methodName.equals("equals"))
         return (proxy == args[0] ? Boolean.TRUE : Boolean.FALSE);
       if (methodName.equals("toString"))
