@@ -128,19 +128,6 @@
 	 (hours (+ hour (* days 24))))
     (cond (time-zone
            (+ second (* (+ minute (* (+ hours time-zone) 60)) 60)))
-          ((> year 2037)
-           (labels ((leap-year-p (year)
-                      (cond ((zerop (mod year 400)) t)
-                            ((zerop (mod year 100)) nil)
-                            ((zerop (mod year 4)) t)
-                            (t nil))))
-             (let* ((fake-year (if (leap-year-p year) 2036 2037))
-                    (fake-time (encode-universal-time second minute hour
-                                                      date month fake-year)))
-               (+ fake-time
-                 (* 86400 (+ (* 365 (- year fake-year))
-                             (- (leap-years-before year)
-                                (leap-years-before fake-year))))))))
           (t
            (let* ((tz-guess (ext:get-time-zone (* hours 3600)))
 		  (guess (+ second (* 60 (+ minute (* 60 (+ hours tz-guess))))))
