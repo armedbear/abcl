@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        jdk: [openjdk8, openjdk11, openjdk16]
+        jdk: [openjdk8, openjdk11, openjdk17]
         
     steps:
       - name: Set path for build scripts

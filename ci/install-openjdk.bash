@@ -35,7 +35,12 @@ function determine_openjdk() {
                 openjdk16)
                     topdir=jdk-16.0.2+7
                     dist="https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_mac_hotspot_16.0.2_7.tar.gz"
-esac
+                    ;;
+                openjdk17)
+                    topdir="jdk-17+35"
+                    dist="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17%2B35/OpenJDK17-jdk_x64_mac_hotspot_17_35.tar.gz"
+                    ;;
+            esac
             ;;
         Linux)
             case $jdk in
@@ -58,6 +63,11 @@ esac
                 openjdk16)
                     topdir=jdk-16.0.2+7
                     dist="https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_linux_hotspot_16.0.2_7.tar.gz"
+                    ;;
+                openjdk17)
+                    topdir="jdk-17+35"
+                    dist="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17%2B35/OpenJDK17-jdk_x64_linux_hotspot_17_35.tar.gz"
+                    ;;
 esac
             ;;
         *)
