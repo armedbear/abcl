@@ -304,6 +304,7 @@ want to avoid the overhead of the dynamic dispatch."
                                     (ambiguous matches))))
                           (ambiguous matches))))))))))
 
+#+(or)
 (defun get-all-jar-classnames (jar-file-name)
   (let* ((jar (jnew (jconstructor "java.util.jar.JarFile" (jclass "java.lang.String")) (namestring (truename jar-file-name))))
          (entries (#"entries" jar)))
@@ -322,7 +323,35 @@ want to avoid the overhead of the dynamic dispatch."
                   (matcher (matcher name-pattern fullname))
                   (name (progn (matches matcher) (group matcher 1))))
              (cons name fullname))
-           ))))
+            ))))
+#| 
+ Under openjdk11 this is around 10x slower than
+
+(list (time (jss::get-all-jar-classnames "/Users/evenson/work/abcl-jdk11/dist/abcl.jar"))
+      (time (jss::%get-all-jar-classnames "/Users/evenson/work/abcl-jdk11/dist/abcl.jar")))
+
+0.034 seconds real time
+2268 cons cells
+0.12 seconds real time
+209164 cons cells
+|#
+(defun get-all-jar-classnames (jar-pathname-or-string)
+  (let* ((jar
+           (if (ext:pathname-jar-p jar-pathname-or-string)
+               jar-pathname-or-string
+               ;; better be a string
+               (ext:as-jar-pathname-archive jar-pathname-or-string)))
+         (entries
+           (directory (merge-pathnames "**/*" jar))))
+    (loop :for entry :in entries
+          :for name = (pathname-name entry)
+          :for type = (pathname-type entry)
+          :when (equal type "class")
+            :collect 
+            (cons
+             name
+             ;;; Fully qualified classname be like 'org.armedbear.lisp.ArgumentListProcessor$ArgumentMatcher'
+             (format nil "~{~a.~}~a" (rest (pathname-directory entry)) name)))))
 
 (defun jar-import (file)
   "Import all the Java classes contained in the pathname FILE into the JSS dynamic lookup cache."

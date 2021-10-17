@@ -2,7 +2,7 @@
 (defsystem jss
   :author "Alan Ruttenberg, Mark Evenson"
   :long-description "<urn:abcl.org/release/1.8.0/contrib/jss#>"
-  :version "3.6.0" 
+  :version "3.7.0" 
   :components ((:module base 
                         :pathname "" :serial t 
                         :components ((:file "packages")
