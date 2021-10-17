@@ -59,14 +59,8 @@ jobs:
       - name: Test ABCL-PROVE
         run: ./abcl --batch --load ./ci/test-abcl-prove.lisp
 
-      - name: Test STATIC-VECTORS
-        run: ./abcl --batch --load ./ci/test-static-vectors.lisp
-
-      - name: Test CFFI
-        run: ./abcl --batch --load ./ci/test-cffi.lisp
-
-      - name: Test CL+SSL
-        run: ./abcl --batch --load ./ci/test-cl+ssl.lisp
+      - name: Test ABCL
+        run: ./abcl --batch --load ./ci/test-abcl.lisp
 
       - name: Test ABCL-INTROSPECT
         run: ./abcl --batch --load ./ci/test-abcl-introspect.lisp
@@ -74,8 +68,11 @@ jobs:
       - name: Test Jeannie
         run: ./abcl --batch --load ./ci/test-jeannie.lisp
 
-      - name: Test ABCL
-        run: ./abcl --batch --load ./ci/test-abcl.lisp
+      - name: Test CFFI
+        run: ./abcl --batch --load ./ci/test-cffi.lisp
+
+      - name: Test STATIC-VECTORS
+        run: ./abcl --batch --load ./ci/test-static-vectors.lisp
 
       - name: Test IRONCLAD
         run: ./abcl --batch --load ./ci/test-ironclad.lisp
@@ -83,7 +80,8 @@ jobs:
       - name: Run ANSI-TEST suite
         run: ./abcl --batch --load ./ci/test-ansi.lisp
 
-
+      - name: Test CL+SSL
+        run: ./abcl --batch --load ./ci/test-cl+ssl.lisp
           
 
             
