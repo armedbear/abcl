@@ -9,6 +9,9 @@
 (defparameter *maven-install-root* nil)
   
 (defun mvn/install ()
+  "Unless (XDG/MVN-EXECUTABLE) install a version of Maven in the XDG hierarchy
+
+Returns the local path of the resulting mvn executable."
   (unless (xdg/mvn-executable)
     (xdg/install (maven-zip-uri) :type :unzip))
   (values
@@ -24,22 +27,27 @@
              (declare (ignore condition))
              (format stream "Unable to introspect local Apache Maven installation."))))
 
-(defun ensure-maven (&key (mvn-home *mvn-home* mvn-home-p))
-    (cond
-      ((and (null mvn-home) mvn-home-p)
-       (warn "Unimplemented explicit auto-configuration run."))
-      ((and mvn-home mvn-home-p)
-       (warn "Unimplemented explicit configuration with specified directory directory."))
-      (t 
-       (if *mvn-home*
-           *mvn-home*
-           (restart-case
-               (let ((mvn-home (some-directory-containing "mvn")))
-                 (unless mvn-home
-                   (signal 'no-installed-maven))
-                 (setf *mvn-home* mvn-home))
-             (install-maven ()
-               (mvn/install)))))))
+(defun ensure-maven (&key (mvn-home *mvn-home* mvn-home-p)
+			  (use-xdg-mvn nil use-xdg-mvn-p))
+  "Ensure that the implementation can find and execute the Maven build tool
+
+If MVN-HOME is specified, attempt to configure use of that directory."
+  (declare (ignore use-xdg-mvn use-xdg-mvn-p))
+  (cond
+    ((and (null mvn-home) mvn-home-p)
+     (warn "Unimplemented explicit auto-configuration run."))
+    ((and mvn-home mvn-home-p)
+     (warn "Unimplemented explicit configuration with specified directory directory."))
+    (t 
+     (if *mvn-home*
+         *mvn-home*
+         (restart-case
+             (let ((mvn-home (some-directory-containing "mvn")))
+               (unless mvn-home
+                 (signal 'no-installed-maven))
+               (setf *mvn-home* mvn-home))
+           (install-maven ()
+             (mvn/install)))))))
 
 (defmacro with-ensured-mvn ((maven) &body body)
   `(progn
