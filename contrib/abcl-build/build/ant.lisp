@@ -2,13 +2,10 @@
 
 ;; TODO function to deal with looking up a locally preferred mirrors
 (defun ant-zip-uri ()
-  #p"http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.zip"
+  #p"https://archive.apache.org/dist/ant/binaries/apache-ant-1.9.16-bin.zip"
   
-  #+(or) ;; https on OPEN fails; probably attempting to upgrade
-  #p"https://archive.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.zip"
-
   #+(or) ;; need apache-ant-1.9 for JVM version 49.0 
-  #p"http://www-eu.apache.org/dist/ant/binaries/apache-ant-1.10.1-bin.zip")
+  #p"https://www-eu.apache.org/dist/ant/binaries/apache-ant-1.10.12-bin.zip")
 
 (defun xdg/ant-executable ()
   (xdg/executable (ant-zip-uri) "bin/ant"))
@@ -47,7 +44,9 @@
 (define-condition no-installed-ant (error)
   ((searched))
   (:report (lambda (condition stream)
+	     (declare (ignore condition))
              (format stream "Unable to introspect Apache Ant installation."))))
+
 
 ;; TODO after this routines executes *ANT-EXECUTABLE-DIRECTORY* and XDG/ANT-EXECUTABLE will work
 (defun ensure-ant (&key (ant-home nil ant-home-p))
