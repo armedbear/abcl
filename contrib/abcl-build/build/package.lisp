@@ -38,6 +38,7 @@
    #:ant/call
 
    #:with-ensured-maven
+   #:ensure-maven
    #:mvn/install
    #:mvn/call
 
