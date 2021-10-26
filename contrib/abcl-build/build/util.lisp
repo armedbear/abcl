@@ -94,5 +94,31 @@
         (when p
           (return-from some-directory-containing p))))))
 
+(defun copy-directory-recursively (from to)
+  (flet ((normalize-to-directory (p)
+           (when (or (not (pathnamep p))
+                     (not (and (null (pathname-name p))
+                               (null (pathname-type p)))))
+             (setf p (make-pathname :defaults p
+                                    :name nil :type nil)))
+           p))
+    (normalize-to-directory from)
+    (normalize-to-directory to)
+    (let ((wildcard (merge-pathnames "**/*" from)))
+      (loop :for source :in (directory wildcard)
+            :for relative = (enough-namestring source from)
+            :for destination = (merge-pathnames relative to)
+            :doing
+               (progn 
+                 (ensure-directories-exist destination)
+                 (when (or (pathname-name destination)
+                           (pathname-type destination))
+                   (uiop:copy-file source destination)))))))
+
+
+                                                
+
+                                                
+    
         
        

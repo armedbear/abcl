@@ -21,6 +21,7 @@
    #:stringify
    #:listify
    #:some-directory
+   #:copy-directory-recursively
 
    ;;; lower-level
    #:xdg/abcl-install-root
