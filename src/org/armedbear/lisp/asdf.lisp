@@ -1,5 +1,5 @@
 ;;; -*- mode: Lisp; Base: 10 ; Syntax: ANSI-Common-Lisp ; Package: CL-USER ; buffer-read-only: t; -*-
-;;; This is ASDF 3.3.5.0.3: Another System Definition Facility.
+;;; This is ASDF 3.3.5.3: Another System Definition Facility.
 ;;;
 ;;; Feedback, bug reports, and patches are all welcome:
 ;;; please mail to <asdf-devel@common-lisp.net>.
@@ -867,7 +867,8 @@ or when loading the package is optional."
                          :import-from ',import-from :export ',export :intern ',intern
                          :recycle ',(if recycle-p recycle (cons package nicknames))
                          :mix ',mix :reexport ',reexport :unintern ',unintern
-                         :local-nicknames ',local-nicknames)))))
+                         ,@(when local-nicknames
+                             `(:local-nicknames ',local-nicknames)))))))
 
 (defmacro define-package (package &rest clauses)
   "DEFINE-PACKAGE takes a PACKAGE and a number of CLAUSES, of the form
@@ -1798,7 +1799,7 @@ form suitable for testing with #+."
   (:use :uiop/common-lisp :uiop/package :uiop/utility)
   (:export
    #:*uiop-version*
-   #:parse-version #:unparse-version #:version< #:version<= ;; version support, moved from uiop/utility
+   #:parse-version #:unparse-version #:version< #:version<= #:version= ;; version support, moved from uiop/utility
    #:next-version
    #:deprecated-function-condition #:deprecated-function-name ;; deprecation control
    #:deprecated-function-style-warning #:deprecated-function-warning
@@ -1807,7 +1808,7 @@ form suitable for testing with #+."
 (in-package :uiop/version)
 
 (with-upgradability ()
-  (defparameter *uiop-version* "3.3.5.0.3")
+  (defparameter *uiop-version* "3.3.5.3")
 
   (defun unparse-version (version-list)
     "From a parsed version (a list of natural numbers), compute the version string"
@@ -1857,6 +1858,12 @@ and return it as a string."
   (defun version<= (version1 version2)
     "Given two version strings, return T if the second is newer or the same"
     (not (version< version2 version1))))
+
+  (defun version= (version1 version2)
+    "Given two version strings, return T if the first is newer or the same and
+the second is also newer or the same."
+    (and (version<= version1 version2)
+         (version<= version2 version1)))
 
 
 (with-upgradability ()
@@ -2856,27 +2863,27 @@ to throw an error if the pathname is absolute"
                (values filename type))
               (t
                (split-name-type filename)))
-          (let* ((directory
-                   (unless file-only (cons relative path)))
-                 (pathname
-                   #-abcl
-                   (make-pathname
-                    :directory directory 
-                    :name name :type type
-                    :defaults (or #-mcl defaults *nil-pathname*))
-                   #+abcl
-                   (if (and defaults
-                            (ext:pathname-jar-p defaults)
-                            (null directory))
-                       ;; When DEFAULTS is a jar, it will have the directory we want
-                       (make-pathname :name name :type type
-                                      :defaults (or defaults *nil-pathname*))
-                       (make-pathname :name name :type type
-                                      :defaults (or defaults *nil-pathname*)
-                                      :directory directory))))
-            (apply 'ensure-pathname
-                   pathname
-                   (remove-plist-keys '(:type :dot-dot :defaults) keys)))))))
+            (let* ((directory
+                    (unless file-only (cons relative path)))
+                   (pathname
+                    #-abcl
+                    (make-pathname
+                     :directory directory
+                     :name name :type type
+                     :defaults (or #-mcl defaults *nil-pathname*))
+                    #+abcl
+                    (if (and defaults
+                             (ext:pathname-jar-p defaults)
+                             (null directory))
+                        ;; When DEFAULTS is a jar, it will have the directory we want
+                        (make-pathname :name name :type type
+                                       :defaults (or defaults *nil-pathname*))
+                        (make-pathname :name name :type type
+                                       :defaults (or defaults *nil-pathname*)
+                                       :directory directory))))
+              (apply 'ensure-pathname
+                     pathname
+                     (remove-plist-keys '(:type :dot-dot :defaults) keys)))))))
 
   (defun unix-namestring (pathname)
     "Given a non-wild PATHNAME, return a Unix-style namestring for it.
@@ -7823,7 +7830,7 @@ previously-loaded version of ASDF."
          ;; "3.4.5.67" would be a development version in the official branch, on top of 3.4.5.
          ;; "3.4.5.0.8" would be your eighth local modification of official release 3.4.5
          ;; "3.4.5.67.8" would be your eighth local modification of development version 3.4.5.67
-         (asdf-version "3.3.5.0.3")
+         (asdf-version "3.3.5.3")
          (existing-version (asdf-version)))
     (setf *asdf-version* asdf-version)
     (when (and existing-version (not (equal asdf-version existing-version)))
@@ -8368,7 +8375,8 @@ typically but not necessarily representing the files in a subdirectory of the bu
     ;; We ought to be able to extract this from the component alone with FILE-TYPE.
     ;; TODO: track who uses it in Quicklisp, and have them not use it anymore;
     ;; maybe issue a WARNING (then eventually CERROR) if the two methods diverge?
-    (let ((parent
+    (let (#+abcl
+          (parent
             (component-parent-pathname component)))
       (parse-unix-namestring
        (or (and (slot-boundp component 'relative-pathname)
@@ -8379,7 +8387,7 @@ typically but not necessarily representing the files in a subdirectory of the bu
        ;; JAR-PATHNAMES always have absolute directories
        #+abcl (not (ext:pathname-jar-p parent))
        :type (source-file-type component (component-system component))
-       :defaults parent)))
+       :defaults (component-parent-pathname component))))
 
   (defmethod source-file-type ((component parent-component) (system parent-component))
     :directory)
