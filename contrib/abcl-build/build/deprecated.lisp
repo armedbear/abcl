@@ -147,7 +147,7 @@ is infact a child of it while being rooted at the same root as `parent'."
            (uiop:run-program command-line
                                    :directory *abcl-dir*
                                    :output :string))
-           cmdline))
+           command-line))
 
 (defun do-compile-classes (force batch)
   (let* ((source-files
