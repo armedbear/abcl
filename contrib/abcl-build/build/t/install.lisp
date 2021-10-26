@@ -1,6 +1,6 @@
 (in-package :cl-user)
 
-(let ((uri #p"https://downloads.apache.org/ant/binaries/apache-ant-1.10.9-bin.zip"))
+(let ((uri #p"https://downloads.apache.org/ant/binaries/apache-ant-1.10.12-bin.zip"))
   (prove:plan 1)
   (prove:ok 
    (abcl/build:xdg/abcl-install-root uri)
