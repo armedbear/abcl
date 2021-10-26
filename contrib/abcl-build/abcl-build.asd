@@ -22,7 +22,8 @@
                                      (:file "install")
                                      (:file "maven")
                                      (:file "ant")
-                                     (:file "abcl-build") ;; TODO: support API 
+                                     (:file "abcl-build") ;; TODO: support API
+				     (:file "build")
                                      (:file "deprecated")))))
 
                                      
