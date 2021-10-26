@@ -79,10 +79,11 @@ script:
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-jeannie.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-cffi.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-static-vectors.lisp
+  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-cl+ssl.lisp
   # IRONCLAD takes a long time to test
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-ironclad.lisp
   - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-ansi.lisp
-  - ${ABCL_ROOT}/abcl --batch --load ${ABCL_ROOT}/ci/test-cl+ssl.lisp
+
 
   # This would build a release, which needs an installed TeX which is judged too
   # "expensive" to leave as the standard CI process

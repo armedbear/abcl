@@ -74,14 +74,15 @@ jobs:
       - name: Test STATIC-VECTORS
         run: ./abcl --batch --load ./ci/test-static-vectors.lisp
 
+      - name: Test CL+SSL
+        run: ./abcl --batch --load ./ci/test-cl+ssl.lisp
+
       - name: Test IRONCLAD
         run: ./abcl --batch --load ./ci/test-ironclad.lisp
 
       - name: Run ANSI-TEST suite
         run: ./abcl --batch --load ./ci/test-ansi.lisp
 
-      - name: Test CL+SSL
-        run: ./abcl --batch --load ./ci/test-cl+ssl.lisp
           
 
             
