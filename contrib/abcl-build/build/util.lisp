@@ -20,6 +20,7 @@
                 name
                 (pathname name)))
          (type (pathname-type p)))
+    (declare (ignore type))
     (unless (or (uiop:os-windows-p) suffixes-p)
       (return-from possible-executable-names
         (listify name)))
@@ -50,7 +51,7 @@
 		 (pathname result))))))))))
 
 (defun probe-for-executable (directory executable)
-  (dolist (p (possible-executable-names executable))
+  (dolist (executable (possible-executable-names executable))
     (let ((pathname
 	   (probe-file
 	    (merge-pathnames executable directory))))
@@ -84,17 +85,14 @@
     (when in-path
       (return-from some-directory-containing
                    in-path))
-    (dolist (d 
-              (if (uiop:os-windows-p)
-                  '(#p"c:/Program Files/") ;; TODO localize me!
-                  '(#p"/usr/local/bin/" #p"/opt/local/bin/" #p"/usr/bin/")))
+    (dolist (d (if (uiop:os-windows-p)
+                   '(#p"c:/Program Files/") ;; TODO localize me!
+                   '(#p"/usr/local/bin/" #p"/opt/local/bin/" #p"/usr/bin/")))
       (let* ((e (localize-executable-name
-                 (merge-pathnames :defaults d
-                                  :name executable)))
-             (p (probe-file p)))
+                 (merge-pathnames executable d)))
+             (p (probe-file e)))
         (when p
           (return-from some-directory-containing p))))))
-
 
         
        
