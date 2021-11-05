@@ -186,7 +186,7 @@
   (let* ((entry (find config-parameter *osgi-configuration* :test 'equal :key 'car))
 	 (value (if entry (second entry) ""))
 	 (new-value (format nil "~{~a~^,~}" 
-			    (sort (union elements (if (equal value "") nil (uiop/utility:::split-string value :separator '(#\,)))
+			    (sort (union elements (if (equal value "") nil (uiop/utility::split-string value :separator '(#\,)))
 					 :test 'equalp)
 				  'string-lessp))))
     (if entry
