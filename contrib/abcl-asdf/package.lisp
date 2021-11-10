@@ -42,9 +42,19 @@
    #:*added-to-classpath*
    #:*inhibit-add-to-classpath*))
 
+(defpackage abcl-asdf/osgi
+  (:use cl)
+  (:nicknames osgi)
+  (:export
+   #:add-bundle
+   #:find-bundle-class
+   #:ensure-osgi-initialized
+   #:add-to-comma-separated-osgi-config
 
+   #:*before-osgi-starting-hooks*
+   #:*loaded-osgi-bundles*
+   #:*osgi-cache-location*
+   #:*osgi-configuration*
+   #:*osgi-clean-cache-on-start*))
 
-
-
-
-
+   

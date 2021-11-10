@@ -143,12 +143,22 @@
 
 (defun maybe-resolve-class-against-imports (classname)
   (or (gethash (string classname) *imports-resolved-classes*)
-      (let ((found (lookup-class-name classname)))
-        (if found
-            (progn 
-              (setf (gethash classname *imports-resolved-classes*) found)
-              found)
-            (string classname)))))
+      (let ((found (lookup-class-name classname :muffle-warning t)))
+	(if found
+	    (progn 
+	      (setf (gethash classname *imports-resolved-classes*) found)
+	      found)
+	    (let ((choices
+		    (loop for bundle-entry in *loaded-osgi-bundles*
+			  for found = (lookup-class-name classname :table (third bundle-entry) :muffle-warning  t)
+			  when found collect (list bundle-entry found))))
+	      (cond ((zerop (length choices)) (string classname))
+		    ((= (length choices) 1)
+		     (unless (gethash classname *imports-resolved-classes*)
+		       (setf (gethash classname *imports-resolved-classes*) (list (second (caar choices)) (second (car choices)))))
+		     (list (second (caar choices)) (second (car choices))))
+		    (t (error "Ambiguous class name: ~{~a~^, ~}"  
+			      (mapcar (lambda(el) (format "~a in bundle ~a" (second el) (caar el))) choices)))))))))
 
 (defvar *class-name-to-full-case-insensitive* (make-hash-table :test 'equalp))
 
@@ -559,19 +569,24 @@ associated is used to look up the static FIELD."
   (when *do-auto-imports* 
     (do-auto-imports)))
 
-(defun japropos (string)
-  "Output the names of all Java class names loaded in the current process which match STRING.."
-  (setq string (string string))
-  (let ((matches nil))
-    (maphash (lambda(key value) 
-               (declare (ignore key))
-               (loop for class in value
-                  when (search string class :test 'string-equal)
-                  do (pushnew (list class "Java Class") matches :test 'equal)))
-             *class-name-to-full-case-insensitive*)
-    (loop for (match type) in (sort matches 'string-lessp :key 'car)
-       do (format t "~a: ~a~%" match type))
-    ))
+(defun japropos (string
+                 &optional (fn (lambda (match type bundle?) (format t "~a: ~a~a~%" match type bundle?))))
+  "Output the names of all Java class names loaded in the current process which match STRING"
+  (flet ((searchit (table &optional bundle-name)
+	   (let ((bundle? (if bundle-name (format nil ", Bundle: ~a" bundle-name) "")))
+	     (setq string (string string))
+	     (let ((matches nil))
+	       (maphash (lambda(key value) 
+			  (declare (ignore key))
+			  (loop for class in value
+				when (search string class :test 'string-equal)
+				  do (pushnew (list class "Java Class") matches :test 'equal)))
+			table)
+	       (loop for (match type) in (sort matches 'string-lessp :key 'car)
+		     do (funcall fn  match type bundle?))))))
+    (searchit *class-name-to-full-case-insensitive*)
+    (loop for (name nil table) in *loaded-osgi-bundles*
+	  do (searchit table name))))
 
 (defun jclass-method-names (class &optional full)
   (if (java-object-p class)
