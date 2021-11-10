@@ -128,11 +128,7 @@
   (defvar *imports-resolved-classes* (make-hash-table :test 'equalp)
     "Hashtable of all resolved imports by the current process."))
 
-(defun find-java-class (name)
-  "Returns the java.lang.Class representation of NAME.
 
-NAME can either string or a symbol according to the usual JSS conventions."
-  (jclass (maybe-resolve-class-against-imports name)))
 
 (defmacro invoke-add-imports (&rest imports)
   "Push these imports onto the search path. If multiple, earlier in list take precedence"
@@ -172,7 +168,7 @@ NAME can either string or a symbol according to the usual JSS conventions."
          (object-as-class 
           (if object-as-class-name (find-java-class object-as-class-name))))
     (if (eq method 'new)
-        (apply #'jnew (or object-as-class-name object) args)
+        (apply #'jnew (or object-as-class-name object-as-class object) args)
         (if raw?
             (if (symbolp object)
                 (apply #'jstatic-raw method object-as-class  args)
@@ -206,14 +202,18 @@ NAME can either string or a symbol according to the usual JSS conventions."
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun read-invoke (stream char arg) 
-    (unread-char char stream)
-    (let ((name (read stream)))
-      (if (or (find #\. name) (find #\{ name))
-          (jss-transform-to-field name arg)
-          (let ((object-var (gensym))
-                (args-var (gensym)))
-            `(lambda (,object-var &rest ,args-var) 
-               (invoke-restargs ,name  ,object-var ,args-var ,(eql arg 0)))))))
+    (if (eql arg 1)
+        (progn (require 'javaparser)
+               (read-sharp-java-expression stream))
+        (progn
+	  (unread-char char stream)
+	  (let ((name (read stream)))
+	    (if (or (find #\. name) (find #\{ name))
+		(jss-transform-to-field name arg)
+		(let ((object-var (gensym))
+		      (args-var (gensym)))
+		  `(lambda (,object-var &rest ,args-var) 
+		     (invoke-restargs ,name  ,object-var ,args-var ,(eql arg 0)))))))))
   (set-dispatch-macro-character #\# #\" 'read-invoke))
 
 (defmacro with-constant-signature (fname-jname-pairs &body body)
@@ -263,9 +263,10 @@ want to avoid the overhead of the dynamic dispatch."
 
 
 (defun lookup-class-name (name &key
-                                 (table *class-name-to-full-case-insensitive*)
+                                 (table  *class-name-to-full-case-insensitive*)
                                  (muffle-warning *muffle-warnings*)
-                                 (return-ambiguous nil))
+                                 (return-ambiguous nil)
+                               &aux (symbol? (symbolp name)))
   (let ((overridden (maybe-found-in-overridden name)))
     (when overridden (return-from lookup-class-name overridden)))
   (setq name (string name))
@@ -279,7 +280,7 @@ want to avoid the overhead of the dynamic dispatch."
           (let ((matcher (#0"matcher" last-name-pattern name)))
             (#"matches" matcher)
             (#"group" matcher 1))))
-    (let* ((bucket (gethash last-name *class-name-to-full-case-insensitive*))
+    (let* ((bucket (gethash last-name table))
            (bucket-length (length bucket)))
       (or (find name bucket :test 'equalp)
           (flet ((matches-end (end full test)
@@ -292,7 +293,7 @@ want to avoid the overhead of the dynamic dispatch."
                        (error "Ambiguous class name: ~a can be ~{~a~^, ~}" name choices))))
             (if (zerop bucket-length)
                 (progn (unless muffle-warning (warn "can't find class named ~a" name)) nil)
-                (let ((matches (loop for el in bucket when (matches-end name el 'char=) collect el)))
+                (let ((matches (loop for el in bucket when (matches-end name el (if symbol? 'char-equal 'char=)) collect el)))
                   (if (= (length matches) 1)
                       (car matches)
                       (if (= (length matches) 0)
@@ -303,6 +304,15 @@ want to avoid the overhead of the dynamic dispatch."
                                     (progn (unless muffle-warning (warn "can't find class named ~a" name)) nil)
                                     (ambiguous matches))))
                           (ambiguous matches))))))))))
+
+;; Interactive use: Give a full class name as a string, return the shortest unique abbreviation
+(defun shortest-unambiguous-java-class-abbreviation(name &optional as-string?)
+  (let ((components (mapcar (if as-string? 'identity 'string-upcase) (uiop/utility:split-string name :separator '(#\.)))))
+    (loop for size from 1 to (length components)
+	  for abbreviation = (funcall (if as-string? 'identity (lambda(e) (intern (string-upcase e))))
+				      (format nil "~{~a~^.~}" (subseq components (- (length components) size) (length components))))
+	  for possible = (jss::lookup-class-name abbreviation :return-ambiguous t)
+	  when (not (listp possible)) do (return-from shortest-unambiguous-java-class-abbreviation abbreviation))))
 
 #+(or)
 (defun get-all-jar-classnames (jar-file-name)
@@ -453,9 +463,17 @@ associated is used to look up the static FIELD."
   (jmethod "java.lang.Class" "forName" "java.lang.String" "boolean" "java.lang.ClassLoader"))
 
 (defun find-java-class (name)
-  (or (jstatic +for-name+ "java.lang.Class" 
-               (maybe-resolve-class-against-imports name) +true+ java::*classloader*)
-      (ignore-errors (jclass (maybe-resolve-class-against-imports name)))))
+  (if (consp name) ;; invoke-restargs first calls maybe-resolve-class-against-imports, and this on the result.
+      (jcall "loadClass" (car name) (second name))
+      (let ((maybe (maybe-resolve-class-against-imports name)))
+	(or (and (atom maybe) (not (null maybe))
+		 (jstatic +for-name+ "java.lang.Class" maybe +true+ java::*classloader*))
+	    (ignore-errors
+	     (let ((resolved (maybe-resolve-class-against-imports name)))
+	       (if (consp resolved)
+		   (jcall "loadClass" (car resolved) (second resolved)) 
+		   (jclass resolved))))
+	    ))))
 
 (defmethod print-object ((obj (jclass "java.lang.Class")) stream) 
   (print-unreadable-object (obj stream :identity nil)
@@ -557,12 +575,17 @@ associated is used to look up the static FIELD."
 
 (defun jclass-method-names (class &optional full)
   (if (java-object-p class)
-      (if (equal (jclass-name (jobject-class class)) "java.lang.Class")
-          (setq class (jclass-name class))
-          (setq class (jclass-name (jobject-class class)))))
+      (unless (equal (jclass-name (jobject-class class)) "java.lang.Class")
+        (setq class (jobject-class class)))
+      (setq class (find-java-class class)))
   (union
-   (remove-duplicates (map 'list (if full #"toString" 'jmethod-name) (#"getMethods" (find-java-class class))) :test 'equal)
-   (ignore-errors (remove-duplicates (map 'list (if full #"toString" 'jmethod-name) (#"getConstructors" (find-java-class class))) :test 'equal))))
+   (remove-duplicates
+    (map 'list (if full #"toString" 'jmethod-name) (#"getMethods" class))
+    :test 'equal)
+   (ignore-errors
+    (remove-duplicates
+     (map 'list (if full #"toString" 'jmethod-name) (#"getConstructors" class))
+     :test 'equal))))
 
 (defun java-class-method-names (class &optional stream)
   "Return a list of the public methods encapsulated by the JVM CLASS.
