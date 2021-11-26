@@ -71,7 +71,20 @@
 	   (setf *dribble-stream* new-dribble-stream)
 	   (setf *standard-input* new-standard-input)
 	   (setf *standard-output* new-standard-output)
-	   (setf *error-output* new-error-output)))
+	   (setf *error-output* new-error-output)
+           ;; Starting a new internal REPL for dribbling
+           (loop do
+             (format t "~a> " (package-name *package*))
+             (with-simple-restart (abort "Error detected in dribbling")
+               (handler-case
+                 (let ((input (read *standard-input*)))
+                   (print (eval input) *standard-output*)
+                   (terpri)
+                   (when (equal input '(dribble))
+                     (return)))
+                 (error (c)
+                   (format *error-output* "~a~%" c)
+                   (error c)))))))
 	((null *dribble-stream*)
 	 (error "Not currently dribbling."))
 	(t
