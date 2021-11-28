@@ -561,6 +561,8 @@ public class Symbol extends LispObject implements java.io.Serializable
       return symbolName;
     if (currentPackage.findInternalSymbol(name) == this)
       return symbolName;
+    if (currentPackage.findAccessibleSymbol(name) == this)
+      return symbolName;
     // Package prefix is necessary.
     String packageName = ((Package)pkg).getName();
     if (currentPackage.getLocallyNicknamedPackages().contains(pkg)) {
@@ -661,7 +663,7 @@ public class Symbol extends LispObject implements java.io.Serializable
     if (s.charAt(0) == '#')
       return true;
     int radix;
-    LispObject printBaseBinding = PRINT_BASE.symbolValue(thread); 
+    LispObject printBaseBinding = PRINT_BASE.symbolValue(thread);
     if (printBaseBinding instanceof Fixnum)
       {
         radix = ((Fixnum)printBaseBinding).value;
@@ -943,7 +945,7 @@ public class Symbol extends LispObject implements java.io.Serializable
 	    return this;
 	}
     }
-    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -3271,7 +3273,7 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_THREADS.addExternalSymbol("THREAD");
   public static final Symbol _THREADING_MODEL =
     PACKAGE_THREADS.addExternalSymbol("*THREADING-MODEL*");
-    
+
 
   // JVM
   public static final Symbol _RESIGNAL_COMPILER_WARINGS_ =
