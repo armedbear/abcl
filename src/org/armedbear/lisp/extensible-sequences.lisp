@@ -1037,4 +1037,4 @@ the sequence argument to be a proper sequence.
                      ,@forms))))))))))
 
 (provide "EXTENSIBLE-SEQUENCES")
-(push :extensible-sequences *features*)
+(pushnew :extensible-sequences *features*)
