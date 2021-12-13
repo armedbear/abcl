@@ -243,6 +243,10 @@ public final class ComplexVector extends AbstractVector
                 System.arraycopy(elements, 0, newArray, 0, n);
                 elements = newArray;
                 capacity = n;
+                if (fillPointer != -1) {
+                  // update fill pointer if it is setted
+                  fillPointer = Math.min(fillPointer, capacity);
+                }
                 return;
             }
             if (n == elements.length)
