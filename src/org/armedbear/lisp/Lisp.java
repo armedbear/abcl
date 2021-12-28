@@ -148,7 +148,7 @@ public final class Lisp
   //    (Denial of Service through hash table multi-collisions)
   public static final int randomStringHashBase =
           (int)(new java.util.Date().getTime());
-  
+
   public static boolean profiling;
 
   public static boolean sampling;
@@ -444,7 +444,7 @@ public final class Lisp
       }
     }
     lispArgs = lispArgs.nreverse();
-    
+
     LispObject format = new SimpleString(formatControl);
 
     SimpleError s = new SimpleError(format, lispArgs);
@@ -1118,13 +1118,13 @@ public final class Lisp
   }
 
   public static final Symbol checkSymbol(LispObject obj)
-  {             
-          if (obj instanceof Symbol)      
-                  return (Symbol) obj;         
-          return (Symbol)// Not reached.       
+  {
+          if (obj instanceof Symbol)
+                  return (Symbol) obj;
+          return (Symbol)// Not reached.
               type_error(obj, Symbol.SYMBOL);
   }
-  
+
   public static final LispObject checkList(LispObject obj)
 
   {
@@ -1136,18 +1136,18 @@ public final class Lisp
   public static final AbstractArray checkArray(LispObject obj)
 
   {
-          if (obj instanceof AbstractArray)       
-                  return (AbstractArray) obj;         
-          return (AbstractArray)// Not reached.       
+          if (obj instanceof AbstractArray)
+                  return (AbstractArray) obj;
+          return (AbstractArray)// Not reached.
         type_error(obj, Symbol.ARRAY);
   }
 
   public static final AbstractVector checkVector(LispObject obj)
 
   {
-          if (obj instanceof AbstractVector)      
-                  return (AbstractVector) obj;         
-          return (AbstractVector)// Not reached.       
+          if (obj instanceof AbstractVector)
+                  return (AbstractVector) obj;
+          return (AbstractVector)// Not reached.
         type_error(obj, Symbol.VECTOR);
   }
 
@@ -1172,9 +1172,9 @@ public final class Lisp
   public static final StackFrame checkStackFrame(LispObject obj)
 
   {
-          if (obj instanceof StackFrame)      
-                  return (StackFrame) obj;         
-          return (StackFrame)// Not reached.       
+          if (obj instanceof StackFrame)
+                  return (StackFrame) obj;
+          return (StackFrame)// Not reached.
             type_error(obj, Symbol.STACK_FRAME);
   }
 
@@ -1224,7 +1224,7 @@ public final class Lisp
             }
         }
     }
-      
+
     // Decimal representation.
     if (oldValue instanceof Fixnum)
       sb.append(((Fixnum)oldValue).value);
@@ -1332,13 +1332,13 @@ public final class Lisp
   {
       return readObjectFromReader(new StringReader(s));
   }
-  
+
   final static Charset UTF8CHARSET = Charset.forName("UTF-8");
   public static LispObject readObjectFromStream(InputStream s)
   {
       return readObjectFromReader(new InputStreamReader(s));
   }
-  
+
   public static LispObject readObjectFromReader(Reader r)
   {
     LispThread thread = LispThread.currentThread();
@@ -1361,7 +1361,7 @@ public final class Lisp
         thread.resetSpecialBindings(mark);
     }
   }
-  
+
   @Deprecated
   public static final LispObject loadCompiledFunction(final String namestring)
   {
@@ -1392,7 +1392,7 @@ public final class Lisp
       InputStream input = null;
       if (load != null) {
           input = load.getInputStream();
-      } else { 
+      } else {
           // Make a last-ditch attempt to load from the boot classpath XXX OSGi hack
           URL url = null;
           try {
@@ -1692,7 +1692,7 @@ public final class Lisp
   public static final int coerceToJavaUnsignedInt(LispObject obj) {
     return (int) (obj.longValue() & 0xffffffffL);
   }
-  
+
   public static final LispObject coerceFromJavaByte(byte b) {
     return Fixnum.constants[((int)b) & 0xff];
   }
@@ -1700,35 +1700,35 @@ public final class Lisp
   public static final LispCharacter checkCharacter(LispObject obj)
 
   {
-          if (obj instanceof LispCharacter) 
-                  return (LispCharacter) obj;         
-          return (LispCharacter) // Not reached.       
+          if (obj instanceof LispCharacter)
+                  return (LispCharacter) obj;
+          return (LispCharacter) // Not reached.
         type_error(obj, Symbol.CHARACTER);
   }
 
   public static final Package checkPackage(LispObject obj)
 
   {
-          if (obj instanceof Package)     
-                  return (Package) obj;         
-          return (Package) // Not reached.       
+          if (obj instanceof Package)
+                  return (Package) obj;
+          return (Package) // Not reached.
         type_error(obj, Symbol.PACKAGE);
   }
 
   public static Pathname checkPathname(LispObject obj)
   {
-          if (obj instanceof Pathname)     
-                  return (Pathname) obj;         
-          return (Pathname) // Not reached.       
+          if (obj instanceof Pathname)
+                  return (Pathname) obj;
+          return (Pathname) // Not reached.
         type_error(obj, Symbol.PATHNAME);
   }
 
   public static final Function checkFunction(LispObject obj)
 
   {
-          if (obj instanceof Function)    
-                  return (Function) obj;         
-          return (Function) // Not reached.       
+          if (obj instanceof Function)
+                  return (Function) obj;
+          return (Function) // Not reached.
         type_error(obj, Symbol.FUNCTION);
   }
 
@@ -1745,9 +1745,9 @@ public final class Lisp
 
   {
           final Stream stream = checkStream(obj);
-          if (stream.isCharacterInputStream())      
-                  return stream;                        
-          return (Stream) // Not reached.                      
+          if (stream.isCharacterInputStream())
+                  return stream;
+          return (Stream) // Not reached.
           error(new TypeError("The value " + obj.princToString() +
                         " is not a character input stream."));
   }
@@ -1756,8 +1756,8 @@ public final class Lisp
 
   {
           final Stream stream = checkStream(obj);
-          if (stream.isCharacterOutputStream())      
-                  return stream;                        
+          if (stream.isCharacterOutputStream())
+                  return stream;
         return (Stream) // Not reached.
         error(new TypeError("The value " + obj.princToString() +
                             " is not a character output stream."));
@@ -1767,16 +1767,16 @@ public final class Lisp
 
   {
           final Stream stream = checkStream(obj);
-          if (stream.isBinaryInputStream())      
-                  return stream;                        
+          if (stream.isBinaryInputStream())
+                  return stream;
         return (Stream) // Not reached.
         error(new TypeError("The value " + obj.princToString() +
                              " is not a binary input stream."));
   }
-  
+
   public static final Stream outSynonymOf(LispObject obj)
 
-  {       
+  {
           if (obj instanceof Stream)
             return (Stream) obj;
           if (obj == T)
@@ -1811,27 +1811,27 @@ public final class Lisp
   public static final Readtable checkReadtable(LispObject obj)
 
   {
-          if (obj instanceof Readtable)   
-                  return (Readtable) obj;         
-          return (Readtable)// Not reached.       
+          if (obj instanceof Readtable)
+                  return (Readtable) obj;
+          return (Readtable)// Not reached.
           type_error(obj, Symbol.READTABLE);
   }
-  
-  public final static AbstractString checkString(LispObject obj) 
+
+  public final static AbstractString checkString(LispObject obj)
 
   {
-          if (obj instanceof AbstractString)            
-                  return (AbstractString) obj;                    
-          return (AbstractString)// Not reached.               
+          if (obj instanceof AbstractString)
+                  return (AbstractString) obj;
+          return (AbstractString)// Not reached.
               type_error(obj, Symbol.STRING);
   }
-  
-  public final static Layout checkLayout(LispObject obj) 
+
+  public final static Layout checkLayout(LispObject obj)
 
   {
-          if (obj instanceof Layout)            
-                  return (Layout) obj;                    
-          return (Layout)// Not reached.               
+          if (obj instanceof Layout)
+                  return (Layout) obj;
+          return (Layout)// Not reached.
                 type_error(obj, Symbol.LAYOUT);
   }
 
@@ -1848,9 +1848,9 @@ public final class Lisp
   public static final Environment checkEnvironment(LispObject obj)
 
   {
-          if (obj instanceof Environment)         
-                  return (Environment) obj;         
-          return (Environment)// Not reached.       
+          if (obj instanceof Environment)
+                  return (Environment) obj;
+          return (Environment)// Not reached.
         type_error(obj, Symbol.ENVIRONMENT);
   }
 
@@ -1882,6 +1882,8 @@ public final class Lisp
         LispObject fun = obj.getSymbolFunction();
         if (fun instanceof Function)
           return (Function) fun;
+        if (fun instanceof FuncallableStandardObject)
+          return fun;
       }
     else if (obj instanceof Cons && obj.car() == Symbol.LAMBDA)
       return new Closure(obj, new Environment());
@@ -2395,7 +2397,7 @@ public final class Lisp
   {
     Symbol.READ_EVAL.initializeSpecial(T);
   }
-  
+
 
   //
   // ### *features*
@@ -2405,14 +2407,14 @@ public final class Lisp
     final String osName = System.getProperty("os.name");
     final String javaVersion = System.getProperty("java.version");
     final String osArch = System.getProperty("os.arch");
-    
+
     // Common features
     LispObject featureList = list(Keyword.ARMEDBEAR, Keyword.ABCL,
                                   Keyword.COMMON_LISP, Keyword.ANSI_CL,
-                                  Keyword.CDR6, 
+                                  Keyword.CDR6,
                                   Keyword.MOP,
                                   internKeyword("PACKAGE-LOCAL-NICKNAMES"));
-    
+
     // add the contents of version as a keyword symbol regardless of runtime value
     featureList = featureList.push(internKeyword("JVM-" + javaVersion));
     {
@@ -2460,7 +2462,7 @@ public final class Lisp
       }
     }
 
-    
+
     // OS type
     if (osName.startsWith("Linux"))
       featureList = Primitives.APPEND.execute(list(Keyword.UNIX,
@@ -2508,7 +2510,7 @@ public final class Lisp
     if (LispThread.virtualThreadingAvailable()) {
       featureList = featureList.push(internKeyword("VIRTUAL-THREADS"));
     }
-    
+
     Symbol.FEATURES.initializeSpecial(featureList);
   }
 
@@ -2570,8 +2572,8 @@ public final class Lisp
 
   // ### *compile-file-type*
   public static final Symbol _COMPILE_FILE_TYPE_ =
-   exportSpecial("*COMPILE-FILE-TYPE*", PACKAGE_SYS, new SimpleString("abcl"));    
-  
+   exportSpecial("*COMPILE-FILE-TYPE*", PACKAGE_SYS, new SimpleString("abcl"));
+
   // ### *compile-file-class-extension*
   public static final Symbol _COMPILE_FILE_CLASS_EXTENSION_ =
    exportSpecial("*COMPILE-FILE-CLASS-EXTENSION*", PACKAGE_SYS, new SimpleString("cls"));
