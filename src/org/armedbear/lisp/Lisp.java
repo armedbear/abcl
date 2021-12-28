@@ -1890,6 +1890,8 @@ public final class Lisp
         LispObject fun = obj.getSymbolFunction();
         if (fun instanceof Function)
           return (Function) fun;
+        if (fun instanceof FuncallableStandardObject)
+          return fun;
       }
     else if (obj instanceof Cons && obj.car() == Symbol.LAMBDA)
       return new Closure(obj, new Environment());
