@@ -18,8 +18,11 @@
 	(extra-system-packages (slot-value c 'system-packages)))
     (if (or extra-bootdelegation extra-system-packages)
 	(warn "not handling :bootdelegation and :system-packages args yet"))
-    (jss:add-bundle  (component-pathname c))))
+    (unless (find (component-name c) jss::*loaded-osgi-bundles* :test 'equalp :key 'car)
+      (jss:add-bundle  (component-pathname c)))))
 
-(defmethod perform ((operation compile-op) (c bundle))
-  (jss:add-bundle (component-pathname c)))
+
+
+
+
 

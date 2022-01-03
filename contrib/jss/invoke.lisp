@@ -149,7 +149,7 @@
 	      (setf (gethash classname *imports-resolved-classes*) found)
 	      found)
 	    (let ((choices
-		    (loop for bundle-entry in *loaded-osgi-bundles*
+		    (loop for bundle-entry in (and (symbol-boundp '*loaded-osgi-bundles*) *loaded-osgi-bundles*)
 			  for found = (lookup-class-name classname :table (third bundle-entry) :muffle-warning  t)
 			  when found collect (list bundle-entry found))))
 	      (cond ((zerop (length choices)) (string classname))
@@ -584,7 +584,7 @@ associated is used to look up the static FIELD."
 	       (loop for (match type) in (sort matches 'string-lessp :key 'car)
 		     do (funcall fn  match type bundle?))))))
     (searchit *class-name-to-full-case-insensitive*)
-    (loop for (name nil table) in *loaded-osgi-bundles*
+    (loop for (name nil table) in (and (boundp '*loaded-osgi-bundles*) *loaded-osgi-bundles*)
 	  do (searchit table name))))
 
 (defun jclass-method-names (class &optional full)
