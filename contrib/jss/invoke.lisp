@@ -149,7 +149,7 @@
 	      (setf (gethash classname *imports-resolved-classes*) found)
 	      found)
 	    (let ((choices
-		    (loop for bundle-entry in (and (symbol-boundp '*loaded-osgi-bundles*) *loaded-osgi-bundles*)
+		    (loop for bundle-entry in (and (boundp '*loaded-osgi-bundles*) *loaded-osgi-bundles*)
 			  for found = (lookup-class-name classname :table (third bundle-entry) :muffle-warning  t)
 			  when found collect (list bundle-entry found))))
 	      (cond ((zerop (length choices)) (string classname))

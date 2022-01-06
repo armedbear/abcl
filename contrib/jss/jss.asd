@@ -1,4 +1,5 @@
 ;;;; -*- Mode: LISP -*-
+(in-package :asdf)
 (defsystem jss
   :author "Alan Ruttenberg, Mark Evenson"
   :long-description "<urn:abcl.org/release/1.8.0/contrib/jss#>"
