@@ -178,7 +178,7 @@
          (object-as-class 
           (if object-as-class-name (find-java-class object-as-class-name))))
     (if (eq method 'new)
-        (apply #'jnew (or object-as-class-name object-as-class object) args)
+        (apply #'jnew (or object-as-class object-as-class-name object) args)
         (if raw?
             (if (symbolp object)
                 (apply #'jstatic-raw method object-as-class  args)

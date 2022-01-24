@@ -21,6 +21,9 @@
     (unless (find (component-name c) jss::*loaded-osgi-bundles* :test 'equalp :key 'car)
       (jss:add-bundle  (component-pathname c)))))
 
+(defmethod perform ((operation compile-op) (c jar-file))
+   nil)
+
 
 
 
