@@ -146,8 +146,10 @@
       (flet ((resolve (artifact)
 	       (funcall (intern "RESOLVE" 'abcl-asdf) artifact)))
 	(add-to-classpath ;; sometimes resolve returns ":" separated pathnames of both main and framework jars. Only need the first.
-	 ;; 5.6.1 current as of Jan/17
-	 (car (uiop/utility:split-string  (resolve "org.apache.felix/org.apache.felix.main/5.6.1") :separator '(#\:)))))
+	 ;; 7.0.3 current as of Jan/22. Works with Java17
+	 (car (uiop/utility:split-string  (resolve "org.apache.felix/org.apache.felix.main/7.0.3") :separator '(#\:)))
+	 ))
+
       (let* ((framework-factory-class (find-java-class 'org.osgi.framework.launch.FrameworkFactory))
 	     (ffs (#"load" 'ServiceLoader framework-factory-class (#"getClassLoader" framework-factory-class)))
 	     (factory (#"next" (#"iterator" ffs)))
