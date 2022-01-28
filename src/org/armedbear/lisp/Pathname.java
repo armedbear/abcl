@@ -296,6 +296,8 @@ public class Pathname extends LispObject
       result.setDirectory(new Cons(Keyword.RELATIVE));
       return result;
     } 
+    if (s.startsWith("./"))
+      { s = s.substring(2); }
     if (s.equals("..") || s.equals("../")) {
       result.setDirectory(list(Keyword.RELATIVE, Keyword.UP));
       return result;

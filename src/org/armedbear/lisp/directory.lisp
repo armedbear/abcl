@@ -123,6 +123,8 @@ have truenames which do not exist, this routine will signal a file
 error to its caller."
 
   (let ((pathname (merge-pathnames pathspec)))
+    (when (equalp (pathname-host pathname) '(:scheme "file"))
+      (setq pathname (subseq (namestring pathname) #.(length "file://"))))
     (when (logical-pathname-p pathname)
       (setq pathname (translate-logical-pathname pathname)))
     (if (or (position #\* (namestring pathname))
@@ -143,26 +145,38 @@ error to its caller."
                              (concatenate 'string device ":" namestring))))))
                 (let ((entries (list-directories-with-wildcards 
                                 namestring nil resolve-symlinks))
-                      matching-entries)
-                  (dolist (entry entries)
-                    (when
-                        (or
-                         (and 
-                          (file-directory-p entry :wild-error-p nil)
-                          (pathname-match-p
-                           (directory-as-file entry) pathname))
-                         (pathname-match-p entry pathname))
-                      (push 
-                       (if resolve-symlinks
-                           (truename entry) 
-                           ;; Normalize nil DEVICE to :UNSPECIFIC under non-Windows
-                           ;; fixes ANSI DIRECTORY.[67]
-                           (if (and (not (find :windows *features*))
-                                    (not (pathname-device entry)))
-                               (make-pathname :defaults entry :device :unspecific)
-                               entry))
-                       matching-entries)))
-                  matching-entries))))
+                      (matching-entries nil))
+		  (flet ((no-dots (path)
+			   (merge-pathnames
+			    (make-pathname :directory 
+					   (let ((reversed nil))
+					     (dolist (el (pathname-directory path))
+					       (if (eq el :up) 
+						   (pop reversed)
+						   (unless (equal el ".")
+						     (push el reversed))))
+					     (reverse reversed)))
+			    path)))
+		    (let ((pathname (no-dots pathname)))
+		      (dolist (entry entries)
+			(when
+			    (or
+			     (and 
+			      (file-directory-p entry :wild-error-p nil)
+			      (pathname-match-p
+			       (directory-as-file entry) pathname))
+			     (pathname-match-p entry pathname))
+			  (push 
+			   (if resolve-symlinks
+			       (truename entry) 
+			       ;; Normalize nil DEVICE to :UNSPECIFIC under non-Windows
+			       ;; fixes ANSI DIRECTORY.[67]
+			       (if (and (not (find :windows *features*))
+					(not (pathname-device entry)))
+				   (make-pathname :defaults entry :device :unspecific)
+				   entry))
+			   matching-entries)))))
+		matching-entries))))
         ;; Not wild.
         (let ((truename (probe-file pathname)))
           (if truename
