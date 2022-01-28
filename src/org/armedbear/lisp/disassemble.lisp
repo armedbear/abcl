@@ -32,6 +32,20 @@
 (in-package :system)
 (require :clos)
 
+(eval-when  (:load-toplevel)
+  (defvar *available-disassemblers*
+	(let ((files 
+		(directory (merge-pathnames
+			    "abcl-introspect/*.lisp"
+			    sys::*abcl-contrib*))))
+	  (loop for f in files
+		append
+		(with-open-file (s f :direction :input)
+		  (loop for line = (read-line s nil :eof)
+			until (eq line :eof)
+			when (search "disassemble-class-bytes" line)
+			  do (return (list (intern (string-upcase (pathname-name f)) :keyword)))))))))
+  
 (defvar *disassembler-function* nil
   "The currently used function for CL:DISASSEMBLE.  
 
@@ -63,6 +77,8 @@ SYS:*DISASSEMBLERS*."
   (flet ((sane-disassembler-p (disassembler)
            (and disassembler
                 (fboundp disassembler))))
+    (when (member name *available-disassemblers*)
+	(require name))
     (setf *disassembler-function*
           (if name
               (let ((disassembler (cdr (assoc name *disassemblers*))))
