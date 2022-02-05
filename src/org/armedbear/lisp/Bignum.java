@@ -301,7 +301,7 @@ public final class Bignum extends LispInteger
 
   public static BigInteger getValue(LispObject obj)
   {
-          
+
     if (obj instanceof Bignum)
       {
         return ((Bignum)obj).value;
@@ -623,8 +623,15 @@ public final class Bignum extends LispInteger
       }
     catch (ArithmeticException e)
       {
-        if (obj.zerop())
-          return error(new DivisionByZero());
+        if (obj.zerop()) {
+          LispObject operands = new Cons(this, new Cons(obj));
+          LispObject args = new Cons(Keyword.OPERATION,
+                                     new Cons(Symbol.TRUNCATE,
+                                              new Cons(Keyword.OPERANDS,
+                                                       new Cons(operands))));
+
+          return error(new DivisionByZero(args));
+        }
         else
           return error(new ArithmeticError(e.getMessage()));
       }

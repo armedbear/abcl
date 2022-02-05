@@ -195,15 +195,15 @@ public final class Ratio extends LispObject
         final int numLen = num.bitLength();
         final int denLen = den.bitLength();
         int length = Math.min(numLen, denLen);
-        if (length <= 1) {  
+        if (length <= 1) {
           // A precision of 512 is overkill for DOUBLE-FLOAT types
-          // based on java.lang.Double  TODO: optimize for space/time 
+          // based on java.lang.Double  TODO: optimize for space/time
           final MathContext mathContext = new MathContext(512, RoundingMode.HALF_EVEN);
           BigDecimal p = new BigDecimal(numerator, mathContext);
           BigDecimal q = new BigDecimal(denominator, mathContext);
           BigDecimal r = p.divide(q, mathContext);
           result = r.doubleValue();
-          return result; 
+          return result;
         }
 
         BigInteger n = num;
@@ -347,6 +347,15 @@ public final class Ratio extends LispObject
     @Override
     public LispObject divideBy(LispObject obj)
     {
+        if (obj.zerop()) {
+          LispObject operands = new Cons(this, new Cons(obj));
+          LispObject args = new Cons(Keyword.OPERATION,
+                                     new Cons(Symbol.SLASH,
+                                              new Cons(Keyword.OPERANDS,
+                                                       new Cons(operands))));
+          return error(new DivisionByZero(args));
+        }
+
         if (obj instanceof Fixnum) {
             BigInteger n = ((Fixnum)obj).getBigInteger();
             return number(numerator, denominator.multiply(n));
@@ -361,13 +370,9 @@ public final class Ratio extends LispObject
             return number(numerator.multiply(d), denominator.multiply(n));
         }
         if (obj instanceof SingleFloat) {
-            if (obj.zerop())
-                return error(new DivisionByZero());
             return new SingleFloat(floatValue() / ((SingleFloat)obj).value);
         }
         if (obj instanceof DoubleFloat) {
-            if (obj.zerop())
-                return error(new DivisionByZero());
             return new DoubleFloat(doubleValue() / ((DoubleFloat)obj).value);
         }
         if (obj instanceof Complex) {
@@ -544,8 +549,14 @@ public final class Ratio extends LispObject
           return LispThread.currentThread().setValues(number(quotient), remainder);
         }
         catch (ArithmeticException e) {
-            if (obj.zerop())
-                return error(new DivisionByZero());
+            if (obj.zerop()) {
+              LispObject operands = new Cons(this, new Cons(obj));
+              LispObject args = new Cons(Keyword.OPERATION,
+                                         new Cons(Symbol.TRUNCATE,
+                                                  new Cons(Keyword.OPERANDS,
+                                                           new Cons(operands))));
+              return error(new DivisionByZero(args));
+            }
             return error(new ArithmeticError(e.getMessage()));
         }
     }
