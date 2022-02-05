@@ -500,8 +500,14 @@ public final class Fixnum extends LispInteger
       }
     catch (ArithmeticException e)
       {
-        if (obj.zerop())
-          return error(new DivisionByZero());
+        if (obj.zerop()) {
+          LispObject operands = new Cons(this, new Cons(obj));
+          LispObject args = new Cons(Keyword.OPERATION,
+                                     new Cons(Symbol.SLASH,
+                                              new Cons(Keyword.OPERANDS,
+                                                       new Cons(operands))));
+          return error(new DivisionByZero(args));
+        }
         return error(new ArithmeticError(e.getMessage()));
       }
   }
@@ -717,8 +723,14 @@ public final class Fixnum extends LispInteger
       }
     catch (ArithmeticException e)
       {
-        if (obj.zerop())
-          return error(new DivisionByZero());
+        if (obj.zerop()) {
+          LispObject operands = new Cons(this, new Cons(obj));
+          LispObject args = new Cons(Keyword.OPERATION,
+                                     new Cons(Symbol.TRUNCATE,
+                                              new Cons(Keyword.OPERANDS,
+                                                       new Cons(operands))));
+          return error(new DivisionByZero(args));
+        }
         else
           return error(new ArithmeticError(e.getMessage()));
       }
@@ -903,7 +915,7 @@ public final class Fixnum extends LispInteger
     if (y.compareTo(BigInteger.ZERO) == 0)
       // No need to test base here; CLHS says 0^0 == 1.
       return Fixnum.getInstance(1);
-      
+
     int x = this.value;
 
     if (x == 0)
