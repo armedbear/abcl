@@ -42,7 +42,7 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-
+import java.util.Stack; // alanr
 import java.text.MessageFormat;
 
 public final class LispThread extends LispObject
@@ -80,6 +80,9 @@ public final class LispThread extends LispObject
     private LispObject pending = NIL;
     private Symbol wrapper =
         PACKAGE_THREADS.intern("THREAD-FUNCTION-WRAPPER");
+
+  // alanr for locals
+  public Stack<Environment>envStack = new Stack<Environment>();
 
     LispThread(Thread javaThread)
     {
@@ -804,6 +807,7 @@ public final class LispThread extends LispObject
                 StackMarker marker = (StackMarker) stackObj;
                 int numArgs = marker.getNumArgs();
                 LispStackFrame frame = new LispStackFrame(stk, framePos - numArgs - STACK_FRAME_EXTRA, numArgs);
+		frame.thread=this;
                 stk[framePos - 1] = frame;
                 if (prev != null) {
                     prev.setNext(frame);
@@ -878,9 +882,11 @@ public final class LispThread extends LispObject
         stack[stackPtr + 1] = STACK_MARKER_0;
         stackPtr += STACK_FRAME_EXTRA;
         try {
+	    envStack.push(new Environment(null,NIL,function));
             return function.execute();
         }
         finally {
+	    envStack.pop() ; 
             popStackFrame(0);
         }
     }
@@ -894,9 +900,11 @@ public final class LispThread extends LispObject
         stack[stackPtr + 2] = STACK_MARKER_1;
         stackPtr += 1 + STACK_FRAME_EXTRA;
         try {
+	    envStack.push(new Environment(null,NIL,function));
             return function.execute(arg);
         }
         finally {
+	    envStack.pop() ; 
             popStackFrame(1);
         }
     }
@@ -912,9 +920,11 @@ public final class LispThread extends LispObject
         stack[stackPtr + 3] = STACK_MARKER_2;
         stackPtr += 2 + STACK_FRAME_EXTRA;
         try {
+	    envStack.push(new Environment(null,NIL,function));
             return function.execute(first, second);
         }
         finally {
+	    envStack.pop() ; 
             popStackFrame(2);
         }
     }
@@ -931,9 +941,11 @@ public final class LispThread extends LispObject
         stack[stackPtr + 4] = STACK_MARKER_3;
         stackPtr += 3 + STACK_FRAME_EXTRA;
         try {
+	    envStack.push(new Environment(null,NIL,function));
             return function.execute(first, second, third);
         }
         finally {
+	    envStack.pop() ; 
             popStackFrame(3);
         }
     }
@@ -952,9 +964,11 @@ public final class LispThread extends LispObject
         stack[stackPtr + 5] = STACK_MARKER_4;
         stackPtr += 4 + STACK_FRAME_EXTRA;
         try {
+	    envStack.push(new Environment(null,NIL,function));
             return function.execute(first, second, third, fourth);
         }
         finally {
+	    envStack.pop() ; 
             popStackFrame(4);
         }
     }
@@ -974,9 +988,11 @@ public final class LispThread extends LispObject
         stack[stackPtr + 6] = STACK_MARKER_5;
         stackPtr += 5 + STACK_FRAME_EXTRA;
         try {
+	    envStack.push(new Environment(null,NIL,function));
             return function.execute(first, second, third, fourth, fifth);
         }
         finally {
+	    envStack.pop() ; 
             popStackFrame(5);
         }
     }
@@ -998,9 +1014,11 @@ public final class LispThread extends LispObject
         stack[stackPtr + 7] = STACK_MARKER_6;
         stackPtr += 6 + STACK_FRAME_EXTRA;
         try {
+	    envStack.push(new Environment(null,NIL,function));
             return function.execute(first, second, third, fourth, fifth, sixth);
         }
         finally {
+	    envStack.pop() ; 
             popStackFrame(6);
         }
     }
@@ -1023,10 +1041,12 @@ public final class LispThread extends LispObject
         stack[stackPtr + 8] = STACK_MARKER_7;
         stackPtr += 7 + STACK_FRAME_EXTRA;
         try {
+	    envStack.push(new Environment(null,NIL,function));
             return function.execute(first, second, third, fourth, fifth, sixth,
                                     seventh);
         }
         finally {
+	    envStack.pop();
             popStackFrame(7);
         }
     }
@@ -1050,10 +1070,12 @@ public final class LispThread extends LispObject
         stack[stackPtr + 9] = STACK_MARKER_8;
         stackPtr += 8 + STACK_FRAME_EXTRA;
         try {
+	    envStack.push(new Environment(null,NIL,function));
             return function.execute(first, second, third, fourth, fifth, sixth,
                                     seventh, eighth);
         }
         finally {
+            envStack.pop() ; 
             popStackFrame(8);
         }
     }
@@ -1066,9 +1088,11 @@ public final class LispThread extends LispObject
         stack[stackPtr + args.length + 1] = new StackMarker(args.length);
         stackPtr += args.length + STACK_FRAME_EXTRA;
         try {
+	    envStack.push(new Environment(null,NIL,function));
             return function.execute(args);
         }
         finally {
+	    envStack.pop() ; 
             popStackFrame(args.length);
         }
     }

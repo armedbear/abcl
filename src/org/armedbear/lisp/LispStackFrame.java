@@ -40,7 +40,7 @@ public class LispStackFrame
 {
   public final LispObject operator;
   private final LispObject[] args;
-
+  public LispThread thread;
   private final static class UnavailableArgument extends LispObject 
   {
     public UnavailableArgument () { }

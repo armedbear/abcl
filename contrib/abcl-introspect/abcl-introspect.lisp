@@ -364,7 +364,180 @@ above have used annotate local functions"
                                              &allow-other-keys)
   (annotate-clos-slots (mop::class-direct-slots (find-class name))))
 
+;; Environments
+
+;; Return a list of the variables and functions in an environment. The form of the list is
+;; (kind name value)
+;; where kind is either :lexical-variable or :lexical-function :special-variable
+
+(defun environment-parts(env)
+  (append
+   (loop for binding =  (jss::get-java-field env "vars" t) then (jss::get-java-field binding "next" t)
+	 while binding
+	 for symbol = (jss::get-java-field binding "symbol" t)
+	 for value = (jss::get-java-field binding "value" t)
+	 for special = (jss::get-java-field binding "specialp" t)
+	 unless (find symbol them :key 'second)
+	   collect (list (if special
+			     :special-variable
+			     :lexical-variable)
+			 symbol
+			 (if special
+			     (symbol-value symbol)
+			     value))
+	     into them
+	 finally (return them))
+   (loop for binding =  (jss::get-java-field env "lastFunctionBinding" t)
+	   then (jss::get-java-field binding "next" t)
+	 while binding
+	 for name = (jss::get-java-field binding "name" t)
+	 for value = (jss::get-java-field  binding "value" t)
+	 unless (find name them :key 'second)
+	   collect (list :lexical-function name value) into them
+	 finally (return them))))
+
+;; Locals
+
+;; Locals are retrived from envStack, a stack of environments and
+;; function call markers distinct from the call stack, one per
+;; thread. Locals are only available for interpreted functions.  The
+;; envStack is distinct from the call stance because there are function
+;; calls which create environments, for instance to special operators
+;; like sf_let, that are not in the lisp call stack.
+
+;; A function call marker in this context is an environment with a variable binding
+;; whose symbol is nil. Implementing the markers this way means we don't have
+;; to deal with different sorts of things on the envStack, which makes the
+;; java side of things easier.
+
+;; Environments are chained. So a binding of a new local, by e.g. let, will
+;; have a new environment created which has the new binding and a pointer
+;; to the environment with the previous binding.
+
+;; Since all environments created are on the envStack, we have to figure
+;; out which environment is the one that is the most current for a given
+;; function being executed when we land in the debugger.
+
+;; collapse-locals is responsible for filtering out the environments
+;; that aren't the most current for each function being executed. It
+;; returns a list whose head is the function being executed and whose
+;; tail is a list of bindings from environment-parts.
+
+;; have to get the stack contents using this instead of j2list as in
+;; that case we get a concurrent modification exception as we iterate
+;; through the iterator, when some other function call is made.
+
+(defun stack-to-list (stack)
+  (coerce (#"toArray" stack) 'list))
+
+(defun collapse-locals (thread)
+  (loop for bindings in (mapcar 'sys::environment-parts
+				(stack-to-list (jss::get-java-field thread "envStack" t)))
+        with last-locals
+        with last-function
+        for binding = (car bindings)
+        if (eq (second binding) nil)
+          collect (prog1
+		      (list last-function  last-locals)
+		    (setq last-locals nil)
+		    (setq last-function (third binding)))
+        else
+          do (setq last-locals bindings)))
+
+;; Now that we have the pairings of function-executing and lexicals we need
+;; to associate each such function with the stack frame for it being
+;; called.  To do that, for each function and locals we find and record the
+;; first occurrence of the function in the backtrace.  Functions may appear
+;; more than once in the envStack because they have been called more than
+;; once.  In addition the envStack will have more functions than there are
+;; frames.
+
+;; In order for our envstack association to be an alignment with the stack,
+;; the associations must be in ascending order.  That is, if we start at
+;; the top of the collapsed envstack, then the frame number each function
+;; is associated with must be in ascending order.
+
+;; So, first walk through the associations and remove any frame numbers
+;; above that are greater than the index of this association. e.g.  if we
+;; have
+
+;; (f1 frame#3 locals)
+;; (f2 frame#2 locals)
+
+;; then frame#3 must be a wrong pairing since it is out of order. So we
+;; erase those to get
+
+;; (f1 nil locals)
+;; (f2 frame#2 locals)
+
+;; Also, since there may be more than one call to a function we might have
+;; something like
+
+;; (f1 frame#2 locals)
+;; (f2 frame#3 locals)
+;; (f1 frame#2 locals)
+
+;; Only the first one is right, so we erases subsequent ones, yielding
+
+;; (f1 frame#2 locals)
+;; (f2 frame#3 locals)
+;; (f1 nil locals)
+
+;; At this point we now have a some-to-one mapping of functions to frames
+;; find-locals takes a backtrace and an index of a frame in that backtrace
+;; and returns the locals for the frame. To get it we just search for the
+;; first entry that has the required frame number.
+
+;; find-locals still has debugging code in it which will be removed after
+;; there has been sufficient testing.
+
+(defvar *debug-locals* nil)
+
+(defun find-locals (index backtrace)
+  (let ((thread (jss::get-java-field (nth index backtrace) "thread" t)))
+    (and *debug-locals* (print `(:collapse ,thread ,index)))
+    (let((collapsed (collapse-locals thread)))
+      (and *debug-locals* (map nil 'print collapsed))
+      (let ((alignment 
+              (loop for function-local-association in (reverse collapsed)
+                    with backtrace = (map 'list (if *debug-locals* 'print 'identity) backtrace)
+                    for pos = (position (car function-local-association) backtrace
+					:key (lambda(frame)
+					       (if (typep frame 'sys::lisp-stack-frame)
+						   (#"getOperator" frame)
+						   (jss::get-java-field frame "METHOD" t))))
+                    collect (list (car function-local-association)
+				  pos
+				  (cdr function-local-association)))))
+        (and *debug-locals* (print :erase) (map nil 'print alignment))
+	;; first erasure of out of order frames
+        (loop for (nil pos) in alignment
+              for i from 0
+              when pos do
+                (loop for pair in (subseq alignment 0 i)
+                      for (nil pos2) = pair
+                      unless (null pos2)
+                        if (> pos2 pos)
+                          do  (setf (second pair) nil)))
+        (and *debug-locals* (print :align) (map nil 'print alignment))
+	;; second erasure of duplicate frame numbers
+        (loop for (nil pos) in alignment
+              for i from 0
+              do
+                 (loop for pair in (subseq alignment (1+ i))
+                       for (nil pos2) = pair
+                       unless (null pos2)
+                         if (eql pos2 pos)
+                           do  (setf (second pair) nil)))
+        (and *debug-locals* (map nil 'print alignment))
+        (if *debug-locals*
+            (print `(:find ,(cddr (find index alignment :key 'second :test 'eql)))))
+	;; finally, look up the locals for the given frame index
+        (cddr (find index alignment :key 'second :test 'eql))))))
+
+
 ;; needs to be the last thing. Some interaction with the fasl loader
 (pushnew 'fset-hook-annotate-internal-function sys::*fset-hooks*)
 
 (provide :abcl-introspect)
+

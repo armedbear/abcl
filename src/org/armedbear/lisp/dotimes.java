@@ -60,6 +60,7 @@ public final class dotimes extends SpecialOperator
 
     LispObject blockId = new LispObject();
     final Environment ext = new Environment(env);
+    thread.envStack.push(ext);
     try
       {
         ext.addBlock(NIL, blockId);
@@ -151,6 +152,7 @@ public final class dotimes extends SpecialOperator
       {
         thread.resetSpecialBindings(mark);
         ext.inactive = true;
+	while (thread.envStack.pop() != ext) {};
       }
   }
 

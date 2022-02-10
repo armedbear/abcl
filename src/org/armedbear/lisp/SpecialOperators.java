@@ -125,13 +125,14 @@ public final class SpecialOperators {
     {
         final LispThread thread = LispThread.currentThread();
         final SpecialBindingsMark mark = thread.markSpecialBindings();
+	Environment ext = new Environment(env);
+	thread.envStack.push(ext);
         try {
             LispObject varList = checkList(args.car());
             LispObject bodyAndDecls = parseBody(args.cdr(), false);
             LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
             LispObject body = bodyAndDecls.car();
 
-            Environment ext = new Environment(env);
             LinkedList<Cons> nonSequentialVars = new LinkedList<Cons>();
             while (varList != NIL) {
                 final Symbol symbol;
@@ -150,6 +151,7 @@ public final class SpecialOperators {
                 }
                 if (sequential) {
                     ext = new Environment(ext);
+		    thread.envStack.push(ext);
                     bindArg(specials, symbol, value, ext, thread);
                 } else
                     nonSequentialVars.add(new Cons(symbol, value));
@@ -170,6 +172,7 @@ for (Cons x : nonSequentialVars)
         }
         finally {
             thread.resetSpecialBindings(mark);
+	    while (thread.envStack.pop() != ext) {};
         }
     }
 

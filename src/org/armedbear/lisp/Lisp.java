@@ -558,7 +558,12 @@ public final class Lisp
                 return fun.execute(((Cons)obj).cdr, env);
               }
             if (fun instanceof MacroObject)
-              return eval(macroexpand(obj, env, thread), env, thread);
+	      { try
+		  { thread.envStack.push(new Environment(null,NIL,fun)); 
+		    return eval(macroexpand(obj, env, thread), env, thread);}
+		finally
+		  { thread.envStack.pop(); }
+	      }
             if (fun instanceof Autoload)
               {
                 Autoload autoload = (Autoload) fun;
@@ -594,84 +599,84 @@ public final class Lisp
 
   {
     if (args == NIL)
-      return thread.execute(function);
-    LispObject first = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first);
-      }
-    LispObject second = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second);
-      }
-    LispObject third = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third);
-      }
-    LispObject fourth = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth);
-      }
-    LispObject fifth = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth, fifth);
-      }
-    LispObject sixth = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth, fifth,
-                              sixth);
-      }
-    LispObject seventh = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth, fifth,
-                              sixth, seventh);
-      }
-    LispObject eighth = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth, fifth,
-                              sixth, seventh, eighth);
-      }
-    // More than CALL_REGISTERS_MAX arguments.
-    final int length = args.length() + CALL_REGISTERS_MAX;
-    LispObject[] array = new LispObject[length];
-    array[0] = first;
-    array[1] = second;
-    array[2] = third;
-    array[3] = fourth;
-    array[4] = fifth;
-    array[5] = sixth;
-    array[6] = seventh;
-    array[7] = eighth;
-    for (int i = CALL_REGISTERS_MAX; i < length; i++)
-      {
-        array[i] = eval(args.car(), env, thread);
-        args = args.cdr();
-      }
-    thread._values = null;
-    return thread.execute(function, array);
+	  return thread.execute(function);
+	LispObject first = eval(args.car(), env, thread);
+	args = ((Cons)args).cdr;
+	if (args == NIL)
+	  {
+	    thread._values = null;
+	    return thread.execute(function, first);
+	  }
+	LispObject second = eval(args.car(), env, thread);
+	args = ((Cons)args).cdr;
+	if (args == NIL)
+	  {
+	    thread._values = null;
+	    return thread.execute(function, first, second);
+	  }
+	LispObject third = eval(args.car(), env, thread);
+	args = ((Cons)args).cdr;
+	if (args == NIL)
+	  {
+	    thread._values = null;
+	    return thread.execute(function, first, second, third);
+	  }
+	LispObject fourth = eval(args.car(), env, thread);
+	args = ((Cons)args).cdr;
+	if (args == NIL)
+	  {
+	    thread._values = null;
+	    return thread.execute(function, first, second, third, fourth);
+	  }
+	LispObject fifth = eval(args.car(), env, thread);
+	args = ((Cons)args).cdr;
+	if (args == NIL)
+	  {
+	    thread._values = null;
+	    return thread.execute(function, first, second, third, fourth, fifth);
+	  }
+	LispObject sixth = eval(args.car(), env, thread);
+	args = ((Cons)args).cdr;
+	if (args == NIL)
+	  {
+	    thread._values = null;
+	    return thread.execute(function, first, second, third, fourth, fifth,
+				  sixth);
+	  }
+	LispObject seventh = eval(args.car(), env, thread);
+	args = ((Cons)args).cdr;
+	if (args == NIL)
+	  {
+	    thread._values = null;
+	    return thread.execute(function, first, second, third, fourth, fifth,
+				  sixth, seventh);
+	  }
+	LispObject eighth = eval(args.car(), env, thread);
+	args = ((Cons)args).cdr;
+	if (args == NIL)
+	  {
+	    thread._values = null;
+	    return thread.execute(function, first, second, third, fourth, fifth,
+				  sixth, seventh, eighth);
+	  }
+	// More than CALL_REGISTERS_MAX arguments.
+	final int length = args.length() + CALL_REGISTERS_MAX;
+	LispObject[] array = new LispObject[length];
+	array[0] = first;
+	array[1] = second;
+	array[2] = third;
+	array[3] = fourth;
+	array[4] = fifth;
+	array[5] = sixth;
+	array[6] = seventh;
+	array[7] = eighth;
+	for (int i = CALL_REGISTERS_MAX; i < length; i++)
+	  {
+	    array[i] = eval(args.car(), env, thread);
+	    args = args.cdr();
+	  }
+	thread._values = null;
+	return thread.execute(function, array);
   }
 
   public static final LispObject parseBody(LispObject body,
