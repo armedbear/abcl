@@ -1,5 +1,5 @@
 ;;; -*- mode: Lisp; Base: 10 ; Syntax: ANSI-Common-Lisp ; Package: CL-USER ; buffer-read-only: t; -*-
-;;; This is ASDF 3.3.5.0.3: Another System Definition Facility.
+;;; This is ASDF 3.3.5.7: Another System Definition Facility.
 ;;;
 ;;; Feedback, bug reports, and patches are all welcome:
 ;;; please mail to <asdf-devel@common-lisp.net>.
@@ -57,7 +57,7 @@
 			   (and (= is-major 3) (> is-minor 86)))))
 	(error "ASDF requires either System 453 or later or Intel Support 3.87 or later")))))
 ;;;; ---------------------------------------------------------------------------
-;;;; Handle ASDF package upgrade, including implementation-dependent magic.
+;;;; ASDF package upgrade, including implementation-dependent magic.
 ;;
 ;; See https://bugs.launchpad.net/asdf/+bug/485687
 ;;
@@ -147,12 +147,25 @@
 ;;;; General purpose package utilities
 
 (eval-when (:load-toplevel :compile-toplevel :execute)
-  (defun find-package* (package-designator &optional (error t))
+  (deftype package-designator () '(and (or package character string symbol) (satisfies find-package)))
+  (define-condition no-such-package-error (type-error)
+    ()
+    (:default-initargs :expected-type 'package-designator)
+    (:report (lambda (c s)
+              (format s "No package named ~a" (string (type-error-datum c))))))
+
+  (defmethod package-designator ((c no-such-package-error))
+    (type-error-datum c))
+
+  (defun find-package* (package-designator &optional (errorp t))
+    "Like CL:FIND-PACKAGE, but by default raises a UIOP:NO-SUCH-PACKAGE-ERROR if the
+  package is not found."
     (let ((package (find-package package-designator)))
       (cond
         (package package)
-        (error (error "No package named ~S" (string package-designator)))
+        (errorp (error 'no-such-package-error :datum package-designator))
         (t nil))))
+
   (defun find-symbol* (name package-designator &optional (error t))
     "Find a symbol in a package of given string'ified NAME;
 unlike CL:FIND-SYMBOL, work well with 'modern' case sensitive syntax
@@ -455,6 +468,11 @@ or when loading the package is optional."
 
 ;;; ensure-package, define-package
 (eval-when (:load-toplevel :compile-toplevel :execute)
+  ;; We already have UIOP:SIMPLE-STYLE-WARNING, but it comes from a later
+  ;; package.
+  (define-condition define-package-style-warning
+      #+sbcl (sb-int:simple-style-warning) #-sbcl (simple-condition style-warning)
+      ())
   (defun ensure-shadowing-import (name to-package from-package shadowed imported)
     (check-type name string)
     (check-type to-package package)
@@ -807,7 +825,15 @@ or when loading the package is optional."
               (do-external-symbols (sym pp) (ensure-mix (symbol-name sym) sym package pp shadowed imported inherited)))
       ;; handle import-from packages
       (loop :for (p . syms) :in import-from
-            :for pp = (find-package p) :do
+            ;; FOR NOW suppress errors in the case where the :import-from
+            ;; symbol list is empty (used only to establish a dependency by
+            ;; package-inferred-system users).
+            :for pp = (find-package* p syms) :do
+              (when (null pp)
+                ;; TODO: ASDF 3.4 Change to a full warning.
+                (warn 'define-package-style-warning
+                      :format-control "When defining package ~a, attempting to import-from non-existent package ~a. This is deprecated behavior and will be removed from UIOP in the future."
+                      :format-arguments (list name p)))
               (dolist (sym syms) (ensure-import (symbol-name sym) package pp shadowed imported)))
       ;; handle use-list and mix
       (dolist (p (append use mix))
@@ -867,7 +893,8 @@ or when loading the package is optional."
                          :import-from ',import-from :export ',export :intern ',intern
                          :recycle ',(if recycle-p recycle (cons package nicknames))
                          :mix ',mix :reexport ',reexport :unintern ',unintern
-                         :local-nicknames ',local-nicknames)))))
+                         ,@(when local-nicknames
+                             `(:local-nicknames ',local-nicknames)))))))
 
 (defmacro define-package (package &rest clauses)
   "DEFINE-PACKAGE takes a PACKAGE and a number of CLAUSES, of the form
@@ -912,7 +939,14 @@ MIX directives, and reexport their contents as per the REEXPORT directive."
 ;; This package, unlike UIOP/PACKAGE, is allowed to evolve and acquire new symbols or drop old ones.
 (define-package :uiop/package*
   (:use-reexport :uiop/package
-                 #+package-local-nicknames :uiop/package-local-nicknames))
+                 #+package-local-nicknames :uiop/package-local-nicknames)
+  (:import-from :uiop/package
+                #:define-package-style-warning
+                #:no-such-package-error
+                #:package-designator)
+  (:export #:define-package-style-warning
+           #:no-such-package-error
+           #:package-designator))
 ;;;; -------------------------------------------------------------------------
 ;;;; Handle compatibility with multiple implementations.
 ;;; This file is for papering over the deficiencies and peculiarities
@@ -1798,7 +1832,7 @@ form suitable for testing with #+."
   (:use :uiop/common-lisp :uiop/package :uiop/utility)
   (:export
    #:*uiop-version*
-   #:parse-version #:unparse-version #:version< #:version<= ;; version support, moved from uiop/utility
+   #:parse-version #:unparse-version #:version< #:version<= #:version= ;; version support, moved from uiop/utility
    #:next-version
    #:deprecated-function-condition #:deprecated-function-name ;; deprecation control
    #:deprecated-function-style-warning #:deprecated-function-warning
@@ -1807,7 +1841,7 @@ form suitable for testing with #+."
 (in-package :uiop/version)
 
 (with-upgradability ()
-  (defparameter *uiop-version* "3.3.5.0.3")
+  (defparameter *uiop-version* "3.3.5.7")
 
   (defun unparse-version (version-list)
     "From a parsed version (a list of natural numbers), compute the version string"
@@ -1857,6 +1891,12 @@ and return it as a string."
   (defun version<= (version1 version2)
     "Given two version strings, return T if the second is newer or the same"
     (not (version< version2 version1))))
+
+  (defun version= (version1 version2)
+    "Given two version strings, return T if the first is newer or the same and
+the second is also newer or the same."
+    (and (version<= version1 version2)
+         (version<= version2 version1)))
 
 
 (with-upgradability ()
@@ -2856,27 +2896,27 @@ to throw an error if the pathname is absolute"
                (values filename type))
               (t
                (split-name-type filename)))
-          (let* ((directory
-                   (unless file-only (cons relative path)))
-                 (pathname
-                   #-abcl
-                   (make-pathname
-                    :directory directory 
-                    :name name :type type
-                    :defaults (or #-mcl defaults *nil-pathname*))
-                   #+abcl
-                   (if (and defaults
-                            (ext:pathname-jar-p defaults)
-                            (null directory))
-                       ;; When DEFAULTS is a jar, it will have the directory we want
-                       (make-pathname :name name :type type
-                                      :defaults (or defaults *nil-pathname*))
-                       (make-pathname :name name :type type
-                                      :defaults (or defaults *nil-pathname*)
-                                      :directory directory))))
-            (apply 'ensure-pathname
-                   pathname
-                   (remove-plist-keys '(:type :dot-dot :defaults) keys)))))))
+            (let* ((directory
+                    (unless file-only (cons relative path)))
+                   (pathname
+                    #-abcl
+                    (make-pathname
+                     :directory directory
+                     :name name :type type
+                     :defaults (or #-mcl defaults *nil-pathname*))
+                    #+abcl
+                    (if (and defaults
+                             (ext:pathname-jar-p defaults)
+                             (null directory))
+                        ;; When DEFAULTS is a jar, it will have the directory we want
+                        (make-pathname :name name :type type
+                                       :defaults (or defaults *nil-pathname*))
+                        (make-pathname :name name :type type
+                                       :defaults (or defaults *nil-pathname*)
+                                       :directory directory))))
+              (apply 'ensure-pathname
+                     pathname
+                     (remove-plist-keys '(:type :dot-dot :defaults) keys)))))))
 
   (defun unix-namestring (pathname)
     "Given a non-wild PATHNAME, return a Unix-style namestring for it.
@@ -5923,6 +5963,7 @@ it will filter them appropriately."
    ;;; launch-program
    #:launch-program
    #:close-streams #:process-alive-p #:terminate-process #:wait-process
+   #:process-info
    #:process-info-error-output #:process-info-input #:process-info-output #:process-info-pid))
 (in-package :uiop/launch-program)
 
@@ -6129,7 +6170,10 @@ argument to pass to the internal RUN-PROGRAM"
      (exit-code :initform nil)
      ;; If the platform allows it, distinguish exiting with a code
      ;; >128 from exiting in response to a signal by setting this code
-     (signal-code :initform nil)))
+     (signal-code :initform nil))
+    (:documentation "This class should be treated as opaque by programmers, except for the
+exported PROCESS-INFO-* functions.  It should never be directly instantiated by
+MAKE-INSTANCE. Primarily, it is being made available to enable type-checking."))
 
 ;;;---------------------------------------------------------------------------
 ;;; The following two helper functions take care of handling the IF-EXISTS and
@@ -7786,6 +7830,9 @@ You can compare this string with e.g.: (ASDF:VERSION-SATISFIES (ASDF:ASDF-VERSIO
     (when *verbose-out* (apply 'format *verbose-out* format-string format-args)))
   ;; Private hook for functions to run after ASDF has upgraded itself from an older variant:
   (defvar *post-upgrade-cleanup-hook* ())
+  ;; Private variable for post upgrade cleanup to communicate if an upgrade has
+  ;; actually occured.
+  (defvar *asdf-upgraded-p*)
   ;; Private function to detect whether the current upgrade counts as an incompatible
   ;; data schema upgrade implying the need to drop data.
   (defun upgrading-p (&optional (oldest-compatible-version *oldest-forward-compatible-asdf-version*))
@@ -7823,7 +7870,7 @@ previously-loaded version of ASDF."
          ;; "3.4.5.67" would be a development version in the official branch, on top of 3.4.5.
          ;; "3.4.5.0.8" would be your eighth local modification of official release 3.4.5
          ;; "3.4.5.67.8" would be your eighth local modification of development version 3.4.5.67
-         (asdf-version "3.3.5.0.3")
+         (asdf-version "3.3.5.7")
          (existing-version (asdf-version)))
     (setf *asdf-version* asdf-version)
     (when (and existing-version (not (equal asdf-version existing-version)))
@@ -7883,6 +7930,8 @@ previously-loaded version of ASDF."
     (let ((new-version (asdf-version)))
       (unless (equal old-version new-version)
         (push new-version *previous-asdf-versions*)
+        (when (boundp '*asdf-upgraded-p*)
+          (setf *asdf-upgraded-p* t))
         (when old-version
           (if (version<= new-version old-version)
               (error (compatfmt "~&~@<; ~@;Downgraded ASDF from version ~A to version ~A~@:>~%")
@@ -7901,9 +7950,11 @@ previously-loaded version of ASDF."
     "Try to upgrade of ASDF. If a different version was used, return T.
    We need do that before we operate on anything that may possibly depend on ASDF."
     (let ((*load-print* nil)
-          (*compile-print* nil))
+          (*compile-print* nil)
+          (*asdf-upgraded-p* nil))
       (handler-bind (((or style-warning) #'muffle-warning))
-        (symbol-call :asdf :load-system :asdf :verbose nil))))
+        (symbol-call :asdf :load-system :asdf :verbose nil))
+      *asdf-upgraded-p*))
 
   (defmacro with-asdf-deprecation ((&rest keys &key &allow-other-keys) &body body)
     `(with-upgradability ()
@@ -8047,7 +8098,8 @@ previously-loaded version of ASDF."
               (clear-configuration-and-retry ()
                 :report (lambda (s)
                           (format s (compatfmt "~@<Retry ASDF operation after resetting the configuration.~@:>")))
-                (clrhash (session-cache *asdf-session*))
+                (unless (null *asdf-session*)
+                  (clrhash (session-cache *asdf-session*)))
                 (clear-configuration)))))))
 
   ;; Syntactic sugar for call-with-asdf-session
@@ -8368,7 +8420,8 @@ typically but not necessarily representing the files in a subdirectory of the bu
     ;; We ought to be able to extract this from the component alone with FILE-TYPE.
     ;; TODO: track who uses it in Quicklisp, and have them not use it anymore;
     ;; maybe issue a WARNING (then eventually CERROR) if the two methods diverge?
-    (let ((parent
+    (let (#+abcl
+          (parent
             (component-parent-pathname component)))
       (parse-unix-namestring
        (or (and (slot-boundp component 'relative-pathname)
@@ -8379,7 +8432,7 @@ typically but not necessarily representing the files in a subdirectory of the bu
        ;; JAR-PATHNAMES always have absolute directories
        #+abcl (not (ext:pathname-jar-p parent))
        :type (source-file-type component (component-system component))
-       :defaults parent)))
+       :defaults (component-parent-pathname component))))
 
   (defmethod source-file-type ((component parent-component) (system parent-component))
     :directory)
@@ -13830,11 +13883,26 @@ system or its dependencies if it has already been loaded."
 
 ;;;; Register ASDF itself and all its subsystems as preloaded.
 (with-upgradability ()
-  (dolist (s '("asdf" "uiop" "asdf-package-system"))
+  (dolist (s '("asdf" "asdf-package-system"))
     ;; Don't bother with these system names, no one relies on them anymore:
     ;; "asdf-utils" "asdf-bundle" "asdf-driver" "asdf-defsystem"
-    (register-preloaded-system s :version *asdf-version*)))
+    (register-preloaded-system s :version *asdf-version*))
+  (register-preloaded-system "uiop" :version *uiop-version*))
 
+;;;; Ensure that the version slot on the registered preloaded systems are
+;;;; correct, by CLEARing the system. However, we do not CLEAR-SYSTEM
+;;;; unconditionally. This is because it's possible the user has upgraded the
+;;;; systems using ASDF itself, meaning that the registered systems have real
+;;;; data from the file system that we want to preserve instead of blasting
+;;;; away and replacing with a blank preloaded system.
+(with-upgradability ()
+  (unless (equal (system-version (registered-system "asdf")) (asdf-version))
+    (clear-system "asdf"))
+  ;; 3.1.2 is the last version where asdf-package-system was a separate system.
+  (when (version< "3.1.2" (system-version (registered-system "asdf-package-system")))
+    (clear-system "asdf-package-system"))
+  (unless (equal (system-version (registered-system "uiop")) *uiop-version*)
+    (clear-system "uiop")))
 
 ;;;; Hook ASDF into the implementation's REQUIRE and other entry points.
 #+(or abcl clasp clisp clozure cmucl ecl mezzano mkcl sbcl)
