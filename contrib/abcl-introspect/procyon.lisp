@@ -26,7 +26,7 @@
   (let* ((settings
            (#"javaDefaults" 'DecompilerSettings))
          (writer
-           (jss:new 'io.StringWriter)))
+           (jss:new 'java.io.StringWriter)))
     (#"decompile" 'Decompiler
                   ;;; !!! need to reference as a type in the current VM
                   ;;; c.f.<https://github.com/Konloch/bytecode-viewer/blob/master/src/the/bytecode/club/bytecodeviewer/decompilers/ProcyonDecompiler.java>
