@@ -3618,8 +3618,9 @@ public final class Primitives {
             final LispThread thread = LispThread.currentThread();
             final SpecialBindingsMark mark = thread.markSpecialBindings();
 
+            Environment ext = new Environment(env);
+            thread.envStack.push(ext);
             try {
-                Environment ext = new Environment(env);
                 while (defs != NIL) {
                     LispObject def = checkList(defs.car());
                     Symbol symbol = checkSymbol(def.car());
@@ -3637,6 +3638,7 @@ public final class Primitives {
             }
             finally {
                 thread.resetSpecialBindings(mark);
+                while (thread.envStack.pop() != ext) {};
             }
         }
     };
@@ -3955,10 +3957,12 @@ public final class Primitives {
             thread._values = null;
             LispObject result = NIL;
             try {
+                thread.envStack.push(ext);
                 result  = progn(body, ext, thread);
             }
             finally {
                 thread.resetSpecialBindings(mark);
+                while (thread.envStack.pop() != ext) {};
             }
             return result;
         }

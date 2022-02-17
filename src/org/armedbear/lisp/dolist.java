@@ -61,9 +61,9 @@ public final class dolist extends SpecialOperator
 
     LispObject blockId = new LispObject();
     final Environment ext = new Environment(env);
+    thread.envStack.push(ext);
     try
-      {
-        // Implicit block.
+      { // Implicit block.
         ext.addBlock(NIL, blockId);
         // Evaluate the list form.
         LispObject list = checkList(eval(listForm, ext, thread));
@@ -123,6 +123,7 @@ public final class dolist extends SpecialOperator
       }
     finally
       {
+        while (thread.envStack.pop() != ext) {};
         thread.resetSpecialBindings(mark);
         ext.inactive = true;
       }

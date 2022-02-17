@@ -558,7 +558,16 @@ public final class Lisp
                 return fun.execute(((Cons)obj).cdr, env);
               }
             if (fun instanceof MacroObject)
-              return eval(macroexpand(obj, env, thread), env, thread);
+              {
+                try
+                  {
+                    thread.envStack.push(new Environment(null,NIL,fun)); 
+                    return eval(macroexpand(obj, env, thread), env, thread);}
+                finally
+                  {
+                    thread.envStack.pop();
+                  }
+              }
             if (fun instanceof Autoload)
               {
                 Autoload autoload = (Autoload) fun;
@@ -593,67 +602,60 @@ public final class Lisp
                                              LispThread thread)
 
   {
-    if (args == NIL)
+    if (args == NIL) {
       return thread.execute(function);
+    }
     LispObject first = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first);
-      }
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first);
+    }
     LispObject second = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second);
-      }
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second);
+    }
     LispObject third = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third);
-      }
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second, third);
+    }
     LispObject fourth = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth);
-      }
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second, third, fourth);
+    }
     LispObject fifth = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth, fifth);
-      }
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second, third, fourth, fifth);
+    }
     LispObject sixth = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth, fifth,
-                              sixth);
-      }
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second, third, fourth, fifth,
+                            sixth);
+    }
     LispObject seventh = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth, fifth,
-                              sixth, seventh);
-      }
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second, third, fourth, fifth,
+                            sixth, seventh);
+    }
     LispObject eighth = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth, fifth,
-                              sixth, seventh, eighth);
-      }
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second, third, fourth, fifth,
+                            sixth, seventh, eighth);
+    }
     // More than CALL_REGISTERS_MAX arguments.
     final int length = args.length() + CALL_REGISTERS_MAX;
     LispObject[] array = new LispObject[length];
@@ -665,11 +667,10 @@ public final class Lisp
     array[5] = sixth;
     array[6] = seventh;
     array[7] = eighth;
-    for (int i = CALL_REGISTERS_MAX; i < length; i++)
-      {
-        array[i] = eval(args.car(), env, thread);
-        args = args.cdr();
-      }
+    for (int i = CALL_REGISTERS_MAX; i < length; i++) {
+      array[i] = eval(args.car(), env, thread);
+      args = args.cdr();
+    }
     thread._values = null;
     return thread.execute(function, array);
   }
@@ -1407,7 +1408,7 @@ public final class Lisp
               url = Lisp.class.getResource(name.getNamestring());
               input = url.openStream();
           } catch (IOException e) {
-	      System.err.println("Failed to read class bytes from boot class " + url);
+              System.err.println("Failed to read class bytes from boot class " + url);
               error(new LispError("Failed to read class bytes from boot class " + url));
           }
       }
@@ -1448,9 +1449,9 @@ public final class Lisp
 
     public static final Function makeCompiledFunctionFromClass(Class<?> c) {
       try {
-	if (c != null) {
-	    Function obj = (Function)c.newInstance();
-	    return obj;
+        if (c != null) {
+            Function obj = (Function)c.newInstance();
+            return obj;
         } else {
             return null;
         }
@@ -1503,18 +1504,18 @@ public final class Lisp
 
     public static final Function loadClassBytes(byte[] bytes)
     {
-    	return loadClassBytes(bytes, new JavaClassLoader());
+        return loadClassBytes(bytes, new JavaClassLoader());
     }
 
     public static final Function loadClassBytes(byte[] bytes,
                                                 JavaClassLoader cl)
     {
         Class<?> c = cl.loadClassFromByteArray(null, bytes, 0, bytes.length);
-	Function obj = makeCompiledFunctionFromClass(c);
-	if (obj != null) {
-	    obj.setClassBytes(bytes);
-	}
-	return obj;
+        Function obj = makeCompiledFunctionFromClass(c);
+        if (obj != null) {
+            obj.setClassBytes(bytes);
+        }
+        return obj;
     }
 
 
@@ -2443,17 +2444,17 @@ public final class Lisp
       // builds can suffix further information upon the java.version
       // property.
       try {
-	Integer.parseInt(javaVersion);
+        Integer.parseInt(javaVersion);
       } catch (NumberFormatException e) {
-	for (int i = 0; i < javaVersion.length(); i++) {
-	  char c = javaVersion.charAt(i); // Unicode?
+        for (int i = 0; i < javaVersion.length(); i++) {
+          char c = javaVersion.charAt(i); // Unicode?
           if (!Character.isDigit(c)) {
             // Push the non-conforming keyword for completeness
             featureList.push(internKeyword("JAVA-" + javaVersion));
-	    platformVersion = javaVersion.substring(0, i);
-	    break;
-	  }
-	}
+            platformVersion = javaVersion.substring(0, i);
+            break;
+          }
+        }
       }
       featureList = featureList.push(internKeyword("JAVA-" + platformVersion));
     }
@@ -2557,7 +2558,7 @@ public final class Lisp
 
     // ### *fasl-loader*
     public static final Symbol _FASL_LOADER_ =
-	exportSpecial("*FASL-LOADER*", PACKAGE_SYS, NIL);
+        exportSpecial("*FASL-LOADER*", PACKAGE_SYS, NIL);
 
   // ### *source*
   // internal symbol
@@ -2943,7 +2944,7 @@ public final class Lisp
     @Override
     public LispObject execute(LispObject args, Environment env)
     {
-	return error(new SimpleError("This is a placeholder. It should only be called in compiled code, and tranformed by the compiler using special form handlers."));
+        return error(new SimpleError("This is a placeholder. It should only be called in compiled code, and tranformed by the compiler using special form handlers."));
     }
   }
 

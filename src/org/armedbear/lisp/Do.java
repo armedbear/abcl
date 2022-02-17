@@ -124,6 +124,7 @@ public final class Do {
         LispObject localTags = preprocessTagBody(body, ext);
         LispObject blockId = new LispObject();
         try {
+            thread.envStack.push(ext);
             // Implicit block.
             ext.addBlock(NIL, blockId);
             while (true) {
@@ -183,6 +184,7 @@ public final class Do {
             throw ret;
         }
         finally {
+            while (thread.envStack.pop() != ext) {}
             thread.resetSpecialBindings(mark);
             ext.inactive = true;
         }
