@@ -24,6 +24,7 @@
                              (:test-file "read-suppress")
                              (:test-file "run-program")
                              (:test-file "url-stream")
+                             (:test-file "environments")
                              (:test-file "without-use-cl")))))
 
 
