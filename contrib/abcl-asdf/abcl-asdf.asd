@@ -7,17 +7,23 @@
   :depends-on (jss abcl-build)
   :components 
   ((:module package
-            :pathname "" 
-            :components ((:file "package")))
+    :pathname "" 
+    :components ((:file "package")))
    (:module base
-            :pathname "" 
-            :components ((:file "abcl-asdf")
-                         (:file "asdf-jar" :depends-on ("abcl-asdf")))
-            :depends-on (package maven))
+    :pathname "" 
+    :components ((:file "abcl-asdf")
+		 (:file "asdf-jar" :depends-on ("abcl-asdf")))
+    :depends-on (package maven))
    (:module maven
-            :pathname "" 
-            :components ((:file "maven")
-                         (:file "mvn-module"))
-            :depends-on (package)))
+    :pathname "" 
+    :components ((:file "maven")
+		 (:file "mvn-module"))
+    :depends-on (package))
+   (:module osgi
+    :pathname "" 
+    :components ((:file "osgi")
+		 (:file "asdf-osgi-bundle"))
+    :depends-on (base maven)
+    :serial t))
   :in-order-to ((test-op (test-op abcl-asdf-tests))))
 
