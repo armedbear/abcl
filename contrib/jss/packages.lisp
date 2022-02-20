@@ -6,6 +6,7 @@
    #:*added-to-classpath*
    #:*do-auto-imports*
    #:*muffle-warnings*
+   #:*imports-resolved-classes*
 
    #:invoke-restargs
    #:with-constant-signature
@@ -18,6 +19,9 @@
    
    #:jar-import
    #:classfiles-import
+
+   #:lookup-class-name
+
 
 ;;; Useful utilities to convert common Java items to Lisp counterparts
    #:hashmap-to-hashtable
