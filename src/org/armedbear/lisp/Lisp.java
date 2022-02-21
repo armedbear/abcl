@@ -2734,13 +2734,17 @@ public final class Lisp
   static
   {
     // ### call-arguments-limit
-    Symbol.CALL_ARGUMENTS_LIMIT.initializeConstant(Fixnum.constants[50]);
+    Symbol.CALL_ARGUMENTS_LIMIT.initializeConstant(Fixnum.getInstance(2147483647));
   }
 
   static
   {
     // ### lambda-parameters-limit
-    Symbol.LAMBDA_PARAMETERS_LIMIT.initializeConstant(Fixnum.constants[50]);
+    Symbol.LAMBDA_PARAMETERS_LIMIT.initializeConstant(Fixnum.getInstance(1024));
+    // A conservative value, as actual limit is unknown, dependent on
+    // width of constants.  Arguments limited by the name length of
+    // the arguments whose printed representation cannot execeed 65535
+    // bytes.
   }
 
   static
