@@ -2088,7 +2088,7 @@ compare the method combination name to the symbol 'standard.")
                                (early-method-lambda-list method)
                                (method-lambda-list method)))
     (flet ((lose (string &rest args)
-                 (error 'simple-program-error
+                 (error 'program-error
                         :format-control "~@<attempt to add the method~2I~_~S~I~_~
                         to the generic function~2I~_~S;~I~_~
                         but ~?~:>"
