@@ -44,7 +44,7 @@
            (do ((a args (cddr a)))
                ((endp a))
              (when (endp (cdr a))
-               (error 'simple-program-error
+               (error 'program-error
                       :format-control "Odd number of arguments to PSETF."))
              (multiple-value-bind
                (dummies vals newval setter getter)
