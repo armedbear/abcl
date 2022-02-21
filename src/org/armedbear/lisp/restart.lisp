@@ -324,23 +324,51 @@
   (force-output *query-io*)
   (multiple-value-list (eval (read *query-io*))))
 
+;; This modified function offers you a function with the same name in another package.
 (defun undefined-function-called (name arguments)
   (finish-output)
-  (loop
-    (restart-case
-        (error 'undefined-function :name name)
-      (continue ()
-        :report "Try again.")
-      (use-value (value)
-        :report "Specify a function to call instead."
-        :interactive query-function
-        (return-from undefined-function-called
-                     (apply value arguments)))
-      (return-value (&rest values)
-        :report (lambda (stream)
-                  (format stream "Return one or more values from the call to ~S." name))
-        :interactive query-function
-        (return-from undefined-function-called
-                     (values-list values))))
-    (when (fboundp name)
-      (return (apply name arguments)))))
+  ;; find all fbound symbols of same name
+  (let ((alternatives  
+	  (let ((them nil))
+	    (dolist (package (list-all-packages))
+	      (let ((found (find-symbol (string name) package)))
+		(when (and (fboundp found) (not (member found them)))
+		  (push found them))))
+	    them)))
+    (let ((sys::*restart-clusters* sys::*restart-clusters*))
+      ;; Build and add the restarts 
+      (dolist (alt alternatives)
+	(let ((package (symbol-package alt)))
+	  (let ((alt alt) (package package))
+	    (push 
+	     (list (system::make-restart :name
+					 (intern (concatenate 'string "USE-FROM-" (package-name package)))
+					 :function
+					 #'(lambda (&rest ignore)
+					     (declare (ignore ignore))
+					     (shadowing-import alt)
+					     (setq name (symbol-function alt))
+					     (return-from undefined-function-called (apply name arguments))
+					     )
+					 :report-function
+					 #'(lambda (stream)
+					     (format stream "Import then use #'~a::~a instead" (string-downcase (package-name package)) alt))))
+	     sys::*restart-clusters*))))
+      (loop
+	(restart-case
+	    (error 'undefined-function :name name)
+	  (continue ()
+	    :report "Try again.")
+	  (use-value (value)
+	    :report "Specify a function to call instead."
+	    :interactive query-function
+	    (return-from undefined-function-called
+	      (apply value arguments)))
+	  (return-value (&rest values)
+	    :report (lambda (stream)
+		      (format stream "Return one or more values from the call to ~S." name))
+	    :interactive query-function
+	    (return-from undefined-function-called
+	      (values-list values)))))
+      (when (fboundp name)
+	(return-from undefined-function-called (apply name arguments))))))
