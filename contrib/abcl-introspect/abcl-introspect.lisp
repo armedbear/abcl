@@ -394,7 +394,15 @@ above have used annotate local functions"
          for value = (jss:get-java-field  binding "value" t)
          unless (find name them :key 'second)
            collect (list :lexical-function name value) into them
-         finally (return them))))
+         finally (return them))
+   (loop for binding =  (jss::get-java-field env "blocks" t)
+	   then (jss::get-java-field binding "next" t)
+	 while binding
+	 for name = (jss::get-java-field binding "symbol" t)
+	 for value = (jss::get-java-field  binding "value" t)
+	 unless (find name them :key 'second)
+	   collect (list :block name value) into them
+	 finally (return them))))
 
 ;; Locals
 

@@ -3689,11 +3689,14 @@ public final class Primitives {
 
         {
             Environment ext = new Environment(env);
+            LispThread thread = LispThread.currentThread();
             try {
+                thread.envStack.push(ext);
                 return processTagBody(args, preprocessTagBody(args, ext), ext);
             }
             finally {
                 ext.inactive = true;
+                while (thread.envStack.pop() != ext) {};
             }
         }
     };
@@ -3745,6 +3748,7 @@ public final class Primitives {
             LispObject result = NIL;
             final LispThread thread = LispThread.currentThread();
             try {
+                thread.envStack.push(ext);
                 return progn(body, ext, thread);
             } catch (Return ret) {
                 if (ret.getBlock() == block) {
@@ -3753,6 +3757,7 @@ public final class Primitives {
                 throw ret;
             }
             finally {
+                while (thread.envStack.pop() != ext) {};
                 ext.inactive = true;
             }
         }
