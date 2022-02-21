@@ -372,7 +372,7 @@ above have used annotate local functions"
 
 (defun environment-parts(env)
   (append
-   (loop for binding =  (jss:get-java-field env "vars" t) then (jss:get-java-field binding "next" t)
+   (loop for binding = (jss:get-java-field env "vars" t) then (jss:get-java-field binding "next" t)
          while binding
          for symbol = (jss:get-java-field binding "symbol" t)
          for value = (jss:get-java-field binding "value" t)
@@ -380,21 +380,32 @@ above have used annotate local functions"
          unless (find symbol them :key 'second)
            collect (list (if special
                              :special-variable
+                             (if (jss:jtypep value 'lisp.SymbolMacro)
+				 :symbol-macro
+				 :lexical-variable))
                              :lexical-variable)
                          symbol
-                         (if special
-                             (symbol-value symbol)
+                         (if (jss:jtypep value 'lisp.SymbolMacro)
+                             (#"getExpansion" value)
                              value))
              into them
          finally (return them))
-   (loop for binding =  (jss:get-java-field env "lastFunctionBinding" t)
+   (loop for binding = (jss:get-java-field env "lastFunctionBinding" t)
            then (jss:get-java-field binding "next" t)
          while binding
          for name = (jss:get-java-field binding "name" t)
          for value = (jss:get-java-field  binding "value" t)
          unless (find name them :key 'second)
            collect (list :lexical-function name value) into them
-         finally (return them))))
+         finally (return them))
+   (loop for binding = (jss::get-java-field env "blocks" t)
+	   then (jss::get-java-field binding "next" t)
+	 while binding
+	 for name = (jss::get-java-field binding "symbol" t)
+	 for value = (jss::get-java-field  binding "value" t)
+	 unless (find name them :key 'second)
+	   collect (list :block name value) into them
+	 finally (return them))))
 
 ;; Locals
 
