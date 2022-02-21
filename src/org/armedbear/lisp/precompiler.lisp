@@ -547,7 +547,7 @@
   (let* ((args (cdr form))
          (len (length args)))
     (when (oddp len)
-      (error 'simple-program-error
+      (error 'compiler-error
              :format-control "Odd number of arguments to SETQ."))
     (if (= len 2)
         (let* ((sym (%car args))
