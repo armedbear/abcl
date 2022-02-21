@@ -192,6 +192,7 @@ for (Cons x : nonSequentialVars)
             final SpecialBindingsMark mark = thread.markSpecialBindings();
             Environment ext = new Environment(env);
             try {
+	 	thread.envStack.push(ext);
                 // Declare our free specials, this will correctly raise
                 LispObject body = ext.processDeclarations(args.cdr());
 
@@ -216,6 +217,7 @@ for (Cons x : nonSequentialVars)
             }
             finally {
                 thread.resetSpecialBindings(mark);
+		while (thread.envStack.pop() != ext) {};
             }
         }
     };
@@ -256,8 +258,13 @@ for (Cons x : nonSequentialVars)
         {
             final LispThread thread = LispThread.currentThread();
             final Environment ext = new Environment(env);
-            args = ext.processDeclarations(args);
-            return progn(args, ext, thread);
+	    try {
+	      	thread.envStack.push(ext);
+		args = ext.processDeclarations(args);
+		return progn(args, ext, thread);
+	    }
+	    finally
+	      {   while (thread.envStack.pop() != ext) {}; }
         }
     };
 
