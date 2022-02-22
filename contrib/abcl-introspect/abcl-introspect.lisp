@@ -383,7 +383,7 @@ above have used annotate local functions"
                              (if (jss:jtypep value 'lisp.SymbolMacro)
 				 :symbol-macro
 				 :lexical-variable))
-                             :lexical-variable)
+                             
                          symbol
                          (if (jss:jtypep value 'lisp.SymbolMacro)
                              (#"getExpansion" value)
