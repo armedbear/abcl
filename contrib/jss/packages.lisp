@@ -30,6 +30,9 @@
 
    #:j2list
    #:jmap
+   
+   #:jtypep
+   #:jtypecase
 
 ;;; XXX Necessary to work in OSGi?
    #:get-java-field ; use JAVA:JFIELD
