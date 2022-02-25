@@ -129,7 +129,7 @@
   (foreach-internal-field
    (lambda(top internal)
      (unless (eq (if (symbolp top) (symbol-function top) top) internal)
-       (setf (getf (function-plist internal) :internal-to-function) (or definer top))
+       (setf (getf (sys:function-plist internal) :internal-to-function) (or definer top))
        ))
    nil
    fns
@@ -173,11 +173,11 @@ object. This gets called once."
            (let ((method-function (mop::std-method-function method))
                  (fast-function  (mop::std-method-fast-function method)))
              (when (and method-function (compiled-function-p method-function)) 
-               (setf (getf (function-plist method-function) :method-function) method)
+               (setf (getf (sys:function-plist method-function) :method-function) method)
                (annotate-internal-functions (list method-function) method)
                (index-function-class-names (list method-function)))
              (when (and fast-function (compiled-function-p fast-function))
-               (setf (getf (function-plist fast-function) :method-fast-function) method)
+               (setf (getf (sys:function-plist fast-function) :method-fast-function) method)
                (annotate-internal-functions (list fast-function) method)
                (index-function-class-names (list method-function))))))
       (if (eq which :all)
@@ -290,13 +290,13 @@ above have used annotate local functions"
              (and (= (length internals) 2)
                   (eq (second internals) (intern "INVOKE-RESTARGS" :jss))
                   (stringp (first internals))
-                  (setf (getf (sys::function-plist f) :jss-function) (first internals)))))))
+                  (setf (getf (sys:function-plist f) :jss-function) (first internals)))))))
          
 (defun local-function-p (function)
   "Helper function. Tests whether a function wasn't defined at top
   level based on function-plist annotations"
   (and (and (functionp function) (not (typep function 'generic-function)))
-       (let ((plist  (sys::function-plist function)))
+       (let ((plist  (sys:function-plist function)))
          (or (getf plist :internal-to-function)
              (getf plist :method-function)
              (getf plist :method-fast-function)
@@ -356,12 +356,13 @@ above have used annotate local functions"
 ;; annotated when they are defined.
 
 (defmethod mop::add-direct-method :after (class method)
-  (annotate-clos-methods (list method))
-)
+  (annotate-clos-methods (list method)))
 
-(defmethod mop::ensure-class-using-class :after (class name  &key direct-slots
-                                             direct-default-initargs 
-                                             &allow-other-keys)
+(defmethod mop::ensure-class-using-class :after (class name
+                                                 &key direct-slots
+                                                   direct-default-initargs 
+                                                 &allow-other-keys)
+  (declare (ignore direct-slots direct-default-initargs))
   (annotate-clos-slots (mop::class-direct-slots (find-class name))))
 
 ;; Environments
@@ -370,7 +371,7 @@ above have used annotate local functions"
 ;; (kind name value)
 ;; where kind is either :lexical-variable or :lexical-function :special-variable
 
-(defun environment-parts(env)
+(defun environment-parts (env)
   (append
    (loop for binding = (jss:get-java-field env "vars" t) then (jss:get-java-field binding "next" t)
          while binding
@@ -438,22 +439,24 @@ above have used annotate local functions"
 ;; that case we get a concurrent modification exception as we iterate
 ;; through the iterator, when some other function call is made.
 
-(defun stack-to-list (stack)
-  (coerce (#"toArray" stack) 'list))
+;; BEGIN use  :abcl-introspect/system
+(in-package :abcl-introspect/system)
 
 (defun collapse-locals (thread)
-  (loop for bindings in (mapcar 'sys::environment-parts
-                                (stack-to-list (jss:get-java-field thread "envStack" t)))
-        with last-locals
-        with last-function
-        for binding = (car bindings)
-        if (eq (second binding) nil)
-          collect (prog1
-                      (list last-function  last-locals)
-                    (setq last-locals nil)
-                    (setq last-function (third binding)))
-        else
-          do (setq last-locals bindings)))
+  (flet ((stack-to-list (stack)
+             (coerce (#"toArray" stack) 'list)))
+    (loop for bindings in (mapcar 'sys::environment-parts
+                                  (stack-to-list (jss:get-java-field thread "envStack" t)))
+          with last-locals
+          with last-function
+          for binding = (car bindings)
+          if (eq (second binding) nil)
+            collect (prog1
+                        (list last-function  last-locals)
+                      (setq last-locals nil)
+                      (setq last-function (third binding)))
+          else
+            do (setq last-locals bindings))))
 
 ;; Now that we have the pairings of function-executing and lexicals we need
 ;; to associate each such function with the stack frame for it being
@@ -501,17 +504,21 @@ above have used annotate local functions"
 
 ;; find-locals still has debugging code in it which will be removed after
 ;; there has been sufficient testing.
-
-(defvar *debug-locals* nil)
+;;; ME: presumably *debugging-locals-p* can go away now?
+(defvar *debugging-locals-p* nil
+  "Whether SYS:FIND-LOCALS should be looking for local variables")
 
 (defun find-locals (index backtrace)
+  "Return local variable bindings at INDEX in BACKTRACE
+
+Added by ABCL-INTROSPECT."
   (let ((thread (jss:get-java-field (nth index backtrace) "thread" t)))
-    (and *debug-locals* (print `(:collapse ,thread ,index)))
-    (let((collapsed (collapse-locals thread)))
-      (and *debug-locals* (map nil 'print collapsed))
+    (and *debugging-locals-p* (print `(:collapse ,thread ,index)))
+    (let ((collapsed (collapse-locals thread)))
+      (and *debugging-locals-p* (map nil 'print collapsed))
       (let ((alignment 
               (loop for function-local-association in (reverse collapsed)
-                    with backtrace = (map 'list (if *debug-locals* 'print 'identity) backtrace)
+                    with backtrace = (map 'list (if *debugging-locals-p* 'print 'identity) backtrace)
                     for pos = (position (car function-local-association) backtrace
                                         :key (lambda(frame)
                                                (if (typep frame 'sys::lisp-stack-frame)
@@ -520,7 +527,7 @@ above have used annotate local functions"
                     collect (list (car function-local-association)
                                   pos
                                   (cdr function-local-association)))))
-        (and *debug-locals* (print :erase) (map nil 'print alignment))
+        (and *debugging-locals-p* (print :erase) (map nil 'print alignment))
         ;; first erasure of out of order frames
         (loop for (nil pos) in alignment
               for i from 0
@@ -530,7 +537,7 @@ above have used annotate local functions"
                       unless (null pos2)
                         if (> pos2 pos)
                           do  (setf (second pair) nil)))
-        (and *debug-locals* (print :align) (map nil 'print alignment))
+        (and *debugging-locals-p* (print :align) (map nil 'print alignment))
         ;; second erasure of duplicate frame numbers
         (loop for (nil pos) in alignment
               for i from 0
@@ -540,12 +547,13 @@ above have used annotate local functions"
                        unless (null pos2)
                          if (eql pos2 pos)
                            do  (setf (second pair) nil)))
-        (and *debug-locals* (map nil 'print alignment))
-        (if *debug-locals*
+        (and *debugging-locals-p* (map nil 'print alignment))
+        (if *debugging-locals-p*
             (print `(:find ,(cddr (find index alignment :key 'second :test 'eql)))))
         ;; finally, look up the locals for the given frame index
         (cddr (find index alignment :key 'second :test 'eql))))))
-
+;; END use :abcl-introspect/system
+(in-package :system) 
 
 ;; needs to be the last thing. Some interaction with the fasl loader
 (pushnew 'fset-hook-annotate-internal-function sys::*fset-hooks*)
