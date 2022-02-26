@@ -377,6 +377,9 @@ above have used annotate local functions"
          for symbol = (jss:get-java-field binding "symbol" t)
          for value = (jss:get-java-field binding "value" t)
          for special = (jss:get-java-field binding "specialp" t)
+         if (member symbol '(:catch))
+           collect `(,symbol ,value) into them
+         else
          unless (find symbol them :key 'second)
            collect (list (if special
                              :special-variable
