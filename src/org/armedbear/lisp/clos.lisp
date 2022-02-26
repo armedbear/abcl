@@ -2981,6 +2981,7 @@ to ~S with argument list ~S."
                             #'(lambda (dep)
                                 (update-dependent gf dep 'add-method method))))
           (add-method gf method))
+      (sys::record-source-information-for-type function-name `(:slot-reader ,function-name ,(class-name class)))
       method)))
 
 (defun add-writer-method (class function-name slot-definition)
@@ -3031,6 +3032,7 @@ to ~S with argument list ~S."
                             #'(lambda (dep)
                                 (update-dependent gf dep 'add-method method))))
           (add-method gf method))
+      (sys::record-source-information-for-type function-name `(:slot-writer ,function-name ,(class-name class)))
       method)))
 
 (defmacro atomic-defgeneric (function-name &rest rest)
