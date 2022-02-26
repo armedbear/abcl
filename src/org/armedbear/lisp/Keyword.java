@@ -51,6 +51,7 @@ public final class Keyword
         CAPITALIZE          = internKeyword("CAPITALIZE"),
         CAPITALIZE_FIRST    = internKeyword("CAPITALIZE-FIRST"),
         CASE                = internKeyword("CASE"),
+        CATCH               = internKeyword("CATCH"),
         CAUSE               = internKeyword("CAUSE"),
         CHAR                = internKeyword("CHAR"),
         COMMON              = internKeyword("COMMON"),

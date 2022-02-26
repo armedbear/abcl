@@ -3805,7 +3805,9 @@ public final class Primitives {
             thread.pushCatchTag(tag);
             LispObject body = args.cdr();
             LispObject result = NIL;
+            Environment ext = new Environment(env,Keyword.CATCH,tag);
             try {
+                thread.envStack.push(ext);
                 return progn(body, env, thread);
             } catch (Throw t) {
                 if (t.tag == tag) {
@@ -3816,6 +3818,7 @@ public final class Primitives {
                 throw ret;
             }
             finally {
+                while (thread.envStack.pop() != ext) {};
                 thread.popCatchTag();
             }
         }
