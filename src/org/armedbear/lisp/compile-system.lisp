@@ -312,6 +312,7 @@
       (load (do-compile "print.lisp"))
       (load (do-compile "pprint-dispatch.lisp"))
       (load (do-compile "pprint.lisp"))
+      (load (do-compile "pprint-backquote.lisp"))
       (load (do-compile "format.lisp"))
       (load (do-compile "delete.lisp"))
       (load (do-compile "concatenate.lisp"))
