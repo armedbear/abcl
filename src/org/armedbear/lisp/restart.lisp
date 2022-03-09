@@ -68,28 +68,28 @@
 
 (defun map-restarts (fn condition call-test-p)
   (let ((associated ())
-	(other ()))
+        (other ()))
     (dolist (alist *condition-restarts*)
       (if (eq (car alist) condition)
-	  (setq associated (cdr alist))
-	  (setq other (append (cdr alist) other))))
+          (setq associated (cdr alist))
+          (setq other (append (cdr alist) other))))
     (dolist (restart-cluster *restart-clusters*)
       (dolist (restart restart-cluster)
-	(when (and (or (not condition)
-		       (member restart associated)
-		       (not (member restart other)))
-		   (or (not call-test-p)
-		       (funcall (restart-test-function restart) condition)))
-	  (funcall fn restart))))))
+        (when (and (or (not condition)
+                       (member restart associated)
+                       (not (member restart other)))
+                   (or (not call-test-p)
+                       (funcall (restart-test-function restart) condition)))
+          (funcall fn restart))))))
 
 
 (defun restart-report (restart stream)
   (funcall (or (restart-report-function restart)
-	       (let ((name (restart-name restart)))
-		 (lambda (stream)
-		   (if name (%format stream "~S" name)
-		       (%format stream "~S" restart)))))
-	   stream))
+               (let ((name (restart-name restart)))
+                 (lambda (stream)
+                   (if name (%format stream "~S" name)
+                       (%format stream "~S" restart)))))
+           stream))
 
 (defun print-restart (restart stream)
   (if *print-escape*
@@ -106,20 +106,20 @@
 (defun find-restart-or-control-error (identifier &optional condition)
   (or (find-restart identifier condition)
       (error 'control-error
-	     :format-control "Restart ~S is not active."
-	     :format-arguments (list identifier))))
+             :format-control "Restart ~S is not active."
+             :format-arguments (list identifier))))
 
 (defun invoke-restart (restart &rest values)
   (let ((real-restart
-	  (if (restart-p restart)
-	      (catch 'found
-		(map-restarts (lambda(r) (when (eq r restart)
-					   (throw 'found r)))
-			      nil nil)
-		(error 'control-error
-		       :format-control "Restart ~S is not active."
-		       :format-arguments (list restart)))
-	      (find-restart-or-control-error restart))))
+          (if (restart-p restart)
+              (catch 'found
+                (map-restarts (lambda(r) (when (eq r restart)
+                                           (throw 'found r)))
+                              nil nil)
+                (error 'control-error
+                       :format-control "Restart ~S is not active."
+                       :format-arguments (list restart)))
+              (find-restart-or-control-error restart))))
     (apply (restart-function real-restart) values)))
 
 (defun interactive-restart-arguments (real-restart)
@@ -130,17 +130,17 @@
 
 (defun invoke-restart-interactively (restart)
   (let* ((real-restart
-	   (if (restart-p restart)
-	       (catch 'found
-		 (map-restarts (lambda(r) (when (eq r restart)
-					    (throw 'found r)))
-			       nil nil)
-		 (error 'control-error
-			:format-control "Restart ~S is not active."
-			:format-arguments (list restart)))
-	       (find-restart-or-control-error restart)))
-	 (args (interactive-restart-arguments real-restart))
-	 )
+           (if (restart-p restart)
+               (catch 'found
+                 (map-restarts (lambda(r) (when (eq r restart)
+                                            (throw 'found r)))
+                               nil nil)
+                 (error 'control-error
+                        :format-control "Restart ~S is not active."
+                        :format-arguments (list restart)))
+               (find-restart-or-control-error restart)))
+         (args (interactive-restart-arguments real-restart))
+         )
     (apply (restart-function real-restart) args)))
 
 (defun parse-keyword-pairs (list keys)
@@ -189,9 +189,9 @@
 (defun munge-restart-case-expression (expression env)
   (let ((exp (macroexpand expression env)))
     (if (consp exp)
-	(let* ((name (car exp))
-	       (args (if (eq name 'cerror) (cddr exp) (cdr exp))))
-	  (if (member name '(SIGNAL ERROR CERROR WARN))
+        (let* ((name (car exp))
+               (args (if (eq name 'cerror) (cddr exp) (cdr exp))))
+          (if (member name '(SIGNAL ERROR CERROR WARN))
               (let ((n-cond (gensym)))
                 `(let ((,n-cond (coerce-to-condition ,(first args)
                                                      (list ,@(rest args))
@@ -262,11 +262,11 @@
 (defmacro with-condition-restarts (condition-form restarts-form &body body)
   (let ((n-cond (gensym)))
     `(let ((*condition-restarts*
-	    (cons (let ((,n-cond ,condition-form))
-		    (cons ,n-cond
-			  (append ,restarts-form
-				  (cdr (assoc ,n-cond *condition-restarts*)))))
-		  *condition-restarts*)))
+            (cons (let ((,n-cond ,condition-form))
+                    (cons ,n-cond
+                          (append ,restarts-form
+                                  (cdr (assoc ,n-cond *condition-restarts*)))))
+                  *condition-restarts*)))
        ,@body)))
 
 (defun abort (&optional condition)
