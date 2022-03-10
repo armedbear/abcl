@@ -33,33 +33,34 @@
 (require :clos)
 
 (defvar *disassembler-function* nil
-  "The currently used function for CL:DISASSEMBLE.  
+  "The underlying function last used for CL:DISASSEMBLE or nil if not invoked
 
-Available disassemblers are configured by pushing a strategy to SYSTEM:*DISASSEMBLERS*.  
-
-SYSTEM:CHOOSE-DISASSEMBLER selects a current strategy from this list .")
+Available disassemblers are configured by pushing a strategy to
+SYSTEM:*DISASSEMBLERS*.  The function SYSTEM:CHOOSE-DISASSEMBLER is
+used to select a current strategy from this list of strategies.")
 
 (defvar *disassemblers*
   `((:system-javap . disassemble-class-bytes))
-  "Methods of invoking CL:DISASSEMBLE consisting of a enumeration of (keyword function) pairs
+  "Methods of invoking CL:DISASSEMBLE consisting of a list of (KEYWORD FUNCTION) pairs
 
-The pairs (keyword function) contain a keyword identifying this
-particulat disassembler, and a symbol designating function takes a
-object to disassemble.
+The pairs (KEYWORD FUNCTION) contain a KEYWORD uniquely identifying a
+particular disassembler and a SYMBOL designating its invocation function.
 
-Use SYS:CHOOSE-DISASSEMBLER to install a given disassembler as the one
-used by CL:DISASSEMBLE.  Additional disassemblers/decompilers are
-packaged in the ABCL-INTROSPECT contrib.
+The KEYWORD values are used by SYS:CHOOSE-DISASSEMBLER to install a
+given disassembler as the one used by CL:DISASSEMBLE.  Additional
+disassemblers/decompilers are packaged in the ABCL-INTROSPECT contrib.
 
-The intial default is :javap using the javap command line tool which
-is part of the Java Developement Kit.
+The initial default is :SYSTEM-JAVAP which attempts to invoke the
+javap command line tool shipped as part of the Java Developement Kit
+which may or may not be installed locally.
 ")
 
 (defun choose-disassembler (&optional name)
   "Report current disassembler that would be used by CL:DISASSEMBLE
 
-With optional keyword NAME, select the associated disassembler from
-SYS:*DISASSEMBLERS*."
+When the optional keyword NAME is specified, select the associated
+disassembler from SYS:*DISASSEMBLERS* for future invocations of
+CL:DISASSEMBLE."
   (flet ((sane-disassembler-p (disassembler)
            (and disassembler
                 (fboundp disassembler))))
