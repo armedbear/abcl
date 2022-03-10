@@ -35,7 +35,7 @@
 
 (defmacro with-set-keys (funcall)
   `(cond (notp ,(append funcall '(:key key :test-not test-not)))
-	 (t ,(append funcall '(:key key :test test)))))
+         (t ,(append funcall '(:key key :test test)))))
 
 (defun union (list1 list2 &key key (test #'eql testp) (test-not nil notp))
   (require-type list2 'list)
@@ -46,14 +46,14 @@
   (let ((res list2))
     (dolist (elt list1)
       (unless (with-set-keys (member (funcall-key key elt) list2))
-	(push elt res)))
+        (push elt res)))
     res))
 
 (defmacro steve-splice (source destination)
   `(let ((temp ,source))
      (setf ,source (cdr ,source)
-	   (cdr temp) ,destination
-	   ,destination temp)))
+           (cdr temp) ,destination
+           ,destination temp)))
 
 (defun nunion (list1 list2 &key key (test #'eql testp) (test-not nil notp))
   (when (and testp notp)
@@ -61,12 +61,12 @@
   (when key
     (setq key (coerce-to-function key)))
   (let ((res list2)
-	(list1 list1))
+        (list1 list1))
     (do ()
         ((endp list1))
       (if (not (with-set-keys (member (funcall-key key (car list1)) list2)))
-	  (steve-splice list1 res)
-	  (setf list1 (cdr list1))))
+          (steve-splice list1 res)
+          (setf list1 (cdr list1))))
     res))
 
 
@@ -78,7 +78,7 @@
   (let ((res nil))
     (dolist (elt list1)
       (if (with-set-keys (member (funcall-key key elt) list2))
-	  (push elt res)))
+          (push elt res)))
     res))
 
 (defun nintersection (list1 list2 &key key (test #'eql testp) (test-not nil notp))
@@ -87,11 +87,11 @@
   (when key
     (setq key (coerce-to-function key)))
   (let ((res nil)
-	(list1 list1))
+        (list1 list1))
     (do () ((endp list1))
       (if (with-set-keys (member (funcall-key key (car list1)) list2))
-	  (steve-splice list1 res)
-	  (setq list1 (cdr list1))))
+          (steve-splice list1 res)
+          (setq list1 (cdr list1))))
     res))
 
 (defun set-difference (list1 list2 &key key (test #'eql testp) (test-not nil notp))
@@ -102,10 +102,10 @@
   (if (null list2)
       list1
       (let ((res nil))
-	(dolist (elt list1)
-	  (if (not (with-set-keys (member (funcall-key key elt) list2)))
-	      (push elt res)))
-	res)))
+        (dolist (elt list1)
+          (if (not (with-set-keys (member (funcall-key key elt) list2)))
+              (push elt res)))
+        res)))
 
 
 (defun nset-difference (list1 list2 &key key (test #'eql testp) (test-not nil notp))
@@ -114,11 +114,11 @@
   (when key
     (setq key (coerce-to-function key)))
   (let ((res nil)
-	(list1 list1))
+        (list1 list1))
     (do () ((endp list1))
       (if (not (with-set-keys (member (funcall-key key (car list1)) list2)))
-	  (steve-splice list1 res)
-	  (setq list1 (cdr list1))))
+          (steve-splice list1 res)
+          (setq list1 (cdr list1))))
     res))
 
 
@@ -133,7 +133,7 @@
         (test-not (if test-not (coerce test-not 'function) #'eql)))
     (dolist (elt list1)
       (unless (with-set-keys (member (funcall-key key elt) list2))
-	(setq result (cons elt result))))
+        (setq result (cons elt result))))
     (let ((test (if testp
                     (lambda (x y) (funcall test y x))
                     test))

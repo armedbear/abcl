@@ -525,27 +525,27 @@ public final class Ratio extends LispObject
         if (obj instanceof DoubleFloat)
             return new DoubleFloat(doubleValue()).truncate(obj);
         BigInteger n, d;
-	try {
-	  if (obj instanceof Fixnum) {
+        try {
+          if (obj instanceof Fixnum) {
             n = ((Fixnum)obj).getBigInteger();
             d = BigInteger.ONE;
-	  } else if (obj instanceof Bignum) {
+          } else if (obj instanceof Bignum) {
             n = ((Bignum)obj).value;
             d = BigInteger.ONE;
-	  } else if (obj instanceof Ratio) {
+          } else if (obj instanceof Ratio) {
             n = ((Ratio)obj).numerator();
             d = ((Ratio)obj).denominator();
-	  } else {
+          } else {
             return type_error(obj, Symbol.NUMBER);
-	  }
-	  // Invert and multiply.
-	  BigInteger num = numerator.multiply(d);
-	  BigInteger den = denominator.multiply(n);
-	  BigInteger quotient = num.divide(den);
-	  // Multiply quotient by divisor.
-	  LispObject product = number(quotient.multiply(n), d);
-	  // Subtract to get remainder.
-	  LispObject remainder = subtract(product);
+          }
+          // Invert and multiply.
+          BigInteger num = numerator.multiply(d);
+          BigInteger den = denominator.multiply(n);
+          BigInteger quotient = num.divide(den);
+          // Multiply quotient by divisor.
+          LispObject product = number(quotient.multiply(n), d);
+          // Subtract to get remainder.
+          LispObject remainder = subtract(product);
           return LispThread.currentThread().setValues(number(quotient), remainder);
         }
         catch (ArithmeticException e) {

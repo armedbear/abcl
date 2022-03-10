@@ -35,10 +35,10 @@
 
 (defmacro or (&rest forms)
   (cond ((endp forms) nil)
-	((endp (rest forms)) (first forms))
-	(t
-	 (let ((n-result (gensym)))
-	   `(let ((,n-result ,(first forms)))
-	      (if ,n-result
-		  ,n-result
-		  (or ,@(rest forms))))))))
+        ((endp (rest forms)) (first forms))
+        (t
+         (let ((n-result (gensym)))
+           `(let ((,n-result ,(first forms)))
+              (if ,n-result
+                  ,n-result
+                  (or ,@(rest forms))))))))

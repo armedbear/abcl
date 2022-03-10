@@ -79,7 +79,7 @@
 
 (defun traced-function (name info untraced-function)
   (let ((breakp (trace-info-breakp info))
-	(*trace-depth* *trace-depth*))
+        (*trace-depth* *trace-depth*))
     (lambda (&rest args)
       (with-standard-io-syntax
         (let ((*print-readably* nil)

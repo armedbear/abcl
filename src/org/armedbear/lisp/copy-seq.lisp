@@ -38,16 +38,16 @@
 (defmacro vector-copy-seq (sequence type)
   `(let ((length (length ,sequence)))
      (do ((index 0 (1+ index))
-	  (copy (make-sequence-of-type ,type length)))
+          (copy (make-sequence-of-type ,type length)))
        ((= index length) copy)
        (aset copy index (aref ,sequence index)))))
 
 (defmacro list-copy-seq (list)
   `(if (atom ,list) '()
        (let ((result (cons (car ,list) '()) ))
-	 (do ((x (cdr ,list) (cdr x))
-	      (splice result
-		      (cdr (rplacd splice (cons (car x) '() ))) ))
+         (do ((x (cdr ,list) (cdr x))
+              (splice result
+                      (cdr (rplacd splice (cons (car x) '() ))) ))
            ((atom x) (unless (null x)
                        (rplacd splice x))
             result)))))

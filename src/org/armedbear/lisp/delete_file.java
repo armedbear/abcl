@@ -87,9 +87,9 @@ public final class delete_file extends Primitive
         for (int i = 0; i < 2; i++) {
           if (file.delete()) {
             return T;
-	  }
-	  // Under Windows our fasls get placed in the ZipCache when compiled
-	  ZipCache.remove(defaultedPathname);
+          }
+          // Under Windows our fasls get placed in the ZipCache when compiled
+          ZipCache.remove(defaultedPathname);
           System.gc();
           Thread.yield();
         }

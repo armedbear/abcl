@@ -51,9 +51,9 @@ public final class probe_file
         @Override
         public LispObject execute(LispObject arg)
         {
-	  if (arg == null || arg.equals(NIL)) {
-	    return NIL;
-	  }
+          if (arg == null || arg.equals(NIL)) {
+            return NIL;
+          }
           Pathname p = coerceToPathname(arg);
           if (p.isWild()) {
             return error(new FileError("Cannot find the TRUENAME for a wild pathname.",

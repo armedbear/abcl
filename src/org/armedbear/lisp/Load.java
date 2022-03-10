@@ -205,7 +205,7 @@ public final class Load
           }
           truename = (Pathname)initTruename;
         } 
-				
+                                
         InputStream in = truename.getInputStream();
         Debug.assertTrue(in != null);
     
@@ -369,7 +369,7 @@ public final class Load
             final LispThread thread = LispThread.currentThread();
             final SpecialBindingsMark mark = thread.markSpecialBindings();
             thread.bindSpecial(_WARN_ON_REDEFINITION_, NIL);
-	    thread.bindSpecial(FASL_LOADER, NIL);
+            thread.bindSpecial(FASL_LOADER, NIL);
             try {
                 Stream stream = new Stream(Symbol.SYSTEM_STREAM, in, Symbol.CHARACTER);
                 return loadFileFromStream(pathname, truename, stream,
@@ -635,7 +635,7 @@ public final class Load
                                          thread, Stream.currentReadtable);
                 if (obj == EOF)
                     break;
-		result = eval(obj, env, thread);
+                result = eval(obj, env, thread);
                 if (print) {
                     Stream out =
                         checkCharacterOutputStream(Symbol.STANDARD_OUTPUT.symbolValue(thread));

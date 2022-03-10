@@ -50,9 +50,9 @@ public final class server_socket_close extends Primitive
 
     {
         try {
-	    ServerSocket serverSocket = (ServerSocket) JavaObject.getObject(first);
-	    serverSocket.close();
-	    return T;
+            ServerSocket serverSocket = (ServerSocket) JavaObject.getObject(first);
+            serverSocket.close();
+            return T;
         }
         catch (Exception e) {
             return error(new LispError(e.getMessage()));

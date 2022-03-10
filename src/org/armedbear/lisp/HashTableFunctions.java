@@ -86,21 +86,21 @@ public final class HashTableFunctions
                                 LispObject size,
                                 LispObject rehashSize, 
                                 LispObject rehashThreshold,
-				LispObject weakness)
+                                LispObject weakness)
       {
         final int n = Fixnum.getValue(size);
         if (test == FUNCTION_EQL || test == NIL)
           return WeakHashTable.newEqlHashTable(n, rehashSize, 
-					       rehashThreshold, weakness);
+                                               rehashThreshold, weakness);
         if (test == FUNCTION_EQ)
           return WeakHashTable.newEqHashTable(n, rehashSize, 
                                               rehashThreshold, weakness);
         if (test == FUNCTION_EQUAL)
           return WeakHashTable.newEqualHashTable(n, rehashSize, 
-						 rehashThreshold, weakness);
+                                                 rehashThreshold, weakness);
         if (test == FUNCTION_EQUALP)
           return WeakHashTable.newEqualpHashTable(n, rehashSize, 
-						  rehashThreshold, weakness);
+                                                  rehashThreshold, weakness);
         return error(new LispError("Unsupported test for MAKE-HASH-TABLE: " +
                                     test.princToString()));
       }

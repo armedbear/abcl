@@ -114,14 +114,14 @@ public final class ConcatenatedStream extends Stream
             else
                 return eofValue;
         }
-	try 
-	  {
-	    return _charReady() ? readChar(eofError, eofValue) : NIL;
-	  }
-	catch (java.io.IOException e)
-	  {
-	    return error(new StreamError(this, e));
-	  }
+        try 
+          {
+            return _charReady() ? readChar(eofError, eofValue) : NIL;
+          }
+        catch (java.io.IOException e)
+          {
+            return error(new StreamError(this, e));
+          }
     }
 
     @Override

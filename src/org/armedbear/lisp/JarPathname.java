@@ -386,7 +386,7 @@ public class JarPathname
       
       Pathname withoutDevice = new Pathname();
       withoutDevice
-	.copyFrom(this)
+        .copyFrom(this)
         .setDevice(NIL);
 
       String withoutDeviceNamestring = withoutDevice.getNamestring(); // need to URI encode?
@@ -424,7 +424,7 @@ public class JarPathname
   }
 
   public static LispObject truename(Pathname pathname,
-				    boolean errorIfDoesNotExist) {
+                                    boolean errorIfDoesNotExist) {
     if (!(pathname instanceof JarPathname)) {
       return URLPathname.truename(pathname, errorIfDoesNotExist);
     }
@@ -451,7 +451,7 @@ public class JarPathname
       }
       LispObject rootJarTruename = Pathname.truename(rootJar, errorIfDoesNotExist);
       if (rootJarTruename.equals(NIL)) {
-	return Pathname.doTruenameExit(rootJar, errorIfDoesNotExist);
+        return Pathname.doTruenameExit(rootJar, errorIfDoesNotExist);
       }
       LispObject otherJars = p.getJars().cdr();
       URLPathname newRootJar;

@@ -105,7 +105,7 @@ public class LispStackFrame
     if (operator instanceof Operator) {
       LispObject lambdaName = ((Operator)operator).getLambdaName();
       if (lambdaName != null && lambdaName != Lisp.NIL)
-	return result.push(lambdaName);
+        return result.push(lambdaName);
     }
     return result.push(operator);
   }
@@ -160,7 +160,7 @@ public class LispStackFrame
     if (args != NIL) {
       result = result.push(new Cons("ARGS", args));
     }
-			 
+                         
     return result.nreverse();
   }
 }

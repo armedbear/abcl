@@ -154,16 +154,16 @@ public class StructureObject extends LispObject
   }
 
     protected int getSlotIndex(LispObject slotName) {
-	LispObject effectiveSlots = structureClass.getSlotDefinitions();
-	LispObject[] effectiveSlotsArray = effectiveSlots.copyToArray();
-	for (int i = 0; i < slots.length; i++) {
-	    SimpleVector slotDefinition = (SimpleVector) effectiveSlotsArray[i];
-	    LispObject candidateSlotName = slotDefinition.AREF(1);
-	    if(slotName == candidateSlotName) {
-		return i;
-	    }
-	}
-	return -1;
+        LispObject effectiveSlots = structureClass.getSlotDefinitions();
+        LispObject[] effectiveSlotsArray = effectiveSlots.copyToArray();
+        for (int i = 0; i < slots.length; i++) {
+            SimpleVector slotDefinition = (SimpleVector) effectiveSlotsArray[i];
+            LispObject candidateSlotName = slotDefinition.AREF(1);
+            if(slotName == candidateSlotName) {
+                return i;
+            }
+        }
+        return -1;
     }
 
   @Override
@@ -174,7 +174,7 @@ public class StructureObject extends LispObject
     if (index >= 0) {
         value = slots[index];
     } else {
-	value = UNBOUND_VALUE;
+        value = UNBOUND_VALUE;
         value = Symbol.SLOT_UNBOUND.execute(structureClass, this, slotName);
         LispThread.currentThread()._values = null;
     }
@@ -184,15 +184,15 @@ public class StructureObject extends LispObject
   public void setSlotValue(LispObject slotName, LispObject newValue) {
       final int index = getSlotIndex(slotName);
       if (index >= 0) {
-	  slots[index] = newValue;
+          slots[index] = newValue;
       } else {
-	  LispObject[] args = new LispObject[5];
-	  args[0] = structureClass;
-	  args[1] = this;
-	  args[2] = slotName;
-	  args[3] = Symbol.SETF;
-	  args[4] = newValue;
-	  Symbol.SLOT_MISSING.execute(args);
+          LispObject[] args = new LispObject[5];
+          args[0] = structureClass;
+          args[1] = this;
+          args[2] = slotName;
+          args[3] = Symbol.SETF;
+          args[4] = newValue;
+          Symbol.SLOT_MISSING.execute(args);
       }
   }
 

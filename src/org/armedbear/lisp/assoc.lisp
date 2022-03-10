@@ -37,22 +37,22 @@
   `(do ((alist alist (cdr alist)))
        ((endp alist))
      (if (car alist)
-	 (if ,test-guy (return (car alist))))))
+         (if ,test-guy (return (car alist))))))
 
 (defun assoc (item alist &key key test test-not)
   (cond (test
-	 (if key
-	     (assoc-guts (funcall test item (funcall key (caar alist))))
-	     (assoc-guts (funcall test item (caar alist)))))
-	(test-not
-	 (if key
-	     (assoc-guts (not (funcall test-not item
-				       (funcall key (caar alist)))))
-	     (assoc-guts (not (funcall test-not item (caar alist))))))
-	(t
-	 (if key
-	     (assoc-guts (eql item (funcall key (caar alist))))
-	     (assoc-guts (eql item (caar alist)))))))
+         (if key
+             (assoc-guts (funcall test item (funcall key (caar alist))))
+             (assoc-guts (funcall test item (caar alist)))))
+        (test-not
+         (if key
+             (assoc-guts (not (funcall test-not item
+                                       (funcall key (caar alist)))))
+             (assoc-guts (not (funcall test-not item (caar alist))))))
+        (t
+         (if key
+             (assoc-guts (eql item (funcall key (caar alist))))
+             (assoc-guts (eql item (caar alist)))))))
 
 (defun assoc-if (predicate alist &key key)
   (if key
@@ -66,18 +66,18 @@
 
 (defun rassoc (item alist &key key test test-not)
   (cond (test
-	 (if key
-	     (assoc-guts (funcall test item (funcall key (cdar alist))))
-	     (assoc-guts (funcall test item (cdar alist)))))
-	(test-not
-	 (if key
-	     (assoc-guts (not (funcall test-not item
-				       (funcall key (cdar alist)))))
-	     (assoc-guts (not (funcall test-not item (cdar alist))))))
-	(t
-	 (if key
-	     (assoc-guts (eql item (funcall key (cdar alist))))
-	     (assoc-guts (eql item (cdar alist)))))))
+         (if key
+             (assoc-guts (funcall test item (funcall key (cdar alist))))
+             (assoc-guts (funcall test item (cdar alist)))))
+        (test-not
+         (if key
+             (assoc-guts (not (funcall test-not item
+                                       (funcall key (cdar alist)))))
+             (assoc-guts (not (funcall test-not item (cdar alist))))))
+        (t
+         (if key
+             (assoc-guts (eql item (funcall key (cdar alist))))
+             (assoc-guts (eql item (cdar alist)))))))
 
 (defun rassoc-if (predicate alist &key key)
   (if key
@@ -97,7 +97,7 @@
        (y data (cdr y)))
       ((and (endp x) (endp y)) alist)
     (if (or (endp x) (endp y))
-	(error "the lists of keys and data are of unequal length"))
+        (error "the lists of keys and data are of unequal length"))
     (setq alist (acons (car x) (car y) alist))))
 
 ;;; From SBCL.
@@ -106,17 +106,17 @@
   (if (endp alist)
       alist
       (let ((result
-	     (cons (if (atom (car alist))
-		       (car alist)
-		       (cons (caar alist) (cdar alist)))
-		   nil)))
-	(do ((x (cdr alist) (cdr x))
-	     (splice result
-		     (cdr (rplacd splice
-				  (cons
-				   (if (atom (car x))
-				       (car x)
-				       (cons (caar x) (cdar x)))
-				   nil)))))
-	    ((endp x)))
-	result)))
+             (cons (if (atom (car alist))
+                       (car alist)
+                       (cons (caar alist) (cdar alist)))
+                   nil)))
+        (do ((x (cdr alist) (cdr x))
+             (splice result
+                     (cdr (rplacd splice
+                                  (cons
+                                   (if (atom (car x))
+                                       (car x)
+                                       (cons (caar x) (cdar x)))
+                                   nil)))))
+            ((endp x)))
+        result)))

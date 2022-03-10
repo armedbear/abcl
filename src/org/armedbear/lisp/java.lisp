@@ -135,48 +135,48 @@ directory to search for classes or a list of such values."))
 (defmethod jmake-proxy (interface (implementation package) &optional lisp-this)
   "Implements a Java interface mapping Java method names to symbols in a given package. javaMethodName is mapped to a JAVA-METHOD-NAME symbol. An error is signaled if no such symbol exists in the package, or if the symbol exists but does not name a function."
   (flet ((java->lisp (name)
-	   (with-output-to-string (str)
-	     (let ((last-lower-p nil))
-	       (map nil (lambda (char)
-			  (let ((upper-p (char= (char-upcase char) char)))
-			    (when (and last-lower-p upper-p)
-			      (princ "-" str))
-			    (setf last-lower-p (not upper-p))
-			    (princ (char-upcase char) str)))
-		    name)))))
+           (with-output-to-string (str)
+             (let ((last-lower-p nil))
+               (map nil (lambda (char)
+                          (let ((upper-p (char= (char-upcase char) char)))
+                            (when (and last-lower-p upper-p)
+                              (princ "-" str))
+                            (setf last-lower-p (not upper-p))
+                            (princ (char-upcase char) str)))
+                    name)))))
     (%jmake-proxy (canonicalize-jproxy-interfaces interface)
-		  (jmake-invocation-handler 
-		   (lambda (obj method &rest args)
-		     (let ((sym (find-symbol
-				 (java->lisp method)
-				 implementation)))
-		       (unless sym
-			 (error "Symbol ~A, implementation of method ~A, not found in ~A"
-				  (java->lisp method)
-				  method
-				  implementation))
-			 (if (fboundp sym)
-			     (apply (symbol-function sym) obj method args)
-			     (error "Function ~A, implementation of method ~A, not found in ~A"
-				    sym method implementation)))))
-		  lisp-this)))
+                  (jmake-invocation-handler 
+                   (lambda (obj method &rest args)
+                     (let ((sym (find-symbol
+                                 (java->lisp method)
+                                 implementation)))
+                       (unless sym
+                         (error "Symbol ~A, implementation of method ~A, not found in ~A"
+                                  (java->lisp method)
+                                  method
+                                  implementation))
+                         (if (fboundp sym)
+                             (apply (symbol-function sym) obj method args)
+                             (error "Function ~A, implementation of method ~A, not found in ~A"
+                                    sym method implementation)))))
+                  lisp-this)))
 
 (defmethod jmake-proxy (interface (implementation hash-table) &optional lisp-this)
   "Implements a Java interface using closures in an hash-table keyed by Java method name."
   (%jmake-proxy (canonicalize-jproxy-interfaces interface)
-		(jmake-invocation-handler 
-		 (lambda (obj method &rest args)
-		   (let ((fn (gethash method implementation)))
-		     (if fn
-			 (apply fn obj args)
-			 (error "Implementation for method ~A not found in ~A"
-				method implementation)))))
-		lisp-this))
+                (jmake-invocation-handler 
+                 (lambda (obj method &rest args)
+                   (let ((fn (gethash method implementation)))
+                     (if fn
+                         (apply fn obj args)
+                         (error "Implementation for method ~A not found in ~A"
+                                method implementation)))))
+                lisp-this))
 
 (defun jequal (obj1 obj2)
   "Compares obj1 with obj2 using java.lang.Object.equals()"
   (jcall (jmethod "java.lang.Object" "equals" "java.lang.Object")
-	 obj1 obj2))
+         obj1 obj2))
 
 (defun jobject-class (obj)
   "Returns the Java class that OBJ belongs to"
@@ -240,10 +240,10 @@ directory to search for classes or a list of such values."))
   "Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
    initialized from a Lisp list."
   (let ((jarray (jnew-array element-type (length list)))
-	(i 0))
+        (i 0))
     (dolist (x list)
       (setf (jarray-ref jarray i) x
-	    i (1+ i)))
+            i (1+ i)))
     jarray))
 
 (defun jarray-from-list (list)
@@ -303,7 +303,7 @@ calls on the java.util.Enumeration `jenumeration`."
 
 
 (defun (setf jfield) (newvalue class-ref-or-field field-or-instance
-		      &optional (instance nil instance-supplied-p) unused-value)
+                      &optional (instance nil instance-supplied-p) unused-value)
   (declare (ignore unused-value))
   (if instance-supplied-p
       (jfield class-ref-or-field field-or-instance instance newvalue)
@@ -383,13 +383,13 @@ calls on the java.util.Enumeration `jenumeration`."
                          (jclass-name arg-type))))
      ((string= class-name "java.lang.reflect.Field")
       `(let ((field 
-	       (find ,(jcall "getName" object) 
-		     (jcall "getDeclaredFields"
-			    ,(jcall "getDeclaringClass" object))
-		     :key (lambda(el) (jcall "getName" el))
-		     :test 'equal)))
-	 (jcall "setAccessible" field t)
-	 field))
+               (find ,(jcall "getName" object) 
+                     (jcall "getDeclaredFields"
+                            ,(jcall "getDeclaringClass" object))
+                     :key (lambda(el) (jcall "getName" el))
+                     :test 'equal)))
+         (jcall "setAccessible" field t)
+         field))
      ((jinstance-of-p object "java.lang.Class")
       `(java:jclass ,(jcall (jmethod "java.lang.Class" "getName") object)))
      (t
@@ -426,33 +426,33 @@ is equivalent to the following Java code:
 
   java.lang.Runtime.getRuntime().exec(\"ls\");"
   (labels ((canonicalize-op (op) (if (listp op) op (list op)))
-	   (compose-arglist (target op) `(,(car op) ,target ,@(cdr op)))
-	   (make-binding-for (form) `(,(gensym) ,form))
-	   (make-binding (bindings next-op &aux (target (caar bindings)))
-	     (cons (make-binding-for
-		    `(jcall ,@(compose-arglist target
-					       (canonicalize-op next-op))))
-		   bindings)))
+           (compose-arglist (target op) `(,(car op) ,target ,@(cdr op)))
+           (make-binding-for (form) `(,(gensym) ,form))
+           (make-binding (bindings next-op &aux (target (caar bindings)))
+             (cons (make-binding-for
+                    `(jcall ,@(compose-arglist target
+                                               (canonicalize-op next-op))))
+                   bindings)))
     (let* ((first (if (and (consp target) (eq (first target) :static))
-		      `(jstatic ,@(compose-arglist (cadr target) (canonicalize-op op)))
-		      `(jcall ,@(compose-arglist target (canonicalize-op op)))))
-	   (bindings (nreverse
-		      (reduce #'make-binding ops
-			      :initial-value (list (make-binding-for first))))))
+                      `(jstatic ,@(compose-arglist (cadr target) (canonicalize-op op)))
+                      `(jcall ,@(compose-arglist target (canonicalize-op op)))))
+           (bindings (nreverse
+                      (reduce #'make-binding ops
+                              :initial-value (list (make-binding-for first))))))
       `(let* ,bindings
-	 (declare (ignore ,@(butlast (mapcar #'car bindings))))
-	 ,(caar (last bindings))))))
+         (declare (ignore ,@(butlast (mapcar #'car bindings))))
+         ,(caar (last bindings))))))
 
 (defmacro jmethod-let (bindings &body body)
   (let ((args (gensym)))
     `(let ,(mapcar (lambda (binding)
-		     `(,(car binding) (jmethod ,@(cdr binding))))
-		   bindings)
+                     `(,(car binding) (jmethod ,@(cdr binding))))
+                   bindings)
        (macrolet ,(mapcar (lambda (binding)
-			    `(,(car binding) (&rest ,args)
-			       `(jcall ,,(car binding) ,@,args)))
-			  bindings)
-	 ,@body))))
+                            `(,(car binding) (&rest ,args)
+                               `(jcall ,,(car binding) ,@,args)))
+                          bindings)
+         ,@body))))
 
 ;;; print-object
 
@@ -463,48 +463,48 @@ is equivalent to the following Java code:
 
 ;;define extensions by eql methods on class name interned in keyword package
 ;;e.g. (defmethod java::print-java-object-by-class ((class (eql ':|uk.ac.manchester.cs.owl.owlapi.concurrent.ConcurrentOWLOntologyImpl|)) obj stream) 
-;;	   (print 'hi)
+;;         (print 'hi)
 ;;         (call-next-method))
 (defmethod print-java-object-by-class :around (class obj stream)
   (handler-bind ((java-exception #'(lambda(c)
-				     (format stream "#<~a, while printing a ~a>"
-					     (jcall "toString" (java-exception-cause  c))
-					     (jcall "getName" (jcall "getClass" obj)))
-				     (return-from print-java-object-by-class))))
+                                     (format stream "#<~a, while printing a ~a>"
+                                             (jcall "toString" (java-exception-cause  c))
+                                             (jcall "getName" (jcall "getClass" obj)))
+                                     (return-from print-java-object-by-class))))
     (call-next-method)))
 
 ;; we have to do our own inheritence for the java class
 (defmethod print-java-object-by-class (class obj stream)
   (loop for super = class then (jclass-superclass super)
-	for keyword = (intern (jcall "getName" super) 'keyword)
-	for method = (find-method #'print-java-object-by-class nil (list `(eql ,keyword) t t) nil)
-	while (jclass-superclass super)
-	when method do (return-from print-java-object-by-class
-			 (print-java-object-by-class keyword obj stream)))
+        for keyword = (intern (jcall "getName" super) 'keyword)
+        for method = (find-method #'print-java-object-by-class nil (list `(eql ,keyword) t t) nil)
+        while (jclass-superclass super)
+        when method do (return-from print-java-object-by-class
+                         (print-java-object-by-class keyword obj stream)))
   (write-string (sys::%write-to-string obj) stream))
 
 (defmethod print-object ((e java:java-exception) stream)
   (handler-bind ((java-exception #'(lambda(c)
-				     (format stream "#<~a,while printing a ~a>"
-					     (jcall "toString" (java-exception-cause  c))
-					     (jcall "getName" (jcall "getClass" e)))
-				     (return-from print-object))))
+                                     (format stream "#<~a,while printing a ~a>"
+                                             (jcall "toString" (java-exception-cause  c))
+                                             (jcall "getName" (jcall "getClass" e)))
+                                     (return-from print-object))))
     (if *print-escape*
-	(print-unreadable-object (e stream :type t :identity t)
-	  (format stream "~A"
-		  (java:jcall (java:jmethod "java.lang.Object" "toString")
-			      (java:java-exception-cause e))))
-	(format stream "Java exception '~A'."
-		(java:jcall (java:jmethod "java.lang.Object" "toString")
-			    (java:java-exception-cause e))))))
+        (print-unreadable-object (e stream :type t :identity t)
+          (format stream "~A"
+                  (java:jcall (java:jmethod "java.lang.Object" "toString")
+                              (java:java-exception-cause e))))
+        (format stream "Java exception '~A'."
+                (java:jcall (java:jmethod "java.lang.Object" "toString")
+                            (java:java-exception-cause e))))))
 
 ;;; JAVA-CLASS support
 (defconstant +java-lang-object+ (jclass "java.lang.Object"))
 
 (defclass java-class (standard-class)
   ((jclass :initarg :java-class
-	   :initform (error "class is required")
-	   :reader java-class-jclass)))
+           :initform (error "class is required")
+           :reader java-class-jclass)))
 
 ;;; FIXME (rudi 2012-05-02): consider replacing the metaclass of class
 ;;; java-object to be java-class here instead of allowing this subclass
@@ -517,10 +517,10 @@ is equivalent to the following Java code:
 ;;init java.lang.Object class
 (defconstant +java-lang-object-class+
   (%register-java-class +java-lang-object+
-			(mop::ensure-class (make-symbol "java.lang.Object")
-					   :metaclass (find-class 'java-class)
-					   :direct-superclasses (list (find-class 'java-object))
-					   :java-class +java-lang-object+)))
+                        (mop::ensure-class (make-symbol "java.lang.Object")
+                                           :metaclass (find-class 'java-class)
+                                           :direct-superclasses (list (find-class 'java-object))
+                                           :java-class +java-lang-object+)))
 
 (defun jclass-additional-superclasses (jclass)
   "Extension point to put additional CLOS classes on the CPL of a CLOS Java class."
@@ -533,20 +533,20 @@ is equivalent to the following Java code:
   "Attempt to ensure that the Java class referenced by JCLASS exists in the current process of the implementation."
   (let ((class (%find-java-class jclass)))
     (if class
-	class
-	(%register-java-class
-	 jclass (mop::ensure-class
-		 (make-symbol (jclass-name jclass))
-		 :metaclass (find-class 'java-class)
-		 :direct-superclasses
-		 (let ((supers
-			(mapcar #'ensure-java-class
-				(delete nil
-					(concatenate 'list
-						     (list (jclass-superclass jclass))
-						     (jclass-interfaces jclass))))))
-		   (append supers (jclass-additional-superclasses jclass)))
-		 :java-class jclass)))))
+        class
+        (%register-java-class
+         jclass (mop::ensure-class
+                 (make-symbol (jclass-name jclass))
+                 :metaclass (find-class 'java-class)
+                 :direct-superclasses
+                 (let ((supers
+                        (mapcar #'ensure-java-class
+                                (delete nil
+                                        (concatenate 'list
+                                                     (list (jclass-superclass jclass))
+                                                     (jclass-interfaces jclass))))))
+                   (append supers (jclass-additional-superclasses jclass)))
+                 :java-class jclass)))))
 
 (defmethod mop::compute-class-precedence-list ((class java-class))
   "Sort classes this way:
@@ -566,16 +566,16 @@ is equivalent to the following Java code:
    implements both, it is unspecified which method will be called."
   (let ((cpl (nreverse (mop::collect-superclasses* class))))
     (flet ((score (class)
-	     (if (not (typep class 'java-class))
-		 4
-		 (cond
-		   ((jcall (jmethod "java.lang.Object" "equals" "java.lang.Object")
-			   (java-class-jclass class) +java-lang-object+) 3)
-		   ((jclass-interface-p (java-class-jclass class)) 2)
-		   (t 1)))))
+             (if (not (typep class 'java-class))
+                 4
+                 (cond
+                   ((jcall (jmethod "java.lang.Object" "equals" "java.lang.Object")
+                           (java-class-jclass class) +java-lang-object+) 3)
+                   ((jclass-interface-p (java-class-jclass class)) 2)
+                   (t 1)))))
       (stable-sort cpl #'(lambda (x y)
-			   (< (score x) (score y)))))))
-	  
+                           (< (score x) (score y)))))))
+          
 (defmethod make-instance ((class java-class) &rest initargs &key &allow-other-keys)
   (declare (ignore initargs))
   (error "make-instance not supported for ~S" class))

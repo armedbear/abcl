@@ -46,7 +46,7 @@
         (jndex start)
         (number-zapped 0))
      ((or (= index end) (= number-zapped count))
-      (do ((index index (1+ index))		; copy the rest of the vector
+      (do ((index index (1+ index))             ; copy the rest of the vector
            (jndex jndex (1+ jndex)))
         ((= index length)
          (shrink-vector sequence jndex))
@@ -63,11 +63,11 @@
         this-element
         (terminus (1- start)))
      ((or (= index terminus) (= number-zapped count))
-      (do ((losers losers)			 ; delete the losers
+      (do ((losers losers)                       ; delete the losers
            (index start (1+ index))
            (jndex start))
         ((or (null losers) (= index end))
-         (do ((index index (1+ index))	 ; copy the rest of the vector
+         (do ((index index (1+ index))   ; copy the rest of the vector
               (jndex jndex (1+ jndex)))
            ((= index length)
             (shrink-vector sequence jndex))
@@ -136,19 +136,19 @@
         (funcall test item (funcall-key key (car current))))))
 
 (defun delete (item sequence &rest args &key from-end (test #'eql) test-not
-	       (start 0) end count key)
+               (start 0) end count key)
   (when key
     (setq key (coerce-to-function key)))
   (let* ((length (length sequence))
-	 (end (or end length))
-	 (count (real-count count)))
+         (end (or end length))
+         (count (real-count count)))
     (sequence::seq-dispatch sequence
       (if from-end
-	  (normal-list-delete-from-end)
-	  (normal-list-delete))
+          (normal-list-delete-from-end)
+          (normal-list-delete))
       (if from-end
-	  (normal-mumble-delete-from-end)
-	  (normal-mumble-delete))
+          (normal-mumble-delete-from-end)
+          (normal-mumble-delete))
       (apply #'sequence:delete item sequence args))))
 
 (defmacro if-mumble-delete ()
@@ -168,19 +168,19 @@
     (funcall predicate (funcall-key key (car current)))))
 
 (defun delete-if (predicate sequence &rest args &key from-end (start 0)
-		  key end count)
+                  key end count)
   (when key
     (setq key (coerce-to-function key)))
   (let* ((length (length sequence))
-	 (end (or end length))
-	 (count (real-count count)))
+         (end (or end length))
+         (count (real-count count)))
     (sequence::seq-dispatch sequence
       (if from-end
-	  (if-list-delete-from-end)
-	  (if-list-delete))
+          (if-list-delete-from-end)
+          (if-list-delete))
       (if from-end
-	  (if-mumble-delete-from-end)
-	  (if-mumble-delete))
+          (if-mumble-delete-from-end)
+          (if-mumble-delete))
       (apply #'sequence:delete-if predicate sequence args))))
 
 (defmacro if-not-mumble-delete ()
@@ -200,17 +200,17 @@
     (not (funcall predicate (funcall-key key (car current))))))
 
 (defun delete-if-not (predicate sequence &rest args &key from-end (start 0)
-		      end key count)
+                      end key count)
   (when key
     (setq key (coerce-to-function key)))
   (let* ((length (length sequence))
-	 (end (or end length))
-	 (count (real-count count)))
+         (end (or end length))
+         (count (real-count count)))
     (sequence::seq-dispatch sequence
       (if from-end
-	  (if-not-list-delete-from-end)
-	  (if-not-list-delete))
+          (if-not-list-delete-from-end)
+          (if-not-list-delete))
       (if from-end
-	  (if-not-mumble-delete-from-end)
-	  (if-not-mumble-delete))
+          (if-not-mumble-delete-from-end)
+          (if-not-mumble-delete))
       (apply #'sequence:delete-if-not predicate sequence args))))

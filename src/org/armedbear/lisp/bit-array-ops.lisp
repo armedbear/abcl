@@ -36,11 +36,11 @@
 (defun bit-array-same-dimensions-p (array1 array2)
   (declare (type (array bit) array1 array2))
   (and (= (array-rank array1)
-	  (array-rank array2))
+          (array-rank array2))
        (dotimes (index (array-rank array1) t)
-	 (when (/= (array-dimension array1 index)
-		   (array-dimension array2 index))
-	   (return nil)))))
+         (when (/= (array-dimension array1 index)
+                   (array-dimension array2 index))
+           (return nil)))))
 
 (defun require-same-dimensions (array1 array2)
   (unless (bit-array-same-dimensions-p array1 array2)
@@ -52,8 +52,8 @@
   (case result-bit-array
     ((t) bit-array-1)
     ((nil) (make-array (array-dimensions bit-array-1)
-		       :element-type 'bit
-		       :initial-element 0))
+                       :element-type 'bit
+                       :initial-element 0))
     (t
      (require-same-dimensions bit-array-1 result-bit-array)
      result-bit-array)))

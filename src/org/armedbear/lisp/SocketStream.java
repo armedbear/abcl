@@ -43,7 +43,7 @@ public final class SocketStream extends TwoWayStream
 
     public SocketStream(Socket socket, Stream in, Stream out)
     {
-	super(in, out);
+        super(in, out);
         this.socket = socket;
     }
 
@@ -72,12 +72,12 @@ public final class SocketStream extends TwoWayStream
     @Override
     public LispObject close(LispObject abort)
     {
-	try {
-	    socket.close();
-	    setOpen(false);
-	    return T;
-	} catch (Exception e) {
-	    return error(new LispError(e.getMessage()));
-	}
+        try {
+            socket.close();
+            setOpen(false);
+            return T;
+        } catch (Exception e) {
+            return error(new LispError(e.getMessage()));
+        }
     }
 }

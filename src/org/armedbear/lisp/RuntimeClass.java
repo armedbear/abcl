@@ -56,14 +56,14 @@ public class RuntimeClass
             int length = args.length;
             if (length < 3 || length % 2 != 1)
                 return error(new WrongNumberOfArgumentsException(this));
-	      RuntimeClass rc = new RuntimeClass();
-	      String className = args[0].getStringValue();
+              RuntimeClass rc = new RuntimeClass();
+              String className = args[0].getStringValue();
             for (int i = 1; i < length; i = i+2) {
                 String methodName = args[i].getStringValue();
                 rc.addLispMethod(methodName, (Function)args[i+1]);
-	      }
+              }
             classes.put(className, rc);
-	      return T;
+              return T;
         }
     };
 
@@ -79,19 +79,19 @@ public class RuntimeClass
 
         {
 
-	    String cn = className.getStringValue();
-	    String mn = methodName.getStringValue();
-	    Function def = (Function) methodDef;
-	    RuntimeClass rc = null;
-	    if (classes.containsKey(cn)) {
+            String cn = className.getStringValue();
+            String mn = methodName.getStringValue();
+            Function def = (Function) methodDef;
+            RuntimeClass rc = null;
+            if (classes.containsKey(cn)) {
                 rc = (RuntimeClass) classes.get(cn);
                 rc.addLispMethod(mn, def);
                 return T;
-	    }
-	    else {
+            }
+            else {
                 error(new LispError("undefined Java class: " + cn));
                 return NIL;
-	    }
+            }
         }
     };
 
@@ -105,8 +105,8 @@ public class RuntimeClass
 
         {
             String cn = className.getStringValue();
-	      String pn = cn.substring(0,cn.lastIndexOf('.'));
-	      byte[] cb = (byte[]) classBytes.javaInstance();
+              String pn = cn.substring(0,cn.lastIndexOf('.'));
+              byte[] cb = (byte[]) classBytes.javaInstance();
             try {
                 JavaClassLoader loader = JavaClassLoader.getPersistentInstance(pn);
                 Class c = loader.loadClassFromByteArray(cn, cb);

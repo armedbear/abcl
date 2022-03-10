@@ -41,7 +41,7 @@
         (parse-defmacro lambda-list whole body name 'defmacro :environment env)
       (let ((expander `(lambda (,whole ,env) ,@decls ,body)))
         `(progn
-	   (sys::record-source-information-for-type ',name :macro)
+           (sys::record-source-information-for-type ',name :macro)
            (let ((macro (make-macro ',name
                                     (or (precompile nil ,expander) ,expander))))
              ,@(if (special-operator-p name)

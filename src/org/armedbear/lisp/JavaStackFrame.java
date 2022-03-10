@@ -60,7 +60,7 @@ public class JavaStackFrame
   public String printObject() { 
     final String JAVA_STACK_FRAME = "JAVA-STACK-FRAME";
     return unreadableString(JAVA_STACK_FRAME + " "
-				+ toLispString().toString());
+                                + toLispString().toString());
   }
 
   @Override
@@ -121,15 +121,15 @@ public class JavaStackFrame
   { 
     LispObject result = NIL;
     result = result.push(new Cons("CLASS", 
-				  new SimpleString(javaFrame.getClassName())));
+                                  new SimpleString(javaFrame.getClassName())));
     result = result.push(new Cons("METHOD", 
-				  new SimpleString(javaFrame.getMethodName())));
+                                  new SimpleString(javaFrame.getMethodName())));
     result = result.push(new Cons("FILE", 
-				  new SimpleString(javaFrame.getFileName())));
+                                  new SimpleString(javaFrame.getFileName())));
     result = result.push(new Cons("LINE",
-				  Fixnum.getInstance(javaFrame.getLineNumber())));
+                                  Fixnum.getInstance(javaFrame.getLineNumber())));
     result = result.push(new Cons("NATIVE-METHOD",
-				  LispObject.getInstance(javaFrame.isNativeMethod())));
+                                  LispObject.getInstance(javaFrame.isNativeMethod())));
     return result.nreverse();
   }
 }

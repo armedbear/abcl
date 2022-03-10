@@ -33,7 +33,7 @@
 
 (defun find-all-symbols (string)
   (let ((string (string string))
-	(res ()))
+        (res ()))
     (dolist (package (list-all-packages))
       (multiple-value-bind (symbol status) (find-symbol string package)
         (when status

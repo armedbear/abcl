@@ -83,15 +83,15 @@
   (let* ((new-conses-with-cars
           (make-hash-table :test #'eq
                            :size (max (hash-table-count (conses-with-cars table)) 32)))
-	 (new-structures
+         (new-structures
           (make-hash-table :test #'eq
                            :size (max (hash-table-count (structures table)) 32))))
     (maphash #'(lambda (key value)
                 (setf (gethash key new-conses-with-cars) (copy-entry value)))
-	     (conses-with-cars table))
+             (conses-with-cars table))
     (maphash #'(lambda (key value)
                 (setf (gethash key new-structures) (copy-entry value)))
-	     (structures table))
+             (structures table))
     (make-pprint-dispatch-table
      :conses-with-cars new-conses-with-cars
      :structures new-structures
@@ -105,7 +105,7 @@
 
 (defun set-pprint-dispatch+ (type-specifier function priority table)
   (let* ((category (specifier-category type-specifier))
-	 (pred
+         (pred
           (if (not (eq category 'other)) nil
               (let ((pred (specifier-fn type-specifier)))
                 (if (and (consp (caddr pred))
@@ -115,9 +115,9 @@
                     ;;                      (compile nil pred)
                     pred
                     ))))
-	 (entry (if function (make-entry :test pred
-					 :fn function
-					 :full-spec (list priority type-specifier)))))
+         (entry (if function (make-entry :test pred
+                                         :fn function
+                                         :full-spec (list priority type-specifier)))))
     (case category
       (cons-with-car
        (cond ((null entry) (remhash (cadadr type-specifier) (conses-with-cars table)))
@@ -161,12 +161,12 @@
               (declare (ignore key))
               (if (priority-> priority (car (full-spec value)))
                   (incf (test value) delta)))
-	   (conses-with-cars table))
+           (conses-with-cars table))
   (maphash #'(lambda (key value)
               (declare (ignore key))
               (if (priority-> priority (car (full-spec value)))
                   (incf (test value) delta)))
-	   (structures table)))
+           (structures table)))
 
 (defun pprint-dispatch (object &optional (table *print-pprint-dispatch*))
   (unless table
@@ -176,34 +176,34 @@
 
 (defun get-printer (object table)
   (let* ((entry (if (consp object)
-		    (gethash (car object) (conses-with-cars table))
-		    (gethash (type-of object) (structures table)))))
+                    (gethash (car object) (conses-with-cars table))
+                    (gethash (type-of object) (structures table)))))
     (if (not entry)
-	(setq entry (find object (others table) :test #'fits))
-	(do ((i (test entry) (1- i))
-	     (l (others table) (cdr l)))
-	    ((zerop i))
-	  (when (fits object (car l)) (setq entry (car l)) (return nil))))
+        (setq entry (find object (others table) :test #'fits))
+        (do ((i (test entry) (1- i))
+             (l (others table) (cdr l)))
+            ((zerop i))
+          (when (fits object (car l)) (setq entry (car l)) (return nil))))
     (when entry (fn entry))))
 
 (defun fits (obj entry) (funcall (test entry) obj))
 
 (defun specifier-category (spec)
   (cond ((and (consp spec)
-	      (eq (car spec) 'cons)
-	      (consp (cdr spec))
-	      (null (cddr spec))
-	      (consp (cadr spec))
-	      (eq (caadr spec) 'member)
-	      (consp (cdadr spec))
-	      (null (cddadr spec)))
-	 'cons-with-car)
-	((and (symbolp spec)
+              (eq (car spec) 'cons)
+              (consp (cdr spec))
+              (null (cddr spec))
+              (consp (cadr spec))
+              (eq (caadr spec) 'member)
+              (consp (cdadr spec))
+              (null (cddadr spec)))
+         'cons-with-car)
+        ((and (symbolp spec)
 ;;               (structure-type-p spec)
               (get spec 'structure-printer)
               )
          'structure-type)
-	(T 'other)))
+        (T 'other)))
 
 (defvar *preds-for-specs*
   '((T always-true) (cons consp) (simple-atom simple-atom-p) (other otherp)
@@ -223,23 +223,23 @@
 
 (defun convert-body (spec)
   (cond ((atom spec)
-	 (let ((pred (cadr (assoc spec *preds-for-specs*))))
-	   (if pred `(,pred x) `(typep x ',spec))))
-	((member (car spec) '(and or not))
-	 (cons (car spec) (mapcar #'convert-body (cdr spec))))
-	((eq (car spec) 'member)
-	 `(member x ',(copy-list (cdr spec))))
-	((eq (car spec) 'cons)
-	 `(and (consp x)
-	       ,@(if (cdr spec) `((let ((x (car x)))
-				    ,(convert-body (cadr spec)))))
-	       ,@(if (cddr spec) `((let ((x (cdr x)))
-				     ,(convert-body (caddr spec)))))))
-	((eq (car spec) 'satisfies)
-	 `(funcall (function ,(cadr spec)) x))
+         (let ((pred (cadr (assoc spec *preds-for-specs*))))
+           (if pred `(,pred x) `(typep x ',spec))))
+        ((member (car spec) '(and or not))
+         (cons (car spec) (mapcar #'convert-body (cdr spec))))
+        ((eq (car spec) 'member)
+         `(member x ',(copy-list (cdr spec))))
+        ((eq (car spec) 'cons)
+         `(and (consp x)
+               ,@(if (cdr spec) `((let ((x (car x)))
+                                    ,(convert-body (cadr spec)))))
+               ,@(if (cddr spec) `((let ((x (cdr x)))
+                                     ,(convert-body (caddr spec)))))))
+        ((eq (car spec) 'satisfies)
+         `(funcall (function ,(cadr spec)) x))
         ((eq (car spec) 'eql)
          `(eql x ',(cadr spec)))
-	(t
+        (t
          `(typep x ',(copy-tree spec)))))
 
 
@@ -317,10 +317,10 @@
   (let ((stuff (copy-list (others table))))
     (maphash #'(lambda (key val) (declare (ignore key))
                 (push val stuff))
-	     (conses-with-cars table))
+             (conses-with-cars table))
     (maphash #'(lambda (key val) (declare (ignore key))
                 (push val stuff))
-	     (structures table))
+             (structures table))
     (setq stuff (sort stuff #'priority-> :key #'(lambda (x) (car (full-spec x)))))
     (pprint-logical-block (xp stuff :prefix "#<" :suffix ">")
                           (format xp (formatter "pprint dispatch table containing ~A entries: ")

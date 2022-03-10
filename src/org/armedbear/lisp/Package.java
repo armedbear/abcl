@@ -928,11 +928,11 @@ public final class Package extends LispObject implements java.io.Serializable
     }
 
     public Object readResolve() throws java.io.ObjectStreamException {
-	Package pkg = findPackage(name);
-	if(pkg != null) {
-	    return pkg;
-	} else {
-	    return error(new PackageError(name + " is not the name of a package.", new SimpleString(name)));
-	}
+        Package pkg = findPackage(name);
+        if(pkg != null) {
+            return pkg;
+        } else {
+            return error(new PackageError(name + " is not the name of a package.", new SimpleString(name)));
+        }
     }
 }

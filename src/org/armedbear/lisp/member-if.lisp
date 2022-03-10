@@ -35,10 +35,10 @@
   (do ((list list (cdr list)))
       ((endp list) nil)
     (if (funcall test (apply-key key (car list)))
-	(return list))))
+        (return list))))
 
 (defun member-if-not (test list &key key)
   (do ((list list (cdr list)))
       ((endp list) ())
     (if (not (funcall test (apply-key key (car list))))
-	(return list))))
+        (return list))))

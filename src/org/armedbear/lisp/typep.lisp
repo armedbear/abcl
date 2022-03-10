@@ -60,8 +60,8 @@
   (if (null dim)
       (null pat)
       (and (or (eq (car pat) '*)
-	       (eql (car dim) (car pat)))
-	   (match-dimensions (cdr dim) (cdr pat)))))
+               (eql (car dim) (car pat)))
+           (match-dimensions (cdr dim) (cdr pat)))))
 
 (defun %typep (object type)
   (when (atom type)

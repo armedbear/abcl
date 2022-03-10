@@ -161,15 +161,15 @@ elements into it from the source sequence."
   (check-type target-end (or null (integer 0 #.array-total-size-limit)))
   (check-type source-end (or null (integer 0 #.array-total-size-limit)))
   (let ((target-end (or target-end (length target-sequence)))
-	(source-end (or source-end (length source-sequence))))
+        (source-end (or source-end (length source-sequence))))
     (declare (type (integer 0 #.array-total-size-limit) target-start target-end source-start source-end))
     (sequence::seq-dispatch target-sequence
       (sequence::seq-dispatch source-sequence
         (list-replace-from-list)
-	(list-replace-from-mumble)
-	(apply #'sequence:replace target-sequence source-sequence args))
+        (list-replace-from-mumble)
+        (apply #'sequence:replace target-sequence source-sequence args))
       (sequence::seq-dispatch source-sequence
         (mumble-replace-from-list)
-	(mumble-replace-from-mumble)
-	(apply #'sequence:replace target-sequence source-sequence args))
+        (mumble-replace-from-mumble)
+        (apply #'sequence:replace target-sequence source-sequence args))
       (apply #'sequence:replace target-sequence source-sequence args))))

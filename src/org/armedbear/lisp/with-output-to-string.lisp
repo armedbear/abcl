@@ -33,7 +33,7 @@
 
 ;;; From SBCL.
 (defmacro with-output-to-string ((var &optional string &key (element-type ''character))
-				 &body body)
+                                 &body body)
   "If STRING is specified, it must be a string with a fill pointer;
    the output is incrementally appended to the string (as if by use of
    VECTOR-PUSH-EXTEND)."

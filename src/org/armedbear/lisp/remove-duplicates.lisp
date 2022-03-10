@@ -37,8 +37,8 @@
 
 (defun list-remove-duplicates (list test test-not start end key from-end)
   (let* ((result (list ()))
-	 (splice result)
-	 (current list))
+         (splice result)
+         (current list))
     (do ((index 0 (1+ index)))
         ((= index start))
       (setq splice (cdr (rplacd splice (list (car current)))))
@@ -47,22 +47,22 @@
         ((or (and end (= index end))
              (atom current)))
       (if (or (and from-end
-		   (not (member (apply-key key (car current))
-				(nthcdr (1+ start) result)
-				:test test
-				:test-not test-not
-				:key key)))
-	      (and (not from-end)
-		   (not (do ((it (apply-key key (car current)))
-			     (l (cdr current) (cdr l))
-			     (i (1+ index) (1+ i)))
+                   (not (member (apply-key key (car current))
+                                (nthcdr (1+ start) result)
+                                :test test
+                                :test-not test-not
+                                :key key)))
+              (and (not from-end)
+                   (not (do ((it (apply-key key (car current)))
+                             (l (cdr current) (cdr l))
+                             (i (1+ index) (1+ i)))
                           ((or (atom l) (and end (= i end)))
                            ())
-			  (if (if test-not
-				  (not (funcall test-not it (apply-key key (car l))))
-				  (funcall test it (apply-key key (car l))))
-			      (return t))))))
-	  (setq splice (cdr (rplacd splice (list (car current))))))
+                          (if (if test-not
+                                  (not (funcall test-not it (apply-key key (car l))))
+                                  (funcall test it (apply-key key (car l))))
+                              (return t))))))
+          (setq splice (cdr (rplacd splice (list (car current))))))
       (setq current (cdr current)))
     (do ()
         ((atom current))
@@ -74,8 +74,8 @@
                                         &optional (length (length vector)))
   (when (null end) (setf end (length vector)))
   (let ((result (make-sequence-like vector length))
-	(index 0)
-	(jndex start))
+        (index 0)
+        (jndex start))
     (do ()
         ((= index start))
       (setf (aref result index) (aref vector index))
@@ -86,11 +86,11 @@
       (unless (or (and from-end
                        (position (apply-key key elt) result :start start
                                  :end jndex :test test :test-not test-not :key key))
-		  (and (not from-end)
+                  (and (not from-end)
                        (position (apply-key key elt) vector :start (1+ index)
                                  :end end :test test :test-not test-not :key key)))
-	(setf (aref result jndex) elt)
-	(setq jndex (1+ jndex)))
+        (setf (aref result jndex) elt)
+        (setq jndex (1+ jndex)))
       (setq index (1+ index)))
     (do ()
       ((= index length))
@@ -100,16 +100,16 @@
     (shrink-vector result jndex)))
 
 (defun remove-duplicates (sequence &rest args &key (test #'eql) test-not
-			  (start 0) from-end end key)
+                          (start 0) from-end end key)
   (sequence::seq-dispatch sequence
     (when sequence
       (if (and (eq test #'eql)
-	       (null test-not)
-	       (eql start 0)
-	       (null from-end)
-	       (null end)
-	       (null key))
-	  (simple-list-remove-duplicates sequence)
-	  (list-remove-duplicates sequence test test-not start end key from-end)))
+               (null test-not)
+               (eql start 0)
+               (null from-end)
+               (null end)
+               (null key))
+          (simple-list-remove-duplicates sequence)
+          (list-remove-duplicates sequence test test-not start end key from-end)))
     (vector-remove-duplicates sequence test test-not start end key from-end)
     (apply #'sequence:remove-duplicates sequence args)))

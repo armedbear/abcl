@@ -41,5 +41,5 @@
   (loop
     (let ((name (format nil "~A~D" prefix (incf *gentemp-counter*))))
       (multiple-value-bind (symbol exists-p) (find-symbol name package)
-	(unless exists-p
+        (unless exists-p
           (return (values (intern name package))))))))

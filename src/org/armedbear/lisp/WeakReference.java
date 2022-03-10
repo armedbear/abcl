@@ -82,7 +82,7 @@ public class WeakReference extends LispObject {
 
         @Override
         public LispObject execute(LispObject obj) {
-	    return new WeakReference(obj);
+            return new WeakReference(obj);
         }
     };
 
@@ -105,7 +105,7 @@ public class WeakReference extends LispObject {
                 return Lisp.type_error(obj, Symbol.WEAK_REFERENCE);
             
             LispObject value = ((WeakReference)obj).ref.get();
-	    return LispThread.currentThread().setValues(value == null ? NIL : value,
+            return LispThread.currentThread().setValues(value == null ? NIL : value,
                                                         value == null ? NIL : T);
         }
     };

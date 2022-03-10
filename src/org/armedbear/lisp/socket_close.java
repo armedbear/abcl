@@ -49,10 +49,10 @@ public final class socket_close extends Primitive
     public LispObject execute(LispObject first)
 
     {
-	Socket socket = (Socket) JavaObject.getObject(first);
+        Socket socket = (Socket) JavaObject.getObject(first);
         try {
-	    socket.close();
-	    return T;
+            socket.close();
+            return T;
         }
         catch (Exception e) {
             return error(new LispError(e.getMessage()));

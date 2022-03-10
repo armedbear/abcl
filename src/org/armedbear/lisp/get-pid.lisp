@@ -29,14 +29,14 @@ Used to be in SLIME but generally useful, so now back in ABCL proper."
                           process)))
          (java::jcall (java::jmethod "java.lang.Process" "waitFor")
                      process)
-	 (loop :with b :do
-	    (setq b
-		  (java::jcall (java::jmethod "java.io.InputStream" "read")
-			      output))
-	    :until (member b '(-1 #x0a))	; Either EOF or LF
-	    :collecting (code-char b) :into result
-	    :finally (return
-		       (parse-integer (coerce result 'string)))))
+         (loop :with b :do
+            (setq b
+                  (java::jcall (java::jmethod "java.io.InputStream" "read")
+                              output))
+            :until (member b '(-1 #x0a))        ; Either EOF or LF
+            :collecting (code-char b) :into result
+            :finally (return
+                       (parse-integer (coerce result 'string)))))
     (t () 0)))
 
 

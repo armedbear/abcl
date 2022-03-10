@@ -86,7 +86,7 @@
     (fresh-line *debug-io*)
     (with-standard-io-syntax
       (let ((*print-structure* nil)
-	    (*print-readably* nil))
+            (*print-readably* nil))
         (when (and *load-truename* (streamp *load-stream*))
           (simple-format *debug-io*
                          "Error loading ~A at line ~D (offset ~D)~%"

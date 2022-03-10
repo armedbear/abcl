@@ -27,21 +27,21 @@
 (defmethod print-object ((coll (jclass "java.util.Collection")) stream)
   (print-unreadable-object (coll stream :type t :identity t)
     (format stream "~A ~A"
-	    (jclass-of coll)
-	    (jcall "toString" coll))))
+            (jclass-of coll)
+            (jcall "toString" coll))))
 
 ;;Lists (java.util.List) are the Java counterpart to Lisp SEQUENCEs.
 (defun jlist-add (list item)
   (jcall (jmethod "java.util.List" "add" "java.lang.Object")
-	 list item))
+         list item))
 
 (defun jlist-set (list index item)
   (jcall (jmethod "java.util.List" "set" "int" "java.lang.Object")
-	 list index item))
+         list index item))
 
 (defun jlist-get (list index)
   (jcall (jmethod "java.util.List" "get" "int")
-	 list index))
+         list index))
 
 (defmethod sequence:length ((s (jclass "java.util.List")))
   (jcall (jmethod "java.util.Collection" "size") s))
@@ -67,10 +67,10 @@
        (error "Can't specify both :initial-element and :initial-contents"))
       (icp
        (dotimes (i length)
-	 (funcall add-fn seq (elt initial-contents i)))) ;;TODO inefficient, use iterator
+         (funcall add-fn seq (elt initial-contents i)))) ;;TODO inefficient, use iterator
       (t
        (dotimes (i length)
-	 (funcall add-fn seq initial-element))))
+         (funcall add-fn seq initial-element))))
     seq))
 
 ;;TODO: destruct doesn't signal an error for too-many-args for its options
@@ -84,11 +84,11 @@
 (defmethod sequence:make-simple-sequence-iterator
     ((s (jclass "java.util.List")) &key from-end (start 0) end)
   (let* ((end (or end (length s)))
-	 (index (if from-end end start))
-	 (it (jcall "listIterator" s index))
-	 (iter (make-jlist-iterator :native-iterator it
-				    :index (if from-end (1+ index) (1- index))))
-	 (limit (if from-end (1+ start) (1- end))))
+         (index (if from-end end start))
+         (it (jcall "listIterator" s index))
+         (iter (make-jlist-iterator :native-iterator it
+                                    :index (if from-end (1+ index) (1- index))))
+         (limit (if from-end (1+ start) (1- end))))
     ;;CL iterator semantics are that first element is present from the start
     (unless (sequence:iterator-endp s iter limit from-end)
       (sequence:iterator-step s iter from-end))
@@ -99,16 +99,16 @@
     ((s (jclass "java.util.Collection")) it from-end)
   (let ((native-it (jlist-it-native-iterator it)))
     (if from-end
-	(progn
-	  (setf (jlist-it-element it)
-		(when (jcall "hasPrevious" native-it)
-		  (jcall "previous" native-it)))
-	  (decf (jlist-it-index it)))
-	(progn
-	  (setf (jlist-it-element it)
-		(when (jcall "hasNext" native-it)
-		  (jcall "next" native-it)))
-	  (incf (jlist-it-index it)))))
+        (progn
+          (setf (jlist-it-element it)
+                (when (jcall "hasPrevious" native-it)
+                  (jcall "previous" native-it)))
+          (decf (jlist-it-index it)))
+        (progn
+          (setf (jlist-it-element it)
+                (when (jcall "hasNext" native-it)
+                  (jcall "next" native-it)))
+          (incf (jlist-it-index it)))))
   it)
 
 (defmethod sequence:iterator-endp
@@ -139,7 +139,7 @@
 ;;(java.util.Set) too, even if they're not sequences.
 (defun jset-add (set item)
   (jcall (jmethod "java.util.Set" "add" "java.lang.Object")
-	 set item))
+         set item))
 
 (defmethod sequence:length ((s (jclass "java.util.Set")))
   (jcall (jmethod "java.util.Collection" "size") s))
@@ -155,10 +155,10 @@
   (when (or from-end (not (= start 0)))
     (error "Java Sets can only be iterated from the start."))
   (let* ((end (or end (length s)))
-	 (it (jcall "iterator" s))
-	 (iter (make-jlist-iterator :native-iterator it
-				    :index -1))
-	 (limit (1- end)))
+         (it (jcall "iterator" s))
+         (iter (make-jlist-iterator :native-iterator it
+                                    :index -1))
+         (limit (1- end)))
     ;;CL iterator semantics are that first element is present from the start
     (unless (sequence:iterator-endp s iter limit nil)
       (sequence:iterator-step s iter nil))

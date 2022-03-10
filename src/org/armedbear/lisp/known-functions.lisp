@@ -177,8 +177,8 @@
            search
            second
            set
-	   set-char
-	   set-schar
+           set-char
+           set-schar
            set-std-slot-value
            setf-function-name-p
            seventh

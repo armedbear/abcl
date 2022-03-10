@@ -35,16 +35,16 @@
   (if (endp clauses)
       nil
       (let ((clause (first clauses)))
-	(when (atom clause)
-	  (error "COND clause is not a list: ~S" clause))
-	(let ((test (first clause))
-	      (forms (rest clause)))
-	  (if (endp forms)
-	      (let ((n-result (gensym)))
-		`(let ((,n-result ,test))
-		   (if ,n-result
-		       ,n-result
-		       (cond ,@(rest clauses)))))
-	      `(if ,test
-		   (progn ,@forms)
-		   (cond ,@(rest clauses))))))))
+        (when (atom clause)
+          (error "COND clause is not a list: ~S" clause))
+        (let ((test (first clause))
+              (forms (rest clause)))
+          (if (endp forms)
+              (let ((n-result (gensym)))
+                `(let ((,n-result ,test))
+                   (if ,n-result
+                       ,n-result
+                       (cond ,@(rest clauses)))))
+              `(if ,test
+                   (progn ,@forms)
+                   (cond ,@(rest clauses))))))))

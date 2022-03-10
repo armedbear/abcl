@@ -45,9 +45,9 @@
 
 (defun list-substitute* (pred new list start end count key test test-not old)
   (let* ((result (list nil))
-	 elt
-	 (splice result)
-	 (list list))           ; Get a local list for a stepper.
+         elt
+         (splice result)
+         (list list))           ; Get a local list for a stepper.
     (do ((index 0 (1+ index)))
       ((= index start))
       (setq splice (cdr (rplacd splice (list (car list)))))
@@ -56,10 +56,10 @@
       ((or (= index end) (null list) (= count 0)))
       (setq elt (car list))
       (setq splice
-	    (cdr (rplacd splice
-			 (list
-			  (cond
-			   ((case pred
+            (cdr (rplacd splice
+                         (list
+                          (cond
+                           ((case pred
                               (normal
                                (if test-not
                                    (not
@@ -67,8 +67,8 @@
                                    (funcall test old (sys::apply-key key elt))))
                               (if (funcall test (sys::apply-key key elt)))
                               (if-not (not (funcall test (sys::apply-key key elt)))))
-			    (setq count (1- count))
-			    new)
+                            (setq count (1- count))
+                            new)
                            (t elt))))))
       (setq list (cdr list)))
     (do ()
@@ -83,7 +83,7 @@
 (defun vector-substitute* (pred new sequence incrementer left right length
                                 start end count key test test-not old)
   (let ((result (sys::make-sequence-like sequence length))
-	(index left))
+        (index left))
     (do ()
       ((= index start))
       (setf (aref result index) (aref sequence index))
@@ -92,16 +92,16 @@
       ((or (= index end) (= count 0)))
       (setq elt (aref sequence index))
       (setf (aref result index)
-	    (cond ((case pred
+            (cond ((case pred
                      (normal
                       (if test-not
                           (not (funcall test-not old (sys::apply-key key elt)))
                           (funcall test old (sys::apply-key key elt))))
                      (if (funcall test (sys::apply-key key elt)))
                      (if-not (not (funcall test (sys::apply-key key elt)))))
-		   (setq count (1- count))
-		   new)
-		  (t elt)))
+                   (setq count (1- count))
+                   new)
+                  (t elt)))
       (setq index (+ index incrementer)))
     (do ()
       ((= index right))
@@ -125,33 +125,33 @@
            (vector-substitute* ,pred new sequence 1 0 length length
                                start end count key test test-not old))
        ,(ecase (cadr pred) ;;pred is (quote <foo>)
-	  (normal `(apply #'sequence:substitute new old sequence args))
-	  (if `(apply #'sequence:substitute-if new test sequence args))
-	  (if-not `(apply #'sequence:substitute-if-not new test sequence args)))))
+          (normal `(apply #'sequence:substitute new old sequence args))
+          (if `(apply #'sequence:substitute-if new test sequence args))
+          (if-not `(apply #'sequence:substitute-if-not new test sequence args)))))
 
 
 (defun substitute (new old sequence &rest args &key from-end (test #'eql) test-not
                        (start 0) count end key)
   (let* ((length (length sequence))
-	 (end (or end length))
-	 (count (real-count count)))
+         (end (or end length))
+         (count (real-count count)))
     (subst-dispatch 'normal)))
 
 
 (defun substitute-if (new test sequence &rest args &key from-end (start 0) end count key)
   (let* ((length (length sequence))
-	 (end (or end length))
-	 (count (real-count count))
-	 test-not
-	 old)
+         (end (or end length))
+         (count (real-count count))
+         test-not
+         old)
     (subst-dispatch 'if)))
 
 
 (defun substitute-if-not (new test sequence &rest args &key from-end (start 0)
                               end count key)
   (let* ((length (length sequence))
-	 (end (or end length))
-	 (count (real-count count))
-	 test-not
-	 old)
+         (end (or end length))
+         (count (real-count count))
+         test-not
+         old)
     (subst-dispatch 'if-not)))

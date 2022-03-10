@@ -53,8 +53,8 @@ public final class WrongNumberOfArgumentsException extends ProgramError
         // own Java class as a convenience for the implementation.
         super(StandardClass.PROGRAM_ERROR);
         this.operator = operator;
-	this.expectedMinArgs = expectedMin;
-	this.expectedMaxArgs = expectedMax;
+        this.expectedMinArgs = expectedMin;
+        this.expectedMaxArgs = expectedMax;
         this.actualArgs = args;
         setFormatControl(getMessage().replaceAll("~","~~"));
         setFormatArguments(NIL);
@@ -76,10 +76,10 @@ public final class WrongNumberOfArgumentsException extends ProgramError
     
     public WrongNumberOfArgumentsException(String message) {
         super(StandardClass.PROGRAM_ERROR);
-	if(message == null) {
-	    throw new NullPointerException("message can not be null");
-	}
-	this.message = message;
+        if(message == null) {
+            throw new NullPointerException("message can not be null");
+        }
+        this.message = message;
         setFormatControl(getMessage().replaceAll("~","~~"));
         setFormatArguments(NIL);
     }
@@ -87,14 +87,14 @@ public final class WrongNumberOfArgumentsException extends ProgramError
     @Override
     public String getMessage()
     {
-	if(message != null) {
-	    return message;
-	}
+        if(message != null) {
+            return message;
+        }
         StringBuilder sb =
             new StringBuilder("Wrong number of arguments for "
                               + operator.princToString());
-	if(expectedMinArgs >= 0 || expectedMaxArgs >= 0) {
-	    sb.append("; ");
+        if(expectedMinArgs >= 0 || expectedMaxArgs >= 0) {
+            sb.append("; ");
             
             if (expectedMinArgs == expectedMaxArgs) {
                 sb.append(expectedMinArgs);
@@ -109,8 +109,8 @@ public final class WrongNumberOfArgumentsException extends ProgramError
                 sb.append(" and ").append(expectedMaxArgs);
             }
             
-	    sb.append(" expected");
-	}
+            sb.append(" expected");
+        }
         if (actualArgs != null) {
             sb.append(" -- provided: ");
             sb.append(actualArgs.princToString());

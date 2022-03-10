@@ -309,7 +309,7 @@ public class Readtable extends LispObject
 
   protected static class DispatchTable
   {
-	protected final CharHashMap<LispObject> functions;
+        protected final CharHashMap<LispObject> functions;
 
     public DispatchTable()
     {
@@ -534,16 +534,16 @@ public class Readtable extends LispObject
         // REVIEW synchronization
         toReadtable.syntax.put(toChar, fromReadtable.syntax.get(fromChar));
         toReadtable.readerMacroFunctions.put(toChar,
-        		fromReadtable.readerMacroFunctions.get(fromChar));
+                        fromReadtable.readerMacroFunctions.get(fromChar));
         // "If the character is a dispatching macro character, its entire
         // dispatch table of reader macro functions is copied."
         DispatchTable found = fromReadtable.dispatchTables.get(fromChar);
         if (found!=null)
-        	toReadtable.dispatchTables.put(toChar, new DispatchTable(found));          
+                toReadtable.dispatchTables.put(toChar, new DispatchTable(found));          
         else
             // Don't leave behind dispatch tables when fromChar
             // doesn't have one
-        	toReadtable.dispatchTables.put(toChar, null);
+                toReadtable.dispatchTables.put(toChar, null);
         return T;
       }
     };

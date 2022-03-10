@@ -62,7 +62,7 @@ public class CompiledClosure extends Closure
   {
       CompiledClosure result = null;
       try {
-	  result = (CompiledClosure)super.clone();
+          result = (CompiledClosure)super.clone();
       } catch (CloneNotSupportedException e) {
       }
       return result;
@@ -225,12 +225,12 @@ public class CompiledClosure extends Closure
       else if (arg instanceof AbstractString)
         namestring = arg.getStringValue();
       if(arg instanceof JavaObject) {
-	  try {
-	      return loadClassBytes((byte[]) arg.javaInstance(byte[].class));
-	  } catch(Throwable t) {
-	      Debug.trace(t);
-	      return error(new LispError("Unable to load " + arg.princToString()));
-	  }
+          try {
+              return loadClassBytes((byte[]) arg.javaInstance(byte[].class));
+          } catch(Throwable t) {
+              Debug.trace(t);
+              return error(new LispError("Unable to load " + arg.princToString()));
+          }
       }
       return error(new LispError("Unable to load " + arg.princToString()));
     }

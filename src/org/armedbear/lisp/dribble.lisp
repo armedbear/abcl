@@ -54,24 +54,24 @@
   record of further I/O to that file. Without an argument, it closes
   the dribble file, and quits logging."
   (cond (pathname
-	 (let* ((new-dribble-stream
-		 (open pathname
-		       :direction :output
-		       :if-exists if-exists
-		       :if-does-not-exist :create))
-		(new-standard-output
-		 (make-broadcast-stream *standard-output* new-dribble-stream))
-		(new-error-output
-		 (make-broadcast-stream *error-output* new-dribble-stream))
-		(new-standard-input
-		 (make-echo-stream *standard-input* new-dribble-stream)))
-	   (push (list *dribble-stream* *standard-input* *standard-output*
-		       *error-output*)
-		 *previous-dribble-streams*)
-	   (setf *dribble-stream* new-dribble-stream)
-	   (setf *standard-input* new-standard-input)
-	   (setf *standard-output* new-standard-output)
-	   (setf *error-output* new-error-output)
+         (let* ((new-dribble-stream
+                 (open pathname
+                       :direction :output
+                       :if-exists if-exists
+                       :if-does-not-exist :create))
+                (new-standard-output
+                 (make-broadcast-stream *standard-output* new-dribble-stream))
+                (new-error-output
+                 (make-broadcast-stream *error-output* new-dribble-stream))
+                (new-standard-input
+                 (make-echo-stream *standard-input* new-dribble-stream)))
+           (push (list *dribble-stream* *standard-input* *standard-output*
+                       *error-output*)
+                 *previous-dribble-streams*)
+           (setf *dribble-stream* new-dribble-stream)
+           (setf *standard-input* new-standard-input)
+           (setf *standard-output* new-standard-output)
+           (setf *error-output* new-error-output)
            ;; Starting a new internal REPL for dribbling
            (loop do
              (format t "~a> " (package-name *package*))
@@ -85,13 +85,13 @@
                  (error (c)
                    (format *error-output* "~a~%" c)
                    (error c)))))))
-	((null *dribble-stream*)
-	 (error "Not currently dribbling."))
-	(t
-	 (let ((old-streams (pop *previous-dribble-streams*)))
-	   (close *dribble-stream*)
-	   (setf *dribble-stream* (first old-streams))
-	   (setf *standard-input* (second old-streams))
-	   (setf *standard-output* (third old-streams))
-	   (setf *error-output* (fourth old-streams)))))
+        ((null *dribble-stream*)
+         (error "Not currently dribbling."))
+        (t
+         (let ((old-streams (pop *previous-dribble-streams*)))
+           (close *dribble-stream*)
+           (setf *dribble-stream* (first old-streams))
+           (setf *standard-input* (second old-streams))
+           (setf *standard-output* (third old-streams))
+           (setf *error-output* (fourth old-streams)))))
   (values))

@@ -94,7 +94,7 @@
      (dolist (name (cdr declaration-specifier))
        (if (symbolp name)
          (setf (get name '%inline) (car declaration-specifier))
-	 (push (cons name (car declaration-specifier)) *inline-declarations*))))
+         (push (cons name (car declaration-specifier)) *inline-declarations*))))
     (DECLARATION
      (dolist (name (cdr declaration-specifier))
        (when (or (get name 'deftype-definition)

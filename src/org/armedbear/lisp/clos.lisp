@@ -2199,12 +2199,12 @@ Initialized with the true value near the end of the file.")
                       '(&key) (if (getf plist :auxiliary-args)
                                   (subseq gf-lambda-list (position '&aux gf-lambda-list)))))))
     (if gf
-	(restart-case
-	    (check-method-lambda-list name method-lambda-list
-				      (generic-function-lambda-list gf))
-	  (unbind-and-try-again () :report (lambda(s) (format s "Undefine generic function #'~a and continue" name))
-	    (fmakunbound name)
-	    (setf gf (ensure-generic-function name :lambda-list gf-lambda-list))))
+        (restart-case
+            (check-method-lambda-list name method-lambda-list
+                                      (generic-function-lambda-list gf))
+          (unbind-and-try-again () :report (lambda(s) (format s "Undefine generic function #'~a and continue" name))
+            (fmakunbound name)
+            (setf gf (ensure-generic-function name :lambda-list gf-lambda-list))))
         (setf gf (ensure-generic-function name :lambda-list gf-lambda-list)))
     (let ((method
            (if (eq (generic-function-method-class gf) +the-standard-method-class+)
@@ -2900,7 +2900,7 @@ to ~S with argument list ~S."
                (push `',specializer specializers-form))))
       (setf specializers-form `(list ,@(nreverse specializers-form)))
       `(progn
-	 (sys::record-source-information-for-type ',function-name '(:method ,function-name ,qualifiers ,specializers))
+         (sys::record-source-information-for-type ',function-name '(:method ,function-name ,qualifiers ,specializers))
          (ensure-method ',function-name
                         :lambda-list ',lambda-list
                         :qualifiers ',qualifiers
@@ -3047,11 +3047,11 @@ generic functions without providing sensible behaviour."
        (defgeneric ,temp-sym ,@rest)
        (sys::record-source-information-for-type ',function-name '(:generic-function ,function-name))
        ,@(loop for method-form in rest
-	       when (eq (car method-form) :method)
-		    collect
-		    (multiple-value-bind (function-name qualifiers lambda-list specializers documentation declarations body)
-			(mop::parse-defmethod `(,function-name ,@(rest method-form)))
-		      `(sys::record-source-information-for-type ',function-name '(:method ,function-name ,qualifiers ,specializers))))
+               when (eq (car method-form) :method)
+                    collect
+                    (multiple-value-bind (function-name qualifiers lambda-list specializers documentation declarations body)
+                        (mop::parse-defmethod `(,function-name ,@(rest method-form)))
+                      `(sys::record-source-information-for-type ',function-name '(:method ,function-name ,qualifiers ,specializers))))
        (let ((gf (symbol-function ',temp-sym)))
          ;; FIXME (rudi 2012-07-08): fset gets the source location info
          ;; to charpos 23 always (but (setf fdefinition) leaves the
@@ -3321,15 +3321,15 @@ instance and, for setters, `new-value' the new value."
   (:method ((gf standard-generic-function) classes)
     (let ((methods '()))
       (dolist (method (generic-function-methods gf))
-	(multiple-value-bind (applicable knownp)
-	    (method-applicable-using-classes-p method classes)
-	  (cond (applicable
-		 (push method methods))
-		((not knownp)
-		 (return-from compute-applicable-methods-using-classes
-		   (values nil nil))))))
+        (multiple-value-bind (applicable knownp)
+            (method-applicable-using-classes-p method classes)
+          (cond (applicable
+                 (push method methods))
+                ((not knownp)
+                 (return-from compute-applicable-methods-using-classes
+                   (values nil nil))))))
       (values (sort-methods methods gf classes)
-	      t))))
+              t))))
 
 
 ;;; Slot access
@@ -3806,10 +3806,10 @@ or T when any keyword is acceptable due to presence of
                                                  &allow-other-keys))
 
 (defmethod update-instance-for-redefined-class ((instance standard-object)
-						added-slots
-						discarded-slots
-						property-list
-						&rest initargs)
+                                                added-slots
+                                                discarded-slots
+                                                property-list
+                                                &rest initargs)
   (check-initargs (list #'update-instance-for-redefined-class)
                   (list* instance added-slots discarded-slots
                          property-list initargs)
@@ -4143,17 +4143,17 @@ or T when any keyword is acceptable due to presence of
     (dolist (option options)
       (when (eq (car option) :report)
         (setf report (cadr option))
-	(setf options (delete option options :test #'equal))
+        (setf options (delete option options :test #'equal))
         (return)))
     (typecase report
       (null
        `(progn
-	  (sys::record-source-information-for-type  ',name :condition)
+          (sys::record-source-information-for-type  ',name :condition)
           (defclass ,name ,parent-types ,slot-specs ,@options)
           ',name))
       (string
        `(progn
-	  (sys::record-source-information-for-type  ',name :condition)
+          (sys::record-source-information-for-type  ',name :condition)
           (defclass ,name ,parent-types ,slot-specs ,@options)
           (defmethod print-object ((condition ,name) stream)
             (if *print-escape*
@@ -4162,7 +4162,7 @@ or T when any keyword is acceptable due to presence of
           ',name))
       (t
        `(progn
-	  (sys::record-source-information-for-type  ',name :condition)
+          (sys::record-source-information-for-type  ',name :condition)
           (defclass ,name ,parent-types ,slot-specs ,@options)
           (defmethod print-object ((condition ,name) stream)
             (if *print-escape*
@@ -4559,10 +4559,10 @@ or T when any keyword is acceptable due to presence of
                  (eq 'setf (first function-name))
                  (autoload-ref-p (second function-name))))
         (fmakunbound function-name)
-	(progn
-	  (cerror "Redefine as generic function" "~A already names an ordinary function, macro, or special operator." function-name)
-	  (fmakunbound function-name)
-	  )))
+        (progn
+          (cerror "Redefine as generic function" "~A already names an ordinary function, macro, or special operator." function-name)
+          (fmakunbound function-name)
+          )))
   (apply (if (eq generic-function-class +the-standard-generic-function-class+)
              #'make-instance-standard-generic-function
              #'make-instance)

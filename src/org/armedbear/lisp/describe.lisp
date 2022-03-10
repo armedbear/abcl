@@ -94,13 +94,13 @@
        (%describe-object object stream)
        (describe-arglist object stream)
        (let ((function-symbol (nth-value 2 (function-lambda-expression object))))
-	 (if (and (consp function-symbol) (eq (car function-symbol) 'macro-function))
-	     (setq function-symbol (second function-symbol)))
-	 (when  function-symbol
-	   (let ((doc (documentation function-symbol 'function)))
-	     (when doc
-	       (format stream "Function documentation:~%  ~A~%" doc)))
-	   )))
+         (if (and (consp function-symbol) (eq (car function-symbol) 'macro-function))
+             (setq function-symbol (second function-symbol)))
+         (when  function-symbol
+           (let ((doc (documentation function-symbol 'function)))
+             (when doc
+               (format stream "Function documentation:~%  ~A~%" doc)))
+           )))
       (INTEGER
        (%describe-object object stream)
        (format stream "~D.~%~

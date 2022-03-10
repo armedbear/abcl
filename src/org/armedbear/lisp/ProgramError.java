@@ -50,7 +50,7 @@ public class ProgramError extends LispError
         if (initArgs.listp() && initArgs.car().stringp()) {
            setFormatControl(initArgs.car().getStringValue());
            setFormatArguments(initArgs.cdr());
-	}
+        }
 
     }
 

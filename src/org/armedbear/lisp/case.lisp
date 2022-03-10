@@ -37,7 +37,7 @@
 (defun list-of-length-at-least-p (x n)
   (or (zerop n) ; since anything can be considered an improper list of length 0
       (and (consp x)
-	   (list-of-length-at-least-p (cdr x) (1- n)))))
+           (list-of-length-at-least-p (cdr x) (1- n)))))
 
 (defun case-body-error (name keyform keyform-value expected-type keys)
   (declare (ignore name keys))
@@ -65,33 +65,33 @@
                            errorp proceedp expected-type)
   (if proceedp
       (let ((block (gensym))
-	    (again (gensym)))
-	`(let ((,keyform-value ,keyform))
-	   (block ,block
-	     (tagbody
-	      ,again
-	      (return-from
-	       ,block
-	       (cond ,@(nreverse clauses)
-		     (t
-		      (setf ,keyform-value
-			    (setf ,keyform
-				  (case-body-error
-				   ',name ',keyform ,keyform-value
-				   ',expected-type ',keys)))
-		      (go ,again))))))))
+            (again (gensym)))
+        `(let ((,keyform-value ,keyform))
+           (block ,block
+             (tagbody
+              ,again
+              (return-from
+               ,block
+               (cond ,@(nreverse clauses)
+                     (t
+                      (setf ,keyform-value
+                            (setf ,keyform
+                                  (case-body-error
+                                   ',name ',keyform ,keyform-value
+                                   ',expected-type ',keys)))
+                      (go ,again))))))))
       `(let ((,keyform-value ,keyform))
-	 (cond
-	  ,@(nreverse clauses)
-	  ,@(if errorp
-;; 		`((t (error 'case-failure
-;; 			    :name ',name
-;; 			    :datum ,keyform-value
-;; 			    :expected-type ',expected-type
-;; 			    :possibilities ',keys))))))))
-		`((t (error 'type-error
-			    :datum ,keyform-value
-			    :expected-type ',expected-type))))))))
+         (cond
+          ,@(nreverse clauses)
+          ,@(if errorp
+;;              `((t (error 'case-failure
+;;                          :name ',name
+;;                          :datum ,keyform-value
+;;                          :expected-type ',expected-type
+;;                          :possibilities ',keys))))))))
+                `((t (error 'type-error
+                            :datum ,keyform-value
+                            :expected-type ',expected-type))))))))
 
 ;;; CASE-BODY returns code for all the standard "case" macros. NAME is
 ;;; the macro name, and KEYFORM is the thing to case on. MULTI-P
@@ -108,41 +108,41 @@
   (unless (or cases (not needcasesp))
     (warn "no clauses in ~S" name))
   (let ((keyform-value (gensym))
-	(clauses ())
-	(keys ()))
+        (clauses ())
+        (keys ()))
     (do* ((cases cases (cdr cases))
-	  (case (car cases) (car cases)))
-	 ((null cases) nil)
+          (case (car cases) (car cases)))
+         ((null cases) nil)
       (unless (list-of-length-at-least-p case 1)
-	(error "~S -- bad clause in ~S" case name))
+        (error "~S -- bad clause in ~S" case name))
       (destructuring-bind (keyoid &rest forms) case
-	(cond ((and (memq keyoid '(t otherwise))
-		    (null (cdr cases)))
-	       (if errorp
-		   (progn
-		     (style-warn "~@<Treating bare ~A in ~A as introducing a ~
+        (cond ((and (memq keyoid '(t otherwise))
+                    (null (cdr cases)))
+               (if errorp
+                   (progn
+                     (style-warn "~@<Treating bare ~A in ~A as introducing a ~
                                   normal-clause, not an otherwise-clause~@:>"
-				 keyoid name)
-		     (push keyoid keys)
-		     (push `((,test ,keyform-value ',keyoid) nil ,@forms)
-			   clauses))
-		   (push `(t nil ,@forms) clauses)))
-	      ((and multi-p (listp keyoid))
-	       (setf keys (append keyoid keys))
-	       (push `((or ,@(mapcar (lambda (key)
-				       `(,test ,keyform-value ',key))
-				     keyoid))
-		       nil
-		       ,@forms)
-		     clauses))
-	      (t
-	       (push keyoid keys)
-	       (push `((,test ,keyform-value ',keyoid)
-		       nil
-		       ,@forms)
-		     clauses)))))
+                                 keyoid name)
+                     (push keyoid keys)
+                     (push `((,test ,keyform-value ',keyoid) nil ,@forms)
+                           clauses))
+                   (push `(t nil ,@forms) clauses)))
+              ((and multi-p (listp keyoid))
+               (setf keys (append keyoid keys))
+               (push `((or ,@(mapcar (lambda (key)
+                                       `(,test ,keyform-value ',key))
+                                     keyoid))
+                       nil
+                       ,@forms)
+                     clauses))
+              (t
+               (push keyoid keys)
+               (push `((,test ,keyform-value ',keyoid)
+                       nil
+                       ,@forms)
+                     clauses)))))
     (case-body-aux name keyform keyform-value clauses keys errorp proceedp
-		   `(,(if multi-p 'member 'or) ,@keys))))
+                   `(,(if multi-p 'member 'or) ,@keys))))
 
 (defmacro case (keyform &body cases)
   "CASE Keyform {({(Key*) | Key} Form*)}*

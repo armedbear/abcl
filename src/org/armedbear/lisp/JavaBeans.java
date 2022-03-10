@@ -50,26 +50,26 @@ public final class JavaBeans {
     {
         pf__jget_property_value() 
         {
-	    super("%jget-property-value", PACKAGE_JAVA, false,
+            super("%jget-property-value", PACKAGE_JAVA, false,
                   "java-object property-name");
         }
-    	
+        
         @Override
         public LispObject execute(LispObject javaObject, LispObject propertyName) {
-			try {
-				Object obj = javaObject.javaInstance();
-				PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
-				Object value = pd.getReadMethod().invoke(obj);
-				if(value instanceof LispObject) {
-				    return (LispObject) value;
-				} else if(value != null) {
-				    return JavaObject.getInstance(value, true);
-				} else {
-				    return NIL;
-				}
-			} catch (Exception e) {
+                        try {
+                                Object obj = javaObject.javaInstance();
+                                PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
+                                Object value = pd.getReadMethod().invoke(obj);
+                                if(value instanceof LispObject) {
+                                    return (LispObject) value;
+                                } else if(value != null) {
+                                    return JavaObject.getInstance(value, true);
+                                } else {
+                                    return NIL;
+                                }
+                        } catch (Exception e) {
                 return error(new JavaException(e));
-			}
+                        }
         }
     };
     
@@ -81,33 +81,33 @@ public final class JavaBeans {
     {
         pf__jset_property_value()
         {
-	    super("%jset-property-value", PACKAGE_JAVA, false,
+            super("%jset-property-value", PACKAGE_JAVA, false,
                   "java-object property-name value");
         }
-    	
+        
         @Override
         public LispObject execute(LispObject javaObject, LispObject propertyName, LispObject value) {
-	    Object obj = null;
-	    try {
-		obj = javaObject.javaInstance();
-		PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
-		Object jValue;
-		//TODO maybe we should do this in javaInstance(Class)
-		if(value instanceof JavaObject) {
-		    jValue = value.javaInstance();
-		} else {
-		    if(Boolean.TYPE.equals(pd.getPropertyType()) ||
-		       Boolean.class.equals(pd.getPropertyType())) {
-			jValue = value != NIL;
-		    } else {
-			jValue = value != NIL ? value.javaInstance() : null;
-		    }
-		}
-		pd.getWriteMethod().invoke(obj, jValue);
-		return value;
-	    } catch (Exception e) {
+            Object obj = null;
+            try {
+                obj = javaObject.javaInstance();
+                PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
+                Object jValue;
+                //TODO maybe we should do this in javaInstance(Class)
+                if(value instanceof JavaObject) {
+                    jValue = value.javaInstance();
+                } else {
+                    if(Boolean.TYPE.equals(pd.getPropertyType()) ||
+                       Boolean.class.equals(pd.getPropertyType())) {
+                        jValue = value != NIL;
+                    } else {
+                        jValue = value != NIL ? value.javaInstance() : null;
+                    }
+                }
+                pd.getWriteMethod().invoke(obj, jValue);
+                return value;
+            } catch (Exception e) {
             return error(new JavaException(e));
-	    }
+            }
         }
     };
 
@@ -115,9 +115,9 @@ public final class JavaBeans {
         String prop = ((AbstractString) propertyName).getStringValue();
         BeanInfo beanInfo = Introspector.getBeanInfo(obj.getClass());
         for(PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
-        	if(pd.getName().equals(prop)) {
-        		return pd;
-        	}
+                if(pd.getName().equals(prop)) {
+                        return pd;
+                }
         }
         error(new LispError("Property " + prop + " not found in " + obj));
 

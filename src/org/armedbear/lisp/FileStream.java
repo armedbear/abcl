@@ -87,7 +87,7 @@ public final class FileStream extends Stream
         
         Debug.assertTrue(mode != null);
         RandomAccessFile raf = new RandomAccessFile(file, mode);
-	
+        
         // ifExists is ignored unless we have an output stream.
         if (isOutputStream) {
             final long length = file.isFile() ? file.length() : 0;
@@ -102,8 +102,8 @@ public final class FileStream extends Stream
         }
         setExternalFormat(format);
         
-	// don't touch raf directly after passing it to racf.
-	// the state will become inconsistent if you do that.
+        // don't touch raf directly after passing it to racf.
+        // the state will become inconsistent if you do that.
         racf = new RandomAccessCharacterFile(raf, encoding);
 
         this.pathname = pathname;
@@ -111,22 +111,22 @@ public final class FileStream extends Stream
         if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR) {
             isCharacterStream = true;
             bytesPerUnit = 1;
-	    if (isInputStream) {
-		initAsCharacterInputStream(racf.getReader());
-	    }
-	    if (isOutputStream) {
-		initAsCharacterOutputStream(racf.getWriter());
-	    }
+            if (isInputStream) {
+                initAsCharacterInputStream(racf.getReader());
+            }
+            if (isOutputStream) {
+                initAsCharacterOutputStream(racf.getWriter());
+            }
         } else {
             isBinaryStream = true;
             int width = Fixnum.getValue(elementType.cadr());
             bytesPerUnit = width / 8;
-	    if (isInputStream) {
-		initAsBinaryInputStream(racf.getInputStream());
-	    }
-	    if (isOutputStream) {
-		initAsBinaryOutputStream(racf.getOutputStream());
-	    }
+            if (isInputStream) {
+                initAsBinaryInputStream(racf.getInputStream());
+            }
+            if (isOutputStream) {
+                initAsBinaryOutputStream(racf.getOutputStream());
+            }
         }
     }
 
@@ -204,11 +204,11 @@ public final class FileStream extends Stream
     public void _clearInput()
     {
         try {
-	    if (isInputStream) {
-		racf.position(racf.length());
-	    } else {
-		streamNotInputStream();
-	    }
+            if (isInputStream) {
+                racf.position(racf.length());
+            } else {
+                streamNotInputStream();
+            }
         }
         catch (IOException e) {
             error(new StreamError(this, e));

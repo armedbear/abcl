@@ -985,13 +985,13 @@ the sequence argument to be a proper sequence.
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun filter-dolist-declarations (decls)
     (mapcar (lambda (decl)
-	      `(declare ,@(remove-if
-			   (lambda (clause)
-			     (and (consp clause)
-				  (or (eq (car clause) 'type)
-				      (eq (car clause) 'ignore))))
-			   (cdr decl))))
-	    decls)))
+              `(declare ,@(remove-if
+                           (lambda (clause)
+                             (and (consp clause)
+                                  (or (eq (car clause) 'type)
+                                      (eq (car clause) 'ignore))))
+                           (cdr decl))))
+            decls)))
 
 ;; just like DOLIST, but with one-dimensional arrays
 (defmacro dovector ((elt vector &optional result) &body body)
@@ -1012,7 +1012,7 @@ the sequence argument to be a proper sequence.
                ,@forms)))))))
 
 (defmacro sequence:dosequence ((e sequence &optional return &rest args &key
-				  from-end start end) &body body)
+                                  from-end start end) &body body)
   (declare (ignore from-end start end))
   (multiple-value-bind (forms decls)
       (sys:parse-body body nil)

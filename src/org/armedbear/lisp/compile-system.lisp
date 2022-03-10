@@ -487,8 +487,8 @@
 
 (defun compile-system (&key quit (zip t) (cls-ext *compile-file-class-extension*) (abcl-ext *compile-file-type*) output-path)
   (let ((status -1)
-	(*compile-file-class-extension* cls-ext)
-	(*compile-file-type* abcl-ext))
+        (*compile-file-class-extension* cls-ext)
+        (*compile-file-type* abcl-ext))
     (check-lisp-home)
     (time
      (with-compilation-unit ()

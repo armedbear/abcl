@@ -88,9 +88,9 @@ public final class ByteArrayOutputStream extends Stream
     {
         if (elementType == NIL) {
             return new byte[0];
-	} else {
-	    return byteArrayOutputStream.toByteArray();
-	}
+        } else {
+            return byteArrayOutputStream.toByteArray();
+        }
     }
 
     // ### %make-byte-array-output-stream

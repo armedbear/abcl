@@ -37,59 +37,59 @@
 
 (defmacro vector-locater-macro (sequence body-form return-type)
   `(let ((incrementer (if from-end -1 1))
-	 (start (if from-end (1- (the fixnum end)) start))
-	 (end (if from-end (1- (the fixnum start)) end)))
+         (start (if from-end (1- (the fixnum end)) start))
+         (end (if from-end (1- (the fixnum start)) end)))
      (declare (fixnum start end incrementer))
      (do ((index start (+ index incrementer))
-	  ,@(case return-type (:position nil) (:element '(current))))
-	 ((= index end) ())
+          ,@(case return-type (:position nil) (:element '(current))))
+         ((= index end) ())
        (declare (fixnum index))
        ,@(case return-type
-	   (:position nil)
-	   (:element `((setf current (aref ,sequence index)))))
+           (:position nil)
+           (:element `((setf current (aref ,sequence index)))))
        ,body-form)))
 
 (defmacro locater-test-not (item sequence seq-type return-type)
   (let ((seq-ref (case return-type
-		   (:position
-		    (case seq-type
-		      (:vector `(aref ,sequence index))
-		      (:list `(pop ,sequence))))
-		   (:element 'current)))
-	(return (case return-type
-		  (:position 'index)
-		  (:element 'current))))
+                   (:position
+                    (case seq-type
+                      (:vector `(aref ,sequence index))
+                      (:list `(pop ,sequence))))
+                   (:element 'current)))
+        (return (case return-type
+                  (:position 'index)
+                  (:element 'current))))
     `(if test-not
-	 (if (not (funcall test-not ,item (sys::apply-key key ,seq-ref)))
-	     (return ,return))
-	 (if (funcall test ,item (sys::apply-key key ,seq-ref))
-	     (return ,return)))))
+         (if (not (funcall test-not ,item (sys::apply-key key ,seq-ref)))
+             (return ,return))
+         (if (funcall test ,item (sys::apply-key key ,seq-ref))
+             (return ,return)))))
 
 (defmacro vector-locater (item sequence return-type)
   `(vector-locater-macro ,sequence
-			 (locater-test-not ,item ,sequence :vector ,return-type)
-			 ,return-type))
+                         (locater-test-not ,item ,sequence :vector ,return-type)
+                         ,return-type))
 
 (defmacro locater-if-test (test sequence seq-type return-type sense)
   (let ((seq-ref (case return-type
-		   (:position
-		    (case seq-type
-		      (:vector `(aref ,sequence index))
-		      (:list `(pop ,sequence))))
-		   (:element 'current)))
-	(return (case return-type
-		  (:position 'index)
-		  (:element 'current))))
+                   (:position
+                    (case seq-type
+                      (:vector `(aref ,sequence index))
+                      (:list `(pop ,sequence))))
+                   (:element 'current)))
+        (return (case return-type
+                  (:position 'index)
+                  (:element 'current))))
     (if sense
-	`(if (funcall ,test (sys::apply-key key ,seq-ref))
-	     (return ,return))
-	`(if (not (funcall ,test (sys::apply-key key ,seq-ref)))
-	     (return ,return)))))
+        `(if (funcall ,test (sys::apply-key key ,seq-ref))
+             (return ,return))
+        `(if (not (funcall ,test (sys::apply-key key ,seq-ref)))
+             (return ,return)))))
 
 (defmacro vector-locater-if-macro (test sequence return-type sense)
   `(vector-locater-macro ,sequence
-			 (locater-if-test ,test ,sequence :vector ,return-type ,sense)
-			 ,return-type))
+                         (locater-if-test ,test ,sequence :vector ,return-type ,sense)
+                         ,return-type))
 
 (defmacro vector-locater-if (test sequence return-type)
   `(vector-locater-if-macro ,test ,sequence ,return-type t))
@@ -100,36 +100,36 @@
 (defmacro list-locater-macro (sequence body-form return-type)
   `(if from-end
        (do ((sequence (nthcdr (- (the fixnum (length sequence))
-				 (the fixnum end))
-			      (reverse (the list ,sequence))))
-	    (index (1- (the fixnum end)) (1- index))
-	    (terminus (1- (the fixnum start)))
-	    ,@(case return-type (:position nil) (:element '(current))))
-	   ((or (= index terminus) (null sequence)) ())
-	 (declare (fixnum index terminus))
-	 ,@(case return-type
-	     (:position nil)
-	     (:element `((setf current (pop ,sequence)))))
-	 ,body-form)
+                                 (the fixnum end))
+                              (reverse (the list ,sequence))))
+            (index (1- (the fixnum end)) (1- index))
+            (terminus (1- (the fixnum start)))
+            ,@(case return-type (:position nil) (:element '(current))))
+           ((or (= index terminus) (null sequence)) ())
+         (declare (fixnum index terminus))
+         ,@(case return-type
+             (:position nil)
+             (:element `((setf current (pop ,sequence)))))
+         ,body-form)
        (do ((sequence (nthcdr start ,sequence))
-	    (index start (1+ index))
-	    ,@(case return-type (:position nil) (:element '(current))))
-	   ((or (= index (the fixnum end)) (null sequence)) ())
-	 (declare (fixnum index))
-	 ,@(case return-type
-	     (:position nil)
-	     (:element `((setf current (pop ,sequence)))))
-	 ,body-form)))
+            (index start (1+ index))
+            ,@(case return-type (:position nil) (:element '(current))))
+           ((or (= index (the fixnum end)) (null sequence)) ())
+         (declare (fixnum index))
+         ,@(case return-type
+             (:position nil)
+             (:element `((setf current (pop ,sequence)))))
+         ,body-form)))
 
 (defmacro list-locater (item sequence return-type)
   `(list-locater-macro ,sequence
-		       (locater-test-not ,item ,sequence :list ,return-type)
-		       ,return-type))
+                       (locater-test-not ,item ,sequence :list ,return-type)
+                       ,return-type))
 
 (defmacro list-locater-if-macro (test sequence return-type sense)
   `(list-locater-macro ,sequence
-		       (locater-if-test ,test ,sequence :list ,return-type ,sense)
-		       ,return-type))
+                       (locater-if-test ,test ,sequence :list ,return-type ,sense)
+                       ,return-type))
 
 (defmacro list-locater-if (test sequence return-type)
   `(list-locater-if-macro ,test ,sequence ,return-type t))
@@ -145,7 +145,7 @@
 
 
 (defun position (item sequence &rest args &key from-end (test #'eql) test-not
-		 (start 0) end key)
+                 (start 0) end key)
   (sequence::seq-dispatch sequence
     (list-position* item sequence from-end test test-not start end key)
     (vector-position* item sequence from-end test test-not start end key)
@@ -212,7 +212,7 @@
   (vector-find item sequence))
 
 (defun find (item sequence &rest args &key from-end (test #'eql) test-not
-	     (start 0) end key)
+             (start 0) end key)
   (let ((end (check-sequence-bounds sequence start end)))
     (sequence::seq-dispatch sequence
       (list-find* item sequence from-end test test-not start end key)

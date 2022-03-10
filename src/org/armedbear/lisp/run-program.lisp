@@ -271,15 +271,15 @@ value
                                                 :if-exists if-does-exist)))
                             (:append (setf appendp T))
                             ((NIL) (return-from setup-output-redirection))))
-			(if (not-java-6-p)
-			  (if appendp
-			      (java:jstatic "appendTo" "java.lang.ProcessBuilder$Redirect" file)
-			      (java:jstatic "to" "java.lang.ProcessBuilder$Redirect" file))
-			  (list file appendp))))))
+                        (if (not-java-6-p)
+                          (if appendp
+                              (java:jstatic "appendTo" "java.lang.ProcessBuilder$Redirect" file)
+                              (java:jstatic "to" "java.lang.ProcessBuilder$Redirect" file))
+                          (list file appendp))))))
     (when (not-java-6-p)
       (if errorp
-	  (java:jcall "redirectError" process-builder redirect)
-	  (java:jcall "redirectOutput" process-builder redirect)))
+          (java:jcall "redirectError" process-builder redirect)
+          (java:jcall "redirectOutput" process-builder redirect)))
     redirect))
 
 ;;; The process structure.

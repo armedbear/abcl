@@ -150,14 +150,14 @@ public final class Java
         @Override
         public LispObject execute(LispObject arg)
         {
-	    return JavaObject.getInstance(javaClass(arg, JavaClassLoader.getCurrentClassLoader()));
+            return JavaObject.getInstance(javaClass(arg, JavaClassLoader.getCurrentClassLoader()));
         }
 
         @Override
         public LispObject execute(LispObject className, LispObject classLoader)
         {
-	    ClassLoader loader = (ClassLoader) classLoader.javaInstance(ClassLoader.class);
-	    return JavaObject.getInstance(javaClass(className, loader));
+            ClassLoader loader = (ClassLoader) classLoader.javaInstance(ClassLoader.class);
+            return JavaObject.getInstance(javaClass(className, loader));
         }
     };
 
@@ -587,18 +587,18 @@ public final class Java
             LispObject classRef = args[0];
             try {
                 Constructor constructor;
-		if(classRef instanceof AbstractString) {
-		    constructor = findConstructor(javaClass(classRef), args);
-		} else {
-		    Object object = JavaObject.getObject(classRef);
-		    if(object instanceof Constructor) {
-			constructor = (Constructor) object;
-		    } else if(object instanceof Class<?>) {
-			constructor = findConstructor((Class<?>) object, args);
-		    } else {
-			return error(new LispError(classRef.princToString() + " is neither a Constructor nor a Class"));
-		    }
-		}
+                if(classRef instanceof AbstractString) {
+                    constructor = findConstructor(javaClass(classRef), args);
+                } else {
+                    Object object = JavaObject.getObject(classRef);
+                    if(object instanceof Constructor) {
+                        constructor = (Constructor) object;
+                    } else if(object instanceof Class<?>) {
+                        constructor = findConstructor((Class<?>) object, args);
+                    } else {
+                        return error(new LispError(classRef.princToString() + " is neither a Constructor nor a Class"));
+                    }
+                }
                 Class[] argTypes = constructor.getParameterTypes();
                 Object[] initargs = new Object[args.length-1];
                 for (int i = 1; i < args.length; i++) {
@@ -935,9 +935,9 @@ public final class Java
             } else
                 method = (Method) JavaObject.getObject(methodArg);
             Class<?>[] argTypes = (Class<?>[])method.getParameterTypes();
-	    if(argTypes.length != args.length - 2) {
-		return error(new WrongNumberOfArgumentsException("Wrong number of arguments for " + method + ": expected " + argTypes.length + ", got " + (args.length - 2)));
-	    }
+            if(argTypes.length != args.length - 2) {
+                return error(new WrongNumberOfArgumentsException("Wrong number of arguments for " + method + ": expected " + argTypes.length + ", got " + (args.length - 2)));
+            }
             methodArgs = new Object[argTypes.length];
             for (int i = 2; i < args.length; i++) {
               LispObject arg = args[i];
@@ -952,9 +952,9 @@ public final class Java
             if (!method.isAccessible()) {
                  // Possible for static member classes: see #229
                  if (Modifier.isPublic(method.getModifiers())) { 
-    	              method.setAccessible(true);
+                      method.setAccessible(true);
                  }
-	    }
+            }
             return JavaObject.getInstance(method.invoke(instance, methodArgs),
                                           translate,
                                           method.getReturnType());
@@ -981,11 +981,11 @@ public final class Java
     }
 
     private static Object[] translateMethodArguments(LispObject[] args) {
-	return translateMethodArguments(args, 0);
+        return translateMethodArguments(args, 0);
     }
 
     private static Object[] translateMethodArguments(LispObject[] args, int offs) {
-	int argCount = args.length - offs;
+        int argCount = args.length - offs;
         Object[] javaArgs = new Object[argCount];
         for (int i = 0; i < argCount; ++i) {
           Object x = args[i + offs];
@@ -997,7 +997,7 @@ public final class Java
             javaArgs[i] = ((LispObject) x).javaInstance();
           }
         }
-	return javaArgs;
+        return javaArgs;
     }
 
     private static Method findMethod(Method[] methods, String methodName, Object[] javaArgs) {
@@ -1032,11 +1032,11 @@ public final class Java
             actualClass = instance.getClass();
             if(intendedClass != actualClass) { 
                 method = findMethod(actualClass, methodName, methodArgs);
-		if (method != null) {
-		   if (isMethodCallableOnInstance(actualClass, method)) {
-		      return method;
-		   }
-		}
+                if (method != null) {
+                   if (isMethodCallableOnInstance(actualClass, method)) {
+                      return method;
+                   }
+                }
             }
         }
         return method;
@@ -1044,10 +1044,10 @@ public final class Java
     
     private static boolean isMethodCallableOnInstance(Class instance, Method method) {
        if (Modifier.isPublic(method.getModifiers())) {
-	  return true;
+          return true;
        }
        if (instance.isMemberClass()) {
-	  return isMethodCallableOnInstance(instance.getEnclosingClass(), method);
+          return isMethodCallableOnInstance(instance.getEnclosingClass(), method);
        }
        return false;
     }
@@ -1086,22 +1086,22 @@ public final class Java
             }
         }
         if (result == null) {
-	    StringBuilder sb = new StringBuilder(c.getSimpleName());
-	    sb.append('(');
-	    boolean first = true;
-	    for(Object o : javaArgs) {
-		if(first) {
-		    first = false;
-		} else {
-		    sb.append(", ");
-		}
-		if(o != null) {
-		    sb.append(o.getClass().getName());
-		} else {
-		    sb.append("<null>");
-		}
-	    }
-	    sb.append(')');
+            StringBuilder sb = new StringBuilder(c.getSimpleName());
+            sb.append('(');
+            boolean first = true;
+            for(Object o : javaArgs) {
+                if(first) {
+                    first = false;
+                } else {
+                    sb.append(", ");
+                }
+                if(o != null) {
+                    sb.append(o.getClass().getName());
+                } else {
+                    sb.append("<null>");
+                }
+            }
+            sb.append(')');
             throw new NoSuchMethodException(sb.toString());
         }
         return result;
@@ -1202,11 +1202,11 @@ public final class Java
     }
 
     public static Class<?> maybeBoxClass(Class<?> clazz) {
-	if(clazz.isPrimitive()) {
-	    return getBoxedClass(clazz);
-	} else {
-	    return clazz;
-	}
+        if(clazz.isPrimitive()) {
+            return getBoxedClass(clazz);
+        } else {
+            return clazz;
+        }
     }
     
     private static Class<?> getBoxedClass(Class<?> clazz) {
@@ -1351,13 +1351,13 @@ public final class Java
         @Override
         public LispObject execute(LispObject javaObject, LispObject intendedClass)
         {
-	    Object o = javaObject.javaInstance();
-	    Class<?> c = javaClass(intendedClass);
-	    try {
-		return JavaObject.getInstance(o, c);
-	    } catch(ClassCastException e) {
+            Object o = javaObject.javaInstance();
+            Class<?> c = javaClass(intendedClass);
+            try {
+                return JavaObject.getInstance(o, c);
+            } catch(ClassCastException e) {
           return type_error(javaObject, new SimpleString(c.getName()));
-	    }
+            }
         }
     };
 
@@ -1390,7 +1390,7 @@ public final class Java
     };
 
     private static Class classForName(String className) {
-	return classForName(className, JavaClassLoader.getPersistentInstance());
+        return classForName(className, JavaClassLoader.getPersistentInstance());
     }
 
   private static Class classForName(String className,
@@ -1430,7 +1430,7 @@ public final class Java
   }
 
     private static Class javaClass(LispObject obj) {
-	return javaClass(obj, JavaClassLoader.getCurrentClassLoader());
+        return javaClass(obj, JavaClassLoader.getCurrentClassLoader());
     }
 
     // Supports Java primitive types too.
@@ -1456,7 +1456,7 @@ public final class Java
                 return Double.TYPE;
             // Not a primitive Java type.
             Class c;
-	    c = classForName(s, classLoader);
+            c = classForName(s, classLoader);
             if (c == null)
                 error(new LispError(s + " does not designate a Java class."));
 

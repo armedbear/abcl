@@ -38,38 +38,38 @@
 (defun list-delete-duplicates* (list test test-not key from-end start end)
   (let ((handle (cons nil list)))
     (do ((current (nthcdr start list) (cdr current))
-	 (previous (nthcdr start handle))
-	 (index start (1+ index)))
+         (previous (nthcdr start handle))
+         (index start (1+ index)))
       ((or (and end (= index end)) (null current))
        (cdr handle))
       (if (do ((x (if from-end
-		      (nthcdr (1+ start) handle)
-		      (cdr current))
-		  (cdr x))
-	       (i (1+ index) (1+ i)))
+                      (nthcdr (1+ start) handle)
+                      (cdr current))
+                  (cdr x))
+               (i (1+ index) (1+ i)))
             ((or (null x)
                  (and (not from-end) end (= i end))
                  (eq x current))
              nil)
-	    (if (if test-not
-		    (not (funcall test-not
-				  (sys::apply-key key (car current))
-				  (sys::apply-key key (car x))))
-		    (funcall test
-			     (sys::apply-key key (car current))
-			     (sys::apply-key key (car x))))
-		(return t)))
-	  (rplacd previous (cdr current))
-	  (setq previous (cdr previous))))))
+            (if (if test-not
+                    (not (funcall test-not
+                                  (sys::apply-key key (car current))
+                                  (sys::apply-key key (car x))))
+                    (funcall test
+                             (sys::apply-key key (car current))
+                             (sys::apply-key key (car x))))
+                (return t)))
+          (rplacd previous (cdr current))
+          (setq previous (cdr previous))))))
 
 
 (defun vector-delete-duplicates* (vector test test-not key from-end start end
-					 &optional (length (length vector)))
+                                         &optional (length (length vector)))
   (when (null end) (setf end (length vector)))
   (do ((index start (1+ index))
        (jndex start))
     ((= index end)
-     (do ((index index (1+ index))		; copy the rest of the vector
+     (do ((index index (1+ index))              ; copy the rest of the vector
           (jndex jndex (1+ jndex)))
        ((= index length)
         (shrink-vector vector jndex)
@@ -77,14 +77,14 @@
        (setf (aref vector jndex) (aref vector index))))
     (setf (aref vector jndex) (aref vector index))
     (unless (position (sys::apply-key key (aref vector index)) vector :key key
-		      :start (if from-end start (1+ index)) :test test
-		      :end (if from-end jndex end) :test-not test-not)
+                      :start (if from-end start (1+ index)) :test test
+                      :end (if from-end jndex end) :test-not test-not)
       (setq jndex (1+ jndex)))))
 
 (defun delete-duplicates (sequence &rest args &key (test #'eql) test-not
-			  (start 0) from-end end key)
+                          (start 0) from-end end key)
   (sequence::seq-dispatch sequence
     (if sequence
-	(list-delete-duplicates* sequence test test-not key from-end start end))
+        (list-delete-duplicates* sequence test test-not key from-end start end))
     (vector-delete-duplicates* sequence test test-not key from-end start end)
     (apply #'sequence:delete-duplicates sequence args)))

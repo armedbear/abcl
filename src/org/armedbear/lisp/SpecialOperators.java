@@ -125,8 +125,8 @@ public final class SpecialOperators {
     {
         final LispThread thread = LispThread.currentThread();
         final SpecialBindingsMark mark = thread.markSpecialBindings();
-	Environment ext = new Environment(env);
-	thread.envStack.push(ext);
+        Environment ext = new Environment(env);
+        thread.envStack.push(ext);
         try {
             LispObject varList = checkList(args.car());
             LispObject bodyAndDecls = parseBody(args.cdr(), false);
@@ -151,7 +151,7 @@ public final class SpecialOperators {
                 }
                 if (sequential) {
                     ext = new Environment(ext);
-		    thread.envStack.push(ext);
+                    thread.envStack.push(ext);
                     bindArg(specials, symbol, value, ext, thread);
                 } else
                     nonSequentialVars.add(new Cons(symbol, value));
@@ -172,7 +172,7 @@ for (Cons x : nonSequentialVars)
         }
         finally {
             thread.resetSpecialBindings(mark);
-	    while (thread.envStack.pop() != ext) {};
+            while (thread.envStack.pop() != ext) {};
         }
     }
 
@@ -259,11 +259,11 @@ for (Cons x : nonSequentialVars)
             final LispThread thread = LispThread.currentThread();
             final Environment ext = new Environment(env);
             try {
-	      	thread.envStack.push(ext);
-		args = ext.processDeclarations(args);
-		return progn(args, ext, thread);
-	    }
-	    finally {
+                thread.envStack.push(ext);
+                args = ext.processDeclarations(args);
+                return progn(args, ext, thread);
+            }
+            finally {
               while (thread.envStack.pop() != ext) {};
             }
         }

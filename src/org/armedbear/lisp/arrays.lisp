@@ -68,7 +68,7 @@
 
 (defun sbit (simple-bit-array &rest subscripts)
   (row-major-aref simple-bit-array
-		  (%array-row-major-index simple-bit-array subscripts)))
+                  (%array-row-major-index simple-bit-array subscripts)))
 
 (defsetf row-major-aref aset)
 (defsetf aref aset)

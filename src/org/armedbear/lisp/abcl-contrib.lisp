@@ -60,21 +60,21 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
 
 (defun flatten (list)
   (labels ((rflatten (list accumluator)
-	   (dolist (element list)
-	     (if (listp element)
-		 (setf accumluator (rflatten element accumluator))
-		 (push element accumluator)))
-	   accumluator))
+           (dolist (element list)
+             (if (listp element)
+                 (setf accumluator (rflatten element accumluator))
+                 (push element accumluator)))
+           accumluator))
     (let (result)
       (reverse (rflatten list result)))))
 
 (defun java.class.path ()
   "Return a list of the directories as pathnames referenced in the JVM classpath."
   (let* ((separator (java:jstatic "getProperty" "java.lang.System" "path.separator"))
-	 (paths (coerce (java:jcall "split"
-			   (java:jstatic "getProperty" "java.lang.System"
-					 "java.class.path")
-			   separator)
+         (paths (coerce (java:jcall "split"
+                           (java:jstatic "getProperty" "java.lang.System"
+                                         "java.class.path")
+                           separator)
                         'list))
          (p (coerce paths 'list)))
     (flet ((directory-of (p) (make-pathname :defaults p :name nil :type nil)))
@@ -91,15 +91,15 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
       (dolist (entry (flatten (java:dump-classpath)))
         (cond
           ((java:jinstance-of-p entry "java.net.URLClassLoader") ;; java1.[678]
-	   (dolist (url (coerce (java:jcall "getURLs" entry)
-			        'list))
+           (dolist (url (coerce (java:jcall "getURLs" entry)
+                                'list))
              (let ((p (directory-of (pathname (java:jcall "toString" url)))))
-	       (when (probe-file p)
-	         (pushnew p result :test 'equal)))))
+               (when (probe-file p)
+                 (pushnew p result :test 'equal)))))
         ((pathnamep entry)
          (pushnew (directory-of entry) result :test 'equal))
         ((and (stringp entry)
-	      (probe-file (pathname (directory-of entry))))
+              (probe-file (pathname (directory-of entry))))
          (pushnew (pathname (directory-of entry)) result :test 'equal))
         (t
          #+(or) ;; Possibly informative for debugging new JVM implementations
@@ -111,11 +111,11 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
 (defun find-jar (predicate)
   (dolist (d (enumerate-resource-directories))
     (let ((entries (directory (make-pathname :defaults d
-					     :name "*"
-					     :type "jar"))))
+                                             :name "*"
+                                             :type "jar"))))
       (let ((jar (some predicate entries)))
-	(when (and jar (probe-file jar))
-	  (return-from find-jar
+        (when (and jar (probe-file jar))
+          (return-from find-jar
             (make-pathname :device (list (probe-file jar)))))))))
 
 (defun find-system-jar ()

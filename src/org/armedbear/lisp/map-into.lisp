@@ -37,20 +37,20 @@
 
 (defun map-into (result-sequence function &rest sequences)
   (let* ((fp-result
-	  (and (arrayp result-sequence)
-	       (array-has-fill-pointer-p result-sequence)))
-	 (len (apply #'min
-		     (if fp-result
-			 (array-dimension result-sequence 0)
-			 (length result-sequence))
-		     (mapcar #'length sequences))))
+          (and (arrayp result-sequence)
+               (array-has-fill-pointer-p result-sequence)))
+         (len (apply #'min
+                     (if fp-result
+                         (array-dimension result-sequence 0)
+                         (length result-sequence))
+                     (mapcar #'length sequences))))
 
     (when fp-result
       (setf (fill-pointer result-sequence) len))
 
     (dotimes (index len)
       (setf (elt result-sequence index)
-	    (apply function
-		   (mapcar #'(lambda (seq) (elt seq index))
-			   sequences)))))
+            (apply function
+                   (mapcar #'(lambda (seq) (elt seq index))
+                           sequences)))))
   result-sequence)

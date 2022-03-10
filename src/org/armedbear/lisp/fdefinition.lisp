@@ -47,10 +47,10 @@
       ;; situation with the following convolution of intelligibility.
       (flet ((truename-no-error (p)
                (if (and (pathnamep p)
-			(not (and
-			      (stringp (pathname-device p))
-			      (string= (pathname-device p)
-				       "emacs-buffer")))
+                        (not (and
+                              (stringp (pathname-device p))
+                              (string= (pathname-device p)
+                                       "emacs-buffer")))
                         (not (wild-pathname-p p)))
                    (probe-file p)
                    p)))
@@ -130,12 +130,12 @@ present.  Will probably just filter when presenting in slime.
     (unless source-position
       (setf source-position *source-position*))
     (let ((source (if source-position
-		      (list source-pathname source-position)
-		      (list source-pathname))))
+                      (list source-pathname source-position)
+                      (list source-pathname))))
       (let ((sym (if (consp name) (second name) name))
             (new `(,type ,(if (symbolp (car source)) (car source) (namestring (car source))) ,(second source))))
         (if (autoloadp 'delete)
- 	 (put sym 'sys::source (cons new (get sym  'sys::source nil)))
+         (put sym 'sys::source (cons new (get sym  'sys::source nil)))
          (put sym 'sys::source (cons new (delete new (get sym  'sys::source nil) 
                :test (lambda(a b) (and (equalp (car a) (car b)) (equalp (second a) (second b) ))))))))))
 

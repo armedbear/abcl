@@ -938,12 +938,12 @@ public class Symbol extends LispObject implements java.io.Serializable
   }
 
     public Object readResolve() throws java.io.ObjectStreamException {
-	if(pkg instanceof Package) {
-	    Symbol s = ((Package) pkg).intern(name.getStringValue());
-	    return s;
-	} else {
-	    return this;
-	}
+        if(pkg instanceof Package) {
+            Symbol s = ((Package) pkg).intern(name.getStringValue());
+            return s;
+        } else {
+            return this;
+        }
     }
 
     @Override

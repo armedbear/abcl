@@ -64,9 +64,9 @@ public class FaslClassLoader extends JavaClassLoader {
             Class<?> c = this.findLoadedClass(internalName);
 
             if (c == null && checkPreCompiledClassLoader) {
-            	c = findPrecompiledClassOrNull(name);
-            	// Oh, we have to return here so we don't become the owning class loader?
-            	if (c != null)
+                c = findPrecompiledClassOrNull(name);
+                // Oh, we have to return here so we don't become the owning class loader?
+                if (c != null)
                   return c;
             }            
             if (c == null) {
@@ -88,9 +88,9 @@ public class FaslClassLoader extends JavaClassLoader {
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         try {
             if (checkPreCompiledClassLoader) {
-            	Class<?> c = findPrecompiledClassOrNull(name);
-            	if (c != null)
-            		return c;                	
+                Class<?> c = findPrecompiledClassOrNull(name);
+                if (c != null)
+                        return c;                       
             }
             byte[] b = getFunctionClassBytes(name);
             return defineLispClass(name, b, 0, b.length);
@@ -155,14 +155,14 @@ public class FaslClassLoader extends JavaClassLoader {
 
     private static final Primitive GET_FASL_FUNCTION = new pf_get_fasl_function();
     private static final class pf_get_fasl_function extends Primitive {
-	pf_get_fasl_function() {
+        pf_get_fasl_function() {
             super("get-fasl-function", PACKAGE_SYS, false, "loader function-number");
         }
 
         @Override
         public LispObject execute(LispObject loader, LispObject fnNumber) {
             FaslClassLoader l = (FaslClassLoader) loader.javaInstance(FaslClassLoader.class);
-	    return l.loadFunction(fnNumber.intValue());
+            return l.loadFunction(fnNumber.intValue());
         }
     };
 

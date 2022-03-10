@@ -132,7 +132,7 @@ This class is used to abstract from the difference."
 to 'internal' (JVM) representation by this function."
   (setf name (substitute #\/ #\. name))
   (%make-jvm-class-name :name-internal name
-			:ref (concatenate 'string "L" name ";")))
+                        :ref (concatenate 'string "L" name ";")))
 
 (defun class-array (class-name)
   "Returns a class-name representing an array of `class-name'.
@@ -150,7 +150,7 @@ and used on successive calls."
     (let ((name-and-ref (concatenate 'string "[" (class-ref class-name))))
       (setf (class-array-class class-name)
             (%make-jvm-class-name :name-internal name-and-ref
-				  :ref name-and-ref))))
+                                  :ref name-and-ref))))
   (class-array-class class-name))
 
 (defmacro define-class-name (symbol java-dotted-name &optional documentation)
@@ -1104,7 +1104,7 @@ Returns NIL if the attribute isn't found."
 
 
 (defstruct (jvm-method (:constructor %make-jvm-method)
-		       (:conc-name method-))
+                       (:conc-name method-))
   "Holds information on the properties of methods in the class(-file)."
   access-flags
   name
@@ -1129,8 +1129,8 @@ be one of two keyword identifiers to identify special methods:
 (defun make-jvm-method (name return args &key (flags '(:public)))
   "Creates a method for addition to a class file."
   (%make-jvm-method :descriptor (cons return args)
-		    :access-flags flags
-		    :name (map-method-name name)))
+                    :access-flags flags
+                    :name (map-method-name name)))
 
 (defun method-add-attribute (method attribute)
   "Add `attribute' to the list of attributes of `method',
@@ -1146,7 +1146,7 @@ returning the created attribute."
    (make-code-attribute (+ (length (cdr (method-descriptor method)))
                            (if (member :static (method-access-flags method))
                                0 1)) ;; 1 == implicit 'this'
-			optimize)))
+                        optimize)))
 
 (defun method-ensure-code (method &optional (optimize t))
   "Ensures the existence of a 'Code' attribute for the method,
