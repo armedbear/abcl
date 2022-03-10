@@ -35,8 +35,8 @@
 
 (defmacro and (&rest forms)
   (cond ((endp forms) t)
-	((endp (rest forms)) (first forms))
-	(t
-	 `(if ,(first forms)
-	      (and ,@(rest forms))
-	      nil))))
+        ((endp (rest forms)) (first forms))
+        (t
+         `(if ,(first forms)
+              (and ,@(rest forms))
+              nil))))

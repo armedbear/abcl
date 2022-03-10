@@ -116,9 +116,9 @@
   ) ; eval-when
 
 (defun search (sequence1 sequence2 &rest args &key from-end (test #'eql)
-	       test-not (start1 0) end1 (start2 0) end2 key)
+               test-not (start1 0) end1 (start2 0) end2 key)
   (let ((end1 (or end1 (length sequence1)))
-	(end2 (or end2 (length sequence2))))
+        (end2 (or end2 (length sequence2))))
     (when key
       (setq key (coerce-to-function key)))
     (sequence::seq-dispatch sequence2

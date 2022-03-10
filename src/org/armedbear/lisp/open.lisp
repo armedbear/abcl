@@ -100,12 +100,12 @@
                :format-arguments (list element-type)))))
 
 (defun open (filename
-	     &key
-	     (direction :input)
-	     (element-type 'character)
-	     (if-exists nil if-exists-given)
-	     (if-does-not-exist nil if-does-not-exist-given)
-	     (external-format :default))
+             &key
+             (direction :input)
+             (element-type 'character)
+             (if-exists nil if-exists-given)
+             (if-does-not-exist nil if-does-not-exist-given)
+             (external-format :default))
 ;  (declare (ignore external-format)) ; FIXME
   (setf element-type (case element-type
                        ((character base-char)
@@ -120,8 +120,8 @@
                        p)))
     (when (wild-pathname-p pathname)
       (error 'file-error
-	     :pathname pathname
-	     :format-control "Cannot OPEN a wild pathname."))
+             :pathname pathname
+             :format-control "Cannot OPEN a wild pathname."))
     (when (memq direction '(:output :io))
       (unless if-exists-given
         (setf if-exists

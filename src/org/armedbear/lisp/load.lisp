@@ -39,9 +39,9 @@
              (external-format :default))
   (let (*fasl-loader*)
     (%load (if (streamp filespec)
-	       filespec
-	       (merge-pathnames (pathname filespec)))
-	   verbose print if-does-not-exist external-format)))
+               filespec
+               (merge-pathnames (pathname filespec)))
+           verbose print if-does-not-exist external-format)))
 
 (defun load-returning-last-result (filespec
              &key
@@ -51,6 +51,6 @@
              (external-format :default))
   (let (*fasl-loader*)
     (%load-returning-last-result (if (streamp filespec)
-				     filespec
-				     (merge-pathnames (pathname filespec)))
-				 verbose print if-does-not-exist external-format)))
+                                     filespec
+                                     (merge-pathnames (pathname filespec)))
+                                 verbose print if-does-not-exist external-format)))

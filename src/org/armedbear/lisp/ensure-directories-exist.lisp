@@ -35,7 +35,7 @@
 
 (defun ensure-directories-exist (pathspec &key (verbose nil)) 
   (let ((pathname (pathname pathspec))
-	(created-p nil))
+        (created-p nil))
 ;;; CLHS: Function ENSURE-DIRECTORIES-EXIST "An error of type
 ;;; file-error is signaled if the host, device, or directory part of
 ;;; pathspec is wild."
@@ -43,8 +43,8 @@
               (wild-pathname-p pathname :device)
               (wild-pathname-p pathname :directory))
       (error 'file-error
-	     :format-control "Bad place for a wild HOST, DEVICE, or DIRECTORY component."
-	     :pathname pathname))
+             :format-control "Bad place for a wild HOST, DEVICE, or DIRECTORY component."
+             :pathname pathname))
     (let ((dir (pathname-directory pathname)))
       (loop :for i :from 1 :upto (length dir)
          :doing (let ((newpath (make-pathname

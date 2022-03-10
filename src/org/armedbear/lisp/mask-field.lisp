@@ -40,11 +40,11 @@
   (multiple-value-bind (dummies vals newval setter getter)
     (get-setf-expansion place env)
     (let ((btemp (gensym))
-	  (gnuval (gensym)))
+          (gnuval (gensym)))
       (values (cons btemp dummies)
-	      (cons bytespec vals)
-	      (list gnuval)
-	      `(let ((,(car newval) (deposit-field ,gnuval ,btemp ,getter)))
-		 ,setter
-		 ,gnuval)
-	      `(mask-field ,btemp ,getter)))))
+              (cons bytespec vals)
+              (list gnuval)
+              `(let ((,(car newval) (deposit-field ,gnuval ,btemp ,getter)))
+                 ,setter
+                 ,gnuval)
+              `(mask-field ,btemp ,getter)))))

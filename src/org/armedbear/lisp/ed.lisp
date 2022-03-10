@@ -40,9 +40,9 @@ until one of them returns non-NIL; these functions are responsible for
 signalling a FILE-ERROR to indicate failure to perform an operation on
 the file system."
   (dolist (fun *ed-functions*
-	   (error 'simple-error
-		  :format-control "Don't know how to ~S ~A"
-		  :format-arguments (list 'ed x)))
+           (error 'simple-error
+                  :format-control "Don't know how to ~S ~A"
+                  :format-arguments (list 'ed x)))
     (when (funcall fun x)
       (return)))
   (values))

@@ -43,7 +43,7 @@ public final class FaslReadtable extends Readtable
     @Override
     protected void initialize()
     {
-    	Byte[] syntax = this.syntax.constants;
+        Byte[] syntax = this.syntax.constants;
         syntax[9]    = SYNTAX_TYPE_WHITESPACE; // tab
         syntax[10]   = SYNTAX_TYPE_WHITESPACE; // linefeed
         syntax[12]   = SYNTAX_TYPE_WHITESPACE; // form feed

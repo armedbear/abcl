@@ -50,12 +50,12 @@
                                   "The value of ~S is ~S, which is not ~A."
                                   :format-arguments
                                   (list place place-value type-string))
-		  (make-condition 'simple-type-error
-				  :datum place-value :expected-type type
-				  :format-control
+                  (make-condition 'simple-type-error
+                                  :datum place-value :expected-type type
+                                  :format-control
                                   "The value of ~S is ~S, which is not of type ~S."
-				  :format-arguments
-				  (list place place-value type)))))
+                                  :format-arguments
+                                  (list place place-value type)))))
     (restart-case (error cond)
       (store-value (value)
         :report (lambda (stream)

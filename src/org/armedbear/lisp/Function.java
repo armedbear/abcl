@@ -50,9 +50,9 @@ public abstract class Function extends Operator implements Serializable {
     public final LispObject loadedFrom;
 
     protected Function() {
-	LispObject loadTruename = Symbol.LOAD_TRUENAME.symbolValueNoThrow();
-	LispObject loadTruenameFasl = Symbol.LOAD_TRUENAME_FASL.symbolValueNoThrow();
-	loadedFrom = loadTruenameFasl != null ? loadTruenameFasl : (loadTruename != null ? loadTruename : NIL);
+        LispObject loadTruename = Symbol.LOAD_TRUENAME.symbolValueNoThrow();
+        LispObject loadTruenameFasl = Symbol.LOAD_TRUENAME_FASL.symbolValueNoThrow();
+        loadedFrom = loadTruenameFasl != null ? loadTruenameFasl : (loadTruename != null ? loadTruename : NIL);
     }
 
     public Function(String name)
@@ -62,7 +62,7 @@ public abstract class Function extends Operator implements Serializable {
 
     public Function(String name, String arglist)
     {
-	this();
+        this();
         if(arglist != null)
             setLambdaList(new SimpleString(arglist));
         if (name != null) {
@@ -75,17 +75,17 @@ public abstract class Function extends Operator implements Serializable {
 
     public Function(Symbol symbol)
     {
-	this(symbol, null, null);
+        this(symbol, null, null);
     }
 
     public Function(Symbol symbol, String arglist)
     {
-	this(symbol, arglist, null);
+        this(symbol, arglist, null);
     }
 
     public Function(Symbol symbol, String arglist, String docstring)
     {
-	this();
+        this();
         symbol.setSymbolFunction(this);
         if (cold)
             symbol.setBuiltInFunction(true);
@@ -116,7 +116,7 @@ public abstract class Function extends Operator implements Serializable {
     public Function(String name, Package pkg, boolean exported,
                     String arglist, String docstring)
     {
-	this();
+        this();
         if (arglist instanceof String)
             setLambdaList(new SimpleString(arglist));
         if (name != null) {
@@ -137,13 +137,13 @@ public abstract class Function extends Operator implements Serializable {
 
     public Function(LispObject name)
     {
-	this();
+        this();
         setLambdaName(name);
     }
 
     public Function(LispObject name, LispObject lambdaList)
     {
-	this();
+        this();
         setLambdaName(name);
         setLambdaList(lambdaList);
     }
@@ -225,14 +225,14 @@ public abstract class Function extends Operator implements Serializable {
 
     public static final Primitive FUNCTION_CLASS_BYTES = new pf_function_class_bytes();
     public static final class pf_function_class_bytes extends Primitive {
-	public pf_function_class_bytes() {
-	    super("function-class-bytes", PACKAGE_SYS, false, "function");
+        public pf_function_class_bytes() {
+            super("function-class-bytes", PACKAGE_SYS, false, "function");
         }
         @Override
         public LispObject execute(LispObject arg) {
             if (arg instanceof Function) {
                 return ((Function) arg).getClassBytes();
-	    }
+            }
             return type_error(arg, Symbol.FUNCTION);
         }
     }

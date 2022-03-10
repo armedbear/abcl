@@ -43,18 +43,18 @@
     (apply #'format *query-io* format-string arguments))
   (loop
     (let* ((line (query-readline))
-	   (ans (if (string= line "")
-		    #\? ;Force CASE below to issue instruction.
-		    (schar line 0))))
+           (ans (if (string= line "")
+                    #\? ;Force CASE below to issue instruction.
+                    (schar line 0))))
       (unless (whitespacep ans)
-	(case ans
-	  ((#\y #\Y) (return t))
-	  ((#\n #\N) (return nil))
-	  (t
-	   (write-line "Type \"y\" for yes or \"n\" for no. " *query-io*)
-	   (when format-string
-	     (apply #'format *query-io* format-string arguments))
-	   (force-output *query-io*)))))))
+        (case ans
+          ((#\y #\Y) (return t))
+          ((#\n #\N) (return nil))
+          (t
+           (write-line "Type \"y\" for yes or \"n\" for no. " *query-io*)
+           (when format-string
+             (apply #'format *query-io* format-string arguments))
+           (force-output *query-io*)))))))
 
 (defun yes-or-no-p (&optional format-string &rest arguments)
   (clear-input *query-io*)
@@ -64,8 +64,8 @@
   (do ((ans (query-readline) (query-readline)))
       (())
     (cond ((string-equal ans "YES") (return t))
-	  ((string-equal ans "NO") (return nil))
-	  (t
-	   (write-line "Type \"yes\" for yes or \"no\" for no. " *query-io*)
-	   (when format-string
-	     (apply #'format *query-io* format-string arguments))))))
+          ((string-equal ans "NO") (return nil))
+          (t
+           (write-line "Type \"yes\" for yes or \"no\" for no. " *query-io*)
+           (when format-string
+             (apply #'format *query-io* format-string arguments))))))

@@ -10,42 +10,42 @@
 (in-package :sequence)
 
 (shadow '(ELT LENGTH COUNT "COUNT-IF" "COUNT-IF-NOT"
-	  "FIND" "FIND-IF" "FIND-IF-NOT"
-	  "POSITION" "POSITION-IF" "POSITION-IF-NOT"
-	  "SUBSEQ" "COPY-SEQ" "FILL"
-	  "NSUBSTITUTE" "NSUBSTITUTE-IF" "NSUBSTITUTE-IF-NOT"
-	  "SUBSTITUTE" "SUBSTITUTE-IF" "SUBSTITUTE-IF-NOT"
-	  "REPLACE" "REVERSE" "NREVERSE" "REDUCE"
-	  "MISMATCH" "SEARCH"
-	  "DELETE" "DELETE-IF" "DELETE-IF-NOT"
-	  "REMOVE" "REMOVE-IF" "REMOVE-IF-NOT"
-	  "DELETE-DUPLICATES" "REMOVE-DUPLICATES" "SORT" "STABLE-SORT"))
+          "FIND" "FIND-IF" "FIND-IF-NOT"
+          "POSITION" "POSITION-IF" "POSITION-IF-NOT"
+          "SUBSEQ" "COPY-SEQ" "FILL"
+          "NSUBSTITUTE" "NSUBSTITUTE-IF" "NSUBSTITUTE-IF-NOT"
+          "SUBSTITUTE" "SUBSTITUTE-IF" "SUBSTITUTE-IF-NOT"
+          "REPLACE" "REVERSE" "NREVERSE" "REDUCE"
+          "MISMATCH" "SEARCH"
+          "DELETE" "DELETE-IF" "DELETE-IF-NOT"
+          "REMOVE" "REMOVE-IF" "REMOVE-IF-NOT"
+          "DELETE-DUPLICATES" "REMOVE-DUPLICATES" "SORT" "STABLE-SORT"))
 
 (export '(DOSEQUENCE
-	  
-	  MAKE-SEQUENCE-ITERATOR MAKE-SIMPLE-SEQUENCE-ITERATOR
-	  
-	  ITERATOR-STEP ITERATOR-ENDP ITERATOR-ELEMENT
-	  ITERATOR-INDEX ITERATOR-COPY
-	  
-	  WITH-SEQUENCE-ITERATOR WITH-SEQUENCE-ITERATOR-FUNCTIONS
-	  
-	  CANONIZE-TEST CANONIZE-KEY
-	  
-	  LENGTH ELT
-	  MAKE-SEQUENCE-LIKE ADJUST-SEQUENCE
-	   
-	  COUNT COUNT-IF COUNT-IF-NOT
-	  FIND FIND-IF FIND-IF-NOT
-	  POSITION POSITION-IF POSITION-IF-NOT
-	  SUBSEQ COPY-SEQ FILL
-	  NSUBSTITUTE NSUBSTITUTE-IF NSUBSTITUTE-IF-NOT
-	  SUBSTITUTE SUBSTITUTE-IF SUBSTITUTE-IF-NOT
-	  REPLACE REVERSE NREVERSE REDUCE
-	  MISMATCH SEARCH
-	  DELETE DELETE-IF DELETE-IF-NOT
-	  REMOVE REMOVE-IF REMOVE-IF-NOT
-	  DELETE-DUPLICATES REMOVE-DUPLICATES SORT STABLE-SORT))
+          
+          MAKE-SEQUENCE-ITERATOR MAKE-SIMPLE-SEQUENCE-ITERATOR
+          
+          ITERATOR-STEP ITERATOR-ENDP ITERATOR-ELEMENT
+          ITERATOR-INDEX ITERATOR-COPY
+          
+          WITH-SEQUENCE-ITERATOR WITH-SEQUENCE-ITERATOR-FUNCTIONS
+          
+          CANONIZE-TEST CANONIZE-KEY
+          
+          LENGTH ELT
+          MAKE-SEQUENCE-LIKE ADJUST-SEQUENCE
+           
+          COUNT COUNT-IF COUNT-IF-NOT
+          FIND FIND-IF FIND-IF-NOT
+          POSITION POSITION-IF POSITION-IF-NOT
+          SUBSEQ COPY-SEQ FILL
+          NSUBSTITUTE NSUBSTITUTE-IF NSUBSTITUTE-IF-NOT
+          SUBSTITUTE SUBSTITUTE-IF SUBSTITUTE-IF-NOT
+          REPLACE REVERSE NREVERSE REDUCE
+          MISMATCH SEARCH
+          DELETE DELETE-IF DELETE-IF-NOT
+          REMOVE REMOVE-IF REMOVE-IF-NOT
+          DELETE-DUPLICATES REMOVE-DUPLICATES SORT STABLE-SORT))
 
 ;;; Adapted from SBCL
 ;;; SEQ-DISPATCH does an efficient type-dispatch on the given SEQUENCE.
@@ -66,9 +66,9 @@
                      (declare (ignorable ,sequence))
                      ,array-form)
                    (if (typep ,sequence 'sequence)
-		       ,other-form
-		       (error 'type-error
-			      :datum ,sequence :expected-type 'sequence))))
+                       ,other-form
+                       (error 'type-error
+                              :datum ,sequence :expected-type 'sequence))))
              `((let ((,sequence (ext:truly-the vector ,sequence)))
                  (declare (ignorable ,sequence))
                  ,array-form)))))
@@ -82,7 +82,7 @@
 (defun sequence-bounding-indices-bad-error (sequence start end)
   (let ((size (length sequence)))
     (error "The bounding indices ~S and ~S are bad for a sequence of length ~S"
-	   start end size)))
+           start end size)))
 
 (defun %set-elt (sequence index value)
   (seq-dispatch sequence

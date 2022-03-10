@@ -63,7 +63,7 @@
     (let ((restp nil)
           (rest nil)
           (keyp nil)
-	  (auxp nil)
+          (auxp nil)
           (allowp nil)
           (state :required))
       (declare (type (member :allow-other-keys :aux
@@ -101,7 +101,7 @@
                (when (eq state :rest)
                  (error "misplaced &AUX in lambda list: ~S" list))
                (setq auxp t
-		     state :aux))
+                     state :aux))
               ;; FIXME: I don't think ANSI says this is an error. (It
               ;; should certainly be good for a STYLE-WARNING,
               ;; though.)
@@ -136,35 +136,35 @@
       (parse-lambda-list-like-thing lambda-list)
     ;; Check validity of parameters.
     (flet ((need-symbol (x why)
-	     (unless (symbolp x)
-	       (error "~A is not a symbol: ~S" why x))))
+             (unless (symbolp x)
+               (error "~A is not a symbol: ~S" why x))))
       (dolist (i required)
-	(need-symbol i "Required argument"))
+        (need-symbol i "Required argument"))
       (dolist (i optional)
-	(typecase i
-	  (symbol)
-	  (cons
-	   (destructuring-bind (var &optional init-form supplied-p) i
-	     (declare (ignore init-form supplied-p))
-	     (need-symbol var "&OPTIONAL parameter name")))
-	  (t
-	   (error "&OPTIONAL parameter is not a symbol or cons: ~S" i))))
+        (typecase i
+          (symbol)
+          (cons
+           (destructuring-bind (var &optional init-form supplied-p) i
+             (declare (ignore init-form supplied-p))
+             (need-symbol var "&OPTIONAL parameter name")))
+          (t
+           (error "&OPTIONAL parameter is not a symbol or cons: ~S" i))))
       (when restp
-	(need-symbol rest "&REST argument"))
+        (need-symbol rest "&REST argument"))
       (when keyp
-	(dolist (i keys)
-	  (typecase i
-	    (symbol)
-	    (cons
-	     (destructuring-bind (var-or-kv &optional init-form supplied-p) i
-	       (declare (ignore init-form supplied-p))
-	       (if (consp var-or-kv)
-		   (destructuring-bind (keyword-name var) var-or-kv
-		     (declare (ignore keyword-name))
-		     (need-symbol var "&KEY parameter name"))
-		   (need-symbol var-or-kv "&KEY parameter name"))))
-	    (t
-	     (error "&KEY parameter is not a symbol or cons: ~S" i))))))
+        (dolist (i keys)
+          (typecase i
+            (symbol)
+            (cons
+             (destructuring-bind (var-or-kv &optional init-form supplied-p) i
+               (declare (ignore init-form supplied-p))
+               (if (consp var-or-kv)
+                   (destructuring-bind (keyword-name var) var-or-kv
+                     (declare (ignore keyword-name))
+                     (need-symbol var "&KEY parameter name"))
+                   (need-symbol var-or-kv "&KEY parameter name"))))
+            (t
+             (error "&KEY parameter is not a symbol or cons: ~S" i))))))
 
     ;; Voila.
     (values required optional restp rest keyp keys allowp auxp aux)))

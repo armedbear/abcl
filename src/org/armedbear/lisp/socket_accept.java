@@ -52,13 +52,13 @@ public final class socket_accept extends Primitive
     {
          ServerSocket serverSocket =
             (ServerSocket) ((JavaObject)first).getObject();
-	 try {
+         try {
             Socket socket = serverSocket.accept();
             return new JavaObject(socket);
         }
         catch (Exception e) {
             return error(new LispError(e.getMessage()));
-	}
+        }
     }
 
     private static final Primitive SOCKET_ACCEPT = new socket_accept();

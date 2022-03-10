@@ -59,28 +59,28 @@
            (setq count (1+ count)))))))
 
 (defun count (item sequence &rest args &key from-end (test #'eql test-p) (test-not nil test-not-p)
-		   (start 0) end key)
+                   (start 0) end key)
   (when (and test-p test-not-p)
     (error "test and test-not both supplied"))
   (let* ((length (length sequence))
-	 (end (or end length)))
+         (end (or end length)))
     (let ((%test (if test-not-p
-		     (lambda (x)
-		       (not (funcall test-not item x)))
-		     (lambda (x)
-		       (funcall test item x)))))
+                     (lambda (x)
+                       (not (funcall test-not item x)))
+                     (lambda (x)
+                       (funcall test item x)))))
       (sequence::seq-dispatch sequence
-	(if from-end
-	    (list-count-if nil t %test sequence)
-	    (list-count-if nil nil %test sequence))
-	(if from-end
-	    (vector-count-if nil t %test sequence)
-	    (vector-count-if nil nil %test sequence))
-	(apply #'sequence:count item sequence args)))))
+        (if from-end
+            (list-count-if nil t %test sequence)
+            (list-count-if nil nil %test sequence))
+        (if from-end
+            (vector-count-if nil t %test sequence)
+            (vector-count-if nil nil %test sequence))
+        (apply #'sequence:count item sequence args)))))
 
 (defun count-if (test sequence &rest args &key from-end (start 0) end key)
   (let* ((length (length sequence))
-	 (end (or end length)))
+         (end (or end length)))
     (sequence::seq-dispatch sequence
         (if from-end
             (list-count-if nil t test sequence)
@@ -88,11 +88,11 @@
         (if from-end
             (vector-count-if nil t test sequence)
             (vector-count-if nil nil test sequence))
-	(apply #'sequence:count-if test sequence args))))
+        (apply #'sequence:count-if test sequence args))))
 
 (defun count-if-not (test sequence &rest args &key from-end (start 0) end key)
   (let* ((length (length sequence))
-	 (end (or end length)))
+         (end (or end length)))
     (sequence::seq-dispatch sequence
         (if from-end
             (list-count-if t t test sequence)
@@ -100,4 +100,4 @@
         (if from-end
             (vector-count-if t t test sequence)
             (vector-count-if t nil test sequence))
-	(apply #'sequence:count-if-not test sequence args))))
+        (apply #'sequence:count-if-not test sequence args))))

@@ -154,11 +154,11 @@
                       ,@(apply #'append (mapcar #'rest shadowing-imports))))
     `(prog1
        (%defpackage ,(string package) ',nicknames ',size
-		    ',shadows (ensure-available-symbols ',shadowing-imports)
-		    ',(if use-p use nil)
-		    (ensure-available-symbols ',imports) ',interns ',exports
-		    ',local-nicknames ',doc)
+                    ',shadows (ensure-available-symbols ',shadowing-imports)
+                    ',(if use-p use nil)
+                    (ensure-available-symbols ',imports) ',interns ',exports
+                    ',local-nicknames ',doc)
        ,(when (and (symbolp package) (not (keywordp package)))
-	  `(record-source-information-for-type ',package :package))
+          `(record-source-information-for-type ',package :package))
        (record-source-information-for-type ,(intern (string package) :keyword) :package)
        )))

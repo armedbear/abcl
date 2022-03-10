@@ -157,43 +157,43 @@
     (not (funcall predicate (apply-key key this-element)))))
 
 (defun remove (item sequence &rest args &key from-end (test #'eql) test-not
-	       (start 0) end count key)
+               (start 0) end count key)
   (let* ((length (length sequence))
-	 (end (or end length))
-	 (count (real-count count)))
+         (end (or end length))
+         (count (real-count count)))
     (sequence::seq-dispatch sequence
       (if from-end
-	  (normal-list-remove-from-end)
-	  (normal-list-remove))
+          (normal-list-remove-from-end)
+          (normal-list-remove))
       (if from-end
-	  (normal-mumble-remove-from-end)
-	  (normal-mumble-remove))
+          (normal-mumble-remove-from-end)
+          (normal-mumble-remove))
       (apply #'sequence:remove item sequence args))))
 
 (defun remove-if (predicate sequence &rest args &key from-end (start 0)
-		  end count key)
+                  end count key)
   (let* ((length (length sequence))
-	 (end (or end length))
-	 (count (real-count count)))
+         (end (or end length))
+         (count (real-count count)))
     (sequence::seq-dispatch sequence
       (if from-end
-	  (if-list-remove-from-end)
-	  (if-list-remove))
+          (if-list-remove-from-end)
+          (if-list-remove))
       (if from-end
-	  (if-mumble-remove-from-end)
-	  (if-mumble-remove))
+          (if-mumble-remove-from-end)
+          (if-mumble-remove))
       (apply #'sequence:remove-if predicate sequence args))))
 
 (defun remove-if-not (predicate sequence &rest args &key from-end (start 0)
-		      end count key)
+                      end count key)
   (let* ((length (length sequence))
-	 (end (or end length))
-	 (count (real-count count)))
+         (end (or end length))
+         (count (real-count count)))
     (sequence::seq-dispatch sequence
       (if from-end
-	  (if-not-list-remove-from-end)
-	  (if-not-list-remove))
+          (if-not-list-remove-from-end)
+          (if-not-list-remove))
       (if from-end
-	  (if-not-mumble-remove-from-end)
-	  (if-not-mumble-remove))
+          (if-not-mumble-remove-from-end)
+          (if-not-mumble-remove))
       (apply #'sequence:remove-if-not predicate sequence args))))

@@ -54,14 +54,14 @@
 
 (defmacro defsetf (access-fn &rest rest)
   (cond ((not (listp (car rest)))
-	 `(eval-when (:load-toplevel :compile-toplevel :execute)
-	    (%define-setf-macro ',access-fn
+         `(eval-when (:load-toplevel :compile-toplevel :execute)
+            (%define-setf-macro ',access-fn
                                 nil
                                 ',(car rest)
-				,(when (and (car rest) (stringp (cadr rest)))
-				   `',(cadr rest)))))
-	((and (cdr rest) (listp (cadr rest)))
-	 (destructuring-bind
+                                ,(when (and (car rest) (stringp (cadr rest)))
+                                   `',(cadr rest)))))
+        ((and (cdr rest) (listp (cadr rest)))
+         (destructuring-bind
           (lambda-list (&rest store-variables) &body body)
           rest
           (let ((arglist-var (gensym "ARGS-"))
@@ -83,5 +83,5 @@
                                     ,body))))
                   nil
                   ',doc))))))
-	(t
-	 (error "Ill-formed DEFSETF for ~S" access-fn))))
+        (t
+         (error "Ill-formed DEFSETF for ~S" access-fn))))

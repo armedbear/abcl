@@ -52,6 +52,6 @@
 
 (defmacro print-unreadable-object ((object stream &key type identity) &body body)
   `(%print-unreadable-object ,object ,stream ,type ,identity
-			     ,(if body
-				  `(lambda () ,@body)
-				  nil)))
+                             ,(if body
+                                  `(lambda () ,@body)
+                                  nil)))

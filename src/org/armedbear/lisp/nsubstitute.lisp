@@ -45,8 +45,8 @@
        (index start (1+ index)))
       ((or (= index end) (null list) (= count 0)) sequence)
     (when (if test-not
-	      (not (funcall test-not old (apply-key key (car list))))
-	      (funcall test old (apply-key key (car list))))
+              (not (funcall test-not old (apply-key key (car list))))
+              (funcall test old (apply-key key (car list))))
       (rplaca list new)
       (setq count (1- count)))))
 
@@ -55,28 +55,28 @@
   (do ((index start (+ index incrementer)))
       ((or (= index end) (= count 0)) sequence)
     (when (if test-not
-	      (not (funcall test-not old (apply-key key (aref sequence index))))
-	      (funcall test old (apply-key key (aref sequence index))))
+              (not (funcall test-not old (apply-key key (aref sequence index))))
+              (funcall test old (apply-key key (aref sequence index))))
       (setf (aref sequence index) new)
       (setq count (1- count)))))
 
 (defun nsubstitute (new old sequence &key from-end (test #'eql) test-not
                         end count key (start 0))
   (let ((end (or end (length sequence)))
-	(count (real-count count)))
+        (count (real-count count)))
     (if (listp sequence)
-	(if from-end
-	    (let ((length (length sequence)))
-	      (nreverse (nlist-substitute*
-			 new old (nreverse sequence)
-			 test test-not (- length end) (- length start) count key)))
-	    (nlist-substitute* new old sequence
-			       test test-not start end count key))
-	(if from-end
-	    (nvector-substitute* new old sequence -1
-				 test test-not (1- end) (1- start) count key)
-	    (nvector-substitute* new old sequence 1
-				 test test-not start end count key)))))
+        (if from-end
+            (let ((length (length sequence)))
+              (nreverse (nlist-substitute*
+                         new old (nreverse sequence)
+                         test test-not (- length end) (- length start) count key)))
+            (nlist-substitute* new old sequence
+                               test test-not start end count key))
+        (if from-end
+            (nvector-substitute* new old sequence -1
+                                 test test-not (1- end) (1- start) count key)
+            (nvector-substitute* new old sequence 1
+                                 test test-not start end count key)))))
 
 
 (defun nlist-substitute-if* (new test sequence start end count key)
@@ -97,20 +97,20 @@
 
 (defun nsubstitute-if (new test sequence &key from-end (start 0) end count key)
   (let ((end (or end (length sequence)))
-	(count (real-count count)))
+        (count (real-count count)))
     (if (listp sequence)
-	(if from-end
-	    (let ((length (length sequence)))
-	      (nreverse (nlist-substitute-if*
-			 new test (nreverse sequence)
-			 (- length end) (- length start) count key)))
-	    (nlist-substitute-if* new test sequence
-				  start end count key))
-	(if from-end
-	    (nvector-substitute-if* new test sequence -1
-				    (1- end) (1- start) count key)
-	    (nvector-substitute-if* new test sequence 1
-				    start end count key)))))
+        (if from-end
+            (let ((length (length sequence)))
+              (nreverse (nlist-substitute-if*
+                         new test (nreverse sequence)
+                         (- length end) (- length start) count key)))
+            (nlist-substitute-if* new test sequence
+                                  start end count key))
+        (if from-end
+            (nvector-substitute-if* new test sequence -1
+                                    (1- end) (1- start) count key)
+            (nvector-substitute-if* new test sequence 1
+                                    start end count key)))))
 
 
 (defun nlist-substitute-if-not* (new test sequence start end count key)
@@ -130,19 +130,19 @@
       (setq count (1- count)))))
 
 (defun nsubstitute-if-not (new test sequence &key from-end (start 0)
-			       end count key)
+                               end count key)
   (let ((end (or end (length sequence)))
-	(count (real-count count)))
+        (count (real-count count)))
     (if (listp sequence)
-	(if from-end
-	    (let ((length (length sequence)))
-	      (nreverse (nlist-substitute-if-not*
-			 new test (nreverse sequence)
-			 (- length end) (- length start) count key)))
-	    (nlist-substitute-if-not* new test sequence
-				      start end count key))
-	(if from-end
-	    (nvector-substitute-if-not* new test sequence -1
-					(1- end) (1- start) count key)
-	    (nvector-substitute-if-not* new test sequence 1
-					start end count key)))))
+        (if from-end
+            (let ((length (length sequence)))
+              (nreverse (nlist-substitute-if-not*
+                         new test (nreverse sequence)
+                         (- length end) (- length start) count key)))
+            (nlist-substitute-if-not* new test sequence
+                                      start end count key))
+        (if from-end
+            (nvector-substitute-if-not* new test sequence -1
+                                        (1- end) (1- start) count key)
+            (nvector-substitute-if-not* new test sequence 1
+                                        start end count key)))))

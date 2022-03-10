@@ -54,12 +54,12 @@
   (sequence::seq-dispatch sequence
     (list-fill sequence item start end)
     (cond ((and (stringp sequence)
-		(zerop start)
-		(null end))
-	   (simple-string-fill sequence item))
-	  (t
-	   (vector-fill sequence item start end)))
+                (zerop start)
+                (null end))
+           (simple-string-fill sequence item))
+          (t
+           (vector-fill sequence item start end)))
     (sequence:fill sequence item
-		   :start start
-		   :end (sequence::%check-generic-sequence-bounds
-			 sequence start end))))
+                   :start start
+                   :end (sequence::%check-generic-sequence-bounds
+                         sequence start end))))

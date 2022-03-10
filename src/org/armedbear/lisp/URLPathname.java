@@ -108,9 +108,9 @@ public class URLPathname
         uri = new URI(s);
       } catch (URISyntaxException ex) {
         parse_error("Improper URI syntax for "
-		    + "'" + url.toString() + "'"
-		    + ": " + ex.toString());
-	return (URLPathname)UNREACHED;
+                    + "'" + url.toString() + "'"
+                    + ": " + ex.toString());
+        return (URLPathname)UNREACHED;
       }
             
       String uriPath = uri.getPath();
@@ -120,7 +120,7 @@ public class URLPathname
         uriPath = uri.getSchemeSpecificPart();
         if (uriPath == null || uriPath.equals("")) {
           parse_error("The namestring URI has no path: " + uri);
-	  return (URLPathname)UNREACHED;
+          return (URLPathname)UNREACHED;
         }
       }
       final File file = new File(uriPath);
@@ -145,8 +145,8 @@ public class URLPathname
       uri = url.toURI().normalize();
     } catch (URISyntaxException e) {
       parse_error("Couldn't form URI from "
-		  + "'" + url + "'"
-		  + " because: " + e);
+                  + "'" + url + "'"
+                  + " because: " + e);
       return (URLPathname)UNREACHED;
     }
     String authority = uri.getAuthority();
@@ -262,10 +262,10 @@ public class URLPathname
     }
     // <https://docs.microsoft.com/en-us/archive/blogs/ie/file-uris-in-windows>
     if (Utilities.isPlatformWindows
-	&& getDevice() instanceof SimpleString) {
+        && getDevice() instanceof SimpleString) {
       sb.append("/")
         .append(getDevice().getStringValue())
-	.append(":");
+        .append(":");
     }
     String directoryNamestring = getDirectoryNamestring();
     if (percentEncode) {
@@ -329,10 +329,10 @@ public class URLPathname
 
     if (!directory.equals("")) {
       if (Utilities.isPlatformWindows
-	  && getDevice() instanceof SimpleString) {
-	path = getDevice().getStringValue() + ":" + directory + file;
+          && getDevice() instanceof SimpleString) {
+        path = getDevice().getStringValue() + ":" + directory + file;
       } else {
-	path = directory + file;
+        path = directory + file;
       }
     } else {
       path = file;

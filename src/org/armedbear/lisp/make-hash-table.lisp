@@ -47,7 +47,7 @@
                    :expected-type weakness-types)
             (%make-weak-hash-table test size rehash-size 
                                    rehash-threshold weakness))
-	(%make-hash-table test size 
+        (%make-hash-table test size 
                           rehash-size rehash-threshold))))
 
     

@@ -47,14 +47,14 @@ public final class Debug
             System.err.println(msg);
             Error e = new Error(msg);
             e.printStackTrace(System.err);
-	    
-	    StringBuffer buffer = new StringBuffer();
-	    final String CR = "\n";
-	    buffer.append(msg).append(CR);
-	    StackTraceElement[] stack = e.getStackTrace();
-	    for (int i = 0; i < stack.length; i++) {
-		buffer.append(stack[i].toString()).append(CR);
-	    }
+            
+            StringBuffer buffer = new StringBuffer();
+            final String CR = "\n";
+            buffer.append(msg).append(CR);
+            StackTraceElement[] stack = e.getStackTrace();
+            for (int i = 0; i < stack.length; i++) {
+                buffer.append(stack[i].toString()).append(CR);
+            }
             throw new Error(buffer.toString());
         }
     }

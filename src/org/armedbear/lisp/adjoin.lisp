@@ -35,8 +35,8 @@ the test function `test'."
   (when (and testp notp)
     (error "test and test-not both supplied"))
   (if (let ((key-val (sys::apply-key key item)))
-	(if notp
-	    (member key-val list :test-not test-not :key key)
-	    (member key-val list :test test :key key)))
+        (if notp
+            (member key-val list :test-not test-not :key key)
+            (member key-val list :test test :key key)))
       list
       (cons item list)))

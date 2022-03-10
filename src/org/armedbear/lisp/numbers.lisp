@@ -38,8 +38,8 @@
   (if (zerop number)
       number
       (if (rationalp number)
-	  (if (plusp number) 1 -1)
-	  (/ number (abs number)))))
+          (if (plusp number) 1 -1)
+          (/ number (abs number)))))
 
 (defun round (number &optional (divisor 1))
   "Rounds number (or number/divisor) to nearest integer.
@@ -65,21 +65,21 @@
   "Same as FLOOR, but returns first value as a float."
   (multiple-value-bind (tru rem) (ftruncate number divisor)
     (if (and (not (zerop rem))
-	     (if (minusp divisor)
-		 (plusp number)
-		 (minusp number)))
-	(values (1- tru) (+ rem divisor))
-	(values tru rem))))
+             (if (minusp divisor)
+                 (plusp number)
+                 (minusp number)))
+        (values (1- tru) (+ rem divisor))
+        (values tru rem))))
 
 (defun fceiling (number &optional (divisor 1))
   "Same as CEILING, but returns first value as a float."
   (multiple-value-bind (tru rem) (ftruncate number divisor)
     (if (and (not (zerop rem))
-	     (if (minusp divisor)
-		 (minusp number)
-		 (plusp number)))
-	(values (+ tru 1) (- rem divisor))
-	(values tru rem))))
+             (if (minusp divisor)
+                 (minusp number)
+                 (plusp number)))
+        (values (+ tru 1) (- rem divisor))
+        (values tru rem))))
 
 (defun fround (number &optional (divisor 1))
   "Same as ROUND, but returns first value as a float."
@@ -94,15 +94,15 @@
 (defun gcd (&rest integers)
   (cond ((null integers)
          0)
-	((null (cdr integers))
+        ((null (cdr integers))
          (let ((n (car integers)))
            (if (integerp n)
                (abs n)
                (error 'type-error :datum n :expected-type 'integer))))
-	(t
-	 (do ((gcd (car integers) (gcd-2 gcd (car rest)))
-	      (rest (cdr integers) (cdr rest)))
-	     ((null rest) gcd)))))
+        (t
+         (do ((gcd (car integers) (gcd-2 gcd (car rest)))
+              (rest (cdr integers) (cdr rest)))
+             ((null rest) gcd)))))
 
 ;;; From discussion on comp.lang.lisp and Akira Kurihara.
 (defun isqrt (natural)
@@ -114,20 +114,20 @@
            :format-arguments (list natural)))
   (if (and (fixnump natural) (<= natural 24))
       (cond ((> natural 15) 4)
-	    ((> natural  8) 3)
-	    ((> natural  3) 2)
-	    ((> natural  0) 1)
-	    (t 0))
+            ((> natural  8) 3)
+            ((> natural  3) 2)
+            ((> natural  0) 1)
+            (t 0))
       (let* ((n-len-quarter (ash (integer-length natural) -2))
-	     (n-half (ash natural (- (ash n-len-quarter 1))))
-	     (n-half-isqrt (isqrt n-half))
-	     (init-value (ash (1+ n-half-isqrt) n-len-quarter)))
-	(loop
-	  (let ((iterated-value
-		 (ash (+ init-value (truncate natural init-value)) -1)))
-	    (unless (< iterated-value init-value)
-	      (return init-value))
-	    (setq init-value iterated-value))))))
+             (n-half (ash natural (- (ash n-len-quarter 1))))
+             (n-half-isqrt (isqrt n-half))
+             (init-value (ash (1+ n-half-isqrt) n-len-quarter)))
+        (loop
+          (let ((iterated-value
+                 (ash (+ init-value (truncate natural init-value)) -1)))
+            (unless (< iterated-value init-value)
+              (return init-value))
+            (setq init-value iterated-value))))))
 
 ;; FIXME Need to add support for denormalized floats!
 

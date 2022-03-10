@@ -370,25 +370,25 @@ public final class JavaObject extends LispObject implements Serializable {
             StringBuilder sb
                 = new StringBuilder(c.isArray() ? "jarray" : c.getName());
             sb.append(' ');
-			try {
-				String ts = obj.toString();
-				int length = -1;
-				LispObject stringLength = _JAVA_OBJECT_TO_STRING_LENGTH.symbolValueNoThrow();
-				if (stringLength instanceof Fixnum) {
-					length = Fixnum.getValue(stringLength);
-				}
-				if (length < 0) {
-					sb.append(ts);
-				} else if (ts.length() > length) { 
-					// use '....' to not confuse user with PPRINT conventions
-					sb.append(ts.substring(0, length)).append("...."); 
-				} else {
-					sb.append(ts);
-				}
-				s = sb.toString();
-			} catch (Exception e) {
-				return serror(new JavaException(e));
-			}
+                        try {
+                                String ts = obj.toString();
+                                int length = -1;
+                                LispObject stringLength = _JAVA_OBJECT_TO_STRING_LENGTH.symbolValueNoThrow();
+                                if (stringLength instanceof Fixnum) {
+                                        length = Fixnum.getValue(stringLength);
+                                }
+                                if (length < 0) {
+                                        sb.append(ts);
+                                } else if (ts.length() > length) { 
+                                        // use '....' to not confuse user with PPRINT conventions
+                                        sb.append(ts.substring(0, length)).append("...."); 
+                                } else {
+                                        sb.append(ts);
+                                }
+                                s = sb.toString();
+                        } catch (Exception e) {
+                                return serror(new JavaException(e));
+                        }
         } else {
             s = "null";
         }
@@ -413,7 +413,7 @@ public final class JavaObject extends LispObject implements Serializable {
                 int length = Array.getLength(obj);
                 for (int i = 0; i < length; i++) {
                     parts = parts
-		      .push(new Cons(new SimpleString(String.valueOf(i)), 
+                      .push(new Cons(new SimpleString(String.valueOf(i)), 
                                        JavaObject.getInstance(Array.get(obj, i))));
                 }
             } else {
@@ -608,8 +608,8 @@ public final class JavaObject extends LispObject implements Serializable {
   private static final Primitive DESCRIBE_JAVA_OBJECT 
     = new pf_describe_java_object();
   @DocString(name="describe-java-object",
-	     args="object stream",
-	     doc="Print a human friendly description of Java OBJECT to STREAM.")
+             args="object stream",
+             doc="Print a human friendly description of Java OBJECT to STREAM.")
   private static final class pf_describe_java_object extends Primitive 
   {
     pf_describe_java_object() {
@@ -618,7 +618,7 @@ public final class JavaObject extends LispObject implements Serializable {
     @Override
     public LispObject execute(LispObject first, LispObject second) {
       if (!(first instanceof JavaObject))
-	return type_error(first, Symbol.JAVA_OBJECT);
+        return type_error(first, Symbol.JAVA_OBJECT);
       final Stream stream = checkStream(second);
       final JavaObject javaObject = (JavaObject) first;
       stream._writeString(describeJavaObject(javaObject));

@@ -136,7 +136,7 @@ public class LispObject //extends Lisp
       return Boolean.TRUE;
 
     return error(new LispError("The value " + princToString() +
-				 " is not of class " + c.getName()));
+                                 " is not of class " + c.getName()));
   }
 
   /** This method returns 'this' by default, but allows

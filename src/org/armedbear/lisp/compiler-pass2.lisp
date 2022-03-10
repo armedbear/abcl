@@ -950,7 +950,7 @@ representation, based on the derived type of the LispObject."
 (defun make-constructor (class lambda-name args)
   (let* ((*compiler-debug* nil)
          (method (make-jvm-method :constructor :void nil
-				  :flags '(:public)))
+                                  :flags '(:public)))
          ;; We don't normally need to see debugging output for constructors.
          (super (class-file-superclass class))
          opt-params-register
@@ -3923,10 +3923,10 @@ given a specific common representation.")
     (emit-clear-values)
     (with-operand-accumulation
          ((emit-variable-operand (block-id-variable block))
-	  (emit-load-externalized-object-operand (block-name block))
-	  (compile-operand result-form nil))
+          (emit-load-externalized-object-operand (block-name block))
+          (compile-operand result-form nil))
        (emit-invokestatic +lisp+ "nonLocalReturn" (lisp-object-arg-types 3)
-			  +lisp-object+))
+                          +lisp-object+))
     ;; Following code will not be reached, but is needed for JVM stack
     ;; consistency.
     (emit 'areturn)))
@@ -3941,7 +3941,7 @@ given a specific common representation.")
     (cond ((and (null target) (< *safety* 3))
            (compile-form arg target nil))
           ((and (consp arg) (eq (%car arg) 'cdr) (= (length arg) 2))
-	   (compile-forms-and-maybe-emit-clear-values (second arg) 'stack nil)
+           (compile-forms-and-maybe-emit-clear-values (second arg) 'stack nil)
            (emit-invoke-method "cadr" target representation))
           (t
            (emit-car/cdr arg target representation "car")))))
@@ -4005,15 +4005,15 @@ given a specific common representation.")
           (setf (progv-environment-register block) (allocate-register nil))))
     (with-operand-accumulation
         ((compile-operand symbols-form nil)
-	 (compile-operand values-form nil))
+         (compile-operand values-form nil))
       (unless (and (single-valued-p symbols-form)
-		   (single-valued-p values-form))
-	(emit-clear-values))
+                   (single-valued-p values-form))
+        (emit-clear-values))
       (save-dynamic-environment environment-register)
       ;; Compile call to Lisp.progvBindVars().
       (emit-push-current-thread)
       (emit-invokestatic +lisp+ "progvBindVars"
-			 (list +lisp-object+ +lisp-object+ +lisp-thread+) nil))
+                         (list +lisp-object+ +lisp-object+ +lisp-thread+) nil))
       ;; Implicit PROGN.
     (let ((*blocks* (cons block *blocks*)))
       (compile-progn-body (cdddr form) target representation))
@@ -6901,7 +6901,7 @@ We need more thought here.
        (emit-clear-values) ; Do this unconditionally! (MISC.503)
        (compile-operand (third form) nil)) ; Result.
     (emit-invokevirtual +lisp-thread+ "throwToTag"
-			 (lisp-object-arg-types 2) nil))
+                         (lisp-object-arg-types 2) nil))
   ;; Following code will not be reached.
   (when target
     (ecase representation
@@ -7430,9 +7430,9 @@ We need more thought here.
 (defun make-compiler-error-form (form condition)
   `(lambda ,(cadr form)
      (error 'program-error :format-control "Program error while compiling ~a" :format-arguments 
-	    (if ,condition 
-		(list (apply 'format nil ,(slot-value condition 'sys::format-control) ',(slot-value condition 'sys::format-arguments)))
-		(list "a form")))))
+            (if ,condition 
+                (list (apply 'format nil ,(slot-value condition 'sys::format-control) ',(slot-value condition 'sys::format-arguments)))
+                (list "a form")))))
 
 (defun compile-defun (name form environment filespec stream *declare-inline*)
   "Compiles a lambda expression `form'. If `filespec' is NIL,

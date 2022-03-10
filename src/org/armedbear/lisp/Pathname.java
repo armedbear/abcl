@@ -1746,7 +1746,7 @@ public class Pathname extends LispObject
           result.setDevice(p.getDevice());
         } else {
           if (d instanceof JarPathname
-	      && p instanceof JarPathname) {
+              && p instanceof JarPathname) {
             result.setDevice(d.getDevice());
           } else {
             result.setDevice(p.getDevice());
@@ -1766,11 +1766,11 @@ public class Pathname extends LispObject
             result.setDevice(d.getDevice());
           }
         } else {
-	  if (p.isLocalFile()) {
-	    result.setDevice(d.getDevice());
-	  } else {
-	    result.setDevice(p.getDevice());
-	  }
+          if (p.isLocalFile()) {
+            result.setDevice(d.getDevice());
+          } else {
+            result.setDevice(p.getDevice());
+          }
         }
       }
 

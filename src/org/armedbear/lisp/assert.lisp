@@ -42,7 +42,7 @@
      (assert-error ',test-form ',places ,datum ,@arguments)
      ,@(mapcar #'(lambda (place)
                   `(setf ,place (assert-prompt ',place ,place)))
-	       places)))
+               places)))
 
 (defun assert-error (assertion places datum &rest arguments)
   (declare (ignore places))
@@ -61,11 +61,11 @@
 
 (defun assert-prompt (name value)
   (cond ((y-or-n-p "The old value of ~S is ~S.~%Do you want to supply a new value? "
-		   name value)
+                   name value)
          (fresh-line *query-io*)
-	 (format *query-io* "Type a form to be evaluated:~%")
-	 (flet ((read-it () (eval (read *query-io*))))
-	   (if (symbolp name) ;help user debug lexical variables
-	       (progv (list name) (list value) (read-it))
-	       (read-it))))
-	(t value)))
+         (format *query-io* "Type a form to be evaluated:~%")
+         (flet ((read-it () (eval (read *query-io*))))
+           (if (symbolp name) ;help user debug lexical variables
+               (progv (list name) (list value) (read-it))
+               (read-it))))
+        (t value)))

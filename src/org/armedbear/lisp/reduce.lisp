@@ -83,4 +83,4 @@
                     value (funcall function
                                    (if from-end element value)
                                    (if from-end value element)))))
-	  (apply #'sequence:reduce function sequence args))))
+          (apply #'sequence:reduce function sequence args))))

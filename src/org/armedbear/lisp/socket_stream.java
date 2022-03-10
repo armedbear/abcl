@@ -60,7 +60,7 @@ public final class socket_stream extends Primitive
         }
         catch (Exception e) {
             return error(new LispError(e.getMessage()));
-	}
+        }
     }
 
     private static final Primitive SOCKET_STREAM = new socket_stream();

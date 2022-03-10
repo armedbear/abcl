@@ -35,27 +35,27 @@
 
 (defun char/= (character &rest more-characters)
   (do* ((head character (car list))
-	(list more-characters (cdr list)))
+        (list more-characters (cdr list)))
        ((atom list) T)
     (unless (do* ((l list (cdr l)))                  ;inner loop returns T
-		 ((atom l) T)			     ; iff head /= rest.
-	      (if (eql head (car l)) (return nil)))
+                 ((atom l) T)                        ; iff head /= rest.
+              (if (eql head (car l)) (return nil)))
       (return nil))))
 
 (defun char> (character &rest more-characters)
   (do* ((c character (car list))
-	(list more-characters (cdr list)))
+        (list more-characters (cdr list)))
        ((atom list) T)
     (unless (> (char-int c)
-	       (char-int (car list)))
+               (char-int (car list)))
       (return nil))))
 
 (defun char>= (character &rest more-characters)
   (do* ((c character (car list))
-	(list more-characters (cdr list)))
+        (list more-characters (cdr list)))
        ((atom list) T)
     (unless (>= (char-int c)
-		(char-int (car list)))
+                (char-int (car list)))
       (return nil))))
 
 (defmacro equal-char-code (character)
@@ -64,11 +64,11 @@
 
 (defun char-not-equal (character &rest more-characters)
   (do* ((head character (car list))
-	(list more-characters (cdr list)))
+        (list more-characters (cdr list)))
        ((atom list) T)
     (unless (do* ((l list (cdr l)))
-		 ((atom l) T)
-	      (if (= (equal-char-code head)
-		     (equal-char-code (car l)))
-		  (return nil)))
+                 ((atom l) T)
+              (if (= (equal-char-code head)
+                     (equal-char-code (car l)))
+                  (return nil)))
       (return nil))))

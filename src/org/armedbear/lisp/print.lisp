@@ -45,8 +45,8 @@
 ;;; the block named NIL.
 (defmacro punt-print-if-too-long (index stream)
   `(when (and (not *print-readably*)
-	      *print-length*
-	      (>= ,index *print-length*))
+              *print-length*
+              (>= ,index *print-length*))
      (write-string "..." ,stream)
      (return)))
 
@@ -85,31 +85,31 @@
 ;;; Output the abbreviated #< form of an array.
 (defun output-terse-array (array stream)
   (let ((*print-level* nil)
-	(*print-length* nil))
+        (*print-length* nil))
     (print-unreadable-object (array stream :type t :identity t))))
 
 (defun array-readably-printable-p (array)
   (and (eq (array-element-type array) t)
        (let ((zero (position 0 (array-dimensions array)))
-	     (number (position 0 (array-dimensions array)
-			       :test (complement #'eql)
-			       :from-end t)))
-	 (or (null zero) (null number) (> zero number)))))
+             (number (position 0 (array-dimensions array)
+                               :test (complement #'eql)
+                               :from-end t)))
+         (or (null zero) (null number) (> zero number)))))
 
 (defun output-vector (vector stream)
   (declare (vector vector))
   (cond ((stringp vector)
          (assert nil)
          (sys::%output-object vector stream))
-	((not (or *print-array* *print-readably*))
-	 (output-terse-array vector stream))
-	((bit-vector-p vector)
+        ((not (or *print-array* *print-readably*))
+         (output-terse-array vector stream))
+        ((bit-vector-p vector)
          (assert nil)
          (sys::%output-object vector stream))
-	(t
-	 (when (and *print-readably*
-		    (not (array-readably-printable-p vector)))
-	   (error 'print-not-readable :object vector))
+        (t
+         (when (and *print-readably*
+                    (not (array-readably-printable-p vector)))
+           (error 'print-not-readable :object vector))
          (cond ((and (null *print-readably*)
                      *print-level*
                      (>= *current-print-level* *print-level*))
@@ -142,13 +142,13 @@
             (print-object object stream))))
         ((standard-object-p object)
          (print-object object stream))
-	((java::java-object-p object)
-	 (print-object object stream))
+        ((java::java-object-p object)
+         (print-object object stream))
         ((xp::xp-structure-p stream)
          (let ((s (sys::%write-to-string object)))
            (xp::write-string++ s stream 0 (length s))))
-	((functionp object)
-	  (print-object object stream))
+        ((functionp object)
+          (print-object object stream))
         (t
          (%output-object object stream))))
 
@@ -185,49 +185,49 @@
 ;;; (see #'OUTPUT-OBJECT for an example).
 (defun check-for-circularity (object &optional assign)
   (cond ((null *print-circle*)
-	 ;; Don't bother, nobody cares.
-	 nil)
-	((null *circularity-hash-table*)
+         ;; Don't bother, nobody cares.
+         nil)
+        ((null *circularity-hash-table*)
          (values nil :initiate))
-	((null *circularity-counter*)
-	 (ecase (gethash object *circularity-hash-table*)
-	   ((nil)
-	    ;; first encounter
-	    (setf (gethash object *circularity-hash-table*) t)
-	    ;; We need to keep looking.
-	    nil)
-	   ((t)
-	    ;; second encounter
-	    (setf (gethash object *circularity-hash-table*) 0)
-	    ;; It's a circular reference.
-	    t)
-	   (0
-	    ;; It's a circular reference.
-	    t)))
-	(t
-	 (let ((value (gethash object *circularity-hash-table*)))
-	   (case value
-	     ((nil t)
-	      ;; If NIL, we found an object that wasn't there the
-	      ;; first time around. If T, this object appears exactly
-	      ;; once. Either way, just print the thing without any
-	      ;; special processing. Note: you might argue that
-	      ;; finding a new object means that something is broken,
-	      ;; but this can happen. If someone uses the ~@<...~:>
-	      ;; format directive, it conses a new list each time
-	      ;; though format (i.e. the &REST list), so we will have
-	      ;; different cdrs.
-	      nil)
-	     (0
-	      (if assign
-		  (let ((value (incf *circularity-counter*)))
-		    ;; first occurrence of this object: Set the counter.
-		    (setf (gethash object *circularity-hash-table*) value)
-		    value)
-		  t))
-	     (t
-	      ;; second or later occurrence
-	      (- value)))))))
+        ((null *circularity-counter*)
+         (ecase (gethash object *circularity-hash-table*)
+           ((nil)
+            ;; first encounter
+            (setf (gethash object *circularity-hash-table*) t)
+            ;; We need to keep looking.
+            nil)
+           ((t)
+            ;; second encounter
+            (setf (gethash object *circularity-hash-table*) 0)
+            ;; It's a circular reference.
+            t)
+           (0
+            ;; It's a circular reference.
+            t)))
+        (t
+         (let ((value (gethash object *circularity-hash-table*)))
+           (case value
+             ((nil t)
+              ;; If NIL, we found an object that wasn't there the
+              ;; first time around. If T, this object appears exactly
+              ;; once. Either way, just print the thing without any
+              ;; special processing. Note: you might argue that
+              ;; finding a new object means that something is broken,
+              ;; but this can happen. If someone uses the ~@<...~:>
+              ;; format directive, it conses a new list each time
+              ;; though format (i.e. the &REST list), so we will have
+              ;; different cdrs.
+              nil)
+             (0
+              (if assign
+                  (let ((value (incf *circularity-counter*)))
+                    ;; first occurrence of this object: Set the counter.
+                    (setf (gethash object *circularity-hash-table*) value)
+                    value)
+                  t))
+             (t
+              ;; second or later occurrence
+              (- value)))))))
 
 ;;; Handle the results of CHECK-FOR-CIRCULARITY. If this returns T then
 ;;; you should go ahead and print the object. If it returns NIL, then
@@ -248,15 +248,15 @@
 ;;      (let ((*print-base* 10)
 ;;            (*print-radix* nil))
        (cond ((minusp marker)
-;; 	      (output-integer (- marker) stream)
-;; 	      (write-char #\# stream)
+;;            (output-integer (- marker) stream)
+;;            (write-char #\# stream)
               (print-reference marker stream)
-	      nil)
-	     (t
-;; 	      (output-integer marker stream)
-;; 	      (write-char #\= stream)
+              nil)
+             (t
+;;            (output-integer marker stream)
+;;            (write-char #\= stream)
               (print-label marker stream)
-	      t)))))
+              t)))))
 
 (defun print-label (marker stream)
   (write-char #\# stream)
@@ -280,7 +280,7 @@
   (or (numberp x)
       (characterp x)
       (and (symbolp x)
-	   (symbol-package x))))
+           (symbol-package x))))
 
 (defun %print-object (object stream)
   (if *print-pretty*

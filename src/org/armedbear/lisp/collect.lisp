@@ -58,13 +58,13 @@
   (let ((n-res (gensym)))
     `(progn
       ,@(mapcar #'(lambda (form)
-		    `(let ((,n-res (cons ,form nil)))
-		       (cond (,n-tail
-			      (setf (cdr ,n-tail) ,n-res)
-			      (setq ,n-tail ,n-res))
-			     (t
-			      (setq ,n-tail ,n-res  ,n-value ,n-res)))))
-		forms)
+                    `(let ((,n-res (cons ,form nil)))
+                       (cond (,n-tail
+                              (setf (cdr ,n-tail) ,n-res)
+                              (setq ,n-tail ,n-res))
+                             (t
+                              (setq ,n-tail ,n-res  ,n-value ,n-res)))))
+                forms)
       ,n-value)))
 
 
@@ -93,26 +93,26 @@
   position, including macros and lambdas."
 
   (let ((macros ())
-	(binds ()))
+        (binds ()))
     (dolist (spec collections)
       (unless (<= 1 (length spec) 3)
-	(error "Malformed collection specifier: ~S." spec))
+        (error "Malformed collection specifier: ~S." spec))
       (let ((n-value (gensym))
-	    (name (first spec))
-	    (default (second spec))
-	    (kind (or (third spec) 'collect)))
-	(push `(,n-value ,default) binds)
-	(if (eq kind 'collect)
-	    (let ((n-tail (gensym)))
-	      (if default
-		  (push `(,n-tail (last ,n-value)) binds)
-		  (push n-tail binds))
-	      (push `(,name (&rest args)
-			    (collect-list-expander ',n-value ',n-tail args))
-		    macros))
-	    (push `(,name (&rest args)
-			  (collect-normal-expander ',n-value ',kind args))
-		  macros))))
+            (name (first spec))
+            (default (second spec))
+            (kind (or (third spec) 'collect)))
+        (push `(,n-value ,default) binds)
+        (if (eq kind 'collect)
+            (let ((n-tail (gensym)))
+              (if default
+                  (push `(,n-tail (last ,n-value)) binds)
+                  (push n-tail binds))
+              (push `(,name (&rest args)
+                            (collect-list-expander ',n-value ',n-tail args))
+                    macros))
+            (push `(,name (&rest args)
+                          (collect-normal-expander ',n-value ',kind args))
+                  macros))))
     `(macrolet ,macros (let* ,(nreverse binds) ,@body))))
 
 (provide 'collect)

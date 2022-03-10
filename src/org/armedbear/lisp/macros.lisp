@@ -86,7 +86,7 @@
 ;; Adapted from SBCL.
 (defmacro push (&environment env item place)
   (if (and (symbolp place)
-	   (eq place (macroexpand place env)))
+           (eq place (macroexpand place env)))
       `(setq ,place (cons ,item ,place))
       (multiple-value-bind (dummies vals newval setter getter)
         (get-setf-expansion place env)
@@ -99,7 +99,7 @@
 ;; Adapted from SBCL.
 (defmacro pushnew (&environment env item place &rest keys)
   (if (and (symbolp place)
-	   (eq place (macroexpand place env)))
+           (eq place (macroexpand place env)))
       `(setq ,place (adjoin ,item ,place ,@keys))
       (multiple-value-bind (dummies vals newval setter getter)
         (get-setf-expansion place env)
@@ -112,9 +112,9 @@
 ;; Adapted from SBCL.
 (defmacro pop (&environment env place)
   (if (and (symbolp place)
-	   (eq place (macroexpand place env)))
+           (eq place (macroexpand place env)))
       `(prog1 (car ,place)
-	      (setq ,place (cdr ,place)))
+              (setq ,place (cdr ,place)))
       (multiple-value-bind (dummies vals newval setter getter)
         (get-setf-expansion place env)
         (do* ((d dummies (cdr d))
@@ -158,7 +158,7 @@
         (forms (cdr args))
         (abortp (gensym)))
     `(let ((,var ,stream)
-	   (,abortp t))
+           (,abortp t))
        (unwind-protect
         (multiple-value-prog1
          (progn ,@forms)

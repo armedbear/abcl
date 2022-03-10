@@ -40,21 +40,21 @@
   (when args
     (collect ((let*-bindings) (mv-bindings) (setters) (getters))
       (dolist (arg args)
-	(multiple-value-bind (temps subforms store-vars setter getter)
-	    (get-setf-expansion arg env)
-	  (loop
-	    for temp in temps
-	    for subform in subforms
-	    do (let*-bindings `(,temp ,subform)))
-	  (mv-bindings store-vars)
-	  (setters setter)
-	  (getters getter)))
+        (multiple-value-bind (temps subforms store-vars setter getter)
+            (get-setf-expansion arg env)
+          (loop
+            for temp in temps
+            for subform in subforms
+            do (let*-bindings `(,temp ,subform)))
+          (mv-bindings store-vars)
+          (setters setter)
+          (getters getter)))
       (setters nil)
       (getters (car (getters)))
       (labels ((thunk (mv-bindings getters)
-		 (if mv-bindings
-		     `((multiple-value-bind ,(car mv-bindings) ,(car getters)
-			 ,@(thunk (cdr mv-bindings) (cdr getters))))
-		     (setters))))
-	`(let* ,(let*-bindings)
-	   ,@(thunk (mv-bindings) (cdr (getters))))))))
+                 (if mv-bindings
+                     `((multiple-value-bind ,(car mv-bindings) ,(car getters)
+                         ,@(thunk (cdr mv-bindings) (cdr getters))))
+                     (setters))))
+        `(let* ,(let*-bindings)
+           ,@(thunk (mv-bindings) (cdr (getters))))))))

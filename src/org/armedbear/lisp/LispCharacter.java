@@ -269,10 +269,10 @@ public final class LispCharacter extends LispObject
           case 160:
             sb.append("No-break_space");
             break;
-	  default:
-	    if (name!=null)
+          default:
+            if (name!=null)
               sb.append(name);
-	    else
+            else
               sb.append(value);
             break;
           }
