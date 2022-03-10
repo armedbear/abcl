@@ -148,8 +148,15 @@ SYS:*DISASSEMBLERS*."
             (let ((classloader (java:jcall "getClassLoader" class)))
               (if (or (java:jinstance-of-p classloader "org.armedbear.lisp.MemoryClassLoader")
                       (java:jinstance-of-p classloader "org.armedbear.lisp.FaslClassLoader"))
-                  (disassemble-bytes 
-                   (java:jcall "getFunctionClassBytes" classloader class))
+                  (disassemble-bytes
+                   (or
+                    (ignore-errors
+                     (java:jcall "getFunctionClassBytes" classloader class))
+                    ;;; alanr found that in certain situations (under
+                    ;;; OSGI?) that one has to explicitly FUNCALL the
+                    ;;; function slot, so we fall back to that strategy.
+                    (ignore-errors
+                     (funcall (java:jfield "org.armedbear.lisp.Function" "FUNCTION_CLASS_BYTES") function))))
                   (disassemble-bytes
                    (read-byte-array-from-stream
                     (java:jcall-raw
