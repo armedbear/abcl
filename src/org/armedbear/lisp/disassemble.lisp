@@ -181,29 +181,29 @@ CL:DISASSEMBLE."
 ;;; TODO Java9 work out a sensible story to preserve existing values if required
 (defun get-loaded-from (function)
   (let* ((jfield (find "loadedFrom" (java:jcall "getDeclaredFields" (java:jclass "org.armedbear.lisp.Function")) 
-		       :key 'java:jfield-name :test 'equal)))
+                       :key 'java:jfield-name :test 'equal)))
     (java:jcall "setAccessible" jfield java:+true+)
     (java:jcall "get" jfield function)))
 
 (defun set-loaded-from (function value)
   (let* ((jfield (find "loadedFrom" (java:jcall "getDeclaredFields" (java:jclass "org.armedbear.lisp.Function")) 
-		       :key 'java:jfield-name :test 'equal)))
+                       :key 'java:jfield-name :test 'equal)))
     (java:jcall "setAccessible" jfield java:+true+)
     (java:jcall "set" jfield function value)))
 
 ;; because getFunctionClassBytes gets a null pointer exception
 (defun fasl-compiled-closure-class-bytes (function)
   (let* ((loaded-from (get-loaded-from function))
-	 (class-name (subseq (java:jcall "getName" (java:jcall "getClass" function)) (length "org.armedbear.lisp.")))
-	 (url (if (not (eq (pathname-device loaded-from) :unspecific))
-		  ;; we're loading from a jar
-		  (java:jnew "java.net.URL" 
-			     (namestring (make-pathname :directory (pathname-directory loaded-from)
-							       :device (pathname-device loaded-from)
-							       :name class-name :type "cls")))
-		  ;; we're loading from a fasl file
-		  (java:jnew "java.net.URL" (namestring (make-pathname :device (list loaded-from)
-								       :name class-name :type "cls"))))))
+         (class-name (subseq (java:jcall "getName" (java:jcall "getClass" function)) (length "org.armedbear.lisp.")))
+         (url (if (not (eq (pathname-device loaded-from) :unspecific))
+                  ;; we're loading from a jar
+                  (java:jnew "java.net.URL" 
+                             (namestring (make-pathname :directory (pathname-directory loaded-from)
+                                                               :device (pathname-device loaded-from)
+                                                               :name class-name :type "cls")))
+                  ;; we're loading from a fasl file
+                  (java:jnew "java.net.URL" (namestring (make-pathname :device (list loaded-from)
+                                                                       :name class-name :type "cls"))))))
     (read-byte-array-from-stream (java:jcall "openStream" url))))
 
 ;; closure bindings
