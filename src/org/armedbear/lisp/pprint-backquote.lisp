@@ -45,6 +45,7 @@
   splicing with other forms: a value of T or :NCONC meaning that an extra
   level of parentheses should be added."
   (cond
+   ((null form) nil)
    ((atom form)
     (backq-unparse-expr form splicing))
    ((not (null (cdr (last form))))
