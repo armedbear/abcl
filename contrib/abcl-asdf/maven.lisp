@@ -181,8 +181,10 @@ Emits warnings if not able to find a suitable executable."
             (#"getMainAttributes" manifest))
            (version
             (#"getValue" attributes "Implementation-Version")))
-      (parse-mvn-version
-       version))))
+      (if version
+          (parse-mvn-version
+           version)
+          (mvn-version-from-mvn-executable)))))
 
 ;;; deprecated, unused:  we now get the version directly from the JAR manifest
 (defun mvn-version-from-mvn-executable ()
