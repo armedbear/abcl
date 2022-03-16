@@ -523,8 +523,8 @@
 (defun std-finalize-inheritance (class)
   ;; In case the class is already finalized, return
   ;; immediately, as per AMOP.
-  (when (class-finalized-p class)
-    (return-from std-finalize-inheritance))
+; (when (class-finalized-p class)
+;    (return-from std-finalize-inheritance))
   (setf (class-precedence-list class)
         (funcall (if (std-class-p class)
                      #'std-compute-class-precedence-list
