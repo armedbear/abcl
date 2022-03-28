@@ -459,7 +459,7 @@ is equivalent to the following Java code:
 (defmethod print-object ((obj java:java-object) stream)
   (if (jnull-ref-p obj)
       (write-string "#<null>" stream)
-      (print-java-object-by-class (intern (jclass-name (jobject-class obj)) 'keyword) obj stream)))
+      (print-java-object-by-class (jobject-class obj) obj stream)))
 
 ;;define extensions by eql methods on class name interned in keyword package
 ;;e.g. (defmethod java::print-java-object-by-class ((class (eql ':|uk.ac.manchester.cs.owl.owlapi.concurrent.ConcurrentOWLOntologyImpl|)) obj stream) 

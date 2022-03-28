@@ -53,3 +53,23 @@
                   :fields '(("name" "java.lang.String" :getter NIL)))
                  "Someone"))
   "Someone")
+
+;; print-object
+(deftest runtime-class.print-object
+    (subseq
+     (with-output-to-string (stream)
+       (print-object
+        (java:jnew
+         (java:jnew-runtime-class
+          "FooList"
+          :superclass "java.util.AbstractList"
+          :methods '(("get" "java.lang.Object" (:int)
+                      (lambda (this index)
+                        "Foo"))
+                     ("size" :int ()
+                      (lambda (this)
+                        15)))))
+        stream))
+     0
+     20)
+  "#<FooList [Foo, Foo,")
