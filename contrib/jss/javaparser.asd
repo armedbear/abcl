@@ -3,7 +3,7 @@
   :defsystem-depends-on (abcl-asdf)
   :components
   ((:module jar
-            :components ((:mvn "com.github.javaparser/javaparser-core/3.0.1")))
+            :components ((:mvn "com.github.javaparser/javaparser-core/3.24.2")))
    (:module source :depends-on (jar)
             :pathname ""
             :serial t

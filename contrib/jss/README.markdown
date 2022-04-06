@@ -106,14 +106,18 @@ lists the names of all methods for the CLASS-NAME.
 
 Java static fields may be addressed via the SHARPSIGN-QUOTATION_MARK macro as 
   
-    (#"{java.lang.System}.{fileSeparator}")
+    (#"java.lang.System.out")
+
+Java fields can by dynamically accessed with 
+
+    (let ((class 'java.lang.system)
+          (field "out"))
+       #"{class}.{field}")
   
 ### Javaparser
 
-On the reference of the JAVAPARSER system, one may use a Java DSL to
-specify invocation and chains:
+Use #1"<java expression>" to use JAVAPARSER to parse an expression. JAVAPARSER will be loaded on first use.
 
-    (asdf:make :javaparser)
     (#1"new ByteBuddy()
       .subclass(Object.class,t)
       .method(ElementMatchers.named("toString"))
