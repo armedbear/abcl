@@ -2,7 +2,11 @@
 
 (defvar *class-to-last-component* (make-hash-table :test 'equalp))
 
-(defclass javaparser () ())
+(defclass javaparser () ((parser :accessor parser)))
+
+(defmethod initialize-instance ((p javaparser)&key)
+  (call-next-method)
+  (setf (parser p) (new 'javaparser)))
 
 (defmacro def-java-read (ast-class class fields &body body)
   (let ((jclass (find-java-class (concatenate 'string "com.github.javaparser.ast.expr." (string ast-class)))))
@@ -29,7 +33,8 @@
 
 (defmethod read-java-expression ((r javaparser) expression)
   `(let ((this *object-for-this*))
-     ,(process-node r (#"parseExpression" 'javaparser expression))))
+     (declare (ignorable this))
+     ,(process-node r (#"getResult" (#"parseExpression" (parser r) expression)))))
 
 (def-java-read LongLiteralExpr javaparser ()
   (read-from-string (#"replaceFirst" (#"getValue" node) "L" "")))
@@ -65,7 +70,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun read-invoke/javaparser (stream char arg) 
     (if (eql arg 1)
-
         (if (ignore-errors
               (jclass "com.github.javaparser.ParseStart"))         ;; chosen randomly, TODO memoize
             (read-sharp-java-expression stream)

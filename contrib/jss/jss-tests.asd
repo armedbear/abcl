@@ -1,4 +1,5 @@
 ;;;; -*- Mode: LISP -*-
+(in-package :asdf)
 (defsystem jss-tests
   :defsystem-depends-on (quicklisp-abcl
                          prove-asdf)

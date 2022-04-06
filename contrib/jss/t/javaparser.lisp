@@ -1,6 +1,7 @@
 (in-package :cl-user)
 
 (defparameter expanded '(let ((jss::this jss::*object-for-this*))
+  (declare (ignorable jss::this))
   (jcall "getLoaded"
          (jcall "load"
                 (jcall "make"
@@ -25,8 +26,6 @@
    .make()
    .load(getClass().getClassLoader())
    .getLoaded()" )
-
-(in-package :jss-test)
 
 (prove:plan 1)
 (prove:is source expanded)

@@ -1,3 +1,4 @@
+(in-package :asdf)
 (defsystem javaparser-tests
   :defsystem-depends-on (prove-asdf)
   :depends-on (javaparser
