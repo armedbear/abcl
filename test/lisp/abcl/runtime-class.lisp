@@ -73,3 +73,14 @@
      0
      20)
   "#<FooList [Foo, Foo,")
+
+
+;; class annotations
+(deftest runtime-class.class-annotations
+  (let* ((class (java:jnew-runtime-class
+                "Foo"
+                :annotations '("java.lang.Deprecated")))
+         (annotations (java:jcall "getAnnotations" class)))
+    (assert (java:jinstance-of-p (aref annotations 0) "java.lang.Deprecated"))
+    t)
+  t)
