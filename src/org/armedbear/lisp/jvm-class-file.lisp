@@ -1687,9 +1687,17 @@ appropriate reflective APIs.")
   (dolist (ann (annotations-list annotations))
     (finalize-annotation ann class)))
 
+;; See https://github.com/openjdk/jdk/blob/8758b554a089af98fdc3be4201d61278d5f01af3/src/java.base/share/classes/sun/reflect/generics/parser/SignatureParser.java#L295-L312
+(defun class-name->type-signature (class-name)
+  (concatenate 'string
+               '(#\L)
+               (substitute #\/ #\. class-name)
+               '(#\;)))
+
 (defun finalize-annotation (ann class)
   (setf (annotation-type ann)
-        (pool-add-class (class-file-constants class) (annotation-type ann)))
+        (pool-add-utf8 (class-file-constants class)
+                       (class-name->type-signature (annotation-type ann))))
   (dolist (elem (annotation-elements ann))
     (finalize-annotation-element elem class)))
 
