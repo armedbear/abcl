@@ -474,17 +474,28 @@ public final class Lisp
   }
 
   public static volatile boolean interrupted;
+  public static volatile LispThread threadToInterrupt;
 
-  public static synchronized final void setInterrupted(boolean b)
+  public static synchronized final void setInterrupted(LispThread thread, boolean b)
   {
-    interrupted = b;
+    if (b)
+      { threadToInterrupt = thread; }
+    else
+      { threadToInterrupt = null; }
+    interrupted = b; 
   }
 
-  public static final void handleInterrupt()
+public static synchronized final void handleInterrupt()
   {
-    setInterrupted(false);
-    Symbol.BREAK.getSymbolFunction().execute();
-    setInterrupted(false);
+    LispThread currentThread = LispThread.currentThread();
+    LispThread checkThread = threadToInterrupt;
+    setInterrupted(null, false);
+    if ((currentThread == threadToInterrupt) || (threadToInterrupt == null))
+      {
+        //        Symbol.BREAK.getSymbolFunction().execute();
+        currentThread.processThreadInterrupts();
+      }
+    setInterrupted(null, false);
   }
 
   // Used by the compiler.
