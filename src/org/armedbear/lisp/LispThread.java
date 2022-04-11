@@ -1475,6 +1475,7 @@ public final class LispThread extends LispObject
             for (int i = args.length; i-- > 2;)
                 funArgs = new Cons(args[i], funArgs);
             thread.interrupt(fun, funArgs);
+            setInterrupted(thread,true);
             return T;
         }
     };

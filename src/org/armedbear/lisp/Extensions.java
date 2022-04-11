@@ -363,9 +363,18 @@ public final class Extensions
       super("interrupt-lisp", PACKAGE_EXT, true, "");
     }
     @Override
-    public LispObject execute()
+    public LispObject execute(LispObject[] args)
     {
-      setInterrupted(true);
+      if (args.length < 1)
+        return error(new WrongNumberOfArgumentsException(this, 1, -1));
+      final LispThread thread;
+      if (args[0] instanceof LispThread) {
+        thread = (LispThread) args[0];
+      }
+      else {
+        return type_error(args[0], Symbol.THREAD);
+      }
+      setInterrupted(thread,true); // engage the compiler-insert check Lisp.interrupted/Lisp.handleInterrupts mechanism
       return T;
     }
   }
