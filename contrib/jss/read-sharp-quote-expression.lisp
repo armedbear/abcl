@@ -74,8 +74,8 @@
 (def-java-read FieldAccessExpr sharp-quote-expression-reader ()
   (let ((scope (process-node obj (#"getScope" node))))
     (if (and (symbolp scope) (upper-case-p (char (string scope) 0)))
-        `(get-java-field ',(process-node obj (#"getScope" node)) ,(#"getIdentifier" (#"getField" node)) t)
-        `(get-java-field ,(maybe-class (process-node obj (#"getScope" node))) ,(#"getIdentifier" (#"getField" node)) t))))
+        `(get-java-field ',(process-node obj (#"getScope" node)) ,(#"getIdentifier" (#"getName" node)) t)
+        `(get-java-field ,(maybe-class (process-node obj (#"getScope" node))) ,(#"getIdentifier" (#"getName" node)) t))))
 
 (def-java-read ArrayAccessExpr sharp-quote-expression-reader ()
   (let ((index (process-node obj (#"getIndex" node))))

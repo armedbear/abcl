@@ -67,6 +67,10 @@
   (let ((symbol (intern (#"getIdentifier" node))))
     symbol))
 
+(def-java-read NameExpr javaparser ()
+  (let ((symbol (intern (#"getIdentifier" (#"getName" node)))))
+    symbol))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun read-invoke/javaparser (stream char arg) 
     (if (eql arg 1)
