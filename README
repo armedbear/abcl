@@ -37,38 +37,42 @@ We have modified our GPLv2 license section 13 to read:
      software, but you are not obligated to do so. If you do not wish to
      do so, delete this exception statement from your version.
 
+CONTAINERIZATION
+----------------
 
-RUNNING FROM DOCKER
--------------------
+We recommend using podman over docker for political reasons, but the
+surface syntax is identical so if you must, just subsitute `docker`
+for `podman` in the following examples.
 
-With [Docker Engine][] installed one may execute:
+With [podman][] installed, one may execute:
 
-    docker build -t YOURID/abcl .
-    docker run -it YOURID/abcl 
+    podman build -t YOURID/abcl .
+    podman run -it YOURID/abcl 
 
 to get something like
 
-    illin:~/work/abcl$ docker run -it YOURID/abcl
-    Armed Bear Common Lisp 1.8.0
-    Java 11.0.8 AdoptOpenJDK
+    illin:~/work/abcl$ podman run -it YOURID/abcl
+    VM settings:
+    Max. Heap Size (Estimated): 498.00M
+    Using VM: OpenJDK 64-Bit Server VM
+
+    Armed Bear Common Lisp 1.9.0
+    Java 17.0.2 Oracle Corporation
     OpenJDK 64-Bit Server VM
-    Low-level initialization completed in 0.295 seconds.
-    Startup completed in 1.425 seconds.
+    Low-level initialization completed in 0.952 seconds.
+    Startup completed in 4.248 seconds.
     Type ":help" for a list of available commands.
-    CL-USER(1): (lisp-implementation-version)
-    "1.8.0"
-    "OpenJDK_64-Bit_Server_VM-AdoptOpenJDK-11.0.8+10"
-    "x86_64-Mac_OS_X-10.15.7"
+    CL-USER(1):
 
 To install Quicklisp for ABCL in the Docker container run:
 
-    docker run -t YOURID/abcl abcl \
+    podman run -t YOURID/abcl abcl \
       --batch --load /home/abcl/work/abcl/ci/install-quicklisp.lisp
 
 See <file:Dockerfile> for the build instructions.
 
+[podman]: https://podman.io/releases/2022/02/22/podman-release-v4.0.0.html
 [Docker Engine]: https://www.docker.com/products/docker-engine
-
 
 
 RUNNING FROM BINARY RELEASE
@@ -78,12 +82,12 @@ After you have downloaded a binary release from either [the
 distributed Maven POM graph][maven-abcl] or from
 [abcl.org][abcl.org-release] archive unpack it into its own
 directory. To run ABCL directly from this directory, make sure the
-Java executable (`java`) (Java 6, 7, 8, 11, 13, 14, and 15 are
-supported by ABCL 1.7.0) is in your shell's path.
+Java executable (`java`) (Java 6, 7, 8, 11, 13, 14, 15, 16, 17, and 18
+are supported by ABCL 1.9.0) is in your shell's path.
 
-[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.8.0>
-[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.8.0>
-[abcl.org-release]:    <http://abcl.org/releases/1.8.0/>
+[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.9.0>
+[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.9.0>
+[abcl.org-release]:    <http://abcl.org/releases/1.9.0/>
 
 To start ABCL, simply issue the following command:
 
@@ -91,34 +95,21 @@ To start ABCL, simply issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.8.0
-    Java 11.0.8 AdoptOpenJDK
+    Armed Bear Common Lisp 1.9.0
+    Java 17.0.2 OpenJDK Porters Group
     OpenJDK 64-Bit Server VM
-    Low-level initialization completed in 0.222 seconds.
-    Startup completed in 1.09 seconds.
-    Type ":help" for a list of available commands.
+    Low-level initialization completed in 0.107 seconds.
+    Startup completed in 0.493 seconds.
     CL-USER(1):
 
 Yer now at the interactive ABCL "Read Eval Print Loop" (REPL): hacks
 'n glory await.
 
-
-SLIME
------
-
-For usage of ABCL with the [Superior Lisp Interaction Mode for
-Emacs][slime], one may easily start a Swank listener via:
-
-    (require :asdf)
-    (require :abcl-contrib)
-    (asdf:load-system :quicklisp-abcl)
-    (ql:quickload :swank)
-    (swank:create-server :dont-close t)
-
-[slime]: https://common-lisp.net/project/slime/
+See the section headed "SLIME" for instructions to connect to this
+repl from Emacs.
 
 
-Building From Source Release
+BUILDING FROM SOURCE RELEASE
 ----------------------------
 
 ABCL may be built from its source code by executing the build
@@ -147,24 +138,24 @@ Windows).  Use this wrapper to start ABCL.
 The build may be customized by copying <file:abcl.properties.in> to
 <file:abcl.properties>, which will cause Ant to attempt to build
 incrementally as well as optimizing the runtime for a contemporary
-64bit desktop/server machine running Java 8 or 11.  The file contains
-incomplete documentation on how it may be edited for subsequent
-customization.  As an alternative to copying the prototype, if one has
-a version of bash locally, one may issue via Ant
+64bit desktop/server machine running Java 8, 11, and/or 17.  The file
+contains incomplete documentation on how it may be edited for
+subsequent customization.  As an alternative to copying the prototype,
+if one has a version of bash locally, one may issue via Ant
 
-    ant abcl.properties.autoconfigure.openjdk.11
+    ant abcl.properties.autoconfigure.openjdk.17
 
 or from the shell as
 
-    bash ci/create-abcl-properties.bash openjdk11
+    bash ci/create-abcl-properties.bash openjdk17
 
 Currently supported platforms are 'openjdk6', 'openjdk7', 'openjdk8',
 'openjdk11', 'openjdk13', 'openjdk14', 'openjdk15', 'openjd16', and
 'openjdk17'.
 
 
-Using NetBeans
---------------
+USING APACHE NETBEANS
+---------------------
 
 Alternatively, one may install the [Netbeans visual integrated
 development environment][netbeans], which contains both the Java
@@ -182,7 +173,25 @@ to the NetBeans debug process.
 [netbeans]: http://netbeans.org/downloads/
 
 
-Bugs
+SLIME
+-----
+
+For usage of ABCL with the [Superior Lisp Interaction Mode for
+Emacs][slime], one may easily start a Swank listener via:
+
+    (require :asdf)
+    (require :abcl-contrib)
+    (asdf:load-system :quicklisp-abcl)
+    (or
+       (asdf:make :swank)
+       (ql:quickload :swank))
+    (swank:create-server :dont-close t)
+
+[slime]: https://common-lisp.net/project/slime/
+
+
+
+BUGS
 ----
 
 Armed Bear Common Lisp strives to be a conforming ANSI X3J13 Common
@@ -192,16 +201,20 @@ ABCL has a [User Manual][manual] stating its conformance to the ANSI
 standard, providing a compliant and practical Common Lisp
 implementation.
 
-[manual]: https://abcl.org/releases/1.8.0/abcl-1.8.0.pdf
+[manual]: https://abcl.org/releases/1.9.0/abcl-1.9.0.pdf
 
 
-Tests
+TESTS
 -----
 
-ABCL 1.8.0 currently fails ~49 out of 21848 total tests, whereas ABCL
-1.5.0 failed 48 out of 21708 total tests in the [revised and expanded
-ANSI CL test suite][ansi-test] (derived from the tests originally
-written for GCL).
+    | Version | Failures | Total |
+    |---------+----------+-------|
+    |   1.9.0 |       61 | 21870 |
+    |   1.8.0 |       49 | 21848 |
+    |   1.5.0 |       48 | 21708 |
+
+ABCL 1.9.0 currently fails ~49(!!) out of 21848(!!) the current ANSI
+test suite derived from the tests originally written for GCL.
 
 [ansi-test]: git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git
 
@@ -211,7 +224,7 @@ ABCL comes with a test suite.  Consult the output of `ant help.test`
 for more information.
 
 
-Support
+SUPPORT
 -------
 
 ABCL has many deficiencies, both known and unknown.  Descriptions,
@@ -226,7 +239,7 @@ or via opening an issue on either the [ABCL trac instance][trac] or
 [trac]: https://abcl.org/trac/
 
 
-Authors
+AUTHORS
 -------
 
 On behalf of all ABCL development team and contributors,
@@ -245,9 +258,21 @@ On behalf of all ABCL development team and contributors,
     slyrus
     vibhu
 
+    Jonathan Cunningham
+    Uthar
+    alejandrozf
+    phoe
+    jackdaniel
+    Robert Munyer
+    Eric Timmons (daewok)
+    contrapunctus
+    Scott Burson
+    Samuel Hunter
+    Phil Eaton
+
     András Simon
     Peter Graves
 
 Have fun!
 
-October 2020
+May 2022
