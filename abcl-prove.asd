@@ -1,6 +1,6 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP -*-
 (defsystem :abcl-prove
-  :version "1.8.0"
+  :version "1.9.0"
   :defsystem-depends-on (prove-asdf)
   :depends-on (prove)
   :perform (test-op (o c)

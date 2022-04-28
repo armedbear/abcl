@@ -706,6 +706,15 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{ABCL-INTROSPECT/SYSTEM:*DEBUGGING-LOCALS-P*}
+\index{*DEBUGGING-LOCALS-P*}
+--- Variable: \textbf{*debugging-locals-p*} [\textbf{abcl-introspect/system}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Whether SYS:FIND-LOCALS should be looking for local variables
+\end{adjustwidth}
+
+\paragraph{}
 \label{SYSTEM:*DISASSEMBLERS*}
 \index{*DISASSEMBLERS*}
 --- Variable: \textbf{*disassemblers*} [\textbf{system}] \textit{}
@@ -1221,7 +1230,7 @@ not-documented
 --- Function: \textbf{disable-zip-cache} [\textbf{system}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Disable all caching of ABCL FASLs and ZIPs.
+Not currently implemented
 \end{adjustwidth}
 
 \paragraph{}
@@ -1376,6 +1385,17 @@ not-documented
 \begin{adjustwidth}{5em}{5em}
 Introspect runtime classpaths to return a pathname containing
   subdirectories containing ASDF definitions.
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-INTROSPECT/SYSTEM:FIND-LOCALS}
+\index{FIND-LOCALS}
+--- Function: \textbf{find-locals} [\textbf{abcl-introspect/system}] \textit{index backtrace}
+
+\begin{adjustwidth}{5em}{5em}
+Return local variable bindings at INDEX in BACKTRACE
+
+Added by ABCL-INTROSPECT.
 \end{adjustwidth}
 
 \paragraph{}

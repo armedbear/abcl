@@ -2,16 +2,19 @@
 % http://en.wikibooks.org/wiki/LaTeX/
 \documentclass[10pt]{book}
 % also need to have cm-super installed for high quality rendering
-\usepackage[T1]{fontenc}
+
+%\usepackage[LGR,T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
 \usepackage{abcl}
 
 \usepackage{hyperref} % Put this one last, it redefines lots of internals
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.8.1\\
+\date{Version 1.9.0\\
 \smallskip
-Unreleased}
+May 2022}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -89,7 +92,7 @@ additional keyword arguments useful in their construction to
 \code{cl:make-array}.\footnote{See \ref{section:make-array} on page
 \pageref{section:make-array}}.
 
-%%Preface to the Ninth edition, abcl-1.8
+%%Preface to the Ninth edition, abcl-1.8.0
 \subsection{Preface to the Ninth Edition}
 With the Ninth Edition of the implementation we now support building
 and running with \textsc{openjdk15}.  This is intended as the last
@@ -112,6 +115,18 @@ the ASDF-JAR contrib in section \ref{section:asdf-jar} on page
 \pageref{section:asdf-jar} for a recipe for packaging and accessing
 such artifacts.}.
 
+%%Preface to the Tenth edition, abcl-1.9.0
+\subsection{Preface to the Tenth Edition}
+
+For the Tenth edition, we have explicitly tested the stable, Long Term
+Support (``LTS'') versions of the \textsc{OpenJDK}, namely
+\textsc{openjdk8}, \textsc{openjdk11}, and \textsc{openjdk17}.  We
+intend to drop one or more of these platforms for the next edition in
+order to more completely overhaul the implementations use of compare
+and swap on memory originally allocated outside the hosting
+\textsc{JVM}.  As such, the Tenth edition is built for release with
+openjdk8 but should run best on \textsc{openjdk17}.
+
 \chapter{Introduction}
 
 Armed Bear Common Lisp (\textsc{ABCL}) is an implementation of
@@ -120,12 +135,15 @@ Armed Bear Common Lisp (\textsc{ABCL}) is an implementation of
 \textsc{Java} byte-code\footnote{The class files produced by the
 compiler have a byte-code version of ``49.0''.}, with an efficiency
 that varies upon the hosting JVM implementation.  \textsc{ABCL}
-supports building and running on the \textsc{Java 6}, \textsc{Java 7},
-\textsc{Java 8}, \textsc{Java 11}, \textsc{Java 13}, \textsc{Java 14}
-and \textsc{Java 15} openjdk platform \textsc{JVM}
-implementations\footnote{As of October 2020, the AdoptOpenJDK.net
-community \url{https://adoptopenjdk.net/} provides perhaps the easiest
-installation of unencumbered openjdk implementations}.
+supports building and running on the \textsc{openjdk8},
+\textsc{openjdk11}, and \textsc{openjdk17} \textsc{JVM}
+implementations\footnote{The codebase runs and compiles on every
+historical openjdk from \textsc{openjdk6} through \textsc{openjdk8},
+does *not* run on either\textsc{openjdk9} or either\textsc{openjdk10},
+but then runs on every openjdk released as of May 2022 with minor
+adjustments}.  As of May 2022, we are using the Adoptium community
+\cite{adoptium} binary releases which provides perhaps the least
+encumbered installation of unencumbered openjdk implementations.
 
 Armed Bear provides the following integration methods for interfacing
 with Java code and libraries:
@@ -223,7 +241,7 @@ contemporary Common Lisp.
 \textsc{ABCL} is licensed under the terms of the \textsc{GPL} v2 of
 June 1991 with an added ``classpath-exception'' clause (see the file
 \texttt{COPYING} in the source distribution\footnote{See
-  \url{http://abcl.org/svn/trunk/tags/1.8.0/COPYING}} for the license,
+  \url{http://abcl.org/svn/trunk/tags/1.9.0/COPYING}} for the license,
 term 13 in the same file for the classpath exception).  This license
 broadly means that you must distribute the sources to \textsc{ABCL},
 including any changes you make, together with a program that includes
@@ -236,12 +254,25 @@ course.
 
 \begin{itemize}
 \item Dmitry Nadezhin
-\item Philipp Marek \texttt{Thanks for the markup, and review of the Manual}
+\item Philipp Marek \texttt{Thanks for the mark-up, and review of the Manual}
 \item Douglas Miles \texttt{Thanks for the whacky IKVM stuff and keeping the flame alive
   in the dark years.}
 \item Alan Ruttenberg \texttt{Thanks for JSS.}
 \item Olof-Joachim Frahm
-\item András Simon (piso)
+\item Jonathan Cunningham
+\item Uthar
+\item alejandrozf
+\item phoe
+\item jackdaniel
+\item Robert Munyer
+\item Eric Timmons (daewok)
+\item contrapunctus
+\item Scott Burson
+\item Samuel Hunter
+\item Phil Eaton
+
+  
+\item Andr\'as Simon (piso)
 \item and of course \emph{Peter Graves}
 \end{itemize}
 
@@ -250,7 +281,7 @@ course.
 
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-\texttt{abcl.jar} or possibly something like \texttt{abcl-1.8.0.jar} if
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.9.0.jar} if
 using a versioned package on the local file-system from your system
 vendor.  This jar file can be executed from the command line to obtain a
 \textsc{REPL}\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
@@ -322,7 +353,7 @@ hosted upon.
 % describe calling Java from Lisp, and calling Lisp from Java,
 % probably in two separate sections.  Presumably, we can partition our
 % audience into those who are more comfortable with Java, and those
-% that are more comforable with Lisp
+% that are more comfortable with Lisp
 
 The Armed Bear Common Lisp implementation is hosted on a Java Virtual
 Machine.  This chapter describes the mechanisms by which the
@@ -729,7 +760,7 @@ and \code{Compilable}) are optional. ABCL implements all the three
 interfaces - \code{ScriptEngine} and the two optional ones - almost
 completely. While the JSR-223 API is not specific to a single scripting
 language, it was designed with languages with a more or less Java-like
-object model in mind: languages such as Javascript, Python, Ruby, which
+object model in mind: languages such as JavaScript, Python, Ruby, which
 have a concept of "class" or "object" with "fields" and "methods". Lisp
 is a bit different, so certain adaptations were made, and in one case a
 method has been left unimplemented since it does not map at all to Lisp.
@@ -1163,7 +1194,7 @@ in a jar archive.
  
 In order to implement useful behavior of merging with pathname
 defaults, the implementation will contain the \code{:UNSPECIFIC}
-keyword in any truename that wasn't explicitly merging with a
+keyword in any TRUENAME that wasn't explicitly merging with a
 \code{EXT:JAR-PATHNAME}.  Therefore, the implementation extends the
 semantics for the usual merge semantics when
 \code{*DEFAULT-PATHNAME-DEFAULTS*} contains a \code{EXT:JAR-PATHNAME}
@@ -1570,7 +1601,7 @@ program performance.
 
 The \textsc{ABCL} contrib is packaged as a separate jar archive usually named
 \code{abcl-contrib.jar} or possibly something like
-\code{abcl-contrib-1.8.0.jar}.  The contrib jar is not loaded by the
+\code{abcl-contrib-1.9.0.jar}.  The contrib jar is not loaded by the
 implementation by default, and must be first initialized by the
 \code{REQUIRE} mechanism before using any specific contrib:
 
@@ -1665,7 +1696,7 @@ Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
 More extensive documentations and examples can be found at
-\url{http://abcl.org/svn/tags/1.8.0/contrib/abcl-asdf/README.markdown}.
+\url{http://abcl.org/svn/tags/1.9.0/contrib/abcl-asdf/README.markdown}.
 
 \section{asdf-jar}
 \label{section:asdf-jar}
@@ -1678,7 +1709,7 @@ this package will recursively package all the required source and
 fasls in a jar archive.
 
 The documentation for this contrib can be found at
-\url{http://abcl.org/svn/tags/1.8.0/contrib/asdf-jar/README.markdown}.
+\url{http://abcl.org/svn/tags/1.9.0/contrib/asdf-jar/README.markdown}.
 
 \section{jss}
 \label{section:jss}
@@ -1716,7 +1747,7 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp} %$ <-- un-confuse Emacs font-lock
 
 Some more information on jss can be found in its documentation at
-\url{http://abcl.org/svn/tags/1.8.0/contrib/jss/README.markdown}
+\url{http://abcl.org/svn/tags/1.9.0/contrib/jss/README.markdown}
 
 \section{jfli}
 \label{section:jfli}
@@ -1725,7 +1756,7 @@ The contrib contains a pure-Java version of \textsc{JFLI}, apparently
 a descendant of Rich Hickey's early experimentations with using Java
 from Common Lisp.
 
-\url{http://abcl.org/svn/tags/1.8.0/contrib/jfli/README}.
+\url{http://abcl.org/svn/tags/1.9.0/contrib/jfli/README}.
 
 \section{abcl-introspect}
 \label{section:abcl-introspect}
@@ -1833,7 +1864,7 @@ NIL
 \end{listing-lisp}
   
 
-\url{http://abcl.org/svn/tags/1.8.0/contrib/abcl-introspect/}.
+\url{http://abcl.org/svn/tags/1.9.0/contrib/abcl-introspect/}.
 
 \section{abcl-build}
 \label{section:abcl-build}
@@ -1864,7 +1895,7 @@ for system construction, namely
     archives from the network.
 \end{itemize}
 
-\url{http://abcl.org/svn/tags/1.8.0/contrib/abcl-build/}.
+\url{http://abcl.org/svn/tags/1.9.0/contrib/abcl-build/}.
 
 \section{named-readtables}
 \label{section:named-readtables}
@@ -1876,7 +1907,7 @@ readtables akin to the already-existing namespace of packages.
 This contrib was included from the source available from
 \url{https://github.com/melisgl/named-readtables/}.
 
-See \url{http://abcl.org/svn/tags/1.8.0/contrib/named-readtables/} for
+See \url{http://abcl.org/svn/tags/1.9.0/contrib/named-readtables/} for
 more information.
 
 \chapter{History}
@@ -1936,8 +1967,11 @@ using \code{java.nio.Buffer} objects, we deemed the implementation
 worthy to bless with release as abcl-1.7.0 in June 2020.  We released
 abcl-1.7.1 as a maintenance release in July 2020.
 
-We released abcl-1.8.0 under the darkening storms of October 2020
+We released abcl-1.8.0 under the darkening storms of October 2020.
 
+Halfway through the $\pi$ $\alpha$ $\nu$ $\delta$ $\eta$ $\mu$ o
+$\zeta$ \cite{pandemos}, we dyslexic worker bears untied abcl-1.9.0
+into the future.
 
 \appendix 
 
