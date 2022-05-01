@@ -73,7 +73,7 @@
                 (char= (char name i) #\Space))
         (setf (char name i) #\_)))
     name))
-  
+
 
 (declaim (ftype (function () t) next-classfile))
 (defun next-classfile ()
@@ -106,7 +106,7 @@
     (diag "Nil classfile argument passed to verify-load.")
     (return-from verify-load nil))
   (with-open-file (cf classfile :direction :input)
-    (when 
+    (when
         (= 0 (file-length cf))
 ;;; TODO hook into a real ABCL compiler condition hierarchy
       (diag "Internal compiler error detected: Fasl contains ~
@@ -204,16 +204,16 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
       (when (> *debug* 0)
 ;; TODO        (annotate form toplevel-form classfile compiled-function fasl-class-number)
         ;;; ??? define an API by perhaps exporting these symbols?
-        (setf (getf form 'form-source) 
+        (setf (getf form 'form-source)
               toplevel-form
-              
-              (getf form 'classfile) 
+
+              (getf form 'classfile)
               classfile
-                   
-              (getf form 'compiled-function) 
+
+              (getf form 'compiled-function)
               compiled-function
-                  
-              (getf form 'class-number) 
+
+              (getf form 'class-number)
               saved-class-number))
       (setf form
             (if compiled-function
@@ -322,7 +322,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                 (cl:cons '(,type ,(namestring *source*) ,*source-position*)
                          (cl:get ',sym  'sys::source nil))))))
 
-          
+
 (declaim (ftype (function (t t t) t) process-toplevel-mop.ensure-method))
 (defun process-toplevel-mop.ensure-method (form stream compile-time-too)
   (declare (ignore stream))
@@ -392,7 +392,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               ',(array-dimensions initial-value)
               :element-type ',(array-element-type initial-value)
               :initial-contents ',(coerce initial-value 'list))))
-    `(progn 
+    `(progn
        (sys:put ',name 'sys::source
                 (cl:cons
                  (list :variable ,(namestring *source*) ,*source-position*)
@@ -496,7 +496,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
          ,@(loop for method-form in (cdddr form)
                  when (eq (car method-form) :method)
                    collect
-                   (multiple-value-bind (function-name qualifiers lambda-list specializers documentation declarations body) 
+                   (multiple-value-bind (function-name qualifiers lambda-list specializers documentation declarations body)
                        (mop::parse-defmethod `(,(second form) ,@(rest method-form)))
                      ;;; FIXME: style points for refactoring double backquote to "normal" form
                      `(sys:put ',sym 'sys::source
@@ -603,7 +603,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                           (sys:put ',sym 'sys::source
                                    (cl:cons '((:function ,name)
                                               ,(namestring *source*) ,*source-position*)
-                                            (cl:get ',sym  'sys::source nil)))                 
+                                            (cl:get ',sym  'sys::source nil)))
                           (sys:fset ',name
                                     (sys::get-fasl-function *fasl-loader*
                                                             ,saved-class-number)
@@ -639,7 +639,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (note-name-defined name)
     (push name *toplevel-functions*)
     (when (and (consp name)
-               (or 
+               (or
                 (eq 'setf (first name))
                 (eq 'cl:setf (first name))))
       (push (second name) *toplevel-setf-functions*))
@@ -699,9 +699,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
         (return-from process-toplevel-form))
       (when (and (symbolp operator)
                  (macro-function operator *compile-file-environment*))
-        (when (eq operator 'define-setf-expander) 
+        (when (eq operator 'define-setf-expander)
           (push (second form) *toplevel-setf-expanders*))
-        (when (and (eq operator 'defsetf) 
+        (when (and (eq operator 'defsetf)
                    (consp (third form))) ;; long form of DEFSETF
           (push (second form) *toplevel-setf-expanders*))
         (note-toplevel-form form)
@@ -741,7 +741,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
          (output-file (if (logical-pathname-p output-file)
                           (translate-logical-pathname output-file)
                           output-file))
-         (zipfile 
+         (zipfile
           (if (find :windows *features*)
               (make-pathname :defaults output-file :type type)
               (make-pathname :defaults output-file :type type
@@ -782,9 +782,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (rename-file zipfile output-file)))
 
 (defun write-fasl-prologue (stream in-package)
-  "Write the forms that form the fasl to STREAM.  
+  "Write the forms that form the fasl to STREAM.
 
-The last form will use IN-PACKAGE to set the *package* to its value when 
+The last form will use IN-PACKAGE to set the *package* to its value when
 COMPILE-FILE was invoked."
   (let ((out stream)
         (*package* (find-package :keyword)))
@@ -823,7 +823,7 @@ COMPILE-FILE was invoked."
 
 (defun compile-from-stream (in output-file temp-file temp-file2
                             extract-toplevel-funcs-and-macros
-                            functions-file macros-file exports-file 
+                            functions-file macros-file exports-file
                             setf-functions-file setf-expanders-file)
   (let* ((*compile-file-pathname* (make-pathname :defaults (pathname in)
                                                  :version nil))
@@ -854,7 +854,7 @@ COMPILE-FILE was invoked."
           (jvm::with-saved-compiler-policy
             (jvm::with-file-compilation
               (handler-bind
-                  ((style-warning 
+                  ((style-warning
                     #'(lambda (c)
                         (setf warnings-p t)
                         ;; let outer handlers do their thing
@@ -875,7 +875,15 @@ COMPILE-FILE was invoked."
                           (*compiler-error-context* form))
                      (when (eq form in)
                        (return))
-                     (process-toplevel-form form out nil))))
+                     (if (>= (length (format nil "~a" form)) 65536)
+                         ;; Following the solution propose here:
+                         ;; see https://github.com/armedbear/abcl/issues/246#issuecomment-698854437
+                         ;; just include the offending interpreted form in the loader
+                         ;; using it instead of the compiled representation
+                         (write (ext:macroexpand-all form *compile-file-environment*)
+                                :stream out)
+                         (process-toplevel-form form out nil))
+                     )))
                     (finalize-fasl-output)
                     (dolist (name *fbound-names*)
                       (fmakunbound name)))))))
@@ -1041,7 +1049,7 @@ COMPILE-FILE was invoked."
         (multiple-value-bind (output-file-truename warnings-p failure-p)
             (compile-from-stream in output-file temp-file temp-file2
                                  extract-toplevel-funcs-and-macros
-                                 functions-file macros-file exports-file 
+                                 functions-file macros-file exports-file
                                  setf-functions-file setf-expanders-file)
           (values (truename output-file) warnings-p failure-p))))))
 
