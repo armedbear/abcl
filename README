@@ -71,7 +71,7 @@ To install Quicklisp for ABCL in the Docker container run:
 
 See <file:Dockerfile> for the build instructions.
 
-[podman]: https://podman.io/releases/2022/02/22/podman-release-v4.0.0.html
+[podman]:        https://podman.io/releases/2022/02/22/podman-release-v4.0.0.html
 [Docker Engine]: https://www.docker.com/products/docker-engine
 
 
@@ -213,7 +213,7 @@ TESTS
     |   1.8.0 |       49 | 21848 |
     |   1.5.0 |       48 | 21708 |
 
-ABCL 1.9.0 currently fails ~49(!!) out of 21848(!!) the current ANSI
+ABCL 1.9.0 currently fails ~61-62 out of 21848 (!!) the current ANSI
 test suite derived from the tests originally written for GCL.
 
 [ansi-test]: git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git
@@ -235,8 +235,8 @@ or via opening an issue on either the [ABCL trac instance][trac] or
 [github][].
 
 [mailing-list]: https://mailman.common-lisp.net/pipermail/armedbear-devel/
-[github]: https://github.com/armedbear/abcl/issues
-[trac]: https://abcl.org/trac/
+[github]:       https://github.com/armedbear/abcl/issues
+[trac]:         https://abcl.org/trac/
 
 
 AUTHORS
