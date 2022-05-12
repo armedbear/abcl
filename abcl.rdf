@@ -20,10 +20,10 @@
   dc:identifier         <urn:abcl.org/release/1.9.0#> ;
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "01-MAY-2022" ;
+  dc:modified          "12-MAY-2022" ;
   dc:version           "abcl-1.9.0" ;
 #  dc:release           "dev" ;
-  dc:release           "rc-1" ;
+  dc:release           "rc-2" ;
   abcl:git             <https://github.com/armedbear/abcl/> ;
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
   abcl:svn             <https://abcl.org/svn/trunk/abcl/> . 
