@@ -209,14 +209,23 @@ TESTS
 
     | Version | Failures | Total |
     |---------+----------+-------|
-    |   1.9.0 |       61 | 21870 |
+    |   1.9.0 |     61-2 | 21870 |
     |   1.8.0 |       49 | 21848 |
     |   1.5.0 |       48 | 21708 |
 
-ABCL 1.9.0 currently fails ~61-62 out of 21848 (!!) the current ANSI
-test suite derived from the tests originally written for GCL.
+ABCL 1.9.0 currently fails ~61-62 out of 21870 the current ANSI test
+suite derived from the tests originally written for GCL.  Note that
+under the various cloud CIs that build the testing of [ansi-test][] is
+done via a git clone of current master branch at the time that the
+tests are executed, so these results may vary somewhat.  We maintain
+by hand a [historical database of failing symbols][ansi-failures-abcl]
+that could frankly use a bit more love to be useful.  In addition,
+there is a problem with the testing of RANDOM-STATE under the
+implementation that results in a test failing at random under each
+run, hence the "61-2" failures for this release.
 
-[ansi-test]: git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git
+[ansi-test]:          git+<https://gitlab.common-lisp.net/ansi-test/ansi-test.git>
+[ansi-failures-abcl]: <https://abcl.org/svn/trunk/abcl/test/lisp/ansi/ansi-test-failures>
 
 Maxima's test suite runs without failures.
 
