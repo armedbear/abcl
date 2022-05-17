@@ -880,15 +880,18 @@ COMPILE-FILE was invoked."
                          (*compiler-error-context* form))
                     (when (eq form in)
                       (return))
-                    (if (>= (length (format nil "~a" form)) 65536)
-                        ;; Following the solution propose here:
-                        ;; see https://github.com/armedbear/abcl/issues/246#issuecomment-698854437
-                        ;; just include the offending interpreted form in the loader
-                        ;; using it instead of the compiled representation
-                        (write (ext:macroexpand-all form *compile-file-environment*)
-                               :stream out)
-                        (process-toplevel-form form out nil))
-                    )))
+                    (cond 
+                      ((>= (length (format nil "~a" form)) 65536)
+                       ;; Following the solution propose here:
+                       ;; see https://github.com/armedbear/abcl/issues/246#issuecomment-698854437
+                       ;; just include the offending interpreted form in the loader
+                       ;; using it instead of the compiled representation
+                       (diag "Falling back to interpreted version of top-level form longer ~
+                              than 65535 bytes")
+                       (write (ext:macroexpand-all form *compile-file-environment*)
+                              :stream out))
+                      (t 
+                       (process-toplevel-form form out nil))))))
               (finalize-fasl-output)
               (dolist (name *fbound-names*)
                 (fmakunbound name)))))))
