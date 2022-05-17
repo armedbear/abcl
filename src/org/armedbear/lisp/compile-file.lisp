@@ -95,8 +95,13 @@
 (defparameter *compiler-diagnostic* nil
   "The stream to emit compiler diagnostic messages to, or nil to muffle output.")
 (export '*compiler-diagnostic*)
-(defmacro diag (fmt &rest args)
-  `(format *compiler-diagnostic* "~&SYSTEM::*COMPILER-DIAGNOSTIC* ~A~&" (format nil ,fmt ,@args)))
+(defun diag (format &rest args)
+  (apply #'cl:format
+         *compiler-diagnostic*
+         (cl:concatenate 'string "~&SYSTEM::*COMPILER-DIAGNOSTIC* " format "~&")
+         (when args
+           args)))
+          
 
 (declaim (ftype (function (t) t) verify-load))
 (defun verify-load (classfile &key (force nil))
