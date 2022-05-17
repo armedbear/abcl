@@ -56,13 +56,13 @@
 
 (declaim (ftype (function (t) t) compute-classfile))
 (defun compute-classfile (n &optional (output-file-pathname
-                                            *output-file-pathname*))
+                                       *output-file-pathname*))
   "Computes the pathname of the class file associated with number `n'."
   (let ((name
-         (sanitize-class-name
-          (%format nil "~A_~D" (pathname-name output-file-pathname) n))))
+          (sanitize-class-name
+           (%format nil "~A_~D" (pathname-name output-file-pathname) n))))
     (merge-pathnames (make-pathname :name name :type *compile-file-class-extension*)
-                                 output-file-pathname)))
+                     output-file-pathname)))
 
 (defun sanitize-class-name (name)
   (let ((name (copy-seq name)))
@@ -188,21 +188,21 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
          (saved-class-number *class-number*)
          (classfile (next-classfile))
          (result
-          (with-open-file
-              (f classfile
-                 :direction :output
-                 :element-type '(unsigned-byte 8)
-                 :if-exists :supersede)
-            (report-error (jvm:compile-defun nil
-                                             expr *compile-file-environment*
-                                             classfile f
-                                             declare-inline))))
+           (with-open-file
+               (f classfile
+                  :direction :output
+                  :element-type '(unsigned-byte 8)
+                  :if-exists :supersede)
+             (report-error (jvm:compile-defun nil
+                                              expr *compile-file-environment*
+                                              classfile f
+                                              declare-inline))))
          (compiled-function (verify-load classfile)))
     (declare (ignore toplevel-form result))
     (progn
       #+nil
       (when (> *debug* 0)
-;; TODO        (annotate form toplevel-form classfile compiled-function fasl-class-number)
+        ;; TODO        (annotate form toplevel-form classfile compiled-function fasl-class-number)
         ;;; ??? define an API by perhaps exporting these symbols?
         (setf (getf form 'form-source)
               toplevel-form
@@ -239,7 +239,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 
 (defun process-toplevel-macrolet (form stream compile-time-too)
   (let ((*compile-file-environment*
-         (make-environment *compile-file-environment*)))
+          (make-environment *compile-file-environment*)))
     (dolist (definition (cadr form))
       (environment-add-macro-definition *compile-file-environment*
                                         (car definition)
@@ -330,31 +330,31 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
            (let* ((tail (cddr form))
                   (function-form (getf tail key)))
              (when (and function-form (consp function-form)
-               (eq (%car function-form) 'FUNCTION))
+                        (eq (%car function-form) 'FUNCTION))
                (let ((lambda-expression (cadr function-form)))
                  (jvm::with-saved-compiler-policy
-                     (let* ((saved-class-number *class-number*)
-                            (classfile (next-classfile))
-                            (result
-                             (with-open-file
-                                 (f classfile
-                                    :direction :output
-                                    :element-type '(unsigned-byte 8)
-                                    :if-exists :supersede)
-                               (report-error
-                                (jvm:compile-defun nil lambda-expression
-                                                   *compile-file-environment*
-                                                   classfile f nil))))
-                            (compiled-function (verify-load classfile)))
-                       (declare (ignore result))
-                       (cond
-                         (compiled-function
-                          (setf (getf tail key)
-                                `(sys::get-fasl-function *fasl-loader*
-                                                         ,saved-class-number)))
-                         (t
-                          ;; FIXME This should be a warning or error of some sort...
-                          (format *error-output* "; Unable to compile method~%"))))))))))
+                   (let* ((saved-class-number *class-number*)
+                          (classfile (next-classfile))
+                          (result
+                            (with-open-file
+                                (f classfile
+                                   :direction :output
+                                   :element-type '(unsigned-byte 8)
+                                   :if-exists :supersede)
+                              (report-error
+                               (jvm:compile-defun nil lambda-expression
+                                                  *compile-file-environment*
+                                                  classfile f nil))))
+                          (compiled-function (verify-load classfile)))
+                     (declare (ignore result))
+                     (cond
+                       (compiled-function
+                        (setf (getf tail key)
+                              `(sys::get-fasl-function *fasl-loader*
+                                                       ,saved-class-number)))
+                       (t
+                        ;; FIXME This should be a warning or error of some sort...
+                        (format *error-output* "; Unable to compile method~%"))))))))))
     (when compile-time-too
       (let* ((copy-form (copy-tree form))
              ;; ### Ideally, the precompiler would leave the forms alone
@@ -450,7 +450,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
            "Parse an EVAL-WHEN situations list, returning three flags,
             (VALUES COMPILE-TOPLEVEL LOAD-TOPLEVEL EXECUTE), indicating
             the types of situations present in the list."
-            ; Adapted from SBCL.
+                                        ; Adapted from SBCL.
            (when (or (not (listp situations))
                      (set-difference situations
                                      '(:compile-toplevel
@@ -508,15 +508,15 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 (declaim (ftype (function (t t t) t) process-toplevel-locally))
 (defun process-toplevel-locally (form stream compile-time-too)
   (jvm::with-saved-compiler-policy
-      (multiple-value-bind (forms decls)
-          (parse-body (cdr form) nil)
-        (process-optimization-declarations decls)
-        (let* ((jvm::*visible-variables* jvm::*visible-variables*)
-               (specials (jvm::process-declarations-for-vars (cdr form)
-                                                             nil nil)))
-          (dolist (special specials)
-            (push special jvm::*visible-variables*))
-          (process-progn forms stream compile-time-too))))
+    (multiple-value-bind (forms decls)
+        (parse-body (cdr form) nil)
+      (process-optimization-declarations decls)
+      (let* ((jvm::*visible-variables* jvm::*visible-variables*)
+             (specials (jvm::process-declarations-for-vars (cdr form)
+                                                           nil nil)))
+        (dolist (special specials)
+          (push special jvm::*visible-variables*))
+        (process-progn forms stream compile-time-too))))
   nil)
 
 (declaim (ftype (function (t t t) t) process-toplevel-defmacro))
@@ -535,8 +535,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
              :element-type '(unsigned-byte 8)
              :if-exists :supersede)
         (ignore-errors
-          (jvm:compile-defun nil expr *compile-file-environment*
-                             classfile f nil)))
+         (jvm:compile-defun nil expr *compile-file-environment*
+                            classfile f nil)))
       (when (null (verify-load classfile))
         ;; FIXME error or warning
         (format *error-output* "; Unable to compile macro ~A~%" name)
@@ -544,9 +544,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 
       (if (special-operator-p name)
           `(sys:put ',name 'macroexpand-macro
-                (sys:make-macro ',name
-                                (sys::get-fasl-function *fasl-loader*
-                                                        ,saved-class-number)))
+                    (sys:make-macro ',name
+                                    (sys::get-fasl-function *fasl-loader*
+                                                            ,saved-class-number)))
           `(progn
              (sys:put ',name 'sys::source
                       (cl:cons '(:macro ,(namestring *source*) ,*source-position*)
@@ -568,73 +568,73 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
          (lambda-list (third form))
          (body (nthcdr 3 form)))
     (jvm::with-saved-compiler-policy
-        (multiple-value-bind (body decls doc)
-            (parse-body body)
-          (let* ((expr `(lambda ,lambda-list
-                          ,@decls (block ,block-name ,@body)))
-                 (saved-class-number *class-number*)
-                 (classfile (next-classfile))
-                 (internal-compiler-errors nil)
-                 (result (with-open-file
-                             (f classfile
-                                :direction :output
-                                :element-type '(unsigned-byte 8)
-                                :if-exists :supersede)
-                           (handler-bind
-                               ((internal-compiler-error
-                                 #'(lambda (e)
-                                     (push e internal-compiler-errors)
-                                     (continue))))
-                             (report-error
-                              (jvm:compile-defun name expr *compile-file-environment*
-                                                 classfile f nil)))))
-                 (compiled-function (if (not internal-compiler-errors)
-                                        (verify-load classfile)
-                                        nil)))
-            (declare (ignore result))
-            (cond
-              ((and (not internal-compiler-errors)
-                    compiled-function)
-               (when compile-time-too
-                 (eval form))
-               (let ((sym (if (consp name) (second name) name)))
-                 (setf form
-                       `(progn
-                          (sys:put ',sym 'sys::source
-                                   (cl:cons '((:function ,name)
-                                              ,(namestring *source*) ,*source-position*)
-                                            (cl:get ',sym  'sys::source nil)))
-                          (sys:fset ',name
-                                    (sys::get-fasl-function *fasl-loader*
-                                                            ,saved-class-number)
-                                    ,*source-position*
-                                    ',lambda-list
-                                    ,doc)))))
-              (t
-               (compiler-warn "Unable to compile function ~A.  Using interpreted form instead.~%" name)
-               (when internal-compiler-errors
-                 (dolist (e internal-compiler-errors)
-                   (format *error-output*
-                           "; ~A~%" e)))
-               (let ((precompiled-function
-                      (precompiler:precompile-form expr nil
-                                                   *compile-file-environment*)))
-                 (setf form
-                       `(sys:fset ',name
-                                  ,precompiled-function
+      (multiple-value-bind (body decls doc)
+          (parse-body body)
+        (let* ((expr `(lambda ,lambda-list
+                        ,@decls (block ,block-name ,@body)))
+               (saved-class-number *class-number*)
+               (classfile (next-classfile))
+               (internal-compiler-errors nil)
+               (result (with-open-file
+                           (f classfile
+                              :direction :output
+                              :element-type '(unsigned-byte 8)
+                              :if-exists :supersede)
+                         (handler-bind
+                             ((internal-compiler-error
+                                #'(lambda (e)
+                                    (push e internal-compiler-errors)
+                                    (continue))))
+                           (report-error
+                            (jvm:compile-defun name expr *compile-file-environment*
+                                               classfile f nil)))))
+               (compiled-function (if (not internal-compiler-errors)
+                                      (verify-load classfile)
+                                      nil)))
+          (declare (ignore result))
+          (cond
+            ((and (not internal-compiler-errors)
+                  compiled-function)
+             (when compile-time-too
+               (eval form))
+             (let ((sym (if (consp name) (second name) name)))
+               (setf form
+                     `(progn
+                        (sys:put ',sym 'sys::source
+                                 (cl:cons '((:function ,name)
+                                            ,(namestring *source*) ,*source-position*)
+                                          (cl:get ',sym  'sys::source nil)))
+                        (sys:fset ',name
+                                  (sys::get-fasl-function *fasl-loader*
+                                                          ,saved-class-number)
                                   ,*source-position*
                                   ',lambda-list
-                                  ,doc)))
-               (when compile-time-too
-                 (eval form)))))
-          (when (and (symbolp name) (eq (get name '%inline) 'INLINE))
-            ;; FIXME Need to support SETF functions too!
-            (setf (inline-expansion name)
-                  (jvm::generate-inline-expansion block-name
-                                                  lambda-list
-                                                  (append decls body)))
-            (output-form `(cl:setf (inline-expansion ',name)
-                                   ',(inline-expansion name))))))
+                                  ,doc)))))
+            (t
+             (compiler-warn "Unable to compile function ~A.  Using interpreted form instead.~%" name)
+             (when internal-compiler-errors
+               (dolist (e internal-compiler-errors)
+                 (format *error-output*
+                         "; ~A~%" e)))
+             (let ((precompiled-function
+                     (precompiler:precompile-form expr nil
+                                                  *compile-file-environment*)))
+               (setf form
+                     `(sys:fset ',name
+                                ,precompiled-function
+                                ,*source-position*
+                                ',lambda-list
+                                ,doc)))
+             (when compile-time-too
+               (eval form)))))
+        (when (and (symbolp name) (eq (get name '%inline) 'INLINE))
+          ;; FIXME Need to support SETF functions too!
+          (setf (inline-expansion name)
+                (jvm::generate-inline-expansion block-name
+                                                lambda-list
+                                                (append decls body)))
+          (output-form `(cl:setf (inline-expansion ',name)
+                                 ',(inline-expansion name))))))
     (push name jvm::*functions-defined-in-current-file*)
     (note-name-defined name)
     (push name *toplevel-functions*)
@@ -736,16 +736,16 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 
 (defun populate-zip-fasl (output-file)
   (let* ((type ;; Don't use ".zip", it'll result in an extension with
-               ;; a dot, which is rejected by NAMESTRING
-          (%format nil "~A~A" (pathname-type output-file) "-zip"))
+           ;; a dot, which is rejected by NAMESTRING
+           (%format nil "~A~A" (pathname-type output-file) "-zip"))
          (output-file (if (logical-pathname-p output-file)
                           (translate-logical-pathname output-file)
                           output-file))
          (zipfile
-          (if (find :windows *features*)
-              (make-pathname :defaults output-file :type type)
-              (make-pathname :defaults output-file :type type
-                             :device :unspecific)))
+           (if (find :windows *features*)
+               (make-pathname :defaults output-file :type type)
+               (make-pathname :defaults output-file :type type
+                              :device :unspecific)))
          (pathnames nil)
          (fasl-loader (make-pathname :defaults output-file
                                      :name (fasl-loader-classname)
@@ -855,170 +855,170 @@ COMPILE-FILE was invoked."
             (jvm::with-file-compilation
               (handler-bind
                   ((style-warning
-                    #'(lambda (c)
-                        (setf warnings-p t)
-                        ;; let outer handlers do their thing
-                        (signal c)
-                        ;; prevent the next handler
-                        ;; from running: we're a
-                        ;; WARNING subclass
-                        (continue)))
+                     #'(lambda (c)
+                         (setf warnings-p t)
+                         ;; let outer handlers do their thing
+                         (signal c)
+                         ;; prevent the next handler
+                         ;; from running: we're a
+                         ;; WARNING subclass
+                         (continue)))
                    ((or warning compiler-error)
-                    #'(lambda (c)
-                        (declare (ignore c))
-                        (setf warnings-p t
-                              failure-p t))))
+                     #'(lambda (c)
+                         (declare (ignore c))
+                         (setf warnings-p t
+                               failure-p t))))
                 (loop
-                   (let* ((*source-position* (file-position in))
-                          (jvm::*source-line-number* (stream-line-number in))
-                          (form (read in nil in))
-                          (*compiler-error-context* form))
-                     (when (eq form in)
-                       (return))
-                     (if (>= (length (format nil "~a" form)) 65536)
-                         ;; Following the solution propose here:
-                         ;; see https://github.com/armedbear/abcl/issues/246#issuecomment-698854437
-                         ;; just include the offending interpreted form in the loader
-                         ;; using it instead of the compiled representation
-                         (write (ext:macroexpand-all form *compile-file-environment*)
-                                :stream out)
-                         (process-toplevel-form form out nil))
-                     )))
-                    (finalize-fasl-output)
-                    (dolist (name *fbound-names*)
-                      (fmakunbound name)))))))
-        (when extract-toplevel-funcs-and-macros
-          (setf *toplevel-functions*
-                (remove-if-not (lambda (func-name)
-                                 (if (symbolp func-name)
-                                     (symbol-package func-name)
-                                     T))
-                               (remove-duplicates
+                  (let* ((*source-position* (file-position in))
+                         (jvm::*source-line-number* (stream-line-number in))
+                         (form (read in nil in))
+                         (*compiler-error-context* form))
+                    (when (eq form in)
+                      (return))
+                    (if (>= (length (format nil "~a" form)) 65536)
+                        ;; Following the solution propose here:
+                        ;; see https://github.com/armedbear/abcl/issues/246#issuecomment-698854437
+                        ;; just include the offending interpreted form in the loader
+                        ;; using it instead of the compiled representation
+                        (write (ext:macroexpand-all form *compile-file-environment*)
+                               :stream out)
+                        (process-toplevel-form form out nil))
+                    )))
+              (finalize-fasl-output)
+              (dolist (name *fbound-names*)
+                (fmakunbound name)))))))
+    (when extract-toplevel-funcs-and-macros
+      (setf *toplevel-functions*
+            (remove-if-not (lambda (func-name)
+                             (if (symbolp func-name)
+                                 (symbol-package func-name)
+                                 T))
+                           (remove-duplicates
                             *toplevel-functions*)))
-          (when *toplevel-functions*
-            (with-open-file (f-out functions-file
-                                   :direction :output
-                                   :if-does-not-exist :create
-                                   :if-exists :supersede)
-
-              (let ((*package* (find-package :keyword)))
-                (write *toplevel-functions* :stream f-out))))
-          (setf *toplevel-macros*
-                (remove-if-not (lambda (mac-name)
-                                 (if (symbolp mac-name)
-                                     (symbol-package mac-name)
-                                     T))
-                               (remove-duplicates *toplevel-macros*)))
-          (when *toplevel-macros*
-            (with-open-file (m-out macros-file
-                                   :direction :output
-                                   :if-does-not-exist :create
-                                   :if-exists :supersede)
-              (let ((*package* (find-package :keyword)))
-                (write *toplevel-macros* :stream m-out))))
-          (setf *toplevel-exports*
-                (remove-if-not (lambda (sym)
-                                 (if (symbolp sym)
-                                     (symbol-package sym)
-                                     T))
-                               (remove-duplicates *toplevel-exports*)))
-          (when *toplevel-exports*
-            (with-open-file (e-out exports-file
-                                   :direction :output
-                                   :if-does-not-exist :create
-                                   :if-exists :supersede)
-              (let ((*package* (find-package :keyword)))
-                (write *toplevel-exports* :stream e-out))))
-          (setf *toplevel-setf-functions*
-                (remove-if-not (lambda (sym)
-                                 (if (symbolp sym)
-                                     (symbol-package sym)
-                                     T))
-                               (remove-duplicates *toplevel-setf-functions*)))
-          (when *toplevel-setf-functions*
-            (with-open-file (e-out setf-functions-file
-                                   :direction :output
-                                   :if-does-not-exist :create
-                                   :if-exists :supersede)
-              (let ((*package* (find-package :keyword)))
-                (write *toplevel-setf-functions* :stream e-out))))
-          (setf *toplevel-setf-expanders*
-                (remove-if-not (lambda (sym)
-                                 (if (symbolp sym)
-                                     (symbol-package sym)
-                                     T))
-                               (remove-duplicates *toplevel-setf-expanders*)))
-          (when *toplevel-setf-expanders*
-            (with-open-file (e-out setf-expanders-file
-                                   :direction :output
-                                   :if-does-not-exist :create
-                                   :if-exists :supersede)
-              (let ((*package* (find-package :keyword)))
-                (write *toplevel-setf-expanders* :stream e-out)))))
-        (with-open-file (in temp-file :direction :input :external-format *fasl-external-format*)
-          (with-open-file (out temp-file2 :direction :output
+      (when *toplevel-functions*
+        (with-open-file (f-out functions-file
+                               :direction :output
                                :if-does-not-exist :create
-                               :if-exists :supersede
-                               :external-format *fasl-external-format*)
-            (let ((*package* (find-package :keyword))
-                  (*print-fasl* t)
-                  (*print-array* t)
-                  (*print-base* 10)
-                  (*print-case* :upcase)
-                  (*print-circle* nil)
-                  (*print-escape* t)
-                  (*print-gensym* t)
-                  (*print-length* nil)
-                  (*print-level* nil)
-                  (*print-lines* nil)
-                  (*print-pretty* nil)
-                  (*print-radix* nil)
-                  (*print-readably* t)
-                  (*print-right-margin* nil)
-                  (*print-structure* t)
+                               :if-exists :supersede)
 
-                  ;; make sure to write all floats with their exponent marker:
-                  ;; the dump-time default may not be the same at load-time
+          (let ((*package* (find-package :keyword)))
+            (write *toplevel-functions* :stream f-out))))
+      (setf *toplevel-macros*
+            (remove-if-not (lambda (mac-name)
+                             (if (symbolp mac-name)
+                                 (symbol-package mac-name)
+                                 T))
+                           (remove-duplicates *toplevel-macros*)))
+      (when *toplevel-macros*
+        (with-open-file (m-out macros-file
+                               :direction :output
+                               :if-does-not-exist :create
+                               :if-exists :supersede)
+          (let ((*package* (find-package :keyword)))
+            (write *toplevel-macros* :stream m-out))))
+      (setf *toplevel-exports*
+            (remove-if-not (lambda (sym)
+                             (if (symbolp sym)
+                                 (symbol-package sym)
+                                 T))
+                           (remove-duplicates *toplevel-exports*)))
+      (when *toplevel-exports*
+        (with-open-file (e-out exports-file
+                               :direction :output
+                               :if-does-not-exist :create
+                               :if-exists :supersede)
+          (let ((*package* (find-package :keyword)))
+            (write *toplevel-exports* :stream e-out))))
+      (setf *toplevel-setf-functions*
+            (remove-if-not (lambda (sym)
+                             (if (symbolp sym)
+                                 (symbol-package sym)
+                                 T))
+                           (remove-duplicates *toplevel-setf-functions*)))
+      (when *toplevel-setf-functions*
+        (with-open-file (e-out setf-functions-file
+                               :direction :output
+                               :if-does-not-exist :create
+                               :if-exists :supersede)
+          (let ((*package* (find-package :keyword)))
+            (write *toplevel-setf-functions* :stream e-out))))
+      (setf *toplevel-setf-expanders*
+            (remove-if-not (lambda (sym)
+                             (if (symbolp sym)
+                                 (symbol-package sym)
+                                 T))
+                           (remove-duplicates *toplevel-setf-expanders*)))
+      (when *toplevel-setf-expanders*
+        (with-open-file (e-out setf-expanders-file
+                               :direction :output
+                               :if-does-not-exist :create
+                               :if-exists :supersede)
+          (let ((*package* (find-package :keyword)))
+            (write *toplevel-setf-expanders* :stream e-out)))))
+    (with-open-file (in temp-file :direction :input :external-format *fasl-external-format*)
+      (with-open-file (out temp-file2 :direction :output
+                                      :if-does-not-exist :create
+                                      :if-exists :supersede
+                                      :external-format *fasl-external-format*)
+        (let ((*package* (find-package :keyword))
+              (*print-fasl* t)
+              (*print-array* t)
+              (*print-base* 10)
+              (*print-case* :upcase)
+              (*print-circle* nil)
+              (*print-escape* t)
+              (*print-gensym* t)
+              (*print-length* nil)
+              (*print-level* nil)
+              (*print-lines* nil)
+              (*print-pretty* nil)
+              (*print-radix* nil)
+              (*print-readably* t)
+              (*print-right-margin* nil)
+              (*print-structure* t)
 
-                  (*read-default-float-format* nil))
+              ;; make sure to write all floats with their exponent marker:
+              ;; the dump-time default may not be the same at load-time
 
-              ;; these values are also bound by WITH-STANDARD-IO-SYNTAX,
-              ;; but not used by our reader/printer, so don't bind them,
-              ;; for efficiency reasons.
-              ;;        (*read-eval* t)
-              ;;        (*read-suppress* nil)
-              ;;        (*print-miser-width* nil)
-              ;;        (*print-pprint-dispatch* (copy-pprint-dispatch nil))
-              ;;        (*read-base* 10)
-              ;;        (*read-default-float-format* 'single-float)
-              ;;        (*readtable* (copy-readtable nil))
+              (*read-default-float-format* nil))
 
-              (write-fasl-prologue out in-package)
-              ;; copy remaining content
-              (loop for line = (read-line in nil :eof)
-                 while (not (eq line :eof))
-                    do (write-line line out)))))
-        (delete-file temp-file)
-        (when (subtypep (type-of output-file) 'jar-pathname)
-          (remove-zip-cache-entry output-file))
-        (rename-file temp-file2 output-file)
+          ;; these values are also bound by WITH-STANDARD-IO-SYNTAX,
+          ;; but not used by our reader/printer, so don't bind them,
+          ;; for efficiency reasons.
+          ;;        (*read-eval* t)
+          ;;        (*read-suppress* nil)
+          ;;        (*print-miser-width* nil)
+          ;;        (*print-pprint-dispatch* (copy-pprint-dispatch nil))
+          ;;        (*read-base* 10)
+          ;;        (*read-default-float-format* 'single-float)
+          ;;        (*readtable* (copy-readtable nil))
 
-        (when *compile-file-zip*
-          (populate-zip-fasl output-file))
+          (write-fasl-prologue out in-package)
+          ;; copy remaining content
+          (loop for line = (read-line in nil :eof)
+                while (not (eq line :eof))
+                do (write-line line out)))))
+    (delete-file temp-file)
+    (when (subtypep (type-of output-file) 'jar-pathname)
+      (remove-zip-cache-entry output-file))
+    (rename-file temp-file2 output-file)
 
-        (when *compile-verbose*
-          (format t "~&; Wrote ~A (~A seconds)~%"
-                  (namestring output-file)
-                  (/ (- (get-internal-real-time) start) 1000.0)))
-        (values (truename output-file) warnings-p failure-p)))
+    (when *compile-file-zip*
+      (populate-zip-fasl output-file))
+
+    (when *compile-verbose*
+      (format t "~&; Wrote ~A (~A seconds)~%"
+              (namestring output-file)
+              (/ (- (get-internal-real-time) start) 1000.0)))
+    (values (truename output-file) warnings-p failure-p)))
 
 (defun compile-file (input-file
                      &key
-                     output-file
-                     ((:verbose *compile-verbose*) *compile-verbose*)
-                     ((:print *compile-print*) *compile-print*)
-                     (extract-toplevel-funcs-and-macros nil)
-                     (external-format :utf-8))
+                       output-file
+                       ((:verbose *compile-verbose*) *compile-verbose*)
+                       ((:print *compile-print*) *compile-print*)
+                       (extract-toplevel-funcs-and-macros nil)
+                       (external-format :utf-8))
   (flet ((pathname-with-type (pathname type &optional suffix)
            (when suffix
              (setq type (concatenate 'string type suffix)))
