@@ -545,7 +545,7 @@
          (incf length)
          (push (slot-definition-name slot) instance-slots))
         (:class
-         (unless (slot-definition-location slot)
+         (unless (ignore-errors (slot-definition-location slot))
            (let ((allocation-class (slot-definition-allocation-class slot)))
              (if (eq allocation-class class)
                  ;; We initialize class slots here so they can be

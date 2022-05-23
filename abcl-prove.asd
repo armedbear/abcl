@@ -1,6 +1,6 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP -*-
 (defsystem :abcl-prove
-  :version "1.8.0"
+  :version "1.8.1"
   :defsystem-depends-on (prove-asdf)
   :depends-on (prove)
   :perform (test-op (o c)
@@ -12,6 +12,7 @@
                              (:test-file "byte-vectors")
                              (:test-file "compiler-stack-inconsistency")
                              (:test-file "compiler")
+                             (:test-file "clos")
                              (:test-file "decode-float")
                              (:test-file "disassemble")
                              (:test-file "format-dollar")
