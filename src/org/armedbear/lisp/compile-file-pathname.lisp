@@ -35,5 +35,8 @@
   (let ((defaults (make-pathname :type *compile-file-type*
                                  :defaults (merge-pathnames input-file))))
     (cond ((null output-file) defaults)
-          (t (merge-pathnames output-file defaults)))))
-
+          (t (let ((computed-file-pathname (merge-pathnames output-file defaults)))
+               (if (equal (pathname-directory computed-file-pathname)
+                          (pathname-directory (make-pathname :defaults input-file)))
+                   computed-file-pathname
+                   (merge-pathnames output-file *default-pathname-defaults*)))))))
