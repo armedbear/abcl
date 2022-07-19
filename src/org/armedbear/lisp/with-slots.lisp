@@ -34,6 +34,7 @@
 (defmacro with-slots (slots instance &body body)
   (let ((in (gensym)))
     `(let ((,in ,instance))
+       (declare (ignorable ,in))
        (symbol-macrolet
         ,(mapcar (lambda (slot-entry)
                    (let ((var-name
