@@ -125,4 +125,33 @@ public class StructureClass extends SlotClass
             return c;
         }
     };
+      // ### reinitialize-structure-class name direct-slots slots include => class
+    private static final Primitive REINITIALIZE_STRUCTURE_CLASS =
+        new Primitive("reinitialize-structure-class", PACKAGE_SYS, false)
+    {
+        @Override
+        public LispObject execute(LispObject first, LispObject second,
+                                  LispObject third, LispObject fourth)
+
+        {
+            Symbol symbol = checkSymbol(first);
+            LispObject directSlots = checkList(second);
+            LispObject slots = checkList(third);
+            Symbol include = checkSymbol(fourth);
+
+            StructureClass c = (StructureClass)LispClass.map.get(symbol);
+            if (include != NIL) {
+                LispClass includedClass = LispClass.findClass(include);
+                if (includedClass == null)
+                    return error(new SimpleError("Class " + include +
+                                                  " is undefined."));
+                c.setCPL(new Cons(c, includedClass.getCPL()));
+            } else
+                c.setCPL(c, BuiltInClass.STRUCTURE_OBJECT, BuiltInClass.CLASS_T);
+            c.setDirectSlotDefinitions(directSlots);
+            c.setSlotDefinitions(slots);
+            c.setFinalized(true);
+            return c;
+        }
+    };
 }
