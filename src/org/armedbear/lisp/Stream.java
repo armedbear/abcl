@@ -1197,10 +1197,15 @@ public class Stream extends StructureObject {
                                                  new SimpleString(symbolName),
                                                  new SimpleString(packageName)));
                 } else {
+                  if (packageName.equals("KEYWORD")) {
+                    return pkg.intern(symbolName);
+                  }
+                  else {
                     return error(new ReaderError("The symbol \"~A\" was not found in package ~A.",
                                                  this,
                                                  new SimpleString(symbolName),
                                                  new SimpleString(packageName)));
+                  }
                 }
             }
         } else {                // token.length == 0
