@@ -35,12 +35,14 @@
           compiler-style-warn
           compiler-warn
           compiler-error
+          compiler-bytecode-length-error
           internal-compiler-error
           compiler-unsupported))
 
 (defvar *compiler-error-context* nil)
 
 (define-condition compiler-error (error) ())
+(define-condition compiler-bytecode-length-error (error) ())
 (define-condition internal-compiler-error (compiler-error) ())
 (define-condition compiler-unsupported-feature-error (compiler-error) ())
 
@@ -60,7 +62,7 @@
          :format-arguments format-arguments))
 
 (defun internal-compiler-error (format-control &rest format-arguments)
-  (cerror "Eventually use interpreted form instead" 
+  (cerror "Eventually use interpreted form instead"
           'internal-compiler-error
           :format-control format-control
           :format-arguments format-arguments))
