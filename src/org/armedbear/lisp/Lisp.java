@@ -484,7 +484,7 @@ public final class Lisp
       { threadToInterrupt = thread; }
     else
       { threadToInterrupt = null; }
-    interrupted = b; 
+    interrupted = b;
   }
 
 public static synchronized final void handleInterrupt()
@@ -568,13 +568,26 @@ public static synchronized final void handleInterrupt()
                   if (!sampling)
                     fun.incrementCallCount();
                 // Don't eval args!
-                return fun.execute(((Cons)obj).cdr, env);
+                LispObject stepInSymbolResult = stepInSymbolP(fun, obj);
+                long stepNumberInternal = 0;
+                if (stepInSymbolResult != NIL) {
+                  stepNumber += 1;
+                  stepNumberInternal = stepNumber;
+                  handleStepping(fun, (obj != NIL) ? ((Cons)obj).cdr : obj, env,
+                                 LispInteger.getInstance(stepNumberInternal));
+                }
+                LispObject result = fun.execute(((Cons)obj).cdr, env);
+                if (stepInSymbolResult != NIL) {
+                  printStepValue(stepNumberInternal, result, thread);
+                }
+                setStepCounterCompleted(stepNumberInternal);
+                return result;
               }
             if (fun instanceof MacroObject)
               {
                 try
                   {
-                    thread.envStack.push(new Environment(null,NIL,fun)); 
+                    thread.envStack.push(new Environment(null,NIL,fun));
                     return eval(macroexpand(obj, env, thread), env, thread);}
                 finally
                   {
@@ -610,64 +623,118 @@ public static synchronized final void handleInterrupt()
 
   // Also used in JProxy.java.
   public static final LispObject evalCall(LispObject function,
-                                             LispObject args,
-                                             Environment env,
-                                             LispThread thread)
+                                          LispObject args,
+                                          Environment env,
+                                          LispThread thread)
 
   {
+    LispObject stepInSymbolResult = stepInSymbolP(function, args);
+    long stepNumberInternal = 0;
+    if (stepInSymbolResult != NIL) {
+      stepNumber += 1;
+      stepNumberInternal = stepNumber;
+      handleStepping(function, args != NIL ? ((Cons)args) : args, env,
+                     LispInteger.getInstance(stepNumber));
+    }
+    LispObject result = NIL;
     if (args == NIL) {
-      return thread.execute(function);
+      result = thread.execute(function);
+      if (stepInSymbolResult != NIL) {
+        printStepValue(stepNumberInternal, result, thread);
+      }
+      setStepCounterCompleted(stepNumberInternal);
+      return result;
     }
     LispObject first = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
     if (args == NIL) {
       thread._values = null;
-      return thread.execute(function, first);
+      result = thread.execute(function, first);
+      if (stepInSymbolResult != NIL) {
+        printStepValue(stepNumberInternal, result, thread);
+      }
+      setStepCounterCompleted(stepNumberInternal);
+      return result;
     }
     LispObject second = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
     if (args == NIL) {
       thread._values = null;
-      return thread.execute(function, first, second);
+      result = thread.execute(function, first, second);
+      if (stepInSymbolResult != NIL) {
+        printStepValue(stepNumberInternal, result, thread);
+      }
+      setStepCounterCompleted(stepNumberInternal);
+      return result;
     }
     LispObject third = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
     if (args == NIL) {
       thread._values = null;
-      return thread.execute(function, first, second, third);
+      result = thread.execute(function, first, second, third);
+      if (stepInSymbolResult != NIL) {
+        printStepValue(stepNumberInternal, result, thread);
+      }
+      setStepCounterCompleted(stepNumberInternal);
+      return result;
     }
     LispObject fourth = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
     if (args == NIL) {
       thread._values = null;
-      return thread.execute(function, first, second, third, fourth);
+      result = thread.execute(function, first, second, third, fourth);
+      if (stepInSymbolResult != NIL) {
+        printStepValue(stepNumberInternal, result, thread);
+      }
+      setStepCounterCompleted(stepNumberInternal);
+      return result;
     }
     LispObject fifth = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
     if (args == NIL) {
       thread._values = null;
-      return thread.execute(function, first, second, third, fourth, fifth);
+      result = thread.execute(function, first, second, third, fourth, fifth);
+      if (stepInSymbolResult != NIL) {
+        printStepValue(stepNumberInternal, result, thread);
+      }
+      setStepCounterCompleted(stepNumberInternal);
+      return result;
     }
     LispObject sixth = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
     if (args == NIL) {
       thread._values = null;
-      return thread.execute(function, first, second, third, fourth, fifth,
+      result = thread.execute(function, first, second, third, fourth, fifth,
                             sixth);
+      if (stepInSymbolResult != NIL) {
+        printStepValue(stepNumberInternal, result, thread);
+      }
+      setStepCounterCompleted(stepNumberInternal);
+      return result;
     }
     LispObject seventh = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
     if (args == NIL) {
       thread._values = null;
-      return thread.execute(function, first, second, third, fourth, fifth,
+      result = thread.execute(function, first, second, third, fourth, fifth,
                             sixth, seventh);
+      if (stepInSymbolResult != NIL) {
+        printStepValue(stepNumberInternal, result, thread);
+      }
+      setStepCounterCompleted(stepNumberInternal);
+      return result;
     }
     LispObject eighth = eval(args.car(), env, thread);
     args = ((Cons)args).cdr;
     if (args == NIL) {
       thread._values = null;
-      return thread.execute(function, first, second, third, fourth, fifth,
+      result = thread.execute(function, first, second, third, fourth, fifth,
                             sixth, seventh, eighth);
+      if (stepInSymbolResult != NIL) {
+        printStepValue(stepNumberInternal, result, thread);
+      }
+      setStepCounterCompleted(stepNumberInternal);
+      return result;
     }
     // More than CALL_REGISTERS_MAX arguments.
     final int length = args.length() + CALL_REGISTERS_MAX;
@@ -685,7 +752,13 @@ public static synchronized final void handleInterrupt()
       args = args.cdr();
     }
     thread._values = null;
-    return thread.execute(function, array);
+    result = thread.execute(function, array);
+    if (stepInSymbolResult != NIL) {
+      printStepValue(stepNumberInternal, result, thread);
+    }
+    setStepCounterCompleted(stepNumberInternal);
+    return result;
+
   }
 
   public static final LispObject parseBody(LispObject body,
@@ -2286,6 +2359,7 @@ public static synchronized final void handleInterrupt()
       }
     };
 
+
   public static final Symbol internSpecial(String name, Package pkg,
                                            LispObject value)
   {
@@ -2981,4 +3055,262 @@ public static synchronized final void handleInterrupt()
   // the code that we have performed a non-local exit via the
   // condition system before this reference is reached.
   public static java.lang.Object UNREACHED = null;
+
+  // stepping related code
+  public static boolean steppingTask = false;
+  public static boolean stepping = false;
+  public static boolean delimitedStepping = false;
+  public static Binding stepperBlock = null;
+  public static long stepNumber = 0;
+
+  public static LispObject stepInSymbolP (LispObject fun, LispObject obj) {
+    Package stepper;
+    Symbol symbol;
+    LispThread currentThread = LispThread.currentThread();
+    LispObject stepInSymbolPFunction;
+    LispObject result;
+    if (steppingTask) {
+      return NIL;
+    }
+    if (stepping) {
+      stepper = Packages.findPackageGlobally("ABCL-STEPPER");
+      symbol = stepper.findAccessibleSymbol("STEP-IN-SYMBOL-P");
+      stepInSymbolPFunction = coerceToFunction(symbol);
+      result = funcall(stepInSymbolPFunction, new LispObject[] {
+          fun, obj, LispObject.getInstance(delimitedStepping)
+        },
+        currentThread);
+      return result;
+    }
+    return NIL;
+  }
+
+  public static synchronized final void handleStepping (LispObject function, LispObject args,
+                                                        Environment env, LispInteger stepCount) {
+    LispThread currentThread = LispThread.currentThread();
+    Package stepper = Packages.findPackageGlobally("ABCL-STEPPER");
+    Symbol symbolPprintFormToStep = stepper.findAccessibleSymbol("PPRINT-FORM-TO-STEP");
+    Symbol symbolHandleUserInteraction = stepper.findAccessibleSymbol("HANDLE-USER-INTERACTION");
+    LispObject functionPprintFormToStep = coerceToFunction(symbolPprintFormToStep);
+    LispObject functionHandleUserInteraction = coerceToFunction(symbolHandleUserInteraction);
+    if (stepperBlock == null) {
+      stepperBlock = env.getOuterMostBlock();
+    }
+    if (function instanceof FuncallableStandardObject) {
+      function = ((FuncallableStandardObject)function).function;
+    }
+    LispObject closureName = ((Operator)function).getLambdaName();
+    setSteppingOff();
+    if (closureName != null ) {
+      funcall(functionPprintFormToStep, new LispObject[] {closureName, args, stepCount}, currentThread);
+    }
+    else {
+      funcall(functionPprintFormToStep, new LispObject[] {((Operator)function), args, stepCount}, currentThread);
+    }
+    setSteppingOn();
+    funcall(functionHandleUserInteraction, new LispObject[]{env}, currentThread);
+  }
+
+  public static final void printStepValue(long stepNumberInternal, LispObject result, LispThread thread) {
+    Package stepper = Packages.findPackageGlobally("ABCL-STEPPER");
+    Symbol symbolPrintStepperStr = stepper.findAccessibleSymbol("PRINT-STEPPER-STR");
+    LispObject functionPrintStepperStr = coerceToFunction(symbolPrintStepperStr);
+    LispObject[] values = thread._values;
+    if (values != null) {
+      for (int i = 0; i < values.length; i++) {
+        funcall(functionPrintStepperStr,
+                new LispObject[] {
+                  new SimpleString("step " + stepNumberInternal + " ==> value: " + values[i].printObject()),
+                  Symbol.T
+                },
+                thread);
+      }
+    }
+    else {
+      funcall(functionPrintStepperStr, new LispObject[] {
+          new SimpleString("step " + stepNumberInternal + " ==> value: " + result.printObject()),
+          Symbol.T
+        },
+        thread);
+    }
+    thread._values = values;
+  }
+
+  public static final void setStepCounterCompleted (long stepNumberInternal) {
+    if (stepping) {
+      LispThread currentThread = LispThread.currentThread();
+      Package stepper = Packages.findPackageGlobally("ABCL-STEPPER");
+      Symbol symbolSetStepCounterCompleted = stepper.findAccessibleSymbol("SET-STEP-COUNTER-COMPLETED");
+      LispObject functionSetStepCounterCompleted = coerceToFunction(symbolSetStepCounterCompleted);
+      LispObject[] values = currentThread._values;
+      funcall(functionSetStepCounterCompleted,
+              new LispObject[] {LispInteger.getInstance(stepNumberInternal)},
+              currentThread);
+      currentThread._values = values;
+    }
+  }
+
+  public static void setSteppingTaskOn () {
+    steppingTask = true;
+  }
+
+  public static void setSteppingTaskOff () {
+    steppingTask = false;
+  }
+
+  public static void setDelimitedSteppingOn () {
+    delimitedStepping = true;
+  }
+
+  public static void setDelimitedSteppingOff () {
+    delimitedStepping = false;
+  }
+
+  public static void setSteppingOn () {
+    stepping = true;
+  }
+
+  public static void initializeStepCounter () {
+    stepNumber = 0;
+  }
+
+  public static LispObject getStepCounter () {
+    return LispInteger.getInstance(stepNumber);
+  }
+
+  public static void setSteppingOff () {
+    stepping = false;
+  }
+
+  public static void initializeStepBlock () {
+    stepperBlock = null;
+  }
+
+  // ### %set-stepping-task-on
+  public static final Primitive SET_STEPPING_TASK_ON =
+    new Primitive("%set-stepping-task-on", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        setSteppingTaskOn();
+        return NIL;
+      }
+    };
+
+  // ### %set-stepping-task-off
+  public static final Primitive SET_STEPPING_TASK_OFF =
+    new Primitive("%set-stepping-task-off", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        setSteppingTaskOff();
+        return NIL;
+      }
+    };
+
+  // ### %set-stepper-on
+  public static final Primitive SET_STEPPER_ON =
+    new Primitive("%set-stepper-on", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        setSteppingOn();
+        return NIL;
+      }
+    };
+
+  // ### %return-from-stepper
+  public static final Primitive RETURN_FROM_STEPPER =
+    new Primitive("%return-from-stepper", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        throw new Return(stepperBlock.symbol, stepperBlock.value, NIL);
+      }
+    };
+
+  // ### %set-stepper-off
+  public static final Primitive SET_STEPPER_OFF =
+    new Primitive("%set-stepper-off", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        setSteppingOff();
+        return NIL;
+      }
+    };
+
+  // ### %set-delimited-stepping-off
+  public static final Primitive SET_DELIMITED_STEPPING_OFF =
+    new Primitive("%set-delimited-stepping-off", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        setDelimitedSteppingOff();
+        return NIL;
+      }
+    };
+
+  // ### %set-delimited-stepping-on
+  public static final Primitive SET_DELIMITED_STEPPING_ON =
+    new Primitive("%set-delimited-stepping-on", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        setDelimitedSteppingOn();
+        return NIL;
+      }
+    };
+
+  // ### %initialize-step-counter
+  public static final Primitive INITIALIZE_STEP_COUNTER =
+    new Primitive("%initialize-step-counter", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        initializeStepCounter();
+        return NIL;
+      }
+    };
+
+  // ### %get-step-counter
+  public static final Primitive GET_STEP_COUNTER =
+    new Primitive("%get-step-counter", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        return getStepCounter();
+      }
+    };
+
+  // ### %initialize-step-block
+  public static final Primitive INITIALIZE_STEP_BLOCK =
+    new Primitive("%initialize-step-block", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        initializeStepBlock();
+        return NIL;
+      }
+    };
 }
