@@ -31,6 +31,8 @@
 
 ;;; From SBCL.
 
+;; For a working stepper implementation, see the contrib ABCL-STEPPER
+
 (in-package "SYSTEM")
 
 (defmacro step (form)
