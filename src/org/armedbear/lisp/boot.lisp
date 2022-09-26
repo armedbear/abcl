@@ -212,5 +212,3 @@
   (unless *noinform*
     (%format t "Startup completed in ~A seconds.~%"
              (float (/ (ext:uptime) 1000)))))
-
-
