@@ -44,6 +44,7 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Hashtable;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class Lisp
@@ -53,6 +54,76 @@ public final class Lisp
   public static boolean cold = true;
 
   public static boolean initialized;
+
+  public static boolean stepping = false;
+  public static boolean delimitedStepping = false;
+  public static boolean firstStepping = false;
+  public static Binding stepperBlock = null;
+
+  public static boolean stepInSymbolP (LispObject function) {
+    Package system;
+    Symbol symbol;
+    LispThread currentThread = LispThread.currentThread();
+    LispObject stopAtSymbolFunction;
+    LispObject[] args = new LispObject[1];
+    LispObject result;
+
+    if (stepping && firstStepping) {
+      firstStepping = false;
+      stepperBlock = null;
+      return false;
+    }
+
+    if (!stepping && !delimitedStepping) {
+      return false;
+    }
+
+    if (stepping && !delimitedStepping) {
+      return true;
+    }
+
+    if (stepping && delimitedStepping) {
+      // we analyze if the symbol of the function is one of the
+      // symbols exported in the packages specified in sys::*stop-packages*
+      // or one of the symbols in sys::*stop-symbols*
+      // in that case we trigger the stepper here
+      setSteppingOff();
+      system = Packages.findPackageGlobally("SYSTEM");
+      symbol = system.findAccessibleSymbol("STOP-AT-SYMBOL-P");
+      stopAtSymbolFunction = coerceToFunction(symbol);
+      args[0] = ((Operator)function).getLambdaName();
+      result = funcall(stopAtSymbolFunction, args, currentThread);
+      setSteppingOnAfterInit();
+      if (result != NIL) {
+        setDelimitedSteppingOff();
+        return true;
+      }
+      return false;
+    }
+
+    return false;
+  }
+
+  public static void setDelimitedSteppingOn () {
+    delimitedStepping = true;
+  }
+
+  public static void setDelimitedSteppingOff () {
+    delimitedStepping = false;
+  }
+
+  public static void setSteppingOn () {
+    stepping = true;
+    firstStepping = true;
+  }
+
+  public static void setSteppingOnAfterInit () {
+    stepping = true;
+  }
+
+  public static void setSteppingOff () {
+    stepping = false;
+  }
 
   // Packages.
   public static final Package PACKAGE_CL =
@@ -482,7 +553,7 @@ public final class Lisp
       { threadToInterrupt = thread; }
     else
       { threadToInterrupt = null; }
-    interrupted = b; 
+    interrupted = b;
   }
 
 public static synchronized final void handleInterrupt()
@@ -513,6 +584,118 @@ public static synchronized final void handleInterrupt()
 
   {
     return eval(obj, new Environment(), LispThread.currentThread());
+  }
+
+  public static synchronized final void handleStepping (LispObject function, LispObject args,
+                                                        Environment env) {
+
+    LispThread currentThread = LispThread.currentThread();
+    if (stepperBlock == null) {
+      stepperBlock = env.getOuterMostBlock();
+    }
+    System.out.println("We are in the stepper mode");
+    System.out.println("Evaluating: ");
+    LispObject closureName = ((Operator)function).getLambdaName();
+    if (closureName != null ) {
+      System.out.println(closureName.printObject());
+    }
+    else {
+      System.out.println(((Operator)function).printObject());
+    }
+    System.out.println("With args: ");
+    if (args == NIL) {
+      System.out.println("NIL");
+    }
+    else {
+      System.out.println(args.printObject());
+    }
+    boolean leavePrompt = false;
+    Scanner in = new Scanner(System.in);
+    while (!leavePrompt) {
+      System.out.println("Type '?' for a list of options");
+      String userInput = in.next();
+      String variableName;
+      Package pkg;
+      switch (userInput.charAt(0)) {
+      case '?':
+        System.out.println("Type 'l' for see the values of bindings on the local environment");
+        System.out.println("Type 'c' for resume the evaluation until the end without the stepper");
+        System.out.println("Type 'n' for resume the evaluation until the next form previously selected to step in");
+        System.out.println("Type 's' for step into the form");
+        System.out.println("Type 'i' for inspect the current value of a variable or symbol");
+        break;
+      case 'l':
+        setSteppingOff();
+        Package system = Packages.findPackageGlobally("SYSTEM");
+        Symbol symbolVariables = system.findAccessibleSymbol("ENVIRONMENT-ALL-VARIABLES");
+        Symbol symbolFunctions = system.findAccessibleSymbol("ENVIRONMENT-ALL-FUNCTIONS");
+        LispObject environmentAllVariables = coerceToFunction(symbolVariables);
+        LispObject environmentAllFunctions = coerceToFunction(symbolFunctions);
+        LispObject[] argsEnv = new LispObject[1];
+        argsEnv[0] = env;
+        LispObject resultVars = funcall(environmentAllVariables, argsEnv, currentThread);
+        System.out.println("Showing the values for variable bindings.");
+        System.out.println("From inner to outer bindings:");
+        Environment.pprintListLocals(resultVars);
+        LispObject resultFuncs = funcall(environmentAllFunctions, argsEnv, currentThread);
+        System.out.println("Showing the values for functions bindings.");
+        System.out.println("From inner to outer bindings:");
+        Environment.pprintListLocals(resultFuncs);
+        setSteppingOnAfterInit();
+        break;
+      case 'c':
+        setSteppingOff();
+        leavePrompt = true;
+        break;
+      case 'n':
+        setDelimitedSteppingOn();
+        leavePrompt = true;
+        break;
+      case 's':
+        leavePrompt = true;
+        break;
+      case 'q':
+        setSteppingOff();
+        setDelimitedSteppingOff();
+        throw new Return(stepperBlock.symbol, stepperBlock.value, NIL);
+      case 'i':
+        System.out.print("Type the name of the symbol: ");
+        variableName = in.next().toUpperCase();
+        System.out.print("Type the name of the package ('-' for current package): ");
+        String packageName = in.next().toUpperCase();
+        if (packageName.equals("-")) {
+          pkg = getCurrentPackage();
+        }
+        else {
+          pkg = Packages.findPackageGlobally(packageName);
+        }
+        if (pkg == null) {
+          System.out.printf("Couldn't find the package: %s%n", packageName);
+        }
+        else {
+          Symbol symbol = pkg.findAccessibleSymbol(variableName);
+          if (symbol == null) {
+            System.out.printf("Couldn't find the symbol %s in the package %s%n", variableName, pkg.getName());
+          }
+          else {
+            LispObject variableValue = env.lookup(symbol);
+            if (variableValue == null) {
+              LispObject symbolValue = ((Symbol)symbol).symbolValueNoThrow();
+              if (symbolValue != null) {
+                System.out.println(symbolValue.printObject());
+              }
+              else {
+                System.out.printf("Couldn't find the value for: %s%n", variableName);
+              }
+            }
+            else {
+              System.out.println(variableValue.printObject());
+            }
+          }
+        }
+        break;
+      }
+    }
   }
 
   public static final LispObject eval(final LispObject obj,
@@ -566,13 +749,16 @@ public static synchronized final void handleInterrupt()
                   if (!sampling)
                     fun.incrementCallCount();
                 // Don't eval args!
+                if (stepInSymbolP(fun)) {
+                  handleStepping(fun, (obj != NIL) ? ((Cons)obj).cdr : obj, env) ;
+                }
                 return fun.execute(((Cons)obj).cdr, env);
               }
             if (fun instanceof MacroObject)
               {
                 try
                   {
-                    thread.envStack.push(new Environment(null,NIL,fun)); 
+                    thread.envStack.push(new Environment(null,NIL,fun));
                     return eval(macroexpand(obj, env, thread), env, thread);}
                 finally
                   {
@@ -608,11 +794,14 @@ public static synchronized final void handleInterrupt()
 
   // Also used in JProxy.java.
   public static final LispObject evalCall(LispObject function,
-                                             LispObject args,
-                                             Environment env,
-                                             LispThread thread)
+                                          LispObject args,
+                                          Environment env,
+                                          LispThread thread)
 
   {
+    if (stepInSymbolP(function)) {
+      handleStepping(function, args != NIL ? ((Cons)args) : args, env);
+    }
     if (args == NIL) {
       return thread.execute(function);
     }
@@ -2274,6 +2463,46 @@ public static synchronized final void handleInterrupt()
         return NIL;
       }
     };
+
+  // ### %set-stepper-on
+  public static final Primitive SET_STEPPER_ON =
+    new Primitive("%set-stepper-on", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        setSteppingOn();
+        return NIL;
+      }
+    };
+
+  // ### %set-stepper-off
+  public static final Primitive SET_STEPPER_OFF =
+    new Primitive("%set-stepper-off", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        setSteppingOff();
+        return NIL;
+      }
+    };
+
+  // ### %set-delimited-stepping-off
+  public static final Primitive SET_DELIMITED_STEPPING_OFF =
+    new Primitive("%set-delimited-stepping-off", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        setDelimitedSteppingOff();
+        return NIL;
+      }
+    };
+
 
   public static final Symbol internSpecial(String name, Package pkg,
                                            LispObject value)

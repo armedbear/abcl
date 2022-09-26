@@ -126,6 +126,16 @@ public final class Environment extends LispObject implements Serializable
       return lookup(symbol, vars);
   }
 
+  public Binding getOuterMostBlock() {
+    Binding binding = blocks;
+    Binding result = binding;
+    while (binding != null) {
+      result = binding;
+      binding = binding.next;
+    }
+    return result;
+  }
+
   public Binding getBinding(LispObject symbol) {
     return getBinding(symbol, vars);
   }
@@ -255,6 +265,21 @@ public final class Environment extends LispObject implements Serializable
     return unreadableString("ENVIRONMENT");
   }
 
+  public static void pprintListLocals(LispObject locals) {
+    // Prints the list with the information of variables and/or functions.
+    LispObject obj = locals;
+    while (obj != NIL)
+      {
+        LispObject pair = obj.car();
+        LispObject symbol = pair.car();
+        LispObject value = pair.cdr();
+        obj = obj.cdr();
+        String result = String.format("%s=%s", symbol.printObject(), value.printObject());
+        System.out.println(result);
+      }
+  }
+
+
   // ### make-environment
   public static final Primitive MAKE_ENVIRONMENT =
     new Primitive("make-environment", PACKAGE_SYS, true,
@@ -360,8 +385,15 @@ public final class Environment extends LispObject implements Serializable
             LispObject result = NIL;
             for (Binding binding = env.vars;
                  binding != null; binding = binding.next)
-              if (binding.specialp)
-                result = result.push(binding.symbol);
+              if (binding.specialp) {
+                LispObject symbolValue = ((Symbol)binding.symbol).symbolValueNoThrow();
+                if (symbolValue != null) {
+                  result = result.push(new Cons(binding.symbol, symbolValue));
+                }
+                else {
+                  result = result.push(binding.symbol);
+                }
+              }
               else
                 result = result.push(new Cons(binding.symbol, binding.value));
             return result.nreverse();
