@@ -65,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @titlepage
 @title ASDF: Another System Definition Facility
-@subtitle Manual for Version 3.3.5.7
+@subtitle Manual for Version 3.3.6
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -82,7 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @node Top, Introduction, (dir), (dir)
 @top ASDF: Another System Definition Facility
 @ifnottex
-Manual for Version 3.3.5.7
+Manual for Version 3.3.6
 @end ifnottex
 
 
@@ -260,6 +260,7 @@ Issues with using and extending ASDF to define systems
 * How do I work with readtables?::
 * How can I capture ASDF's output?::
 * LOAD-PATHNAME has a weird value::
+* How can I produce a binary at a specific path from sources at a specific path::
 
 ASDF development FAQs
 
@@ -994,7 +995,7 @@ for defining @emph{operations} on @emph{components},
 it also provides a generic function @code{operate},
 so you may arbitrarily operate on your systems beyond the default operations.
 (At the interactive REPL, users often use its shorter alias @code{oos},
-which stands for operate-on-system, a name inherited from @code{mk-defsystem}.)
+which stands for @code{operate-on-system}, a name inherited from @code{mk-defsystem}.)
 You'll use @code{operate} whenever you want to do something beyond
 compiling, loading and testing.
 
@@ -2483,7 +2484,7 @@ Then one defines @code{perform} methods on
 @end deftp
 
 
-
+@cindex bundle operations
 @deftp Operation compile-bundle-op
 @deftpx Operation monolithic-compile-bundle-op
 @deftpx Operation load-bundle-op
@@ -2610,6 +2611,8 @@ using @code{monolithic-concatenate-source-op},
 prepending a prelude and the @code{uiop} library
 before the @code{asdf/defsystem} system itself.
 @end deftp
+
+See also FAQ entries @pxref{What happened to the bundle operations} and @pxref{How can I produce a binary at a specific path from sources at a specific path}.
 
 
 @node  Creating new operations,  , Predefined operations of ASDF, Operations
@@ -4335,7 +4338,7 @@ Here is the grammar of the SEXP DSL
 for @code{asdf-output-translations} configuration:
 
 @verbatim
-;; A configuration is single SEXP starting with keyword :source-registry
+;; A configuration is single SEXP starting with keyword :output-translations
 ;; followed by a list of directives.
 CONFIGURATION := (:output-translations DIRECTIVE ...)
 
@@ -5893,6 +5896,8 @@ so ASDF 3 doesn't try (anymore) and loses any configuration from ASDF 2.
 @tindex monolithic-compile-bundle-op
 @tindex monolithic-load-bundle-op
 @tindex monolithic-deliver-asd-op
+@cindex bundle operations
+@tindex program-op
 
 @code{asdf-ecl} and its short-lived successor @code{asdf-bundle} are no more,
 having been replaced by code now built into ASDF 3.
@@ -6182,6 +6187,7 @@ interpretation of its source configuration as it happens.
 * How do I work with readtables?::
 * How can I capture ASDF's output?::
 * LOAD-PATHNAME has a weird value::
+* How can I produce a binary at a specific path from sources at a specific path::
 @end menu
 
 @node How can I cater for unit-testing in my system?, How can I cater for documentation generation in my system?, Issues with using and extending ASDF to define systems, Issues with using and extending ASDF to define systems
@@ -6472,7 +6478,7 @@ Output from ASDF and ASDF extensions are sent to the CL stream
 @code{*standard-output*}, so rebinding that stream around calls to
 @code{asdf:operate} should redirect all output from ASDF operations.
 
-@node LOAD-PATHNAME has a weird value,  , How can I capture ASDF's output?, Issues with using and extending ASDF to define systems
+@node LOAD-PATHNAME has a weird value, How can I produce a binary at a specific path from sources at a specific path, How can I capture ASDF's output?, Issues with using and extending ASDF to define systems
 @subsection *LOAD-PATHNAME* and *LOAD-TRUENAME* have weird values, help!
 @vindex *LOAD-PATHNAME*
 @vindex *LOAD-TRUENAME*
@@ -6502,6 +6508,37 @@ capture the value of @code{(or *compile-file-pathname* *load-truename*)}
 in a macro expansion or other compile-time evaluated context.
 
 @end enumerate
+
+@node How can I produce a binary at a specific path from sources at a specific path,  , LOAD-PATHNAME has a weird value, Issues with using and extending ASDF to define systems
+@subsection How can I produce a binary at a specific path from sources at a specific path?
+@cindex bundle operations
+@tindex program-op
+
+Especially when integrating with outside build systems, it's useful to have
+fine-grained control over where ASDF puts output files. The following is an
+example of a build script that takes the directory to find the source and the
+path to put the resulting binary at, and compiles a system there.
+
+@example
+(in-package :cl-user)
+
+;; Tell ASDF where to find your source files. This may not
+;; be necessary if you've already configured this elsewhere.
+(asdf:initialize-source-registry
+  `(:source-registry
+     :inherit-configuration
+     (:directory ,(uiop:getenv-absolute-directory "SRC"))))
+
+;; Set the output pathname when building the system.
+(defmethod asdf:output-files ((o asdf:image-op)
+                              (system (eql (asdf:find-system @var{foo}))))
+  (declare (ignorable system))
+  (values (list (uiop:getenv-pathname "OUT")) t))
+
+;; Build the system.
+(asdf:operate-on-system 'asdf:program-op @var{foo})
+(uiop:quit)
+@end example
 
 @node ASDF development FAQs,  , Issues with using and extending ASDF to define systems, FAQ
 @section ASDF development FAQs
