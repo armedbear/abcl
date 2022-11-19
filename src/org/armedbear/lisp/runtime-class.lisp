@@ -19,7 +19,7 @@
    INTERFACES is a list of strings, CONSTRUCTORS, METHODS and FIELDS are
    lists of constructor, method and field definitions.
 
-   Constructor definitions - currently NOT supported - are lists of the form
+   Constructor definitions are lists of the form
    (argument-types function &optional super-invocation-arguments)
    where argument-types is a list of strings and function is a lisp function of
    (1+ (length argument-types)) arguments; the instance (`this') is passed in as
@@ -102,12 +102,11 @@
           (emit-invokespecial-init (class-file-superclass class-file) nil)
           (emit 'return)))
       (dolist (constructor constructors)
-        (destructuring-bind (argument-types function
-                             &key (modifiers '(:public)))
+        (destructuring-bind (argument-types function &optional super-args)
             constructor
           (let* ((argument-types (mapcar #'java::canonicalize-java-type argument-types))
                  (argc (length argument-types))
-                 (ctor (make-jvm-method :constructor :void argument-types :flags modifiers))
+                 (ctor (make-jvm-method :constructor :void argument-types))
                  (field-name (string (gensym "CONSTRUCTOR")))
                  (all-argc (1+ argc)))
             (class-add-method class-file ctor)
@@ -119,7 +118,14 @@
                 (allocate-register nil))
 
               (aload 0)
-              (emit-invokespecial-init (class-file-superclass class-file) nil)
+              (dolist (arg super-args)
+                (aload arg))
+              (emit-invokespecial-init
+               (class-file-superclass class-file)
+               (map 'list
+                    (lambda (index) (elt argument-types (1- index)))
+                    super-args))
+                                            
 
               (aload 0)
               (emit 'iconst_1) ;;true
