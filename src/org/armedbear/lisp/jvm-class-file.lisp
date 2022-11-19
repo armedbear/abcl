@@ -243,13 +243,19 @@ type, or a `class-name' structure identifying a class or interface."
       (map-primitive-type field-type)
       (class-name-internal field-type)))
 
+(defun map-array-type (field-type)
+  (assert (eql :array (first field-type)))
+  (concatenate 'string "["
+   (internal-field-ref (second field-type))))
+
 (defun internal-field-ref (field-type)
   "Returns a string containing the JVM-internal representation of a reference
 to `field-type', which should either be a symbol identifying a primitive
 type, or a `class-name' structure identifying a class or interface."
-  (if (symbolp field-type)
-      (map-primitive-type field-type)
-      (class-ref field-type)))
+  (etypecase field-type
+    (symbol (map-primitive-type field-type))
+    (cons (map-array-type field-type))
+    (jvm-class-name (class-ref field-type))))
 
 (defun descriptor (return-type &rest argument-types)
   "Returns a string describing the `return-type' and `argument-types'
