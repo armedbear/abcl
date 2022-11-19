@@ -171,6 +171,7 @@
   (cond
     ((stringp type) (make-jvm-class-name type))
     ((keywordp type) type)
+    ((consp type) type)
     (t (error "Unrecognized Java type: ~A" type))))
 
 (defun java::emit-unbox-and-return (return-type)
