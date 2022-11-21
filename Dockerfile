@@ -1,11 +1,11 @@
-# TODO optimize me for space
-FROM openjdk:11
+# TODO: optimize for space
+FROM openjdk:17-bullseye
 
-RUN export DEBIAN_FRONTEND='noninteractive' && \
+RUN (export DEBIAN_FRONTEND='noninteractive' && \
     apt-get update  && \
     apt-get upgrade -y && \
     apt-get install -y \
-      libffi-dev ant maven
+    libffi-dev ant maven)
 
 USER root
 RUN useradd -ms /bin/bash abcl
