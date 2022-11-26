@@ -76,7 +76,7 @@
 
 
 ;; class annotations
-(deftest runtime-class.class-annotations
+(deftest runtime-class.annotations.deprecated
   (let* ((class (java:jnew-runtime-class
                 "Foo"
                 :annotations '("java.lang.Deprecated")))
