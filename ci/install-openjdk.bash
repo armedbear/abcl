@@ -44,6 +44,15 @@ function determine_openjdk() {
                     topdir="jdk-17.0.5+8"
                     dist="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jdk_x64_mac_hotspot_17.0.5_8.tar.gz"
                     ;;
+                openjdk19)
+                    v="19"
+                    id="${v}.0.1"
+                    rev="10"
+                    arch="jdk_x64_mac_hotspot"
+                    topdir="jdk-${id}+${rev}"
+                    dist="https://github.com/adoptium/temurin${v}-binaries/releases/download/jdk-${id}%2B${rev}/OpenJDK${v}U-${arch}_${id}_${rev}.tar.gz"
+                    ;;
+
             esac
             ;;
         Linux)
@@ -74,6 +83,15 @@ function determine_openjdk() {
                     topdir="jdk-17.0.5+8"
                     dist="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jdk_x64_linux_hotspot_17.0.5_8.tar.gz"
                     ;;
+                openjdk19)
+                    v="19"
+                    id="${v}.0.1"
+                    rev="10"
+                    arch="jdk_x64_linux_hotspot"
+                    topdir="jdk-${id}+${rev}"
+                    dist="https://github.com/adoptium/temurin${v}-binaries/releases/download/jdk-${id}%2B${rev}/OpenJDK${v}U-${arch}_${id}_${rev}.tar.gz"
+                    ;;
+
 esac
             ;;
         *)
