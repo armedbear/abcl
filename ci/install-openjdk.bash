@@ -50,7 +50,7 @@ function determine_openjdk() {
             case $jdk in
                 openjdk8)
                     topdir=jdk8u352-b08
-                    dist="https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b58/OpenJDK8U-jdk_x64_linux_hotspot_8u352b08.tar.gz"
+                    dist="https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u352-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u352b08.tar.gz"
                     ;;
                 openjdk11)
                     topdir=jdk-11.0.17+8
