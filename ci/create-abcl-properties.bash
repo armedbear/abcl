@@ -67,14 +67,37 @@ case $jdk in
 	ant_build_javac_target=17
 	ant_build_javac_source=1.8
         ;;
+    18|openjdk18)
+        options="-XX:CompileThreshold=10 ${zgc}"
+	ant_build_javac_target=18
+	ant_build_javac_source=1.8
+        ;;
+    19:openjdk19)
+        options="-XX:CompileThreshold=10 ${zgc}"
+	ant_build_javac_target=19
+	ant_build_javac_source=1.8
+        ;;
+    *)
+        options="-XX:CompileThreshold=10 ${zgc}"
+        ant_build_javac_target=19
+	ant_build_javac_source=1.8
+        ;;
 esac
 
 cat ${root}/abcl.properties.in \
     | awk -F = \
 	  -v options="$options" \
-	  -v target="$ant_build_javac_target" \
 	  -v source="$ant_build_javac_source" \
        -f ${DIR}/create-abcl-properties.awk \
   > ${root}/abcl.properties
+
+
+# cat ${root}/abcl.properties.in \
+#     | awk -F = \
+# 	  -v options="$options" \
+# 	  -v target="$ant_build_javac_target" \
+# 	  -v source="$ant_build_javac_source" \
+#        -f ${DIR}/create-abcl-properties.awk \
+#   > ${root}/abcl.properties
 
 echo "Finished configuring for $jdk into <${prop_out}>."
