@@ -49,7 +49,7 @@ function determine_openjdk() {
                     id="${v}.0.1"
                     rev="10"
                     arch="jdk_x64_mac_hotspot"
-                    topdir="jdk${id}+${rev}"
+                    topdir="jdk-${id}+${rev}"
                     dist="https://github.com/adoptium/temurin${v}-binaries/releases/download/jdk-${id}%2B${rev}/OpenJDK${v}U-${arch}_${id}_${rev}.tar.gz"
                     ;;
 
@@ -88,7 +88,7 @@ function determine_openjdk() {
                     id="${v}.0.1"
                     rev="10"
                     arch="jdk_x64_linux_hotspot"
-                    topdir="jdk${id}+${rev}"
+                    topdir="jdk-${id}+${rev}"
                     dist="https://github.com/adoptium/temurin${v}-binaries/releases/download/jdk-${id}%2B${rev}/OpenJDK${v}U-${arch}_${id}_${rev}.tar.gz"
                     ;;
 
