@@ -101,7 +101,7 @@
          (cl:concatenate 'string "~&SYSTEM::*COMPILER-DIAGNOSTIC* " format "~&")
          (when args
            args)))
-          
+
 
 (declaim (ftype (function (t) t) verify-load))
 (defun verify-load (classfile &key (force nil))
@@ -880,18 +880,18 @@ COMPILE-FILE was invoked."
                          (*compiler-error-context* form))
                     (when (eq form in)
                       (return))
-                    (cond 
-                      ((>= (length (format nil "~a" form)) 65536)
-                       ;; Following the solution propose here:
-                       ;; see https://github.com/armedbear/abcl/issues/246#issuecomment-698854437
-                       ;; just include the offending interpreted form in the loader
-                       ;; using it instead of the compiled representation
-                       (diag "Falling back to interpreted version of top-level form longer ~
+
+                    (handler-case (process-toplevel-form form out nil)
+                      (compiler-bytecode-length-error ()
+                        ;; Following the solution propose here:
+                        ;; see https://github.com/armedbear/abcl/issues/246#issuecomment-698854437
+                        ;; just include the offending interpreted form in the loader
+                        ;; using it instead of the compiled representation
+                        (diag "Falling back to interpreted version of top-level form longer ~
                               than 65535 bytes")
-                       (write (ext:macroexpand-all form *compile-file-environment*)
-                              :stream out))
-                      (t 
-                       (process-toplevel-form form out nil))))))
+                        (write (ext:macroexpand-all form *compile-file-environment*)
+                                 :stream out)))
+                    )))
               (finalize-fasl-output)
               (dolist (name *fbound-names*)
                 (fmakunbound name)))))))
