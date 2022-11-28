@@ -12,9 +12,9 @@
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.9.0\\
+\date{Version 1.9.1 DRAFT\\
 \smallskip
-May 2022}
+November 2022}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -309,22 +309,31 @@ Probably the easiest way of setting up an editing environment using the
 \textsc{Emacs} editor is to use \textsc{Quicklisp} and follow the instructions at
 \url{http://www.quicklisp.org/beta/#slime}.
 
-\section{Options}
+\section{Command Line Options}
 
-ABCL supports the following command line options:
+ABCL recognizes the following command line options:
 
 \index{Command Line Options}
 
 \begin{description}
   % FIXME move this fuggliness to our macros.  sigh. 
-\item \code{\textendash\textendash help} displays a help message.
-\item \code{\textendash\textendash noinform} Suppresses the printing of startup information and banner.
-\item \code{\textendash\textendash noinit} suppresses the loading of the \verb+~/.abclrc+ startup file.
-\item \code{\textendash\textendash nosystem} suppresses loading the \texttt{system.lisp} customization file. 
-\item \code{\textendash\textendash eval FORM} evaluates FORM before initializing the REPL.
-\item \code{\textendash\textendash load FILE} loads the file FILE before initializing the REPL.
-\item \code{\textendash\textendash load-system-file FILE} loads the system file FILE before initializing the REPL.
-\item \code{\textendash\textendash batch} evaluates forms specified by arguments and in
+\item \code{--help} \\
+  displays a help message.
+\item \code{--noinform} \\
+  Suppresses the printing of startup information and banner.
+\item \code{--noinit} \\
+  suppresses the loading of the \verb+~/.abclrc+ startup file.
+\item \code{--nosystem} \\
+  suppresses loading the \texttt{system.lisp} customization file. 
+\item \code{--eval FORM} \\
+  evaluates \textsc{form} before initializing the REPL.
+\item \code{--load FILE} \\
+  loads the file \textsc{file} before initializing the REPL.
+\item \code{--load-system-file FILE} \\ loads the system
+  file\footnote{System files have a distinguished PATHNAME resolution
+  mechanism based on the location of the \texttt{system.lisp} source
+  unit} FILE before initializing the REPL.
+\item \code{--batch}  \\evaluates forms specified by arguments and in
   the initialization file \verb+~/.abclrc+, and then exits without
   starting a \textsc{REPL}.
 \end{description}
@@ -733,7 +742,7 @@ function just as like one would traverse a list in Lisp:;
 
 ABCL can be built with support for JSR-223~\cite{jsr-223}, which offers
 a language-agnostic API to invoke other languages from Java. The binary
-distribution download-able from ABCL's homepage is built with JSR-223
+distribution download-able from ABCL's home page is built with JSR-223
 support. If you're building ABCL from source on a pre-1.6 JVM, you need
 to have a JSR-223 implementation in your classpath (such as Apache
 Commons BSF 3.x or greater) in order to build ABCL with JSR-223 support;
@@ -1661,8 +1670,8 @@ Both the \code{MVN} and \code{IRI} classes descend from
 For use outside of ASDF system definitions, we currently define one
 method, \code{ABCL-ASDF:RESOLVE-DEPENDENCIES} which locates,
 downloads, caches, and then loads into the currently executing JVM
-process all recursive dependencies annotated in the Maven pom.xml
-graph.
+process all recursive dependencies annotated in the Maven
+\code{pom.xml} graph.
 
 \subsection{Directly Instructing Maven to Download JVM Artifacts}
 
