@@ -54,7 +54,7 @@ function determine_openjdk() {
                     ;;
                 openjdk11)
                     topdir=jdk-11.0.17+8
-                    dist="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.17%2B8/OpenJDK11U-jdk_x64_linux_hotspot_11.0.17_8.tar.gz"
+                    dist="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.17%2B8/OpenJDK11U-jdk_x64_linux_hotspot_11.0.17_8.tar.gz"
                     ;;
                 openjdk14) # Need version from adoptium
                     topdir=jdk-14.0.2+12
