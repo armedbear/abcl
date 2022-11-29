@@ -135,7 +135,7 @@ public final class LispThread extends LispObject
       builderTask = clazz.getDeclaredMethod("task", java.lang.Runnable.class);
       builderBuild = clazz.getDeclaredMethod("build");
     } catch (Exception e) {
-      if (virtualThreadingAvailable()) {
+      if (!virtualThreadingAvailable()) {
         Debug.trace("Failed to introspect virtual threading methods: " + e);
       }
     }
@@ -181,34 +181,52 @@ public final class LispThread extends LispObject
           if (name != NIL) {
             thread.setName(name.getStringValue());
           }
-          thread.setDaemon(true);
         } else {
-          synchronized (threadBuilder) { // Thread.Builder isn't thread safe
-            Object o = null;
-            try {
-              o = threadBuilder.invoke(null);
-              if (name != NIL) {
-                o = builderName.invoke(o, name.getStringValue());
+          if (threadBuilder != null) {
+            synchronized (threadBuilder) { // Thread.Builder isn't thread safe
+              Object o = null;
+              try {
+                o = threadBuilder.invoke(null);
+                if (name != NIL) {
+                  o = builderName.invoke(o, name.getStringValue());
+                }
+                o = builderDaemon.invoke(o, true);
+                o = builderVirtual.invoke(o);
+                o = builderTask.invoke(o, r);
+                thread = (java.lang.Thread)builderBuild.invoke(o);
+              } catch (IllegalAccessException e1) {
+                Debug.trace("Use of reflection to start virtual thread failed: " + e1.toString());
+              } catch (InvocationTargetException e2) {
+                Debug.trace("Failed to invoke method to start virtual thread: " + e2.toString());
               }
-              o = builderDaemon.invoke(o, true);
-              o = builderVirtual.invoke(o);
-              o = builderTask.invoke(o, r);
-              thread = (java.lang.Thread)builderBuild.invoke(o);
-            } catch (IllegalAccessException e1) {
-              Debug.trace("Use of reflection to start virtual thread failed: " + e1.toString());
-            } catch (InvocationTargetException e2) {
-              Debug.trace("Failed to invoke method to start virtual thread: " + e2.toString());
+            }
+          } else { // pre-openjdk17 threadbuilder mechanism failed:  try newfangled
+            Class clazz = Class.forName("java.lang.Thread");
+            try {
+              Method m = JavaObject.getInstance(clazz.getMethod("ofVirtual", NIL));
+              thread = Java.JCALL(m, clazz);
+            } catch (Exception e0) {
+              Debug.trace("Failed to invoke ofVirtual() method to start virtual thread: " + e0.toString());    
+              try {
+                Method m = JavaObject.getInstance(clazz.getMethod("ofPlatform", NIL));
+                thread = Java.JCALL(m, clazz);
+              } catch (Exception e1) {
+                Debug.trace("Failed to fallback to ofPlatform() invocation of start native thread: " + e1.toString());
+                thread = null;
+              }
             }
           }
         }
-        if (thread == null) {
-          Debug.trace("Failed to create java.lang.Thread");
-          javaThread = null;
+
+       if (thread == null) {
+         Debug.trace("Failed to create java.lang.Thread");
+         javaThread = null;
         } else {
-          javaThread = thread;
-          map.put(javaThread, this);
-          javaThread.start();
-        }
+         thread.setDaemon(true);
+         javaThread = thread;
+         map.put(javaThread, this);
+         javaThread.start();
+       }
     }
 
     public StackTraceElement[] getJavaStackTrace() {
