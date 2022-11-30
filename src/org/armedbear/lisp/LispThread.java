@@ -45,6 +45,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Stack; 
 import java.text.MessageFormat;
 
+import java.util.concurrent.ThreadFactory;
+
 public final class LispThread extends LispObject
 {
     // use a concurrent hashmap: we may want to add threads
@@ -106,40 +108,42 @@ public final class LispThread extends LispObject
     return false;
   }
 
-  public static Symbol NATIVE_THREADS = internKeyword("NATIVE");
-  public static Symbol VIRTUAL_THREADS = internKeyword("VIRTUAL");
+  static Class ofVirtualClass;
+  static Object virtualThreadFactory;
+  static Method newThread;
 
-  static {
-    if (virtualThreadingAvailable()) {
-      Symbol._THREADING_MODEL.initializeSpecial(VIRTUAL_THREADS);
-    } else { 
-      Symbol._THREADING_MODEL.initializeSpecial(NATIVE_THREADS);
-    }
-  }
-
-  static Method threadBuilder = null;
-  static Method builderName = null;
-  static Method builderDaemon = null;
-  static Method builderVirtual = null;
-  static Method builderTask = null;
-  static Method builderBuild = null;
-
+  // not quite working on openjdk19:  run with "--enable-preview" JVM option
   static {
     try {
-      Class clazz = Class.forName("java.lang.Thread");
-      threadBuilder = clazz.getDeclaredMethod("builder");
-      clazz = Class.forName("java.lang.Thread$Builder");
-      builderDaemon = clazz.getDeclaredMethod("daemon", boolean.class);
-      builderName = clazz.getDeclaredMethod("name", String.class);
-      builderVirtual = clazz.getDeclaredMethod("virtual");
-      builderTask = clazz.getDeclaredMethod("task", java.lang.Runnable.class);
-      builderBuild = clazz.getDeclaredMethod("build");
+      Class c = Class.forName("java.lang.Thread");
+      Method ofVirtualMethod = c.getMethod("ofVirtual");
+      Object threadBuilderOfVirtual = ofVirtualMethod.invoke(c);
+      Class factoryMethodClass = threadBuilderOfVirtual.getClass();
+      Method factoryMethod = factoryMethodClass.getMethod("factory");
+      virtualThreadFactory = factoryMethod.invoke(factoryMethodClass);
+      newThread = virtualThreadFactory.getClass().getMethod("newThread");
+
     } catch (Exception e) {
       if (virtualThreadingAvailable()) {
         Debug.trace("Failed to introspect virtual threading methods: " + e);
       }
     }
   }
+
+  public static Symbol NATIVE_THREADS = internKeyword("NATIVE");
+  public static Symbol VIRTUAL_THREADS = internKeyword("VIRTUAL");
+
+  static {
+    if (virtualThreadFactory != null) {
+      Symbol._THREADING_MODEL.initializeSpecial(VIRTUAL_THREADS);
+      Debug.trace("Autoconfigured *THREADING-MODEL* to invoke virtual threads.");
+    } else {
+      Symbol._THREADING_MODEL.initializeSpecial(NATIVE_THREADS);
+      Debug.trace("Autoconfigured *THREADING-MODEL* to invoke native threads.");
+    }
+  }
+
+
 
     LispThread(final Function fun, LispObject name)
     {
@@ -178,35 +182,26 @@ public final class LispThread extends LispObject
         
         if (Symbol._THREADING_MODEL.getSymbolValue().equals(NATIVE_THREADS)) {
           thread = new Thread(r);
-          if (name != NIL) {
-            thread.setName(name.getStringValue());
-          }
-          thread.setDaemon(true);
         } else {
-          synchronized (threadBuilder) { // Thread.Builder isn't thread safe
-            Object o = null;
-            try {
-              o = threadBuilder.invoke(null);
-              if (name != NIL) {
-                o = builderName.invoke(o, name.getStringValue());
-              }
-              o = builderDaemon.invoke(o, true);
-              o = builderVirtual.invoke(o);
-              o = builderTask.invoke(o, r);
-              thread = (java.lang.Thread)builderBuild.invoke(o);
-            } catch (IllegalAccessException e1) {
-              Debug.trace("Use of reflection to start virtual thread failed: " + e1.toString());
-            } catch (InvocationTargetException e2) {
-              Debug.trace("Failed to invoke method to start virtual thread: " + e2.toString());
-            }
+          try {
+            thread = (Thread)newThread.invoke(virtualThreadFactory, r);
+          } catch (Exception e) {
+            thread = new Thread(r);
+            Debug.trace("Falling back to native thread creation as virtual thread failed:", e);
           }
         }
         if (thread == null) {
           Debug.trace("Failed to create java.lang.Thread");
           javaThread = null;
         } else {
+          if (name != NIL) {
+            thread.setName(name.getStringValue());
+          }
+          thread.setDaemon(true);
+
           javaThread = thread;
           map.put(javaThread, this);
+
           javaThread.start();
         }
     }
