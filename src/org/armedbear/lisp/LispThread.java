@@ -45,7 +45,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Stack; 
 import java.text.MessageFormat;
 
-public final class LispThread extends LispObject
+import java.util.concurrent.ThreadFactory;
+
+public final class LispThread
+  extends LispObject
+  implements org.armedbear.lisp.protocol.Inspectable
 {
     // use a concurrent hashmap: we may want to add threads
     // while at the same time iterating the hash
@@ -81,6 +85,15 @@ public final class LispThread extends LispObject
     private Symbol wrapper =
         PACKAGE_THREADS.intern("THREAD-FUNCTION-WRAPPER");
 
+    /** Whether the wrapped thread is virtual */
+    boolean isVirtual;
+
+    public LispObject getParts() {
+      return NIL
+        .push(new Cons("Wrapped Java thread",
+                       JavaObject.getInstance(javaThread)));
+    }
+
     /** Stack holding bindings for evaluated functions */
     public Stack<Environment>envStack = new Stack<Environment>();
 
@@ -92,12 +105,10 @@ public final class LispThread extends LispObject
 
   public static boolean virtualThreadingAvailable() {
     try {
-      Class clazz = Class.forName("java.lang.Thread");
-      Class[] parameters = { java.lang.Runnable.class };
-      Method method = clazz.getDeclaredMethod("startVirtualThread", parameters);
+      Method m 
+        = java.lang.Thread.class
+        .getDeclaredMethod("startVirtualThread", java.lang.Runnable.class);
       return true;
-    } catch (ClassNotFoundException e1) {
-      Debug.trace("Failed to get java.lang.Thread by name");
     } catch (NoSuchMethodException e2) {
       // This is the case in non-Loom JVMs
     } catch (SecurityException e3) {
@@ -106,39 +117,41 @@ public final class LispThread extends LispObject
     return false;
   }
 
-  public static Symbol NATIVE_THREADS = internKeyword("NATIVE");
-  public static Symbol VIRTUAL_THREADS = internKeyword("VIRTUAL");
-
-  static {
-    if (virtualThreadingAvailable()) {
-      Symbol._THREADING_MODEL.initializeSpecial(VIRTUAL_THREADS);
-    } else { 
-      Symbol._THREADING_MODEL.initializeSpecial(NATIVE_THREADS);
-    }
-  }
-
-  static Method threadBuilder = null;
-  static Method builderName = null;
-  static Method builderDaemon = null;
-  static Method builderVirtual = null;
-  static Method builderTask = null;
-  static Method builderBuild = null;
+  static ThreadFactory virtualThreadFactory;
+  static Method newThread;
 
   static {
     try {
-      Class clazz = Class.forName("java.lang.Thread");
-      threadBuilder = clazz.getDeclaredMethod("builder");
-      clazz = Class.forName("java.lang.Thread$Builder");
-      builderDaemon = clazz.getDeclaredMethod("daemon", boolean.class);
-      builderName = clazz.getDeclaredMethod("name", String.class);
-      builderVirtual = clazz.getDeclaredMethod("virtual");
-      builderTask = clazz.getDeclaredMethod("task", java.lang.Runnable.class);
-      builderBuild = clazz.getDeclaredMethod("build");
+      Object ofVirtual
+        = Thread.class.getMethod("ofVirtual").invoke(null);
+      Method factoryMethod
+        = Class.forName("java.lang.Thread$Builder").getMethod("factory");
+      virtualThreadFactory
+        = (ThreadFactory) factoryMethod.invoke(ofVirtual);
+      newThread  
+        = virtualThreadFactory.getClass()
+        .getMethod("newThread", java.lang.Runnable.class);
+      newThread.setAccessible(true);
     } catch (Exception e) {
       if (virtualThreadingAvailable()) {
         Debug.trace("Failed to introspect virtual threading methods: " + e);
       }
     }
+  }
+
+  public static Symbol NATIVE_THREADS = internKeyword("NATIVE");
+  public static Symbol VIRTUAL_THREADS = internKeyword("VIRTUAL");
+
+  static {
+    Symbol._THREADING_MODEL_.initializeSpecial(NATIVE_THREADS);
+    final String summary
+      = "The current type of threads created via MAKE-THREAD";
+    final String doc
+      = "Meaningful values are either :NATIVE, the default, or the keyword :VIRTUAL."
+      + " The ability to invoke virtual threads at runtime is indicated by the presence of :VIRTUAL-THREADS"
+      + " in CL:*FEATURES*.";
+    Symbol._THREADING_MODEL_.setDocumentation(new SimpleString(summary + "\n" + doc),
+                                              Symbol.VARIABLE);
   }
 
     LispThread(final Function fun, LispObject name)
@@ -176,37 +189,31 @@ public final class LispThread extends LispObject
 
         Thread thread = null;
         
-        if (Symbol._THREADING_MODEL.getSymbolValue().equals(NATIVE_THREADS)) {
+        if (Symbol._THREADING_MODEL_.getSymbolValue().equals(NATIVE_THREADS)) {
           thread = new Thread(r);
-          if (name != NIL) {
-            thread.setName(name.getStringValue());
-          }
-          thread.setDaemon(true);
+          isVirtual = false;
         } else {
-          synchronized (threadBuilder) { // Thread.Builder isn't thread safe
-            Object o = null;
-            try {
-              o = threadBuilder.invoke(null);
-              if (name != NIL) {
-                o = builderName.invoke(o, name.getStringValue());
-              }
-              o = builderDaemon.invoke(o, true);
-              o = builderVirtual.invoke(o);
-              o = builderTask.invoke(o, r);
-              thread = (java.lang.Thread)builderBuild.invoke(o);
-            } catch (IllegalAccessException e1) {
-              Debug.trace("Use of reflection to start virtual thread failed: " + e1.toString());
-            } catch (InvocationTargetException e2) {
-              Debug.trace("Failed to invoke method to start virtual thread: " + e2.toString());
-            }
+          try {
+            thread = (Thread)newThread.invoke(virtualThreadFactory, r);
+            isVirtual = true;
+          } catch (Exception e) {
+            thread = new Thread(r);
+            isVirtual =  false;
+            Debug.trace("Falling back to native thread creation after virtual thread failed:", e);
           }
         }
         if (thread == null) {
           Debug.trace("Failed to create java.lang.Thread");
           javaThread = null;
         } else {
+          if (name != NIL) {
+            thread.setName(name.getStringValue());
+          }
+          thread.setDaemon(true);
+
           javaThread = thread;
           map.put(javaThread, this);
+
           javaThread.start();
         }
     }
@@ -1239,6 +1246,11 @@ public final class LispThread extends LispObject
             sb.append(" \"");
             sb.append(name.getStringValue());
             sb.append("\"");
+        }
+        if (isVirtual) {
+          sb.append(" virtual");
+        } else {
+          sb.append(" native");
         }
         return unreadableString(sb.toString());
     }
