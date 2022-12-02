@@ -740,12 +740,11 @@ public final class LispThread extends LispObject
             this.next = next;
         }
         public LispObject getParts() {
-        Cons result = new Cons(NIL);
-        return result
-          .push(new Symbol("INITIAL-SEGMENT-SIZE"))
-            .push(LispInteger.getInstance(LispThread.INITIAL_SEGMENT_SIZE))
-          .push(new Symbol("SEGMENT-SIZE"))
-            .push(LispInteger.getInstance(LispThread.SEGMENT_SIZE)).nreverse();
+        return NIL
+          .push(new Cons(new Symbol("INITIAL-SEGMENT-SIZE"),
+                         LispInteger.getInstance(LispThread.INITIAL_SEGMENT_SIZE)))
+          .push(new Cons(new Symbol("SEGMENT-SIZE"),
+                         LispInteger.getInstance(LispThread.SEGMENT_SIZE)));
         }
     }
     
