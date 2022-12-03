@@ -82,8 +82,8 @@ After you have downloaded a binary release from either [the
 distributed Maven POM graph][maven-abcl] or from
 [abcl.org][abcl.org-release] archive unpack it into its own
 directory. To run ABCL directly from this directory, make sure the
-Java executable (`java`) (Java 6, 7, 8, 11, 13, 14, 15, 16, 17, and 18
-are supported by ABCL 1.9.0) is in your shell's path.
+Java executable (`java`) (Java 6, 7, 8, 11, 13, 14, 15, 16, 17, 18,
+and 19 are supported by ABCL 1.9.1) is in your shell's path.
 
 [maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.9.0>
 [maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.9.0>
@@ -150,8 +150,8 @@ or from the shell as
     bash ci/create-abcl-properties.bash openjdk17
 
 Currently supported platforms are 'openjdk6', 'openjdk7', 'openjdk8',
-'openjdk11', 'openjdk13', 'openjdk14', 'openjdk15', 'openjd16', and
-'openjdk17'.
+'openjdk11', 'openjdk13', 'openjdk14', 'openjdk15', 'openjd16',
+'openjdk17', 'openjdk18', and 'openjdk19'.
 
 
 USING APACHE NETBEANS

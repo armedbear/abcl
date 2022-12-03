@@ -207,6 +207,8 @@ abcl:jss
   rdf:_15  openjdk:15 ;
   rdf:_16  openjdk:16 ;
   rdf:_17  openjdk:17 ;
+  rdf:_18  openjdk:18 ;
+  rdf:_19  openjdk:19 ;
   rdfs:comment "Compatible Java runtimes" .
 
 [abcl:run _:options]
@@ -242,6 +244,8 @@ abcl:jss
    rdf:_15  openjdk:15 ;
    rdf:_16  openjdk:16 ;
    rdf:_17  openjdk:17 ;
+   rdf:_18  openjdk:18 ;
+   rdf:_19  openjdk:19 ;
    rdfs:comment "Supported build platforms" .
 
 
