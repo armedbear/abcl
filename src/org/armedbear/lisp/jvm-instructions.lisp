@@ -375,7 +375,7 @@
                      (list opcode
                            (remove :wide-prefix args)))))
     (when (memq :wide-prefix args)
-      (setf (inst-wide inst) t))
+      (setf (instruction-wide inst) t))
     inst))
 
 (defun print-instruction (instruction)
@@ -739,9 +739,14 @@
         (index (car args)))
    (declare (type (unsigned-byte 16) index))
    (cond ((<= 0 index 3)
+          ;; use the offset for aload<n>, iload<n>. …
           (inst (+ index inst-index)))
          ((<= 0 index 255)
           (inst inst-index2 index))
+         ((<= 256 index 65535)
+          (inst inst-index2
+                `(,@(u2 index)
+                  :wide-prefix)))
          (t
           (error error-text)))))
 
@@ -752,6 +757,7 @@
 ;; astore
 (define-resolver 58 (instruction)
   (load/store-resolver instruction 75 58 "ASTORE unsupported case"))
+
 
 ;; iload
 (define-resolver 21 (instruction)
@@ -1121,7 +1127,15 @@
               (set label length)
               (setf labels
                     (acons label length labels)))
-            (incf length (opcode-size opcode)))))
+            (progn 
+              (incf length (opcode-size opcode))
+              ;; hacky fixup: right way forward would be to have
+              ;; opcode size to be a function of its arguments?
+              (when (instruction-wide instruction)
+                (incf length 2))))))
+    (when *compiler-debug* 
+      (sys::%format *compiler-debug* "~&DEBUG: length for list of size ~a calculated as ~a~%"
+                    (length code) length))
     ;; Pass 2: replace labels with calculated offsets.
     (let ((index 0))
       (declare (type (unsigned-byte 16) index))
@@ -1136,7 +1150,9 @@
               (assert (<= -32768 offset 32767))
               (setf (instruction-args instruction) (s2 offset))))
           (unless (= (instruction-opcode instruction) 202) ; LABEL
-            (incf index (opcode-size (instruction-opcode instruction)))))))
+            (incf index (opcode-size (instruction-opcode instruction)))
+            (when (instruction-wide instruction)
+              (incf index 2))))))                         
     ;; Expand instructions into bytes, skipping LABEL pseudo-instructions.
     (let ((bytes (make-array length))
           (index 0))
@@ -1145,6 +1161,12 @@
         (declare (type (unsigned-byte 16) i))
         (let ((instruction (aref code i)))
           (unless (= (instruction-opcode instruction) 202) ; LABEL
+            ;; possibly emit the wide prefix to instrument the opcode
+            (when (instruction-wide instruction)
+              (progn
+                (setf (svref bytes index)
+                      196)
+                (incf index)))
             (setf (svref bytes index) (instruction-opcode instruction))
             (incf index)
             (dolist (byte (instruction-args instruction))
