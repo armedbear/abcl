@@ -173,7 +173,7 @@ doap:Project rdfs:seeAlso
 ] .
 
 abcl:jna
-        dc:version "5.9.0" .
+        dc:version "5.12.1" .
 abcl:asdf
         dc:version "3.3.6" .
 
