@@ -35,5 +35,23 @@
    (t (e) (prove:diag (format nil "Compilation failed signalling ~a" e))))
  "Able to compile tagbody not found form.")
 
+(prove:plan 1)
+(prove:ok
+ (let* ((instructions
+          (list
+           (jvm::make-instruction 58 '(5))
+           (jvm::make-instruction 58 '(2 4 :wide-prefix))))
+        (code
+          (make-array (length instructions)
+                      :initial-contents instructions))
+        (bytes
+          (jvm::code-bytes code)))
+   (eq (length bytes) 6))
+ "Compilation of wide ASTORE instruction.")
+
+
+ 
+   
+
 (prove:finalize)
 
