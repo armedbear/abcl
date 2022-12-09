@@ -1,5 +1,5 @@
-Armed Bear Common Lisp (ABCL) README
-====================================
+Armed Bear Common Lisp (ABCL)
+=============================
 
 Armed Bear Common Lisp is a conforming implementation of ANSI X3J13
 Common Lisp that runs in a Java virtual machine.  It compiles Lisp
@@ -41,7 +41,7 @@ CONTAINERIZATION
 ----------------
 
 We recommend using podman over docker for political reasons, but the
-surface syntax is identical so if you must, just subsitute `docker`
+surface syntax is identical so if you must, just substitute `docker`
 for `podman` in the following examples.
 
 With [podman][] installed, one may execute:
@@ -56,8 +56,8 @@ to get something like
     Max. Heap Size (Estimated): 498.00M
     Using VM: OpenJDK 64-Bit Server VM
 
-    Armed Bear Common Lisp 1.9.0
-    Java 17.0.2 Oracle Corporation
+    Armed Bear Common Lisp 1.9.1
+    Java 17.0.5 Oracle Corporation
     OpenJDK 64-Bit Server VM
     Low-level initialization completed in 0.952 seconds.
     Startup completed in 4.248 seconds.
@@ -71,8 +71,8 @@ To install Quicklisp for ABCL in the Docker container run:
 
 See <file:Dockerfile> for the build instructions.
 
-[podman]: https://podman.io/releases/
-[Docker Engine]: https://www.docker.com/products/docker-engine
+[podman]:             <https://podman.io/releases/>
+[Docker Engine]:      <https://www.docker.com/products/docker-engine>
 
 
 RUNNING FROM BINARY RELEASE
@@ -86,9 +86,9 @@ Java executable (`java`) is in your shell's path.  Java 8, 11, 17 are
 strongly supported by ABCL, but others may work with a little elbow
 grease.
 
-[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.9.0>
-[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.9.0>
-[abcl.org-release]:    <http://abcl.org/releases/1.9.0/>
+[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.9.1>
+[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.9.1>
+[abcl.org-release]:    <http://abcl.org/releases/1.9.1/>
 
 To start ABCL, simply issue the following command:
 
@@ -96,8 +96,8 @@ To start ABCL, simply issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.9.0
-    Java 17.0.2 OpenJDK Porters Group
+    Armed Bear Common Lisp 1.9.1
+    Java 17.0.5 OpenJDK Porters Group
     OpenJDK 64-Bit Server VM
     Low-level initialization completed in 0.107 seconds.
     Startup completed in 0.493 seconds.
@@ -118,27 +118,27 @@ instructions <file:build.xml> expressed by the venerable Apache Ant
 tool.  Alternately, one may use the Apache Maven tool as a facade to
 Ant.
 
-To build, one must have a Java 6, 7, 8, 11, 13, 14, 15, 16 or 17 Java
-Development Kit (openjdk) installed locally. Just the Java Runtime
-Environment (JRE) isn't enough, as you need the Java compiler
-('javac') to compile the Java source of the ABCL implementation.
+To build, one must have a Java 8, 11, or 17 openjdk installed
+locally. Just the Java Runtime Environment (JRE) isn't enough, as you
+need the Java compiler ('javac') to compile the Java source of the
+ABCL implementation.
 
 Download a binary distribution [Ant version 1.7.1 or greater][ant].
 Unpack the files somewhere convenient, ensuring that the 'ant' (or
 'ant.bat' under Windows) executable is in your path and executable.
 
-[ant]: https://ant.apache.org/bindownload.cgi
+[ant]:    <https://ant.apache.org/bindownload.cgi>
 
 Then simply executing 
 
     cmd$ ant
 
-To use [Maven], download it, ensure the `mvn` executable is in your
+To use [Maven][], download it, ensure the `mvn` executable is in your
 PATH and then
 
     cmd$ mvn -Dmaven.test.skip=true install 
 
-[Maven]: https://maven.apache.org/download.cgi
+[Maven]:     <https://maven.apache.org/download.cgi>
 
 from the directory containing the <file:build.xml> instructions will
 create an executable wrapper ('abcl' under UNIX, 'abcl.bat' under
@@ -179,7 +179,7 @@ linked SLIME `swank.asd` ASDF configuration
 <file:~/.config/common-lisp/source-registry.conf.d/> to connect a REPL
 to the NetBeans debug process.
 
-[netbeans]: https://netbeans.org/downloads/
+[netbeans]:     <https://netbeans.org/downloads/>
 
 
 SLIME
@@ -196,7 +196,7 @@ Emacs][slime], one may easily start a Swank listener via:
        (ql:quickload :swank))
     (swank:create-server :dont-close t)
 
-[slime]: https://common-lisp.net/project/slime/
+[slime]:                 <https://common-lisp.net/project/slime/>
 
 
 
@@ -210,7 +210,7 @@ ABCL has a [User Manual][manual] stating its conformance to the ANSI
 standard, providing a compliant and practical Common Lisp
 implementation.
 
-[manual]: https://abcl.org/releases/1.9.0/abcl-1.9.0.pdf
+[manual]:       <https://abcl.org/releases/1.9.1/abcl-1.9.1.pdf>
 
 
 TESTS
@@ -218,14 +218,15 @@ TESTS
 
     | Version | Failures | Total |
     |---------+----------+-------|
+    |   1.9.1 |       60 | 21870 |
     |   1.9.0 |       61 | 21870 |
     |   1.8.0 |       49 | 21848 |
     |   1.5.0 |       48 | 21708 |
 
-ABCL 1.9.0 currently fails ~49(!!) out of 21848(!!) the current ANSI
-test suite derived from the tests originally written for GCL.
+ABCL 1.9.1 currently fails ~60 out of 21870 the current ANSI test
+suite derived from the tests originally written for GCL.
 
-[ansi-test]: git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git
+[ansi-test]: <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git>
 
 Maxima's test suite runs without failures.
 
@@ -243,9 +244,9 @@ Please report problems to the [development mailing list][mailing-list]
 or via opening an issue on either the [ABCL trac instance][trac] or
 [github][].
 
-[mailing-list]: https://mailman.common-lisp.net/pipermail/armedbear-devel/
-[github]: https://github.com/armedbear/abcl/issues
-[trac]: https://abcl.org/trac/
+[mailing-list]: <https://mailman.common-lisp.net/pipermail/armedbear-devel/>
+[github]:       <https://github.com/armedbear/abcl/issues>
+[trac]:         <https://abcl.org/trac/>
 
 
 AUTHORS
@@ -284,4 +285,5 @@ On behalf of all ABCL development team and contributors,
 
 Have fun!
 
-May 2022
+February 2023
+
