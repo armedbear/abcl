@@ -706,23 +706,32 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{ABCL-INTROSPECT/SYSTEM:*DEBUGGING-LOCALS-P*}
+\index{*DEBUGGING-LOCALS-P*}
+--- Variable: \textbf{*debugging-locals-p*} [\textbf{abcl-introspect/system}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Whether SYS:FIND-LOCALS should be looking for local variables
+\end{adjustwidth}
+
+\paragraph{}
 \label{SYSTEM:*DISASSEMBLERS*}
 \index{*DISASSEMBLERS*}
 --- Variable: \textbf{*disassemblers*} [\textbf{system}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Methods of invoking CL:DISASSEMBLE consisting of a enumeration of (keyword function) pairs
+Methods of invoking CL:DISASSEMBLE consisting of a list of (KEYWORD FUNCTION) pairs
 
-The pairs (keyword function) contain a keyword identifying this
-particulat disassembler, and a symbol designating function takes a
-object to disassemble.
+The pairs (KEYWORD FUNCTION) contain a KEYWORD uniquely identifying a
+particular disassembler and a SYMBOL designating its invocation function.
 
-Use SYS:CHOOSE-DISASSEMBLER to install a given disassembler as the one
-used by CL:DISASSEMBLE.  Additional disassemblers/decompilers are
-packaged in the ABCL-INTROSPECT contrib.
+The KEYWORD values are used by SYS:CHOOSE-DISASSEMBLER to install a
+given disassembler as the one used by CL:DISASSEMBLE.  Additional
+disassemblers/decompilers are packaged in the ABCL-INTROSPECT contrib.
 
-The intial default is :javap using the javap command line tool which
-is part of the Java Developement Kit.
+The initial default is :SYSTEM-JAVAP which attempts to invoke the
+javap command line tool shipped as part of the Java Developement Kit
+which may or may not be installed locally.
 
 \end{adjustwidth}
 
@@ -1022,8 +1031,9 @@ not-documented
 \begin{adjustwidth}{5em}{5em}
 Report current disassembler that would be used by CL:DISASSEMBLE
 
-With optional keyword NAME, select the associated disassembler from
-SYS:*DISASSEMBLERS*.
+When the optional keyword NAME is specified, select the associated
+disassembler from SYS:*DISASSEMBLERS* for future invocations of
+CL:DISASSEMBLE.
 \end{adjustwidth}
 
 \paragraph{}
@@ -1084,6 +1094,15 @@ not-documented
 \label{SYSTEM:COMPILED-LISP-FUNCTION-P}
 \index{COMPILED-LISP-FUNCTION-P}
 --- Function: \textbf{compiled-lisp-function-p} [\textbf{system}] \textit{object}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{SYSTEM:COMPILER-BYTECODE-LENGTH-ERROR}
+\index{COMPILER-BYTECODE-LENGTH-ERROR}
+--- Class: \textbf{compiler-bytecode-length-error} [\textbf{system}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -1221,7 +1240,7 @@ not-documented
 --- Function: \textbf{disable-zip-cache} [\textbf{system}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Disable all caching of ABCL FASLs and ZIPs.
+Not currently implemented
 \end{adjustwidth}
 
 \paragraph{}
@@ -1376,6 +1395,17 @@ not-documented
 \begin{adjustwidth}{5em}{5em}
 Introspect runtime classpaths to return a pathname containing
   subdirectories containing ASDF definitions.
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-INTROSPECT/SYSTEM:FIND-LOCALS}
+\index{FIND-LOCALS}
+--- Function: \textbf{find-locals} [\textbf{abcl-introspect/system}] \textit{index backtrace}
+
+\begin{adjustwidth}{5em}{5em}
+Return local variable bindings at INDEX in BACKTRACE
+
+Added by ABCL-INTROSPECT.
 \end{adjustwidth}
 
 \paragraph{}

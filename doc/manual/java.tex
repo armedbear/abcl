@@ -75,6 +75,28 @@ is equivalent to the following Java code:
 \end{adjustwidth}
 
 \paragraph{}
+\label{JAVA:CLASSLOADER}
+\index{CLASSLOADER}
+--- Function: \textbf{classloader} [\textbf{java}] \textit{\&optional java-object}
+
+\begin{adjustwidth}{5em}{5em}
+Without a specified JAVA-OBJECT, return the classloader of the current one
+
+Otherwise return the classloader of the specified JAVA-object.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:CONTEXT-CLASSLOADER}
+\index{CONTEXT-CLASSLOADER}
+--- Function: \textbf{context-classloader} [\textbf{java}] \textit{\&optional java-thread}
+
+\begin{adjustwidth}{5em}{5em}
+Without a specified JAVA-THREAD, return the context classloader of the current thread
+
+Otherwise return the context classloader of specified JAVA-THREAD.
+\end{adjustwidth}
+
+\paragraph{}
 \label{JAVA:DEFINE-JAVA-CLASS}
 \index{DEFINE-JAVA-CLASS}
 --- Macro: \textbf{define-java-class} [\textbf{java}] \textit{}
@@ -346,7 +368,9 @@ When called with one argument, returns the name of the Java class
 --- Function: \textbf{jclass-of} [\textbf{java}] \textit{object \&optional name}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Returns the name of the Java class of OBJECT. If the NAME argument is
+  supplied, verifies that OBJECT is an instance of the named class. The name
+  of the class or nil is always returned as a second value.
 \end{adjustwidth}
 
 \paragraph{}
@@ -673,7 +697,7 @@ Creates and loads a Java class with methods calling Lisp closures
    INTERFACES is a list of strings, CONSTRUCTORS, METHODS and FIELDS are
    lists of constructor, method and field definitions.
 
-   Constructor definitions - currently NOT supported - are lists of the form
+   Constructor definitions are lists of the form
    (argument-types function \&optional super-invocation-arguments)
    where argument-types is a list of strings and function is a lisp function of
    (1+ (length argument-types)) arguments; the instance (`this') is passed in as
@@ -829,5 +853,17 @@ Registers the Java Throwable named by the symbol EXCEPTION-NAME as the condition
 
 \begin{adjustwidth}{5em}{5em}
 Unregisters the Java Throwable EXCEPTION-NAME previously registered by REGISTER-JAVA-EXCEPTION.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:WITH-CLASSLOADER}
+\index{WITH-CLASSLOADER}
+--- Macro: \textbf{with-classloader} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Call BODY with optional CLASSLOADER argument set as the context classloader
+
+If the CLASSLOADER is not specified, the default classloader is set as
+the context classloader.
 \end{adjustwidth}
 

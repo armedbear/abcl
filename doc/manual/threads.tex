@@ -1,4 +1,13 @@
 \paragraph{}
+\label{THREADS:*THREADING-MODEL*}
+\index{*THREADING-MODEL*}
+--- Variable: \textbf{*threading-model*} [\textbf{threads}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
 \label{THREADS:CURRENT-THREAD}
 \index{CURRENT-THREAD}
 --- Function: \textbf{current-thread} [\textbf{threads}] \textit{}
@@ -14,6 +23,18 @@ Returns a reference to invoking thread.
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{THREADS:GET-JAVA-THREAD}
+\index{GET-JAVA-THREAD}
+--- Function: \textbf{get-java-thread} [\textbf{threads}] \textit{\&optional lisp-thread}
+
+\begin{adjustwidth}{5em}{5em}
+Without an argument, return the underlying currently executing Java thread
+
+Specified with a LISP-THREAD, return that thread's wrapped Java
+thread.
 \end{adjustwidth}
 
 \paragraph{}
@@ -81,7 +102,7 @@ to wake up for retrieval of that object.
 \paragraph{}
 \label{THREADS:MAKE-MAILBOX}
 \index{MAKE-MAILBOX}
---- Function: \textbf{make-mailbox} [\textbf{threads}] \textit{\&key ((queue g305040) NIL)}
+--- Function: \textbf{make-mailbox} [\textbf{threads}] \textit{\&key ((queue g305716) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -90,7 +111,7 @@ not-documented
 \paragraph{}
 \label{THREADS:MAKE-MUTEX}
 \index{MAKE-MUTEX}
---- Function: \textbf{make-mutex} [\textbf{threads}] \textit{\&key ((in-use g305303) NIL)}
+--- Function: \textbf{make-mutex} [\textbf{threads}] \textit{\&key ((in-use g305979) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -192,6 +213,15 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 Boolean predicate whether THREAD is alive.
+\end{adjustwidth}
+
+\paragraph{}
+\label{THREADS:THREAD-FUNCTION-WRAPPER}
+\index{THREAD-FUNCTION-WRAPPER}
+--- Function: \textbf{thread-function-wrapper} [\textbf{threads}] \textit{function}
+
+\begin{adjustwidth}{5em}{5em}
+Call FUNCTION with a simple abort restart
 \end{adjustwidth}
 
 \paragraph{}

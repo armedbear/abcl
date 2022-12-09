@@ -16,13 +16,14 @@
 @prefix dc:              <https://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <https://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.9.0#rc-0> ; # deprecated?
-  dc:identifier         <urn:abcl.org/release/1.9.0#> ;
+  dc:identifier         <urn:abcl.org/1.9.1#rc-0> ; # deprecated?
+  dc:identifier         <urn:abcl.org/release/1.9.1#> ;
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
   dc:modified          "01-MAY-2022" ;
   dc:version           "abcl-1.9.1" ;
-  dc:release           "dev" ;
+#  dc:release           "dev" ;
+  dc:release           "rc-0" ;
   abcl:git             <https://github.com/armedbear/abcl/> ;
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
   abcl:svn             <https://abcl.org/svn/trunk/abcl/> . 
@@ -104,12 +105,12 @@ _:user dc:identifier <https://ville.not.org/#me>  ;
      dc:license <https://usefulinc.com/doap/licenses/gplv2> ;
      dc:license <https://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
      dc:licenseDocument 
-       <https://abcl.org/svn/tags/1.9.0/src/org/armedbear/COPYING> ;
+       <https://abcl.org/svn/tags/1.9.1/src/org/armedbear/COPYING> ;
 ] .
 
 doap:Project rdfs:seeAlso [
   a rdf:Bag;
-  rdf:_0 <https://abcl.org/releases/1.9.0/abcl-1.9.0.jar> ;
+  rdf:_0 <https://abcl.org/releases/1.9.1/abcl-1.9.1.jar> ;
   rdf:_1 <https://abcl.org/trac/timeline> ;
   rdf:_2 <https://abcl.org/trac/wiki> ;
   rdf:_4 <https://github.com/armedbear/abcl/> ;
@@ -134,6 +135,7 @@ doap:Project rdfs:seeAlso [
      rdf:_19 <https://abcl.org/releases/1.7.1/abcl-1.7.1.jar> ;
      rdf:_23 <https://abcl.org/releases/1.8.0/abcl-1.8.0.jar> ;
      rdf:_29 <https://abcl.org/releases/1.9.0/abcl-1.9.0.jar> ;
+     rdf:_31 <http://abcl.org/releases/1.9.1/abcl-1.9.1.jar> ;
   ] ;
 ] .
 
