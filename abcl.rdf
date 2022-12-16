@@ -4,18 +4,18 @@
 <> 
  abcl:is "W3C Turtle RDF serializations format" .
 
-@prefix doap:            <http://usefulinc.com/ns/doap#> .
-@prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix doap:            <https://usefulinc.com/ns/doap#> .
+@prefix rdf:             <https://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:            <https://www.w3.org/2000/01/rdf-schema#> .
 
 <> a doap:Project .
 
 <> rdfs:seeAlso         <urn:abcl.not.org> .
 <> rdfs:seeAlso         <urn:not.org> .
 
-@prefix dc:              <http://purl.org/dc/elements/1.1/> .
+@prefix dc:              <https://purl.org/dc/elements/1.1/> .
 <> 
-  abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
+  abcl:branch           <https://abcl.org/svn/trunk/abcl> ;
   dc:identifier         <urn:abcl.org/1.9.0#rc-0> ; # deprecated?
   dc:identifier         <urn:abcl.org/release/1.9.0#> ;
   doap:language        "Common Lisp" ;
@@ -33,12 +33,12 @@
   rdfs:seeAlso <file:CHANGES> ;
   rdfs:seeAlso <file:doc/manual/abcl.tex> .
 
-@prefix dc:              <http://purl.org/dc/elements/1.1/> .
+@prefix dc:              <https://purl.org/dc/elements/1.1/> .
 
 <abcl:doap>
   a                     doap:Project ;
   doap:label            "Armed Bear Common Lisp" ;
-  doap:download         <http://abcl.org/> ;
+  doap:download         <https://abcl.org/> ;
 
   dc:abstract      "An implementation of ANSI Common Lisp that runs on the JVM." ;
   doap:shortname   "ABCL" ;
@@ -94,24 +94,24 @@
   doap:language 
   "Common Lisp", "Java", "Ant", "Bourne Shell Script", "Windows Batch Script"  .
 
-_:user dc:identifier <http://ville.not.org/#me>  ; 
+_:user dc:identifier <https://ville.not.org/#me>  ; 
        rdf:label "V-ille"  .
 
-<http://purl.org/dc/elements/1.1/>  
-  rdfs:seeAlso <http://dublincore.org/documents/2012/06/14/dcmi-terms/> .
+<https://purl.org/dc/elements/1.1/>  
+  rdfs:seeAlso <https://dublincore.org/documents/2012/06/14/dcmi-terms/> .
 
 <> doap:license  [
-     dc:license <http://usefulinc.com/doap/licenses/gplv2> ;
-     dc:license <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
+     dc:license <https://usefulinc.com/doap/licenses/gplv2> ;
+     dc:license <https://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
      dc:licenseDocument 
-       <http://abcl.org/svn/tags/1.9.0/src/org/armedbear/COPYING> ;
+       <https://abcl.org/svn/tags/1.9.0/src/org/armedbear/COPYING> ;
 ] .
 
 doap:Project rdfs:seeAlso [
   a rdf:Bag;
-  rdf:_0 <http://abcl.org/releases/1.9.0/abcl-1.9.0.jar> ;
-  rdf:_1 <http://abcl.org/trac/timeline> ;
-  rdf:_2 <http://abcl.org/trac/wiki> ;
+  rdf:_0 <https://abcl.org/releases/1.9.0/abcl-1.9.0.jar> ;
+  rdf:_1 <https://abcl.org/trac/timeline> ;
+  rdf:_2 <https://abcl.org/trac/wiki> ;
   rdf:_4 <https://github.com/armedbear/abcl/> ;
   rdf:_5 <https://gitlab.common-lisp.net/abcl/abcl/> ;
   dc:source   abcl:tag ;
@@ -121,19 +121,19 @@ doap:Project rdfs:seeAlso [
      rdf:_2 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.0.1.jar> ;
      rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.0.2.jar> ;
      rdf:_4 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.1.jar> ;
-     rdf:_5 <http://abcl.org/releases/1.2.1/abcl-1.2.1.jar> ;
-     rdf:_6 <http://abcl.org/releases/1.3.0/abcl-1.3.0.jar> ;
-     rdf:_14 <http://abcl.org/releases/1.3.2/abcl-1.3.1.jar> ;
-     rdf:_7 <http://abcl.org/releases/1.3.2/abcl-1.3.2.jar> ;
-     rdf:_8 <http://abcl.org/releases/1.3.3/abcl-1.3.3.jar> ;
-     rdf:_9 <http://abcl.org/releases/1.4.0/abcl-1.4.0.jar> ;
-     rdf:_10 <http://abcl.org/releases/1.5.0/abcl-1.5.0.jar> ;
-     rdf:_11 <http://abcl.org/releases/1.6.0/abcl-1.6.0.jar> ;
-     rdf:_13 <http://abcl.org/releases/1.6.1/abcl-1.6.1.jar> ;
-     rdf:_17 <http://abcl.org/releases/1.7.0/abcl-1.7.0.jar> ;
-     rdf:_19 <http://abcl.org/releases/1.7.1/abcl-1.7.1.jar> ;
-     rdf:_23 <http://abcl.org/releases/1.8.0/abcl-1.8.0.jar> ;
-     rdf:_29 <http://abcl.org/releases/1.9.0/abcl-1.9.0.jar> ;
+     rdf:_5 <https://abcl.org/releases/1.2.1/abcl-1.2.1.jar> ;
+     rdf:_6 <https://abcl.org/releases/1.3.0/abcl-1.3.0.jar> ;
+     rdf:_14 <https://abcl.org/releases/1.3.2/abcl-1.3.1.jar> ;
+     rdf:_7 <https://abcl.org/releases/1.3.2/abcl-1.3.2.jar> ;
+     rdf:_8 <https://abcl.org/releases/1.3.3/abcl-1.3.3.jar> ;
+     rdf:_9 <https://abcl.org/releases/1.4.0/abcl-1.4.0.jar> ;
+     rdf:_10 <https://abcl.org/releases/1.5.0/abcl-1.5.0.jar> ;
+     rdf:_11 <https://abcl.org/releases/1.6.0/abcl-1.6.0.jar> ;
+     rdf:_13 <https://abcl.org/releases/1.6.1/abcl-1.6.1.jar> ;
+     rdf:_17 <https://abcl.org/releases/1.7.0/abcl-1.7.0.jar> ;
+     rdf:_19 <https://abcl.org/releases/1.7.1/abcl-1.7.1.jar> ;
+     rdf:_23 <https://abcl.org/releases/1.8.0/abcl-1.8.0.jar> ;
+     rdf:_29 <https://abcl.org/releases/1.9.0/abcl-1.9.0.jar> ;
   ] ;
 ] .
 
@@ -152,12 +152,12 @@ doap:Project rdfs:seeAlso [
 <> rdfs:seeAlso <urn:abcl.org/ansi/common-lisp#X3J13> .
 
 doap:Project rdfs:seeAlso 
-  <http://abcl.org/trac/timeline> , 
-  <http://abcl.org/trac/wiki> ,
-  <http://github.com/armedbear/abcl/> ,
-  <http://gitlab.common-lisp.net/abcl/abcl/> ,
-  <http://code.google.com/p/abcl-dynamic-install/> ,
-  <http://abcl.org/svn/trunk/abcl/> .
+  <https://abcl.org/trac/timeline> , 
+  <https://abcl.org/trac/wiki> ,
+  <https://github.com/armedbear/abcl/> ,
+  <https://gitlab.common-lisp.net/abcl/abcl/> ,
+  <https://code.google.com/p/abcl-dynamic-install/> ,
+  <https://abcl.org/svn/trunk/abcl/> .
 
 <> doap:packages  [ 
     a rdf:Alt;
