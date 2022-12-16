@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+Since the 'tools.jar' on which the Apache antrun Maven plugin depends
+doesn't exist in post-openjdk8 distributions, this artifact CANNOT
+BUILD ABCL UNLESS run with a JDK that maven-antrun-plugin can find.
+
+
+--> 
 <project
    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
    xmlns="http://maven.apache.org/POM/4.0.0"
@@ -16,18 +24,18 @@
   <packaging>jar</packaging>
   <name>ABCL - Armed Bear Common Lisp</name>
   <description>Common Lisp implementation running on the JVM</description>
-  <url>http://abcl.org</url>
+  <url>https://abcl.org</url>
   <licenses>
     <license>
       <name>GNU General Public License with Classpath exception</name>
-      <url>http://www.gnu.org/software/classpath/license.html</url>
+      <url>https://www.gnu.org/software/classpath/license.html</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
   <scm>
-    <connection>scm:svn:http://abcl.org/svn/trunk/</connection>
-    <developerConnection>scm:svn:svn+ssh://abcl.org/project/armedbear/svn/trunk/</developerConnection>
-    <url>http://abcl.org/trac/browser/trunk/abcl</url>
+    <connection>scm:svn:https://abcl.org/svn/trunk/</connection>
+    <developerConnection>scm:git:https://gitlab.common-lisp.net/abcl/abcl</developerConnection>
+    <url>https://gitlab.common-lisp.net/abcl/abcl</url>
   </scm>
   <developers>
     <developer>
@@ -58,6 +66,14 @@
   </developers>
   <dependencies/>
   <build>
+    <!--
+    N.b. this ain't gonna work other than for openjdk8 builds, as it
+    will error on a message akin to the following:
+
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-antrun-plugin:3.1.0:run (clean) on project abcl: Execution clean of goal org.apache.maven.plugins:maven-antrun-plugin:3.1.0:run failed: Plugin org.apache.maven.plugins:maven-antrun-plugin:3.1.0 or one of its dependencies could not be resolved: Could not find artifact com.sun:tools:jar:1.5.0 at specified path /Library/Java/JavaVirtualMachines/jdk-19.0.1+10/Contents/Home/../lib/tools.jar -> [Help 1]
+
+-->
+
     <directory>${project.basedir}/build</directory>
     <sourceDirectory>${project.basedir}/src</sourceDirectory>
     <plugins>
@@ -65,8 +81,6 @@
 	<artifactId>maven-antrun-plugin</artifactId>
 	<version>3.1.0</version>
 	<!-- <https://stackoverflow.com/questions/34713222/wrapping-ant-in-maven-java-home-points-to-the-jre-but-works-with-just-ant> -->
-	<!-- Since tools.jar doesn't exist post-openjdk8, this isn't
-	     gonna work everywhere -->
 	<dependencies>
 	  <dependency>
 	    <groupId>com.sun</groupId>
