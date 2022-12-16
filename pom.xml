@@ -106,7 +106,7 @@
 	    <phase>package</phase>
 	    <configuration>
 	      <target>
-		<ant antfile="build.xml" target="abcl.jar"/>
+		<ant antfile="build.xml" target="abcl.wrapper"/>
 	      </target>
 	    </configuration>
 	    <goals>
