@@ -16,19 +16,28 @@
   <version>1.9.0</version>
   <packaging>jar</packaging>
   <name>Armed Bear Common Lisp (ABCL) Contribs</name>
-  <description>Extra packages--contribs--for ABCL</description>
-  <url>http://abcl.org</url>
+  <description>Extra contributions for ABCL code not necessarily
+  licensed under the GPLv2 with classpath exception.</description>
+  <url>https://abcl.org</url>
   <licenses>
     <license>
-      <name>GNU General Public License with Classpath exception</name>
-      <url>http://www.gnu.org/software/classpath/license.html</url>
+      <name>
+        Individual ASDF system licensing: examine and accept individual terms by explicit consent
+      </name>
+      <url>
+        https://abcl.org/svn/tags/1.9.0/contrib/LICENSE
+      </url>
       <distribution>repo</distribution>
     </license>
   </licenses>
   <scm>
-    <connection>scm:svn:http://abcl.org/svn/trunk/abcl</connection>
-    <developerConnection>scm:svn:svn+ssh://abcl.org/project/armedbear/svn</developerConnection>
-    <url>http://abcl.org/trac/browser/trunk/abcl/contrib</url>
+    <connection>
+      scm:git:https://github.com/armedbear/abcl
+    </connection>
+    <developerConnection>
+      scm:git:https://gitlab.common-lisp.net/abcl/abcl
+    </developerConnection>
+    <url>https://abcl.org/trac/browser/tags/1.9.0/contrib/</url>
   </scm>
   <developers>
     <developer>
