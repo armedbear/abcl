@@ -6,6 +6,13 @@ ext
 scratch
 .idea/
 *.iml
+t/eg/compiler-fails-on-inline-recursion.abcl-tmp
+src/org/armedbear/lisp/jvm-class-file.abcl-tmp
+src/org/armedbear/lisp/jvm-instructions.abcl-tmp
+t/eg/compiler_fails_on_inline_recursion_1.cls
+t/eg/compiler_fails_on_inline_recursion_2.cls
+t/eg/progn-compiler-inconsistency.abcl
+
 target/
 \#*\#
 \.\#*
@@ -28,3 +35,4 @@ doc/manual/jss.aux
 doc/manual/mop.aux
 doc/manual/system.aux
 doc/manual/threads.aux
+nbproject/private/
