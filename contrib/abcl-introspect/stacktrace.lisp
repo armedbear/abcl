@@ -209,11 +209,12 @@
   inside the lisp implementation leading to the error"
   (if *use-old-backtrace*
       (backtrace) 
-      (let* ((lisp-stacktrace (#"backtrace" (threads::current-thread) 0))
+      (let* ((lisp-stacktrace (#"backtrace" (threads:current-thread) 0))
 	     (invoke-pos (backtrace-invoke-debugger-position lisp-stacktrace))
 	     (repl-loop-pos (repl-loop-position lisp-stacktrace invoke-pos)))
 	(let ((narrowed-lisp-stacktrace 
-		(splice-out-java-stack-duplicating-lisp-stack (subseq lisp-stacktrace invoke-pos (and repl-loop-pos (1+ repl-loop-pos))))))
+		(splice-out-java-stack-duplicating-lisp-stack
+                 (subseq lisp-stacktrace invoke-pos (and repl-loop-pos (1+ repl-loop-pos))))))
 	  (when *hide-swank-frames*
 	    (let ((swank-start (position-if 'swankish-frame narrowed-lisp-stacktrace)))
 	      (and swank-start
@@ -222,14 +223,17 @@
 			  (subseq narrowed-lisp-stacktrace 0 swank-start)
 			  (if repl-loop-pos (last narrowed-lisp-stacktrace) nil))))))
 	  (setq narrowed-lisp-stacktrace (splice-out-spurious-error-frames narrowed-lisp-stacktrace))
-	  (if (typep condition 'java::java-exception)
+	  (if (typep condition 'java:java-exception)
 	      (progn
 		(let* ((delta (difference-between-exception-stacktrace-and-after-caught-stacktrace condition))
 		       (cleaned (splice-out-java-stack-duplicating-lisp-stack (remove-unsightly-java-frames delta)))
 		       (exception-frames (lisp-stack-exception-catching-frames narrowed-lisp-stacktrace)))
 		  (setq *caught-frames* delta)
 		  (let ((result (append exception-frames 
-					(mapcar (lambda(frame) (jss::new 'javastackframe frame)) cleaned)
+					(mapcar
+                                         (lambda (frame) (java:jnew "org.armedbear.lisp.JavaStackFrame"
+                                                                    frame))
+                                         cleaned)
 					(subseq narrowed-lisp-stacktrace (length exception-frames)))))
 		    result
 		    )))
