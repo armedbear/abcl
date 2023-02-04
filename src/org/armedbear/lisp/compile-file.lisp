@@ -696,7 +696,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 (defun process-toplevel-form (form stream compile-time-too)
   (unless (atom form)
     (let* ((operator (%car form))
-           (handler (get operator 'toplevel-handler)))
+           (handler (if (symbolp operator)
+                        (get operator 'toplevel-handler))))
       (when handler
         (let ((out-form (funcall handler form stream compile-time-too)))
           (when out-form
