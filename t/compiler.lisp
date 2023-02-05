@@ -49,6 +49,16 @@
    (eq (length bytes) 6))
  "Compilation of wide ASTORE instruction.")
 
+;;; <https://github.com/armedbear/abcl/issues/541>
+(prove:plan 1)
+(let ((file (asdf:system-relative-pathname :abcl
+                                           "t/eg/compiler-fails-top-level-lambda.lisp")))
+  (prove:ok
+   (handler-case 
+       (compile-file file)
+     ;;; anything signalled as error is a failure
+     (t (e) (prove:diag (format nil "Compilation failed signalling ~a" e))))
+   (format nil "Compiling '~a'~%" file)))
 
  
    
