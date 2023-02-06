@@ -30,20 +30,23 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
-(in-package #:threads)
-
+(in-package threads)
 (export '(make-mailbox mailbox-send mailbox-empty-p
           mailbox-read mailbox-peek
           make-thread-lock with-thread-lock
+          thread-function-wrapper
           current-thread yield
-          make-mutex get-mutex release-mutex with-mutex))
+          make-mutex get-mutex release-mutex with-mutex
+          get-java-thread))
+          
 ;;
 ;; MAKE-THREAD helper to establish restarts
 ;;
 
-(defun thread-function-wrapper (fun)
+(defun thread-function-wrapper (function)
+  "Call FUNCTION with a simple abort restart"
   (restart-case
-      (funcall fun)
+      (funcall function)
     (abort () :report "Abort thread.")))
 
 ;;
