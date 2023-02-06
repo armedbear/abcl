@@ -460,6 +460,8 @@
                            "with-slots.lisp"
                            "with-standard-io-syntax.lisp"
                            "write-sequence.lisp"))
+            ;;; Classloader combine JAVA and THREADS abstractions
+      (do-compile "classloader.lisp")
 
       ;; Compile ASDF after the whole ANSI system has been
       ;; constructed.
