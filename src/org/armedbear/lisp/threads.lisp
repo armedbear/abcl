@@ -132,8 +132,6 @@ calling thread."
           (progn
             ,@body)
           (release-mutex ,m))))))
-
-
 ;;
 ;; Lock implementation
 ;;
@@ -153,4 +151,16 @@ calling thread."
   "A hint to the scheduler that the current thread is willing to yield its current use of a processor. The scheduler is free to ignore this hint. 
 
 See java.lang.Thread.yield()."
-  (java:jcall "yield" (JAVA:jstatic "currentThread" "java.lang.Thread")))
+  (java:jcall "yield" (java:jstatic "currentThread" "java.lang.Thread")))
+
+(defun get-java-thread (&optional lisp-thread)
+  "Without an argument, return the underlying currently executing Java thread
+
+Specified with a LISP-THREAD, return that thread's wrapped Java
+thread."
+  (cdr (first
+        (java:jcall "getParts"
+                    (if lisp-thread
+                        lisp-thread
+                        (threads:current-thread))))))
+
