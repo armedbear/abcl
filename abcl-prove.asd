@@ -26,6 +26,15 @@
                              (:test-file "url-stream")
                              (:test-file "without-use-cl")))))
 
+(defsystem :abcl-prove/closer-mop
+  :defsystem-depends-on (prove-asdf)
+  :depends-on (prove closer-mop)
+  :perform (test-op (o c)
+              (uiop:symbol-call :prove-asdf 'run-test-system c))
+  :components ((:module t
+                :components ((:test-file "mop-specializer")))))
+
+  
 
 
 

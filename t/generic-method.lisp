@@ -1,6 +1,7 @@
-(prove:plan 1)
+
 
 ;;; <https://abcl.org/trac/ticket/485>
+(prove:plan 1)
 (prove:ok
  (handler-case 
      (progn
