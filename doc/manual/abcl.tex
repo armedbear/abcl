@@ -1429,6 +1429,12 @@ classloader as an optional third argument.
 )
 \end{listing-lisp}
 
+\subsection{Subtypes of \code{mop:specializer}}
+
+The implementation allows generic method specializers which extend the
+\code{mop:specializer} type.  See \cite{custom-specializers} for
+justification and usage examples for such an abstraction.  
+
 \section{Extensions to the Reader}
 
 We implement a special hexadecimal escape sequence for specifying 32
