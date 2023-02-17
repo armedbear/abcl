@@ -167,7 +167,7 @@
 (define-class->%class-forwarder class-direct-default-initargs)
 (define-class->%class-forwarder (setf class-direct-default-initargs))
 
-(declaim (notinline add-direct-subclass remove-direct-subclass))
+(declaim (notinline add-direct-ubclass remove-direct-subclass))
 (defun add-direct-subclass (superclass subclass)
   (setf (class-direct-subclasses superclass)
         (adjoin subclass (class-direct-subclasses superclass))))
@@ -2572,7 +2572,9 @@ to ~S with argument list ~S."
             (setf emfun
                   (wrap-emfun-for-keyword-args-check gf emfun non-keyword-args
                                                      applicable-keywords)))
-          (cache-emf gf args emfun)
+          ;;; Cache only understand classes and eql specializers
+          (when (eq (class-of gf) 'standard-generic-function)
+            (cache-emf gf args emfun))
           (funcall emfun args))
         (apply #'no-applicable-method gf args))))
 
@@ -4453,8 +4455,9 @@ or T when any keyword is acceptable due to presence of
   (:method ((specializer class) (method method))
     (pushnew method (class-direct-methods specializer)))
   (:method ((specializer eql-specializer) (method method))
+    (pushnew method (slot-value specializer 'direct-methods)))
+  (:method ((specializer specializer) (method method))                   
     (pushnew method (slot-value specializer 'direct-methods))))
-
 
 ;;; AMOP pg. 227
 (atomic-defgeneric remove-direct-method (specializer method)
@@ -4462,6 +4465,9 @@ or T when any keyword is acceptable due to presence of
     (setf (class-direct-methods specializer)
           (remove method (class-direct-methods specializer))))
   (:method ((specializer eql-specializer) (method method))
+    (setf (slot-value specializer 'direct-methods)
+          (remove method (slot-value specializer 'direct-methods))))
+  (:method ((specializer specializer) (method method))
     (setf (slot-value specializer 'direct-methods)
           (remove method (slot-value specializer 'direct-methods)))))
 
