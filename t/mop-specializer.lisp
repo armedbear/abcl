@@ -1,20 +1,18 @@
 #| After ensuring <file:../abcl-prove.asd> is in ASDF:
-
 (unless (asdf:make :abcl-prove/closer-mop)
 (asdf:make :quicklisp-abcl)
 (ql:quickload :abcl-prove/closer-mop))
 (asdf:test-system :abcl-prove/closer-mop)
+|#
 
-|# 
+;;;; N.b. packaging the code for the generic definitions outside the
+;;;; test form is necessary for SBCL to work, but under ABCL means
+;;;; that additional generic function specializers are added each time
+;;;; this file is processed by PROVE changing the results away from
+;;;; what is desired.
 
 ;;;; <https://github.com/armedbear/abcl/issues/539>
-;;;;
-;;;; Implement in SBCL (which should work) and ABCL (which is going to work)
-;;;;
 ;;;; <https://research.gold.ac.uk/id/eprint/6828/1/jucs_14_20_3370_3388_newton.pdf>
-
-(prove:plan 1)
-
 (in-package :closer-common-lisp-user) ;; defined in CLOSER-MOP
 (defclass fixnum>= (specializer)
   ((number :type fixnum :initarg :number :initform most-negative-fixnum)
@@ -92,9 +90,14 @@
 (define-range-method foo ((number (fixnum>= 100)))
   (cons 100 (call-next-method)))
 
+(prove:plan 1)
 (prove:ok
  (flet ((foo-handling-error (arg)
           (handler-case (foo arg)
+            #+abcl
+            (simple-error ()
+              'no-applicable-method)
+            #+sbcl
             (sb-pcl::no-applicable-method-error ()
               'no-applicable-method))))
    (let ((result
