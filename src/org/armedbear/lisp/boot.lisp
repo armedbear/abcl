@@ -175,6 +175,7 @@
 (load-system-file "arrays")
 (load-system-file "compiler-macro")
 (load-system-file "subtypep")
+(load-system-file "stepper")
 (load-system-file "typep")
 (load-system-file "signal")
 (load-system-file "list")
@@ -212,5 +213,3 @@
   (unless *noinform*
     (%format t "Startup completed in ~A seconds.~%"
              (float (/ (ext:uptime) 1000)))))
-
-

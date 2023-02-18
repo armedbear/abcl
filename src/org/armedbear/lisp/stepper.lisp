@@ -1,8 +1,7 @@
-;;; step.lisp
-;;;
-;;; Copyright (C) 2004 Peter Graves
-;;; $Id$
-;;;
+;;; stepper.lisp
+
+;;; Copyright (C) 2023 Mark Evenson
+
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
 ;;; as published by the Free Software Foundation; either version 2
@@ -29,34 +28,12 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
-;;; From SBCL.
+;; Some global variables needed for the stepper
 
-(in-package "SYSTEM")
+(in-package #:system)
 
-(defun stop-at-symbol-p (symbol)
-  "Indicates if the stepper need to stop at the current symbol"
-  (or (find symbol *stepper-stop-symbols* :test 'eq)
-      (some (lambda (package)
-                (do-external-symbols (s (find-package package))
-                  (if (eq s symbol)
-                      (return t))))
-            *stepper-stop-packages*)))
+(defparameter *stepper-stop-packages* nil
+  "List of packages in which the stepper will stop in its external symbols")
 
-(defmacro step (form)
-  (let ((stepper-block (gensym)))
-    `(let ()
-       (cond ((some (lambda (c)
-                      (and (find-package c)
-                           (symbol-value (find-symbol "*EMACS-CONNECTION*" c))))
-                    '(:swank :slynk))
-              ;; We are in an Sly/Slime connection
-              (format
-               t
-               "This stepper is not still ready to be used from an Sly/Slime~
- , but it can be used from a plain REPL")
-              ,form)
-             (t (block ,stepper-block
-                  (%set-stepper-on)
-                  (multiple-value-prog1 ,form
-                    (%set-stepper-off)
-                    (%set-delimited-stepping-off))))))))
+(defparameter *stepper-stop-symbols* nil
+  "List of symbols in which the stepper will stop")

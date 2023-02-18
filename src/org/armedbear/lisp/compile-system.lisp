@@ -198,7 +198,7 @@
                          combos
                          :key #'first)))
            (filter-setf-combos (combos)
-             (filter-combos 
+             (filter-combos
               (remove-multi-combo-symbols
                (remove-if (lambda (x) (member x '("clos") :test #'string=)) combos :key #'first))))
            (symbols-pathspec (filespec)
@@ -308,6 +308,7 @@
       (load (do-compile "early-defuns.lisp"))
       (load (do-compile "typep.lisp"))
       (load (do-compile "subtypep.lisp"))
+      (load (do-compile "stepper.lisp"))
       (load (do-compile "find.lisp"))
       (load (do-compile "print.lisp"))
       (load (do-compile "pprint-dispatch.lisp"))
@@ -517,10 +518,9 @@
          (home (pathname *lisp-home*))
          (src (format nil "~A**/*.*" home))
          (java (format nil "~A../../../**/*.*" home)))
-    (with-open-file (s system :direction :output 
+    (with-open-file (s system :direction :output
                        :if-exists :supersede)
       (pprint `(setf (logical-pathname-translations "sys")
                     '(("SYS:SRC;**;*.*" ,src)
                       ("SYS:JAVA;**;*.*" ,java)))
        s))))
-      
