@@ -190,10 +190,10 @@ The &key arguments have the following meanings:
                   (file (first output-redirection))
                   (appendp (second output-redirection)))
               (threads:make-thread (lambda () (to-file error file :append appendp))))))
-        (when (and wait
-                   (not-java-6-p)
-                   (process-wait process))
-          process)))))
+        (when (and (not (find :java-6 *features*)) ;; TODO deprecate
+                   wait)
+          (process-wait process))
+          process))))
 
 (defconstant +inherit+
   (ignore-errors
