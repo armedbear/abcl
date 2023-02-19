@@ -66,16 +66,16 @@ jobs:
         run: ./abcl --batch --load ./ci/test-abcl-introspect.lisp
 
       - name: Test Jeannie
-        run: ./abcl --batch --load ./ci/test-jeannie.lisp
+        run: ./abcl --batch --load ./ci/ensure-maven.lisp --load ./ci/test-jeannie.lisp
 
       - name: Test CFFI
-        run: ./abcl --batch --load ./ci/test-cffi.lisp
+        run: ./abcl --batch --load ./ci/ensure-maven.lisp --load ./ci/test-cffi.lisp
 
       - name: Test STATIC-VECTORS
-        run: ./abcl --batch --load ./ci/test-static-vectors.lisp
+        run: ./abcl --batch --load ./ci/ensure-maven.lisp --load ./ci/test-static-vectors.lisp
 
       - name: Test CL+SSL
-        run: ./abcl --batch --load ./ci/test-cl+ssl.lisp
+        run: ./abcl --batch --load ./ci/ensure-maven.lisp --load ./ci/test-cl+ssl.lisp
 
       - name: Test IRONCLAD
         run: ./abcl --batch --load ./ci/test-ironclad.lisp
