@@ -741,6 +741,25 @@ artifact and all of its transitive dependencies."
                               (when repository
                                 `(:repository ,repository))))))))))
 
+(defun make-local-maven ()
+  "Use ABCL-BUILD to install a local Maven, configuring it for subsequent use"
+  ;; TODO: use this in an interactive restart if Maven can't be found
+    (setf abcl-asdf:*mvn-libs-directory*
+     (multiple-value-bind (mvn entries)
+         (abcl-build:mvn/install)
+       (let* ((root
+                (first (last entries)))
+              (lib
+                (merge-pathnames  "./lib/" root )))
+         (abcl-asdf:with-aether (lib)
+           (values
+            (and
+             ;; for good measure
+             (when (asdf:clear-system :jna)
+               (asdf:make :jna))
+             lib)
+            (abcl-asdf:ensure-mvn-version)
+            (abcl-build:ensure-maven)))))))
 
 ;;; Currently the last file listed in ASDF
 (provide 'abcl-asdf)
