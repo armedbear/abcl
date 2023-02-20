@@ -623,6 +623,7 @@ public static synchronized final void handleInterrupt()
         System.out.println("Type 'n' for resume the evaluation until the next form previously selected to step in");
         System.out.println("Type 's' for step into the form");
         System.out.println("Type 'i' for inspect the current value of a variable or symbol");
+        System.out.println("Type 'q' for quit the evaluation and return NIL");
         break;
       case 'l':
         setSteppingOff();
