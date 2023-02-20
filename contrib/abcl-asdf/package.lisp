@@ -21,6 +21,8 @@
    #:*mvn-directory*
 
    #:init
+   #:make-local-maven
+   
 
 ;;; "Internal" API
    #:resolve-dependencies
