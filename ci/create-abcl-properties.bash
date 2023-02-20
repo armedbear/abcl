@@ -13,6 +13,7 @@ echo "Configuring for $jdk from <${prop_in}>."
 
 # Unused
 # zgc="-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -Xmx<size> -Xlog:gc"
+opens="--add-opens java.base/sun.nio.ch=ALL-UNNAMED  --add-opens java.base/java.io=ALL-UNNAMED"
 
 abcl_javac_source=1.8
 case $jdk in
@@ -63,22 +64,22 @@ case $jdk in
 	ant_build_javac_source=1.8
         ;;
     17|openjdk17)
-        options="-XX:CompileThreshold=10 ${zgc}"
+        options="-XX:CompileThreshold=10 ${opens}"
 	ant_build_javac_target=17
 	ant_build_javac_source=1.8
         ;;
     18|openjdk18)
-        options="-XX:CompileThreshold=10 ${zgc}"
+        options="-XX:CompileThreshold=10 ${opens}"
 	ant_build_javac_target=18
 	ant_build_javac_source=1.8
         ;;
     19:openjdk19)
-        options="-XX:CompileThreshold=10 ${zgc}"
+        options="-XX:CompileThreshold=10 ${opens}"
 	ant_build_javac_target=19
 	ant_build_javac_source=1.8
         ;;
     *)
-        options="-XX:CompileThreshold=10 ${zgc}"
+        options="-XX:CompileThreshold=10 ${opens}"
         ant_build_javac_target=19
 	ant_build_javac_source=1.8
         ;;
