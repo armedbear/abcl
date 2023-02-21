@@ -1,13 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-
-Since the 'tools.jar' on which the Apache antrun Maven plugin depends
-doesn't exist in post-openjdk8 distributions, this artifact CANNOT
-BUILD ABCL UNLESS run with a JDK that maven-antrun-plugin can find.
-
-
---> 
-
 <project
    xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
    xmlns="https://maven.apache.org/POM/4.0.0"
@@ -21,7 +12,7 @@ BUILD ABCL UNLESS run with a JDK that maven-antrun-plugin can find.
   </parent>
   <groupId>org.abcl</groupId>
   <artifactId>abcl</artifactId>
-  <version>1.9.0</version>
+  <version>1.9.1</version>
   <packaging>jar</packaging>
   <name>ABCL - Armed Bear Common Lisp</name>
   <description>Common Lisp implementation running on the JVM</description>
@@ -67,29 +58,13 @@ BUILD ABCL UNLESS run with a JDK that maven-antrun-plugin can find.
   </developers>
   <dependencies/>
   <build>
-    <!--
-    N.b. this ain't gonna work other than for openjdk8 builds, as it
-    will error on a message akin to the following:
-
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-antrun-plugin:3.1.0:run (clean) on project abcl: Execution clean of goal org.apache.maven.plugins:maven-antrun-plugin:3.1.0:run failed: Plugin org.apache.maven.plugins:maven-antrun-plugin:3.1.0 or one of its dependencies could not be resolved: Could not find artifact com.sun:tools:jar:1.5.0 at specified path /Library/Java/JavaVirtualMachines/jdk-19.0.1+10/Contents/Home/../lib/tools.jar -> [Help 1]
-
--->
-
     <directory>${project.basedir}/build</directory>
     <sourceDirectory>${project.basedir}/src</sourceDirectory>
     <plugins>
       <plugin>
 	<artifactId>maven-antrun-plugin</artifactId>
 	<version>3.1.0</version>
-	<!-- <https://stackoverflow.com/questions/34713222/wrapping-ant-in-maven-java-home-points-to-the-jre-but-works-with-just-ant> -->
-	<dependencies>
-	  <dependency>
-	    <groupId>com.sun</groupId>
-	    <artifactId>tools</artifactId>
-	    <version>1.5.0</version>
-	    <scope>system</scope>
-	    <systemPath>${java.home}/../lib/tools.jar</systemPath>
-	  </dependency>
+	<dependencies> 
 	</dependencies>
 	<executions>
 	  <execution>
@@ -122,6 +97,31 @@ BUILD ABCL UNLESS run with a JDK that maven-antrun-plugin can find.
 	    <configuration>
 	      <target>
 		<ant antfile="build.xml" target="abcl.wrapper"/>
+                <ant antfile="build.xml" target="abcl.contrib"/>
+	      </target>
+	    </configuration>
+	    <goals>
+	      <goal>run</goal>
+	    </goals>      
+	  </execution>
+          <execution>
+	    <id>test</id>
+	    <phase>test</phase>
+	    <configuration>
+	      <target>
+                <ant antfile="build.xml" target="test.abcl"/>
+
+                <!-- test.ansi.compiled requires
+                     <git+https://gitlab.common-lisp.net/ansi-test/ansi-test/>
+                     to be cloned locally as <file:../ansi-test/>
+                -->
+                <ant antfile="build.xml" target="test.ansi.compiled"/>
+
+                <!-- test.cl-bench requires
+                     <git+https://gitlab.common-lisp.net/ansi-test/cl-bench/>
+                     to be cloned locally as <file:../cl-bench/>
+                -->
+                <ant antfile="build.xml" target="test.cl-bench"/>
 	      </target>
 	    </configuration>
 	    <goals>
