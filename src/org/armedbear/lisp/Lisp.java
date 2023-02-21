@@ -618,12 +618,12 @@ public static synchronized final void handleInterrupt()
       Package pkg;
       switch (userInput.charAt(0)) {
       case '?':
-        System.out.println("Type 'l' for see the values of bindings on the local environment");
-        System.out.println("Type 'c' for resume the evaluation until the end without the stepper");
-        System.out.println("Type 'n' for resume the evaluation until the next form previously selected to step in");
-        System.out.println("Type 's' for step into the form");
-        System.out.println("Type 'i' for inspect the current value of a variable or symbol");
-        System.out.println("Type 'q' for quit the evaluation and return NIL");
+        System.out.println("Type 'l' to see the values of bindings on the local environment");
+        System.out.println("Type 'c' to resume the evaluation until the end without the stepper");
+        System.out.println("Type 'n' to resume the evaluation until the next form previously selected to step in");
+        System.out.println("Type 's' to step into the form");
+        System.out.println("Type 'i' to inspect the current value of a variable or symbol");
+        System.out.println("Type 'q' to quit the evaluation and return NIL");
         break;
       case 'l':
         setSteppingOff();
@@ -635,12 +635,12 @@ public static synchronized final void handleInterrupt()
         LispObject[] argsEnv = new LispObject[1];
         argsEnv[0] = env;
         LispObject resultVars = funcall(environmentAllVariables, argsEnv, currentThread);
-        System.out.println("Showing the values for variable bindings.");
-        System.out.println("From inner to outer bindings:");
+        System.out.println("Showing the values of variable bindings.");
+        System.out.println("From inner to outer scopes:");
         Environment.pprintListLocals(resultVars);
         LispObject resultFuncs = funcall(environmentAllFunctions, argsEnv, currentThread);
-        System.out.println("Showing the values for functions bindings.");
-        System.out.println("From inner to outer bindings:");
+        System.out.println("Showing the values of functions bindings.");
+        System.out.println("From inner to outer scopes:");
         Environment.pprintListLocals(resultFuncs);
         setSteppingOnAfterInit();
         break;
