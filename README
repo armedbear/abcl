@@ -71,7 +71,7 @@ To install Quicklisp for ABCL in the Docker container run:
 
 See <file:Dockerfile> for the build instructions.
 
-[podman]: https://podman.io/releases/2022/02/22/podman-release-v4.0.0.html
+[podman]: https://podman.io/releases/
 [Docker Engine]: https://www.docker.com/products/docker-engine
 
 
@@ -82,8 +82,9 @@ After you have downloaded a binary release from either [the
 distributed Maven POM graph][maven-abcl] or from
 [abcl.org][abcl.org-release] archive unpack it into its own
 directory. To run ABCL directly from this directory, make sure the
-Java executable (`java`) (Java 6, 7, 8, 11, 13, 14, 15, 16, 17, 18,
-and 19 are supported by ABCL 1.9.1) is in your shell's path.
+Java executable (`java`) is in your shell's path.  Java 8, 11, 17 are
+strongly supported by ABCL, but others may work with a little elbow
+grease.
 
 [maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.9.0>
 [maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.9.0>
@@ -114,7 +115,8 @@ BUILDING FROM SOURCE RELEASE
 
 ABCL may be built from its source code by executing the build
 instructions <file:build.xml> expressed by the venerable Apache Ant
-tool.
+tool.  Alternately, one may use the Apache Maven tool as a facade to
+Ant.
 
 To build, one must have a Java 6, 7, 8, 11, 13, 14, 15, 16 or 17 Java
 Development Kit (openjdk) installed locally. Just the Java Runtime
@@ -125,11 +127,18 @@ Download a binary distribution [Ant version 1.7.1 or greater][ant].
 Unpack the files somewhere convenient, ensuring that the 'ant' (or
 'ant.bat' under Windows) executable is in your path and executable.
 
-[ant]: http://ant.apache.org/bindownload.cgi
+[ant]: https://ant.apache.org/bindownload.cgi
 
 Then simply executing 
 
     cmd$ ant
+
+To use [Maven], download it, ensure the `mvn` executable is in your
+PATH and then
+
+    cmd$ mvn -Dmaven.test.skip=true install 
+
+[Maven]: https://maven.apache.org/download.cgi
 
 from the directory containing the <file:build.xml> instructions will
 create an executable wrapper ('abcl' under UNIX, 'abcl.bat' under
@@ -149,9 +158,9 @@ or from the shell as
 
     bash ci/create-abcl-properties.bash openjdk17
 
-Currently supported platforms are 'openjdk6', 'openjdk7', 'openjdk8',
-'openjdk11', 'openjdk13', 'openjdk14', 'openjdk15', 'openjd16',
-'openjdk17', 'openjdk18', and 'openjdk19'.
+Currently supported platforms are 'openjdk8', 'openjdk11',
+'openjdk13', 'openjdk14', 'openjdk15', 'openjd16', 'openjdk17',
+'openjdk18', and 'openjdk19'.
 
 
 USING APACHE NETBEANS
@@ -170,7 +179,7 @@ linked SLIME `swank.asd` ASDF configuration
 <file:~/.config/common-lisp/source-registry.conf.d/> to connect a REPL
 to the NetBeans debug process.
 
-[netbeans]: http://netbeans.org/downloads/
+[netbeans]: https://netbeans.org/downloads/
 
 
 SLIME
