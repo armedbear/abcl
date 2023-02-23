@@ -8,8 +8,13 @@ To use:
     CL-USER> (require :abcl-asdf)
     
     
-ABCL specific contributions to ASDF system definition mainly concerned
-with finding JVM artifacts such as jar archives to be dynamically loaded.
+ABCL-ASDF contains ABCL specific contributions to ASDF system
+definition mainly concerned with finding JVM artifacts such as jar
+archives.  ABCL-ASDF uses the Aether libraries of the Maven build tool
+to locate and download artifacts from its distributed POM graph.  If
+Maven is not installed on your local system, the function
+ABCL-ASDF:INSTALL-LOCAL-MAVEN can be used to install a version under
+the local XDG hierarchy.
 
 Example 1
 ---------
@@ -165,5 +170,6 @@ The following ASDF defintion loads enough JVM artifacts to use the
     Mark <evenson.not.org@gmail.com>
     
     Created: 2011-01-01
-    Revised: 2017-06-13
+    Revised: 2023-02-23
+    
     
