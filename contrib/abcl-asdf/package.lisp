@@ -22,6 +22,9 @@
 
    #:init
    #:make-local-maven
+
+   ;; condition 
+   #:no-aether-maven-libs
    
 
 ;;; "Internal" API

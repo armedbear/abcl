@@ -275,8 +275,17 @@ Signals a simple-error with additional information if this attempt fails."
              
 (defparameter *init-p* nil
   "Whether we have successfully located the necessary Maven libraries")
-  
+
 (defun init (&optional &key (force nil))
+  (restart-case
+      (if force
+          (%init :force t)
+          (%init))
+    (no-aether-maven-libs ()
+      :report "Install and use Maven libraries under local XDG hierarchy"
+      (make-local-maven))))
+
+(defun %init (&optional &key (force nil))
   "Run the initialization strategy to bootstrap a Maven dependency node
 
 Set *MVN-LIBS-DIRECTORY* to an explicit value before running this
@@ -289,8 +298,6 @@ of the mvn executable with an explicit value."
     (setf *mvn-libs-directory* (find-mvn-libs)))
   (unless (and *mvn-libs-directory*
                (probe-file *mvn-libs-directory*))
-    ;; FIXME Remove warning; put message in restart
-    (warn "Please obtain and install maven-3.0.3 or later locally from <http://maven.apache.org/download.html>, then set ABCL-ASDF:*MVN-LIBS-DIRECTORY* to the directory containing maven-core-3.*.jar et. al.")
     (error (make-condition 'abcl-asdf::no-aether-maven-libs
                            :locations (list *mvn-libs-directory*))))
   (unless (ensure-mvn-version)
