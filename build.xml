@@ -588,7 +588,7 @@ Mercurial and Git.
     <target name="abcl.wrapper" 
             depends="abcl.jar,abcl.contrib,abcl.wrapper.unix,abcl.wrapper.windows">
       <description>
-        Creates in-place executable shell wrapper in
+        Creates in-place executable shell/batch invocation wrapper for ABCL in
         '${abcl.wrapper.file}'
       </description>
       <!-- Set from commandline or in 'build.properties' -->
@@ -597,7 +597,13 @@ Mercurial and Git.
         <pathelement location="${abcl.runtime.jar.path}"/>
         <pathelement path="${additional.jars}"/>
       </path>
-      <!-- set via '-Djava.options=JAVA_OPTIONS' or in 'build.properties -->
+
+      <!--
+          set via '-Djava.options=JAVA_OPTIONS' or in <file:abcl.properties>
+
+          See 'abcl.properties.autoconfigure.openjdk.*' targets for
+          creation of <file:abcl.properties> for a given JVM invocation.
+      -->
       <property name="java.options" value=""/>
 
       <copy file="${abcl.wrapper.in.file}" toFile="${abcl.wrapper.file}" overwrite="yes">
@@ -612,8 +618,15 @@ Mercurial and Git.
       </copy>
       <chmod file="${abcl.wrapper.file}" perm="a+x"/>
 
-      <echo>Created executable ABCL wrapper in '${abcl.wrapper.file}'</echo>
-      <echo>N.B. This wrapper requires '${abcl.jar.path}' not be moved.</echo>
+      <echo>Created an executable ABCL wrapper at</echo>
+      <echo/>
+      <echo>  ${basedir}/${abcl.wrapper.file}</echo>
+      <echo/>
+      <echo>with the options</echo>
+      <echo/>
+      <echo>  ${java.options}</echo>
+      <echo/>
+      <echo>N.b. This wrapper requires '${abcl.jar.path}' not be moved.</echo>
     </target>
 
     <target name="abcl.wrapper.unix" if="unix">
