@@ -718,8 +718,10 @@ Creates and loads a Java class with methods calling Lisp closures
       RETURN-TYPE denotes the type of the object returned by the method
       ARGUMENT-TYPES is a list of parameters to the method
 
-        The types are either strings naming fully qualified java classes or Lisp keywords referring to
-        primitive types (:void, :int, etc.).
+        The types are either strings naming fully qualified java classes, Lisp
+        keywords referring to primitive types (:void, :int, etc.), or 2-element
+        lists where the first element is the keyword :array and the second
+        element is a keyword referring to a primitive type, e.g. (:array :byte).
 
      FUNCTION is a Lisp function of minimum arity (1+ (length
      argument-types)). The instance (`this') is passed as the first
