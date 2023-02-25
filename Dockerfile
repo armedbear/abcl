@@ -1,5 +1,4 @@
-# TODO: optimize for space
-FROM openjdk:17-bullseye
+FROM docker.io/openjdk:17-bullseye
 
 RUN (export DEBIAN_FRONTEND='noninteractive' && \
     apt-get update  && \
