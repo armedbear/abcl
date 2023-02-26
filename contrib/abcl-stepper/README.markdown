@@ -18,7 +18,7 @@ When called inside Sly/Slime main REPL it will only show print a message and ret
 
 's' will resume the evaluation until the next form to be analyzed
 
-'l' will show the local bindings for variables and function
+'l' will show the local bindings for variables and functions
 in the current environment passed to the current form to evaluate
 
 'q': The quit q feature will abort the evaluation in the stepper
@@ -30,9 +30,9 @@ operations.
 'n' allows to jump the next (n) symbol:
 The next n feature allow to stop the stepper only when the
 interpreter is analyzing one of the symbols specified in the
-list of sys::stepper-stop-symbols or any of the exported
+list of stepper::*stepper-stop-symbols* or any of the exported
 symbols presented in any of the list of packages specified in
-sys::stepper-stop-packages. These variables will have
+stepper::*stepper-stop-packages*. These variables will have
 initially the value NIL and if they are not modified, next will
 behave exactly as continue. It is useful when we want to
 step large or complex code and avoid stepping every form in
@@ -379,7 +379,7 @@ For use it with ASDF systems we can use asdf:load-source-op:
 CL-USER(1): (asdf:operate 'asdf:load-source-op :alexandria)
 #<ASDF/LISP-ACTION:LOAD-SOURCE-OP >
 #<ASDF/PLAN:SEQUENTIAL-PLAN {245AD6EA}>
-CL-USER(6): (step (alexandria:plist-hash-table '(:a 1 :b 2 :c 3)))
+CL-USER(6): (stepper:step (alexandria:plist-hash-table '(:a 1 :b 2 :c 3)))
 We are in the stepper mode
 Evaluating:
 ALEXANDRIA:PLIST-HASH-TABLE
