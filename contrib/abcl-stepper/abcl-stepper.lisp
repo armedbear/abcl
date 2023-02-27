@@ -2,6 +2,8 @@
 ;;;
 ;;; Copyright (C) 2023 Alejandro Zamora Fonseca <ale2014.zamora@gmail.com>
 
+;;;; TODO: @alejandro consider licensing as two-clause BSD?
+
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
 ;;; as published by the Free Software Foundation; either version 2
@@ -86,11 +88,11 @@
                t
                "This stepper is not still ready to be used from an Sly/Slime~
  , but it can be used from a plain REPL")
-              ,form)
+              ,form) ;; TODO signal a condition; work on a restart to overcome it
              (t (block ,stepper-block
-                  (sys:%set-stepper-on)
+                  (sys::%set-stepper-on)
                   (multiple-value-prog1 ,form
-                    (sys:%set-stepper-off)
-                    (sys:%set-delimited-stepping-off))))))))
+                    (sys::%set-stepper-off)
+                    (sys::%set-delimited-stepping-off))))))))
 
 (provide :abcl-stepper)

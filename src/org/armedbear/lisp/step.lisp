@@ -29,12 +29,11 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
-;;; From SBCL.
-
-;; For a working stepper implementation, see the contrib ABCL-STEPPER
+;;;; For a working stepper implementation, see the contrib STEPPENWOLF
 
 (in-package "SYSTEM")
 
 (defmacro step (form)
   `(let ()
      ,form))
+

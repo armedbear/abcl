@@ -1,0 +1,50 @@
+#+TITLE: STEPPENWOLF
+
+Adding support for implementations of CL:STEP.
+
+** Goals
+
+1.  Minimally invasive modification of existing org.armedbear.lisp.*
+   classes.
+
+2.  Introduce and document what is essentially a way of instrumenting
+   the REPL before it calls a function.  Is this an ANSI extension?
+   Should it be done with generics?  What would @beach do?
+
+3.  Have fun
+
+
+*** TODO Before 
+**** Profiling of the difference in implementation
+**** Working with SLIME
+
+* Research
+** Appropiate form of hook?
+<https://stackoverflow.com/questions/6213455/in-common-lisp-how-can-i-override-change-evaluation-behaviour-for-a-specific-typ>
+
+
+* Implementation
+
+** TODO Need too hook before a function is evaluted
+
+
+*** Lisp.java
+**** eval() for special operator
+<[[file:~/work/abcl/src/org/armedbear/lisp/Lisp.java::handleStepping(fun, (obj != NIL) ? ((Cons)obj).cdr : obj, env) ;]]>
+**** evalCall()
+<[[file:~/work/abcl/src/org/armedbear/lisp/Lisp.java::if (stepInSymbolP(function)) {]]>
+
+
+#+begin_src lisp
+  (asdf:make :steppenwolf)
+  (steppenwolf:init)
+  (asdf:make :abcl-stepper)
+#+end_src
+
+
+* Colophon  
+  #+begin_example
+    Mark <evenson@not.org>
+    Created: 2023-02-27
+    Revised: <2023-02-27 Mon 14:04>
+  #+end_example

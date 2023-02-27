@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="antlib:org.apache.tools.ant"
+         name="abcl-stepper" default="compile" basedir=".">
+
+  <patternset id="source">
+    <include name="org/armedbear/lisp/*.java"/>
+  </patternset>
+  <target name="compile">
+      <mkdir dir="build"/>
+      <javac destdir="build"
+             debug="true"
+             includeantruntime="false"
+             encoding="UTF-8"
+             classpath="../../dist/abcl.jar"
+             failonerror="true">
+        <src path="src"/>
+        <patternset refid="source"/>
+      </javac>
+  </target>
+</project>
