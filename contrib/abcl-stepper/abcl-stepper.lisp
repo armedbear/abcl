@@ -30,14 +30,6 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
-(defpackage #:abcl-stepper
-  (:use :cl)
-  (:nicknames #:stepper)
-  (:shadow #:step)
-  (:export #:step
-           #:*stepper-stop-packages*
-           #:*stepper-stop-symbols*))
-
 (in-package #:abcl-stepper)
 
 (defparameter *stepper-stop-packages* nil
