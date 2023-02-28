@@ -5,7 +5,7 @@ Adding support for implementations of CL:STEP.
 ** Goals
 
 1.  Minimally invasive modification of existing org.armedbear.lisp.*
-   classes.
+    classes.
 
 2.  Introduce and document what is essentially a way of instrumenting
    the REPL before it calls a function.  Is this an ANSI extension?
@@ -26,9 +26,14 @@ Adding support for implementations of CL:STEP.
 #+caption: <https://irclog.tymoon.eu/libera/%23abcl?from=1677468239>
 #+begin_example
 13:56:47
-pjb easye: cl-stepper is in https://gitlab.com/com-informatimago/com-informatimago/-/tree/master/common-lisp/lisp it may give you some idea to implement CL:STEP. (of course, you wouldn't do it like this when you can modify the implementation).
+pjb easye: cl-stepper is in
+https://gitlab.com/com-informatimago/com-informatimago/-/tree/master/common-lisp/lisp
+it may give you some idea to implement CL:STEP. (of course, you
+wouldn't do it like this when you can modify the implementation).
 13:57:45
-pjb easye: note, with the implementation, you can play on the (optimization (debug n)) declaration.  When debug 3, you can insert the code like cl-stepper, and when debug 0 you don't.
+pjb easye: note, with the implementation, you can play on the
+(optimization (debug n)) declaration.  When debug 3, you can insert
+the code like cl-stepper, and when debug 0 you don't.
 #+end_example
 
 ** Bike on #commonlisp
@@ -43,24 +48,23 @@ Bike (some of which is applicable to stepping, though it's more about breakpoint
 
 * Implementation
 
-** DONE Need too hook before a function is evaluted
+** DONE Need to hook in Lisp.java before a function is evaluted
 CLOSED: [2023-02-28 Tue 10:25]
 
 - CLOSING NOTE [2023-02-28 Tue 10:25] \\
   Implemented
-nn*** Lisp.java
+  
+*** Lisp.java
 **** eval() for special operator
 <[[file:~/work/abcl/src/org/armedbear/lisp/Lisp.java::handleStepping(fun, (obj != NIL) ? ((Cons)obj).cdr : obj, env) ;]]>
 **** evalCall()
 <[[file:~/work/abcl/src/org/armedbear/lisp/Lisp.java::if (stepInSymbolP(function)) {]]>
-
 
 #+begin_src lisp
   (asdf:make :steppenwolf)
   (steppenwolf:init)
   (asdf:make :abcl-stepper)
 #+end_src
-
 
 * Colophon  
   #+begin_example
