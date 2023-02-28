@@ -22,13 +22,33 @@ Adding support for implementations of CL:STEP.
 ** Appropiate form of hook?
 <https://stackoverflow.com/questions/6213455/in-common-lisp-how-can-i-override-change-evaluation-behaviour-for-a-specific-typ>
 
+** pjb on #abcl
+#+caption: <https://irclog.tymoon.eu/libera/%23abcl?from=1677468239>
+#+begin_example
+13:56:47
+pjb easye: cl-stepper is in https://gitlab.com/com-informatimago/com-informatimago/-/tree/master/common-lisp/lisp it may give you some idea to implement CL:STEP. (of course, you wouldn't do it like this when you can modify the implementation).
+13:57:45
+pjb easye: note, with the implementation, you can play on the (optimization (debug n)) declaration.  When debug 3, you can insert the code like cl-stepper, and when debug 0 you don't.
+#+end_example
+
+** Bike on #commonlisp
+
+#+caption: <https://irclog.tymoon.eu/libera/%23commonlisp?from=1677468298>
+#+begin_example
+13:55:12
+Bike easye: have you seen beach's paper on debugging? http://metamodular.com/SICL/sicl-debugging.pdf
+13:55:58
+Bike (some of which is applicable to stepping, though it's more about breakpoints)
+#+end_example
 
 * Implementation
 
-** TODO Need too hook before a function is evaluted
+** DONE Need too hook before a function is evaluted
+CLOSED: [2023-02-28 Tue 10:25]
 
-
-*** Lisp.java
+- CLOSING NOTE [2023-02-28 Tue 10:25] \\
+  Implemented
+nn*** Lisp.java
 **** eval() for special operator
 <[[file:~/work/abcl/src/org/armedbear/lisp/Lisp.java::handleStepping(fun, (obj != NIL) ? ((Cons)obj).cdr : obj, env) ;]]>
 **** evalCall()
@@ -46,5 +66,5 @@ Adding support for implementations of CL:STEP.
   #+begin_example
     Mark <evenson@not.org>
     Created: 2023-02-27
-    Revised: <2023-02-27 Mon 14:04>
+    Revised: <2023-02-28 Tue 10:25>
   #+end_example

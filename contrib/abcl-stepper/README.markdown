@@ -429,6 +429,7 @@ CL-USER(2):
 
 ### TODO
 
-Rename to <file:Markdown>.
+Rename to <file:README> (no need to name the filetype, as it confuses
+some user agent's browsing as needing a download).
 
 Absorb/overcome <file:steppenwolf.asd>.

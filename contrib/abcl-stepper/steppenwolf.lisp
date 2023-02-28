@@ -1,14 +1,17 @@
 (in-package :steppenwolf)
 
+(defun root-directory ()
+  (asdf:system-relative-pathname :abcl
+                                 "contrib/abcl-stepper/"))
+
 (defun build ()
-  ;;; TODO Use ABCL-BUILD/ANT
-  )
+  (let ((ant-file
+          (merge-pathnames "build.xml" (root-directory))))
+    (abcl-build:ant/call  ant-file "compile")))
 
 (defun init ()
   ;; after running BUILD once per installation
-  (let ((build 
-          (asdf:system-relative-pathname :abcl
-                                          "contrib/steppenwolf/build/")))
+  (let ((build (merge-pathnames "build/" (root-directory))))
     (java:add-to-classpath build)
     (when 
         (jss:find-java-class "InterpretedStepper")
@@ -18,7 +21,5 @@
        (jss:get-java-field 'org.armedbear.lisp.Lisp "stepperHook")
        ;;; TODO: fixme.  Constructing the argument matching is tedious, this was faster
        (elt methods 7))))))
-
-
     
-(provide #:steppenwolf)
+(provide 'steppenwolf)

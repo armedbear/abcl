@@ -28,11 +28,10 @@
 ;;; this exception to your version of the library, but you are not
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
-
-;;;; For a working stepper implementation, see the contrib STEPPENWOLF
-
 (in-package "SYSTEM")
 
+;;;; The default CL:STEP implementation is a no-op.
+;;;; For a working stepper implementation, see the contrib ABCL-STEPPER
 (defmacro step (form)
   `(let ()
      ,form))
