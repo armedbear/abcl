@@ -16,15 +16,17 @@
   (let ((class
           (jss:find-java-class "InterpretedStepper")))
     (when class 
-      (let ((methods 
-              (#"getDeclaredMethods" class)))
-        #+nil
+      (let* ((methods 
+               (#"getDeclaredMethods" class))
+             (hook
+               (car (last (coerce methods 'cons)))))
         (setf
          (jss:get-java-field 'org.armedbear.lisp.Lisp "stepperHook")
-       ;;; TODO: fixme.  Constructing the argument matching is tedious, this was faster
-         (elt methods 7))
-        methods))))
-
+         hook)
+        #+nil
+        (values
+         hook
+         methods)))))
 
 (defun init-1 ()
   (let ((build (merge-pathnames "build/" (root-directory))))

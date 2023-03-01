@@ -786,9 +786,10 @@ public static synchronized final void handleInterrupt()
                 // TODO remove me!
                 if (stepperHook != null) {
                   try {
-                    stepperHook.invoke(fun,
-                            (obj != NIL) ? ((Cons)obj).cdr : obj,
-                            env);
+                    stepperHook.invoke(null,
+                                       fun,
+                                       (obj != NIL) ? ((Cons)obj).cdr : obj,
+                                       env);
                   } catch (IllegalAccessException ex) {
                     Logger.getLogger(Lisp.class.getName()).log(Level.SEVERE, null, ex);
                   } catch (InvocationTargetException ex) {
@@ -847,7 +848,8 @@ public static synchronized final void handleInterrupt()
     // TODO remove me
     if (stepperHook != null) {
       try {
-        stepperHook.invoke(function,
+        stepperHook.invoke(null,
+                           function,
                            args != NIL ? ((Cons)args) : args,
                            env);
       } catch (IllegalAccessException ex) {
