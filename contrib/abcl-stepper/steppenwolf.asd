@@ -4,15 +4,15 @@
   :license nil
   :defsystem-depends-on (abcl-build)
   :depends-on (jss)
+#|
   ;;; TODO DEBUG me; currently invoked manually
-  :in-order-to ((compile-op (o c)
-                  (with-ensured-ant ()
-                    (let ((ant-file
-                            (merge-pathnames "build.xml" (root-directory))))
-                      (abcl-build:ant/call  ant-file "compile")))
-                  (abcl-build/ant-call ant-file  "compile"))
-                (load-op (o c)
-                   (steppenwolf:init)))
+  :perform (compile-op (o c)
+              (uiop:symbol-call :steppenwolf :build))
+|#
+#|
+  :perform (load-op (o c)
+              (uiop:symbol-call :steppenwolf :init))
+|#
   :components ((:module package :pathname "./"
                 :components ((:file "package")))
                (:module base :pathname "./"

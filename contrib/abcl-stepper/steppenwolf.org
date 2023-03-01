@@ -66,9 +66,51 @@ CLOSED: [2023-02-28 Tue 10:25]
   (asdf:make :abcl-stepper)
 #+end_src
 
+** TODO Debug running things
+
+
+*** Getting org.armedbear.lisp.InterpretedStepper in current process 
+#+begin_src lisp
+  (asdf:make :steppenwolf)
+  (steppenwolf:build)
+  (steppenwolf::init-1)
+#+end_src
+
+#+RESULTS:
+: (#P"/Users/evenson/work/abcl/contrib/abcl-stepper/build/")
+
+
+#+caption: The class has been loaded successfully
+#+begin_src lisp
+  (jss:find-java-class "InterpretedStepper")
+#+end_src
+
+#+RESULTS:
+: #<java class org.armedbear.lisp.InterpretedStepper>
+
+****
+
+#+begin_src lisp
+(steppenwolf::init)
+#+end_src
+
+#+RESULTS:
+: #(#<method public static void org.armedbear.lisp.InterpretedStepper.setSteppingOff()>
+:   #<method public static void org.armedbear.lisp.InterpretedStepper.setSteppingOnAfterInit()>
+:   #<method public static void org.armedbear.lisp.InterpretedStepper.setDelimitedSteppingOff()>
+:   #<method public static final void org.armedbear.lisp.InterpretedStepper.printForStepping(org.armedbear.lisp.LispObject,org.armedbear.lisp.SimpleString,org.armedbear.lisp.LispThread,boolean)>
+:   #<method public static void org.armedbear.lisp.InterpretedStepper.setDelimitedSteppingOn()>
+:   #<method public static boolean org.armedbear.lisp.InterpretedStepper.stepInSymbolP(org.armedbear.lisp.LispObject)>
+:   #<method public static void org.armedbear.lisp.InterpretedStepper.setSteppingOn()>
+:   #<method public static final synchronized void org.armedbear.lisp.InterpretedStepper.handleStepping(org.armedbear.lisp.LispObject,org.armedbear.lisp.LispObject,org.armedbear.lisp.Environment)>)
+
+#+begin_src lisp
+(asdf:make :abcl-stepper)
+#+end_src
+
 * Colophon  
   #+begin_example
     Mark <evenson@not.org>
     Created: 2023-02-27
-    Revised: <2023-02-28 Tue 10:25>
+    Revised: <2023-03-01 Wed>
   #+end_example
