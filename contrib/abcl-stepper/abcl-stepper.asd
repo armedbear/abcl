@@ -7,7 +7,7 @@
   :depends-on (steppenwolf)
   :components  ((:module package :pathname "./"
                  :components ((:file "package")))
-                ((:module base :pathname "./"
-                  :depends-on (package)
-                  :components ((:file "abcl-stepper")
-                               (:static-file "README.markdown"))))))
+                (:module base :pathname "./"
+                 :depends-on (package)
+                 :components ((:file "abcl-stepper")
+                              (:static-file "README.markdown")))))
