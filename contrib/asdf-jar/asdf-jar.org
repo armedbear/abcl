@@ -1,0 +1,148 @@
+#+TITLE: clearing the bitrot out of ASDF-JAR
+
+* @selwynsimsek GitHub issue
+<https://github.com/armedbear/abcl/issues/476>
+
+* Development
+
+** DONE package from system located in JAR
+CLOSED: [2023-03-28 Tue 09:54]
+
+- CLOSING NOTE [2023-03-28 Tue 09:54] \\
+  Implemented with new method in zip.java that uses a =java.io.InputStream= as well as an explicit lastModified parameter.
+Try to get a =java.io.File= reference to an entry in a jar file, so
+the current code path in =system-jar= works.
+
+#+caption: stuck at
+#+begin_example
+Caught java.lang.UnsupportedOperationException.
+   [Condition of type ERROR]
+#+end_example
+
+** DONE don't package fasls by default
+CLOSED: [2023-03-21 Tue 08:47]
+
+- CLOSING NOTE [2023-03-21 Tue 08:47] \\
+  Add :fasls keyword to various routines, with NIL as default
+** DONE add separate package file source unit, a test or two
+CLOSED: [2023-03-21 Tue 08:12]
+
+- CLOSING NOTE [2023-03-21 Tue 08:12] \\
+  Test present:  JSS still not working.
+** DONE eval IF-FEATURE for individual source files
+CLOSED: [2023-03-31 Fri 14:19]
+- CLOSING NOTE [2023-03-31 Fri 14:19] \\
+  Implemented as a semi-hacky thing that tries to interpret its arg as a system if it can't parse it as a feature.
+<[[file:asdf-jar.lisp::defun resolve-system-or-feature (system-or-feature]]>
+** DONE configure ASDF to find a contrib on the filesystem
+CLOSED: [2023-03-20 Mon 21:20]
+
+- CLOSING NOTE [2023-03-20 Mon 21:20]
+<[[info:asdf.info#Configuration DSL][asdf.info#Configuration DSL]]>
+#+begin_src lisp
+  (asdf:initialize-source-registry
+   '(:source-registry :ignore-inherited-configuration
+     (:directory #p"~/work/abcl/contrib/jss/")))
+#+end_src
+
+#+RESULTS:
+
+#+begin_src lisp
+    (asdf:locate-system :jss)
+#+end_src
+
+#+begin_src lisp
+  (mapcar
+   (lambda (p) (when (not (pathname-jar-p p)) p))
+   asdf:*central-registry*)
+#+end_src
+
+
+#+caption: save central registry
+#+begin_src lisp
+  (setf xx asdf:*central-registry*)
+#+end_src
+
+#+begin_src lisp
+  (defun collect-abcl-contrib-directories ()
+    (let* ((all-asd
+             (directory
+              (asdf:system-relative-pathname :abcl "contrib/**/*.asd")))
+           (unique-directories
+             (loop :for asd :in all-asd
+                   :with result = nil 
+                   :doing
+                      (pushnew (make-pathname :directory (pathname-directory asd)
+                                              :name nil :type nil)
+                               result :test #'equalp)
+                   :finally
+                      (return result))))
+      (values
+       unique-directories
+       all-asd)))
+
+#+end_src
+
+#+RESULTS:
+: COLLECT-ABCL-CONTRIB-DIRECTORIES
+
+#+name: rig-asdf # 
+#+caption: Rig ASDF to use the ASDF location of ABCL contrib source on filesystem
+#+begin_src lisp
+  (defun rig-asdf ()
+    (let* ((not-jars 
+             (mapcar
+              (lambda (p) (when (not (pathname-jar-p p)) p))
+              asdf:*central-registry*))
+           (directories
+             (remove-if #'not not-jars))
+           (initial-without-jar
+             (loop :for d :in directories
+                   :collecting `(:directory ,d)))
+           (abcl-contrib-directories
+             (loop :for d :in (collect-abcl-contrib-directories)
+                   :collecting `(:directory ,d))))
+      (asdf:initialize-source-registry
+       `(:source-registry
+         ,#+nil
+         :ignore-inherited-configuration
+         ,@abcl-contrib-directories
+         ,@initial-without-jar
+         :inherit-configuration))))
+#+end_src
+
+#+caption: Transitioning away from use of ASDF:*CENTRAL-REGISTRY*
+#+begin_src lisp
+(setf asdf:*central-registry* nil)
+(rig-asdf)
+#+end_src
+
+** DONE Refactored rig-asdf as EXT:REGISTER-ASDF
+CLOSED: [2023-03-31 Fri 14:20]
+
+- CLOSING NOTE [2023-03-31 Fri 14:20] \\
+  TODO:  add an equivalent API to fiddle with asdf output-translations?  The current plan is to include that machinery in the ASDF-JAR contrib
+<[[file:~/work/abcl/src/org/armedbear/lisp/abcl-contrib.lisp::defun register-asdf (asdf-file-or-files]]>
+
+** TODO Use fasls from jar
+
+* Fragments
+
+** use EXT:ADD-TO-ASDF
+#+begin_src lisp
+  (ext:register-asdf '("/Users/evenson/easye/work/illithid/illithid.asd"
+                       "/Users/evenson/net/slack.net/home/mevenson/work/etch/etch.asd"))
+#+end_src
+
+#+RESULTS:
+
+* References
+
+** <https://docs.oracle.com/javase/8/docs/technotes/guides/io/fsp/zipfilesystemprovider.html>
+
+* Colophon  
+  #+begin_example
+    Mark <evenson@not.org>
+    Created: 2023-03-06
+    Revised: <2023-03-31 Fri 14:41>
+  #+end_example

@@ -16,38 +16,55 @@ Once the requisite ASDF systems have been installed, ensure that this
 contrib is loaded via
 
     CL-USER) (require :abcl-contrib)
-    CL-USER> (require :asdf-jar)
+    CL-USER> (asdf:make :asdf-jar)
 
-Then, to say package the Perl regular expression system ("CL-PPCRE"),
-one uses the ASDF-JAR:PACKAGE as follows:
+Then, one may package any locally loadable ASDF system via 
+ASDF-JAR:PACKAGE as follows:
 
-    CL-USER> (asdf-jar:package :cl-ppcre)
-    ;  Loading #P"/home/evenson/quicklisp/dists/quicklisp/software/cl-ppcre-2.0.3/cl-ppcre.asd" ...
-    ;  Loaded #P"/home/evenson/quicklisp/dists/quicklisp/software/cl-ppcre-2.0.3/cl-ppcre.asd" (0.029 seconds)
-    Packaging ASDF definition of #<ASDF:SYSTEM "cl-ppcre">
-     as /var/tmp/cl-ppcre-all-2.0.3.jar.
-    Packaging contents in /var/tmp/cl-ppcre-all-2.0.3.jar
-     with recursive dependencies.
-    #P"/var/tmp/cl-ppcre-all-2.0.3.jar"
+     CL-USER> (asdf-jar:package :chunga :verbose t)
+     Packaging ASDF definition of #<ASDF/SYSTEM:SYSTEM "chunga">
+     Performing unforced compilation of /var/tmp/chunga-all-1.1.7.jar.
+     Packaging contents in '/var/tmp/chunga-all-1.1.7.jar'.
+     Packaging with recursive dependencies #<ASDF/SYSTEM:SYSTEM "trivial-gray-streams">.
+     /Users/evenson/quicklisp/dists/quicklisp/software/chunga-20221106-git/streams.lisp
+      =>chunga/streams.lisp
+     /Users/evenson/quicklisp/dists/quicklisp/software/chunga-20221106-git/input.lisp
+      =>chunga/input.lisp
+     /Users/evenson/quicklisp/dists/quicklisp/software/chunga-20221106-git/specials.lisp
+      =>chunga/specials.lisp
+     /Users/evenson/quicklisp/dists/quicklisp/software/chunga-20221106-git/known-words.lisp
+      =>chunga/known-words.lisp
+     /Users/evenson/quicklisp/dists/quicklisp/software/chunga-20221106-git/util.lisp
+      =>chunga/util.lisp
+     /Users/evenson/quicklisp/dists/quicklisp/software/chunga-20221106-git/read.lisp
+      =>chunga/read.lisp
+     /Users/evenson/quicklisp/dists/quicklisp/software/chunga-20221106-git/output.lisp
+      =>chunga/output.lisp
+     /Users/evenson/quicklisp/dists/quicklisp/software/chunga-20221106-git/conditions.lisp
+      =>chunga/conditions.lisp
+     /Users/evenson/quicklisp/dists/quicklisp/software/chunga-20221106-git/packages.lisp
+      =>chunga/packages.lisp
+     /Users/evenson/quicklisp/dists/quicklisp/software/trivial-gray-streams-20210124-git/streams.lisp
+      =>trivial-gray-streams/streams.lisp
+     /Users/evenson/quicklisp/dists/quicklisp/software/trivial-gray-streams-20210124-git/package.lisp
+      =>trivial-gray-streams/package.lisp
+     #P"/var/tmp/chunga-all-1.1.7.jar"
+     #<EQUAL HASH-TABLE 13 entries, 22 buckets {5368E7A9}>
 
-The resulting jar contains all source and fasls required to run the
-ASDF system including any transitive ASDF dependencies.  Each asdf
-system is packaged under its own top level directory within the jar
-archive.  The jar archive itself is numbered with the version of the
-system that was specified in the packaging.
+    
+The resulting jar contains the source required to run the ASDF system
+including any transitive ASDF dependencies.  Each such system is
+packaged under its own top level directory within the jar archive.
 
 To load the system from the jar one needs to add the ASDF file
-locations to the ASDF *CENTRAL-REGISTRY*.  If one wishes to load the
-fasls from the jar alone, one needs to tell ASDF not to override its
-output translation rules.  The function ASDF-JAR:ADD-TO-JAR does both
-of these options serving as the basis for customized load strategies
-tailored to end-user deployment needs.  So, after
+locations to the ASDF source registry, conveniently abstracted as the
+ASDF-JAR:ADD-TO-JAR function:
 
-    CL-USER> (asdf-jar:add-to-asdf "/var/tmp/cl-ppcre-all-2.0.3.jar")
+    CL-USER> (asdf-jar:add-to-asdf "/var/tmp/chunga-all-1.1.7.jar)
 
 a subsequent
 
-    CL-USER> (asdf:load-system :cl-ppcre)
+    CL-USER> (asdf:load-system :chunga)
 
 should load the ASDF system from the jar.
 
@@ -58,4 +75,6 @@ load is indeed coming from the jar.
 
      Mark Evenson
      Created: 20-JUN-2011
-     Revised: 11-JUN-2017
+     Revised: 01-APR-2023
+     
+     
