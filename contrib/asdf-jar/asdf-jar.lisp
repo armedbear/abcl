@@ -102,24 +102,25 @@ Returns the pathname of the packaged jar archive.
                          :type "jar"
                          :defaults out)))
     (when verbose 
-      (format verbose "~&Packaging ASDF definition of ~A" system))
+      (format verbose "~&Packaging ASDF definition of ~A~%" system))
     (when (and verbose force)
-      (format verbose "~&Forcing recursive compilation of ~A." package-jar))
+      (format verbose "~&Forcing recursive compilation of ~A.~%" package-jar))
     (asdf:compile-system system :force force)
     (when verbose
-      (format verbose "~&Packaging contents in ~A" package-jar))
-    (system:zip package-jar
-                (systems->hash-table 
-                 (append (list system) 
-                         (when recursive
-                           (let ((dependencies (dependent-systems system)))
-                             (when (and verbose dependencies) 
-                               (format verbose
-                                       "~&  with recursive dependencies~{ ~A~^, ~}."
-                                       dependencies))
-                             (mapcar #'asdf:find-system dependencies))))
-                 root
-                 :verbose verbose))))
+      (format verbose "~&Packaging contents in ~A~%" package-jar))
+    (let ((hash-table
+            (systems->hash-table 
+             (append (list system) 
+                     (when recursive
+                       (let ((dependencies (dependent-systems system)))
+                         (when (and verbose dependencies) 
+                           (format verbose
+                                   "~&  with recursive dependencies~{ ~A~^, ~}.~%"
+                                   dependencies))
+                         (mapcar #'asdf:find-system dependencies))))
+             root :verbose verbose)))
+      (system:zip package-jar hash-table root))))
+
 
 (defun all-files (component)
   (loop :for c 
