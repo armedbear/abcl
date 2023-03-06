@@ -150,7 +150,8 @@ Returns the pathname of the packaged jar archive.
 (defun tmpdir (name)
   "Return temporary directory."
   (let* ((temp-file (java:jcall "getAbsolutePath" 
-                               (java:jstatic "createTempFile" "java.io.File" "foo" "tmp")))
+                                (java:jstatic "createTempFile" "java.io.File"
+                                              (symbol-name (gensym)) "tmp")))
          (temp-path (pathname temp-file)))
     (make-pathname 
      :directory (nconc (pathname-directory temp-path)
