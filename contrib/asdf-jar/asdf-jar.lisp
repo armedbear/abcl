@@ -2,50 +2,45 @@
 ;;;
 ;;; Copyright 2011 Mark <evenson@panix.com>
 
-(defpackage #:asdf-jar
-  (:use :cl)
-  (:export #:package 
-           ;; "Si vis pacem, para bellum" -- Publius Flavius Vegetius Renatus
-           #:prepare-for-war 
-           #:add-to-asdf))
-
 (in-package #:asdf-jar)
-
-(defvar *debug* nil)
 
 (defun add-system-files-to-mapping! (system
                                      mapping
                                      system-base
                                      system-name
                                      root
-                                     &key (verbose nil))
+                                     &key
+                                       (fasls t)
+                                       (verbose nil))
   "Add all the files of a SYSTEM to the MAPPING with a given
 SYSTEM-BASE and SYSTEM-NAME. 
 
 This function destructively modifies MAPPING returning nil."
   (let ((abcl-file-type "abcl"))
-    (loop :for component :in (all-files system) 
-       :for source = (slot-value component 'asdf::absolute-pathname)
-       :for source-entry = (merge-pathnames
-                            (archive-relative-path system-base system-name source)
-                            (make-pathname :directory root))
-       :do (setf (gethash source mapping)
-                 source-entry)
-       :do (format verbose "~&~A~& => ~A" source source-entry)
-       :when (and (typep component 'asdf::source-file)
-                  (not (typep component 'asdf::static-file)))
-       :do (let ((output 
-                  (make-pathname
-                   :defaults (asdf:apply-output-translations source)
-                   :type abcl-file-type))
-                 (output-entry 
-                  (make-pathname :defaults source-entry 
-                                 :type abcl-file-type)))
-             (format verbose "~&~A~& => ~A" output output-entry)
-             (setf (gethash output mapping)
-                   output-entry)))))
+    (loop
+      :for component :in (all-files system) 
+      :for source = (asdf/component:component-pathname component)
+      :for source-entry = (merge-pathnames
+                           (archive-relative-path system-base system-name source)
+                           (make-pathname :directory root))
+      :do (setf (gethash source mapping)
+                source-entry)
+      :do (format verbose "~&~A~%~T=>~A~%" source source-entry)
+      :when (and fasls
+                 (typep component 'asdf/component:source-file)
+                 (not (typep component 'asdf/component:static-file)))
+        :do (let ((output 
+                    (make-pathname
+                     :defaults (asdf:apply-output-translations source)
+                     :type abcl-file-type))
+                  (output-entry 
+                    (make-pathname :defaults source-entry 
+                                   :type abcl-file-type)))
+              (format verbose "~&~A~% => ~A~%" output output-entry)
+              (setf (gethash output mapping)
+                    output-entry)))))
 
-(defun systems->hash-table (systems root &key (verbose nil))
+(defun systems->hash-table (systems root &key (fasls t) (verbose nil))
   "Build a hash table from a list of SYSTEMS mapping absolute file
 names to of these systems into relative path names under the pathname
 directory component ROOT.
@@ -54,22 +49,43 @@ This mapping will be used to zip the files of the system
 into a jar file."
   (let ((mapping (make-hash-table :test 'equal)))
     (dolist (system systems)
-      (let ((base (slot-value system 'asdf::absolute-pathname))
-            (name (slot-value system 'asdf::name))
-            (asdf (slot-value system 'asdf::source-file)))
-        (setf (gethash asdf mapping)
-              (let ((relative-path (archive-relative-path base name asdf)))
-                (merge-pathnames
-                 relative-path
-                 (make-pathname :directory root))))
-        (add-system-files-to-mapping! system mapping base name root
-                                      :verbose verbose)))
+      (let ((base (slot-value system 'asdf/component:absolute-pathname))
+            (name (slot-value system 'asdf/component:name))
+            (asdf (slot-value system 'asdf/component:source-file)))
+        ;; For the purposes of locating their ASDF file, subsystems
+        ;; use the name of their parent.
+        (let ((position (position #\/ name)))
+          (when position
+            (setf name
+                  (subseq name 0 position)))
+          (setf (gethash asdf mapping)
+                (let ((relative-path (archive-relative-path base name asdf)))
+                  (merge-pathnames
+                   relative-path
+                   (make-pathname :directory root))))
+          (let ((additional
+                  (slot-value system 'asdf/component::additional-input-files)))
+            (when additional
+              (loop
+                :for (op file) :in additional
+                :when (and
+                       op ;; TODO: tighten allowed ops?
+                       (probe-file file))
+                  :do (setf (gethash file mapping)
+                            (let ((relative-path (archive-relative-path base name file)))
+                              (merge-pathnames
+                               relative-path
+                               (make-pathname :directory root))))))
+            (add-system-files-to-mapping! system mapping base name root
+                                          :fasls fasls
+                                          :verbose verbose)))))
     mapping))
 
 (defun package (system &key 
                          (out #p"/var/tmp/") 
                          (recursive t)          ; whether to package dependencies
                          (force nil)            ; whether to force ASDF compilation
+                         (fasls nil)  
                          (root '(:relative))
                          (verbose nil))
 "Compile and package the asdf SYSTEM in a jar.
@@ -89,12 +105,14 @@ before being added to the mapping. The purpose of having this option
 is to add the paths to an internal directory, such as (list :relative
 \"META-INF\" \"resources\") for generating WAR files.
 
-Returns the pathname of the packaged jar archive.
+Returns the pathname of the packaged jar archive as the first value,
+and the hash of its members source to destination locations as the
+second.
 "
   (when (not (typep system 'asdf:system))
              (setf system (asdf:find-system system)))
   (let* ((name 
-          (slot-value system 'asdf::name))
+          (slot-value system 'asdf/component:name))
          (version (let ((v (slot-value system 'asdf:version)))
                     (when v
                       v)))
@@ -108,42 +126,88 @@ Returns the pathname of the packaged jar archive.
                          :type "jar"
                          :defaults out)))
     (when verbose 
-      (format verbose "~&Packaging ASDF definition of ~A" system))
-    (when (and verbose force)
-      (format verbose "~&Forcing recursive compilation of ~A." package-jar))
+      (format verbose "~&Packaging ASDF definition of ~A~%" system))
+    (when verbose
+      (format verbose "~&Performing ~a compilation of ~A.~%"
+              (if force
+                  "forced"
+                  "unforced")
+              package-jar))
     (asdf:compile-system system :force force)
     (when verbose
-      (format verbose "~&Packaging contents in ~A" package-jar))
-    (system:zip package-jar
-                (systems->hash-table 
-                 (append (list system) 
-                         (when recursive
-                           (let ((dependencies (dependent-systems system)))
-                             (when (and verbose dependencies) 
-                               (format verbose
-                                       "~&  with recursive dependencies~{ ~A~^, ~}."
-                                       dependencies))
-                             (mapcar #'asdf:find-system dependencies))))
-                 root
-                 :verbose verbose))))
+      (format verbose "~&Packaging contents in '~A'.~%" package-jar))
+    (let ((hash-table
+            (systems->hash-table 
+             (append (list system) 
+                     (when recursive
+                       (let* ((dependencies
+                                (dependent-systems system))
+                              (washed-dependencies
+                                (remove-if-not
+                                 (lambda (s)
+                                   (if (asdf/component:component-pathname s)
+                                       t
+                                       (progn 
+                                         (when verbose
+                                           (format verbose
+                                                   "~&Ignoring dependency ~a without associated pathname.~%"
+                                                   s))
+                                         nil)))
+                                 dependencies)))
+                         (when (and verbose washed-dependencies) 
+                           (format verbose
+                                   "~&Packaging with recursive dependencies~{ ~A~^, ~}.~%"
+                                   washed-dependencies))
+                         (mapcar #'asdf:find-system washed-dependencies))))
+             root
+             :fasls fasls :verbose verbose)))
+      (values
+       (system:zip package-jar hash-table)
+       hash-table))))
 
 (defun all-files (component)
-  (loop :for c 
-     :being :each :hash-value :of (slot-value component 'asdf::children-by-name)
-     :when (typep c 'asdf:module)
-     :append (all-files c)
-     :when (typep c 'asdf:source-file)
-     :append (list c)))
+  (loop
+    :for c 
+      :being :each :hash-value :of (slot-value component 'asdf/component:children-by-name)
+    :when (typep c 'asdf:module)
+      :append (all-files c)
+    :when (typep c 'asdf/component:source-file)
+      :append (list c)))
 
-(defun dependent-systems (system)
-  (when (not (typep system 'asdf:system))
-             (setf system (asdf:find-system system)))
-  (let* ((dependencies (asdf::component-load-dependencies system))
-         (sub-depends
-          (loop :for dependency :in dependencies
-             :for sub = (dependent-systems dependency)
-             :when sub :append sub)))
-    (remove-duplicates `(,@dependencies ,@sub-depends))))
+(defun resolve-system-or-feature (system-or-feature)
+  "Resolve SYSTEM-OR-FEATURE to an asdf system"
+  (cond
+    ((null system-or-feature)
+     nil)
+    ((and (consp system-or-feature)
+          (= (length system-or-feature) 1))
+     (asdf:find-system (first system-or-feature)))
+    ((and (consp system-or-feature)
+          (= (length system-or-feature) 3))
+     (destructuring-bind (keyword expression system)
+         system-or-feature
+       (unless (equalp keyword :feature)
+         (error "~a is not a feature expression" system-or-feature))
+       (when (uiop/os:featurep expression)
+         (asdf:find-system system))))
+    ((typep system-or-feature 'asdf:system)
+     system-or-feature)
+    (t
+     (asdf:find-system system-or-feature))))
+
+(defun dependent-systems (system-or-feature)
+  (let ((system
+          (resolve-system-or-feature system-or-feature)))
+    (when system
+      (remove-duplicates
+       (loop :for dependency
+               :in (asdf/component:component-sideway-dependencies system)
+             :for resolved-dependency = (resolve-system-or-feature dependency)
+             :for dependents = (dependent-systems resolved-dependency)
+             :when resolved-dependency
+               :collect resolved-dependency
+             :when dependents
+               :append dependents)))))
 
 (defun archive-relative-path (base dir file) 
   (let* ((relative 
@@ -156,36 +220,41 @@ Returns the pathname of the packaged jar archive.
 (defun tmpdir (name)
   "Return temporary directory."
   (let* ((temp-file (java:jcall "getAbsolutePath" 
-                               (java:jstatic "createTempFile" "java.io.File" "foo" "tmp")))
+                                (java:jstatic "createTempFile" "java.io.File"
+                                              (symbol-name (gensym)) "tmp")))
          (temp-path (pathname temp-file)))
     (make-pathname 
      :directory (nconc (pathname-directory temp-path)
                        (list name)))))
 
-(defun add-to-asdf (jar &key (use-jar-fasls t))
+(defun add-to-asdf (jar &key (use-jar-fasls nil) (verbose *standard-output*))
   "Make a given JAR output by the package mechanism loadable by asdf.
 
+NOTICE: the use of fasls from the jar does not currently seem to work.
+
 The parameter passed to :USE-JAR-FASLS determines whether to instruct
-asdf to use the fasls packaged in the jar.  If this is nil, the fasls
-will be compiled with respect to the usual asdf output translation
-conventions."
+asdf to use the fasls packaged in the jar.  If this is nil, the
+default, the fasls will be compiled with respect to the usual asdf
+output translation conventions."
   (when (not (typep jar 'pathname))
     (setf jar (pathname jar)))
   (when (null (pathname-device jar))
     (setf jar (make-pathname :device (list jar))))
-
   ;;; Inform ASDF of all the system definitions in the jar
-  (loop :for asd 
-     :in (directory (merge-pathnames "*/*.asd" jar))
-     :do (pushnew (make-pathname :defaults asd
-                                 :name nil :type nil)
-                  asdf:*central-registry*))
-
+  (let ((asdf-files
+          (directory (merge-pathnames "*/*.asd" jar))))
+    (format verbose "~&Adding to ASDF: ~{~%~t<~a>~}~%" asdf-files)
+    (ext:register-asdf asdf-files))
   ;;; Load the FASLs directly from the jar
-  (when use-jar-fasls                    
-    (asdf:initialize-output-translations
-     `(:output-translations (,(merge-pathnames "/**/*.*" jar)) 
-                            :inherit-configuration))))
+  (when use-jar-fasls
+    (let* ((source
+             (make-pathname :defaults jar
+                            :directory '(:ABSOLUTE :WILD-INFERIORS) :name :wild :type :wild))
+           (destination
+             source))
+      (asdf:initialize-output-translations
+       `(:output-translations (,source ,destination) :inherit-configuration)))))
+
 
 (defun prepare-for-war (system &key 
                                  (out #p"/var/tmp/") 
