@@ -56,37 +56,48 @@ add separate package file source unit, a test or two
 #+RESULTS:
 : COLLECT-ABCL-CONTRIB-DIRECTORIES
 
+#+name: rig-asdf # not working
+#+caption: Rig ASDF to use the ASDF location of ABCL contrib source on filesystem
 #+begin_src lisp
-  (let* ((not-jars 
-           (mapcar
-            (lambda (p) (when (not (pathname-jar-p p)) p))
-            asdf:*central-registry*))
-         (directories
-           (remove-if #'not not-jars))
-         (configuration-old
-           ,@(loop :for d :in directories
-                   :collecting `(:directory ,d))
-           ,@(loop :for d :in (collect-abcl-contrib-directories)
-                   :collecting `(:directory ,d))
-
-    (asdf:initialize-source-registry
-     `(:source-registry
-       :inherit-configuration
-       ,#+nil
-       :ignore-inherited-configuration)))
+  (defun rig-asdf ()
+    (let* ((not-jars 
+             (mapcar
+              (lambda (p) (when (not (pathname-jar-p p)) p))
+              asdf:*central-registry*))
+           (directories
+             (remove-if #'not not-jars))
+           (initial-without-jar
+             (loop :for d :in directories
+                   :collecting `(:directory ,d)))
+           (abcl-contrib-directories
+             (loop :for d :in (collect-abcl-contrib-directories)
+                   :collecting `(:directory ,d))))
+      (asdf:initialize-source-registry
+       `(:source-registry
+         ,#+nil
+         :ignore-inherited-configuration
+         ,@abcl-contrib-directories
+         ,@initial-without-jar
+         ,#+nil
+         :inherit-configuration))))
 #+end_src
+
+#+RESULTS: rig-asdf # not working
+: RIG-ASDF
 
 #+RESULTS:
 
-#+begin_src lisp
-  (defun fib (n)
-    (when (= n 1)
-      2))
+
+
 #+end_src
 
 #+RESULTS:
-: FIB
+: RIG-ASDF
 
-#+begin_src lisp
 
-#+end_src
+* Colophon  
+  #+begin_example
+    Mark <evenson@not.org>
+    Created: 2023-03-06
+    Revised: <2023-03-06 Mon 20:42>
+  #+end_example
