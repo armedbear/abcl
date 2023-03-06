@@ -1,3 +1,4 @@
+TAGS
 build
 dist
 abcl
@@ -12,13 +13,13 @@ src/org/armedbear/lisp/jvm-instructions.abcl-tmp
 t/eg/compiler_fails_on_inline_recursion_1.cls
 t/eg/compiler_fails_on_inline_recursion_2.cls
 t/eg/progn-compiler-inconsistency.abcl
-
 target/
 \#*\#
 \.\#*
 abcl.properties
 *.patch
 .java-version
+doc/asdf/asdf.info
 doc/manual/abcl.aux
 doc/manual/abcl.bbl
 doc/manual/abcl.blg
