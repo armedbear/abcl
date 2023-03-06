@@ -7,13 +7,64 @@
 
 add separate package file source unit, a test or two
 
-
 * TODO configure ASDF to find a contrib on the filesystem
 
 #+begin_src lisp
-(asdf:initialize-source-registry
- '(:source-registry :ignore-inherited-configuration
-   (:directory #p"~/work/abcl/contrib/jss/")))
-
-(asdf:locate-system :jss)
+  (asdf:initialize-source-registry
+   '(:source-registry :ignore-inherited-configuration
+     (:directory #p"~/work/abcl/contrib/jss/")))
 #+end_src
+
+#+RESULTS:
+
+#+begin_src lisp
+    (asdf:locate-system :jss)
+#+end_src
+#+RESULTS:
+: T
+
+#+begin_src lisp
+  (mapcar
+   (lambda (p) (when (not (pathname-jar-p p)) p))
+   asdf:*central-registry*)
+#+end_src
+
+#+RESULTS:
+: (#P"/Users/evenson/quicklisp/quicklisp/" NIL NIL NIL NIL NIL NIL NIL
+:  NIL NIL NIL)
+
+#+begin_src lisp
+  (let* ((not-jars 
+           (mapcar
+            (lambda (p) (when (not (pathname-jar-p p)) p))
+            asdf:*central-registry*))
+         (directories
+           (remove-if #'not not-jars)))
+    (asdf:initialize-source-registry
+     `(:source-registry
+       ,@(loop :for d :in directories
+               :collecting `(:directory ,d))
+       :ignore-inherited-configuration)))
+#+end_src
+
+#+RESULTS:
+
+#+caption: save central registry
+#+begin_src lisp
+  (setf xx asdf:*central-registry*)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+(#P"/Users/evenson/quicklisp/quicklisp/"
+ #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/abcl-asdf/"
+ #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/abcl-build/"
+ #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/abcl-introspect/"
+ #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/abcl-stepper/"
+ #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/asdf-jar/"
+ #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/jfli/"
+ #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/jss/"
+ #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/mvn/"
+ #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/named-readtables/"
+ #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/quicklisp/")
+#+end_example
