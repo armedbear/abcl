@@ -1,0 +1,19 @@
+#+TITLE: clearing the bitrot out of ASDF-JAR
+
+* @selwynsimsek GitHub issue
+<https://github.com/armedbear/abcl/issues/476>
+
+* General refactoring
+
+add separate package file source unit, a test or two
+
+
+* TODO configure ASDF to find a contrib on the filesystem
+
+#+begin_src lisp
+(asdf:initialize-source-registry
+ '(:source-registry :ignore-inherited-configuration
+   (:directory #p"~/work/abcl/contrib/jss/")))
+
+(asdf:locate-system :jss)
+#+end_src
