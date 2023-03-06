@@ -9,6 +9,7 @@ add separate package file source unit, a test or two
 
 * TODO configure ASDF to find a contrib on the filesystem
 
+<[[info:asdf.info#Configuration DSL][asdf.info#Configuration DSL]]>
 #+begin_src lisp
   (asdf:initialize-source-registry
    '(:source-registry :ignore-inherited-configuration
@@ -20,8 +21,6 @@ add separate package file source unit, a test or two
 #+begin_src lisp
     (asdf:locate-system :jss)
 #+end_src
-#+RESULTS:
-: T
 
 #+begin_src lisp
   (mapcar
@@ -29,9 +28,33 @@ add separate package file source unit, a test or two
    asdf:*central-registry*)
 #+end_src
 
+
+#+caption: save central registry
+#+begin_src lisp
+  (setf xx asdf:*central-registry*)
+#+end_src
+
+#+begin_src lisp
+  (defun collect-abcl-contrib-directories ()
+    (let* ((all-asd
+             (directory
+              (asdf:system-relative-pathname :abcl "contrib/**/*.asd")))
+           (unique-directories
+             (loop :for asd :in all-asd
+                   :with result = nil 
+                   :doing
+                      (pushnew (make-pathname :directory (pathname-directory asd))
+                               result :test #'equal)
+                   :finally
+                      (return result))))
+      (values
+       unique-directories
+       all-asd)))
+
+#+end_src
+
 #+RESULTS:
-: (#P"/Users/evenson/quicklisp/quicklisp/" NIL NIL NIL NIL NIL NIL NIL
-:  NIL NIL NIL)
+: COLLECT-ABCL-CONTRIB-DIRECTORIES
 
 #+begin_src lisp
   (let* ((not-jars 
@@ -39,32 +62,31 @@ add separate package file source unit, a test or two
             (lambda (p) (when (not (pathname-jar-p p)) p))
             asdf:*central-registry*))
          (directories
-           (remove-if #'not not-jars)))
+           (remove-if #'not not-jars))
+         (configuration-old
+           ,@(loop :for d :in directories
+                   :collecting `(:directory ,d))
+           ,@(loop :for d :in (collect-abcl-contrib-directories)
+                   :collecting `(:directory ,d))
+
     (asdf:initialize-source-registry
      `(:source-registry
-       ,@(loop :for d :in directories
-               :collecting `(:directory ,d))
+       :inherit-configuration
+       ,#+nil
        :ignore-inherited-configuration)))
 #+end_src
 
 #+RESULTS:
 
-#+caption: save central registry
 #+begin_src lisp
-  (setf xx asdf:*central-registry*)
+  (defun fib (n)
+    (when (= n 1)
+      2))
 #+end_src
 
 #+RESULTS:
-#+begin_example
-(#P"/Users/evenson/quicklisp/quicklisp/"
- #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/abcl-asdf/"
- #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/abcl-build/"
- #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/abcl-introspect/"
- #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/abcl-stepper/"
- #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/asdf-jar/"
- #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/jfli/"
- #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/jss/"
- #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/mvn/"
- #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/named-readtables/"
- #P"jar:file:///Users/evenson/work/abcl/dist/abcl-contrib.jar!/quicklisp/")
-#+end_example
+: FIB
+
+#+begin_src lisp
+
+#+end_src
