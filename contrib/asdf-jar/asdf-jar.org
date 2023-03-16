@@ -43,8 +43,9 @@ add separate package file source unit, a test or two
              (loop :for asd :in all-asd
                    :with result = nil 
                    :doing
-                      (pushnew (make-pathname :directory (pathname-directory asd))
-                               result :test #'equal)
+                      (pushnew (make-pathname :directory (pathname-directory asd)
+                                              :name nil :type nil)
+                               result :test #'equalp)
                    :finally
                       (return result))))
       (values
@@ -78,26 +79,20 @@ add separate package file source unit, a test or two
          :ignore-inherited-configuration
          ,@abcl-contrib-directories
          ,@initial-without-jar
-         ,#+nil
          :inherit-configuration))))
 #+end_src
 
 #+RESULTS: rig-asdf # not working
 : RIG-ASDF
 
-#+RESULTS:
-
-
-
+#+begin_src lisp
+(setf asdf:*central-registry* nil)
+(rig-asdf)
 #+end_src
-
-#+RESULTS:
-: RIG-ASDF
-
 
 * Colophon  
   #+begin_example
     Mark <evenson@not.org>
     Created: 2023-03-06
-    Revised: <2023-03-06 Mon 20:42>
+    Revised: <2023-03-16 Thu 12:06>
   #+end_example
