@@ -253,6 +253,9 @@ public final class zip extends Primitive
         throws FileNotFoundException, IOException
     {
         byte[] buffer = new byte[4096];
+        if (file == null) {
+          throw new IOException("No file to work on.");
+        }
         long lastModified = file.lastModified();
         FileInputStream in = new FileInputStream(file);
         ZipEntry entry = new ZipEntry(name);
