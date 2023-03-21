@@ -12,34 +12,38 @@
                                      system-base
                                      system-name
                                      root
-                                     &key (verbose nil))
+                                     &key
+                                       (fasls t)
+                                       (verbose nil))
   "Add all the files of a SYSTEM to the MAPPING with a given
 SYSTEM-BASE and SYSTEM-NAME. 
 
 This function destructively modifies MAPPING returning nil."
   (let ((abcl-file-type "abcl"))
-    (loop :for component :in (all-files system) 
-       :for source = (slot-value component 'asdf::absolute-pathname)
-       :for source-entry = (merge-pathnames
-                            (archive-relative-path system-base system-name source)
-                            (make-pathname :directory root))
-       :do (setf (gethash source mapping)
-                 source-entry)
-       :do (format verbose "~&~A~%~T=>~A~%" source source-entry)
-       :when (and (typep component 'asdf::source-file)
-                  (not (typep component 'asdf::static-file)))
-       :do (let ((output 
-                  (make-pathname
-                   :defaults (asdf:apply-output-translations source)
-                   :type abcl-file-type))
-                 (output-entry 
-                  (make-pathname :defaults source-entry 
-                                 :type abcl-file-type)))
-             (format verbose "~&~A~& => ~A" output output-entry)
-             (setf (gethash output mapping)
-                   output-entry)))))
+    (loop
+      :for component :in (all-files system) 
+      :for source = (asdf/component:component-pathname component)
+      :for source-entry = (merge-pathnames
+                           (archive-relative-path system-base system-name source)
+                           (make-pathname :directory root))
+      :do (setf (gethash source mapping)
+                source-entry)
+      :do (format verbose "~&~A~%~T=>~A~%" source source-entry)
+      :when (and fasls
+                 (typep component 'asdf::source-file)
+                 (not (typep component 'asdf::static-file)))
+        :do (let ((output 
+                    (make-pathname
+                     :defaults (asdf:apply-output-translations source)
+                     :type abcl-file-type))
+                  (output-entry 
+                    (make-pathname :defaults source-entry 
+                                   :type abcl-file-type)))
+              (format verbose "~&~A~% => ~A~%" output output-entry)
+              (setf (gethash output mapping)
+                    output-entry)))))
 
-(defun systems->hash-table (systems root &key (verbose nil))
+(defun systems->hash-table (systems root &key (fasls t) (verbose nil))
   "Build a hash table from a list of SYSTEMS mapping absolute file
 names to of these systems into relative path names under the pathname
 directory component ROOT.
@@ -57,6 +61,7 @@ into a jar file."
                  relative-path
                  (make-pathname :directory root))))
         (add-system-files-to-mapping! system mapping base name root
+                                      :fasls fasls
                                       :verbose verbose)))
     mapping))
 
@@ -64,6 +69,7 @@ into a jar file."
                          (out #p"/var/tmp/") 
                          (recursive t)          ; whether to package dependencies
                          (force nil)            ; whether to force ASDF compilation
+                         (fasls nil)  
                          (root '(:relative))
                          (verbose nil))
 "Compile and package the asdf SYSTEM in a jar.
@@ -118,7 +124,8 @@ Returns the pathname of the packaged jar archive.
                                    "~&  with recursive dependencies~{ ~A~^, ~}.~%"
                                    dependencies))
                          (mapcar #'asdf:find-system dependencies))))
-             root :verbose verbose)))
+             root
+             :fasls fasls :verbose verbose)))
       (system:zip package-jar hash-table))))
 
 (defun all-files (component)
