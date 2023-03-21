@@ -40,6 +40,7 @@ import java.io.FileNotFoundException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -59,7 +60,6 @@ public final class zip extends Primitive
         super("zip", PACKAGE_SYS, true);
     }
     
-
     @Override
     public LispObject execute(LispObject first, LispObject second)
     {
@@ -98,8 +98,6 @@ public final class zip extends Primitive
         }
         return zipfilePathname;
     }
-
-    
 
     @Override
     public LispObject execute(LispObject first, LispObject second, LispObject third)
@@ -189,7 +187,9 @@ public final class zip extends Primitive
         }
     }
 
-    public LispObject execute(final Pathname zipfilePathname, final org.armedbear.lisp.protocol.Hashtable table) {
+    public LispObject execute(final Pathname zipfilePathname,
+                              final org.armedbear.lisp.protocol.Hashtable table)
+  {
         LispObject entriesObject = (LispObject)table.getEntries();
         if (!(entriesObject instanceof Cons)) {
             return NIL;
@@ -204,10 +204,10 @@ public final class zip extends Primitive
         try {
             out = new ZipOutputStream(new FileOutputStream(zipfileNamestring));
         } catch (FileNotFoundException e) {
-            return error(new FileError("Failed to create file for writing zip archive", zipfilePathname));
+            return error(new FileError("Failed to create file for writing zip archive",
+                                       zipfilePathname));
         }
         Directories directories = new Directories(out);
-
 
         for (LispObject head = entries; head != NIL; head = head.cdr()) {
             final LispObject key = head.car().car();
@@ -215,18 +215,21 @@ public final class zip extends Primitive
 
             final Pathname source = Lisp.coerceToPathname(key);
             final Pathname destination = Lisp.coerceToPathname(value);
-            final File file = source.getFile();
             try {
                 String jarEntry = destination.getNamestring();
                 if (jarEntry.startsWith("/")) {
                     jarEntry = jarEntry.substring(1);
                 }
                 directories.ensure(jarEntry);
-                makeEntry(out, file, jarEntry);
+                InputStream input = source.getInputStream();
+                long lastModified = source.getLastModified();
+                makeEntry(out, input, jarEntry, lastModified);
             } catch (FileNotFoundException e) {
-                return error(new FileError("Failed to read file for incoporation in zip archive.", source));
+                return error(new FileError("Failed to read file for incorporation in zip archive.",
+                                           source));
             } catch (IOException e) {
-                return error(new FileError("Failed to add file to zip archive.", source));
+                return error(new FileError("Failed to add file to zip archive.",
+                                           source));
             }
         } 
         try {
@@ -248,19 +251,28 @@ public final class zip extends Primitive
     private void makeEntry(ZipOutputStream zip, File file, String name) 
         throws FileNotFoundException, IOException
     {
-        byte[] buffer = new byte[4096];
-        long lastModified = file.lastModified();
-        FileInputStream in = new FileInputStream(file);
-        ZipEntry entry = new ZipEntry(name);
-        if (lastModified > 0) {
-            entry.setTime(lastModified);
-        }
-        zip.putNextEntry(entry);
-        int n;
-        while ((n = in.read(buffer)) > 0)
-            zip.write(buffer, 0, n);
-        zip.closeEntry();
-        in.close();
+      if (file == null) {
+        throw new IOException("No file to work on.");
+      }
+      long lastModified = file.lastModified();
+      FileInputStream in = new FileInputStream(file);
+      makeEntry(zip, in, name, lastModified);
     }
-        
+
+  private void makeEntry(ZipOutputStream zip, InputStream source, String entryName, long lastModified) 
+    throws IOException
+  {
+    byte[] buffer = new byte[4096];
+    ZipEntry entry = new ZipEntry(entryName);
+    if (lastModified > 0) {
+      entry.setTime(lastModified);
+    }
+    zip.putNextEntry(entry);
+    int n;
+    while ((n = source.read(buffer)) > 0) {
+      zip.write(buffer, 0, n);
+    }
+    zip.closeEntry();
+    source.close();
+  }
 }
