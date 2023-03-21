@@ -2166,7 +2166,14 @@ public class Pathname extends LispObject
   File getFile() {
     String namestring = getNamestring(); // XXX UNC pathnames currently have no namestring
     if (namestring != null) {
-      return new File(namestring);
+      try {
+        URI uri = new URI(namestring);
+        return new File(uri);
+      } catch (URISyntaxException ex) {
+        return new File(namestring);
+      } catch (IllegalArgumentException e) {
+        return new File(namestring);
+      }
     }
     error(new FileError("Pathname has no namestring: " + princToString(),
                         this));
