@@ -3,12 +3,19 @@
 * @selwynsimsek GitHub issue
 <https://github.com/armedbear/abcl/issues/476>
 
-* General refactoring
+* Tasks 
 
-add separate package file source unit, a test or two
+** DONE add separate package file source unit, a test or two
+CLOSED: [2023-03-21 Tue 08:12]
 
-* TODO configure ASDF to find a contrib on the filesystem
+- CLOSING NOTE [2023-03-21 Tue 08:12] \\
+  Test present:  JSS still not working.
+** TODO eval IF-FEATURE for individual source files
 
+** DONE configure ASDF to find a contrib on the filesystem
+CLOSED: [2023-03-20 Mon 21:20]
+
+- CLOSING NOTE [2023-03-20 Mon 21:20]
 <[[info:asdf.info#Configuration DSL][asdf.info#Configuration DSL]]>
 #+begin_src lisp
   (asdf:initialize-source-registry
