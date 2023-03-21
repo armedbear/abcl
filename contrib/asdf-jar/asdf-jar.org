@@ -3,8 +3,13 @@
 * @selwynsimsek GitHub issue
 <https://github.com/armedbear/abcl/issues/476>
 
-* Tasks 
+* Development
 
+** DONE don't package fasls by default
+CLOSED: [2023-03-21 Tue 08:47]
+
+- CLOSING NOTE [2023-03-21 Tue 08:47] \\
+  Add :fasls keyword to various routines, with NIL as default
 ** DONE add separate package file source unit, a test or two
 CLOSED: [2023-03-21 Tue 08:12]
 
@@ -64,7 +69,7 @@ CLOSED: [2023-03-20 Mon 21:20]
 #+RESULTS:
 : COLLECT-ABCL-CONTRIB-DIRECTORIES
 
-#+name: rig-asdf # not working
+#+name: rig-asdf # 
 #+caption: Rig ASDF to use the ASDF location of ABCL contrib source on filesystem
 #+begin_src lisp
   (defun rig-asdf ()
@@ -89,9 +94,7 @@ CLOSED: [2023-03-20 Mon 21:20]
          :inherit-configuration))))
 #+end_src
 
-#+RESULTS: rig-asdf # not working
-: RIG-ASDF
-
+#+caption: Transitioning away from use of ASDF:*CENTRAL-REGISTRY*
 #+begin_src lisp
 (setf asdf:*central-registry* nil)
 (rig-asdf)
@@ -101,5 +104,5 @@ CLOSED: [2023-03-20 Mon 21:20]
   #+begin_example
     Mark <evenson@not.org>
     Created: 2023-03-06
-    Revised: <2023-03-16 Thu 12:06>
+    Revised: <2023-03-21 Tue 08:46>
   #+end_example
