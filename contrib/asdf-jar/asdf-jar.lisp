@@ -119,8 +119,7 @@ Returns the pathname of the packaged jar archive.
                                    dependencies))
                          (mapcar #'asdf:find-system dependencies))))
              root :verbose verbose)))
-      (system:zip package-jar hash-table root))))
-
+      (system:zip package-jar hash-table))))
 
 (defun all-files (component)
   (loop :for c 
