@@ -62,8 +62,8 @@ jobs:
       - name: Test ABCL
         run: ./abcl --batch --load ./ci/test-abcl.lisp
 
-      - name: Test ABCL-INTROSPECT
-        run: ./abcl --batch --load ./ci/test-abcl-introspect.lisp
+      - name: Test ABCL-CONTRIB
+        run: ./abcl --batch --load ./ci/test-abcl-contrib.lisp --load ./ci/test-abcl-introspect.lisp
 
       - name: Test Jeannie
         run: ./abcl --batch --load ./ci/ensure-maven.lisp --load ./ci/test-jeannie.lisp
