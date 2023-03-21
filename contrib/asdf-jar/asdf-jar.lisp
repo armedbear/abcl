@@ -127,17 +127,45 @@ Returns the pathname of the packaged jar archive.
      :when (typep c 'asdf:module)
      :append (all-files c)
      :when (typep c 'asdf:source-file)
-     :append (list c)))
+       :append (list c)))
 
-(defun dependent-systems (system)
-  (when (not (typep system 'asdf:system))
-             (setf system (asdf:find-system system)))
-  (let* ((dependencies (asdf::component-load-dependencies system))
-         (sub-depends
-          (loop :for dependency :in dependencies
-             :for sub = (dependent-systems dependency)
-             :when sub :append sub)))
-    (remove-duplicates `(,@dependencies ,@sub-depends))))
+(defun resolve-system-or-feature (system-or-feature)
+  "Resolve SYSTEM-OR-FEATURE to an asdf system"
+  (cond
+    ((null system-or-feature)
+     nil)
+    ((and (consp system-or-feature)
+          (= (length system-or-feature) 1))
+     (asdf:find-system (first system-or-feature)))
+    ((and (consp system-or-feature)
+          (= (length system-or-feature) 3))
+     (destructuring-bind (keyword expression system)
+         system-or-feature
+       (declare (ignore keyword))
+       (when (uiop/os:featurep expression)
+         (asdf:find-system system))))
+    ((typep system-or-feature 'asdf:system)
+     system-or-feature)
+    (t
+     (asdf:find-system system-or-feature))))
+
+(defun dependent-systems (system-or-feature)
+  (let ((system
+          (resolve-system-or-feature system-or-feature)))
+    (when system
+      (let* ((dependencies
+               (loop :for dependency
+                       :in (asdf/component:component-sideway-dependencies system)
+                     :for resolved-dependency = (resolve-system-or-feature dependency)
+                     :when resolved-dependency
+                       :collect resolved-dependency))
+             (sub-depends
+               (dolist (dependency dependencies)
+                 (loop :for s :in (dependent-systems
+                                   (resolve-system-or-feature dependency))
+                       :for resolved-system = (resolve-system-or-feature s)
+                       :when resolved-system :collect resolved-system))))
+        (remove-duplicates `(,@dependencies ,@sub-depends))))))
 
 (defun archive-relative-path (base dir file) 
   (let* ((relative 
