@@ -152,7 +152,8 @@ Returns the pathname of the packaged jar archive.
           (= (length system-or-feature) 3))
      (destructuring-bind (keyword expression system)
          system-or-feature
-       (declare (ignore keyword))
+       (unless (equalp keyword :feature)
+         (error "~a is not a feature expression" system-or-feature))
        (when (uiop/os:featurep expression)
          (asdf:find-system system))))
     ((typep system-or-feature 'asdf:system)
