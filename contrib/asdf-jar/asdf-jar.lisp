@@ -25,7 +25,7 @@ This function destructively modifies MAPPING returning nil."
                             (make-pathname :directory root))
        :do (setf (gethash source mapping)
                  source-entry)
-       :do (format verbose "~&~A~& => ~A" source source-entry)
+       :do (format verbose "~&~A~%~T=>~A~%" source source-entry)
        :when (and (typep component 'asdf::source-file)
                   (not (typep component 'asdf::static-file)))
        :do (let ((output 
