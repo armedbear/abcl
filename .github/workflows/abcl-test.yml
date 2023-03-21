@@ -63,7 +63,7 @@ jobs:
         run: ./abcl --batch --load ./ci/test-abcl.lisp
 
       - name: Test ABCL-CONTRIB
-        run: ./abcl --batch --load ./ci/test-abcl.lisp --load ./ci/test-abcl-introspect.lisp
+        run: ./abcl --batch --load ./ci/test-abcl-contrib.lisp --load ./ci/test-abcl-introspect.lisp
 
       - name: Test Jeannie
         run: ./abcl --batch --load ./ci/ensure-maven.lisp --load ./ci/test-jeannie.lisp
