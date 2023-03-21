@@ -109,8 +109,12 @@ Returns the pathname of the packaged jar archive.
                          :defaults out)))
     (when verbose 
       (format verbose "~&Packaging ASDF definition of ~A~%" system))
-    (when (and verbose force)
-      (format verbose "~&Forcing recursive compilation of ~A.~%" package-jar))
+    (when (and fasls verbose)
+      (format verbose "~&Performing ~a compilation of ~A.~%"
+              (if force
+                  "forced"
+                  "")
+              package-jar))
     (asdf:compile-system system :force force)
     (when verbose
       (format verbose "~&Packaging contents in ~A~%" package-jar))
