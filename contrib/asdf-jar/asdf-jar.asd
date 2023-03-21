@@ -21,6 +21,6 @@
              (uiop:symbol-call :prove-asdf 'run-test-system c))
   :components ((:module test
                 :pathname "t/"
-                :components ((:test-file "package-jss")))))
+                :components ((:test-file "package-asdf")))))
 
 
