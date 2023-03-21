@@ -189,7 +189,9 @@ public final class zip extends Primitive
         }
     }
 
-    public LispObject execute(final Pathname zipfilePathname, final org.armedbear.lisp.protocol.Hashtable table) {
+    public LispObject execute(final Pathname zipfilePathname,
+                              final org.armedbear.lisp.protocol.Hashtable table)
+  {
         LispObject entriesObject = (LispObject)table.getEntries();
         if (!(entriesObject instanceof Cons)) {
             return NIL;
@@ -204,10 +206,10 @@ public final class zip extends Primitive
         try {
             out = new ZipOutputStream(new FileOutputStream(zipfileNamestring));
         } catch (FileNotFoundException e) {
-            return error(new FileError("Failed to create file for writing zip archive", zipfilePathname));
+            return error(new FileError("Failed to create file for writing zip archive",
+                                       zipfilePathname));
         }
         Directories directories = new Directories(out);
-
 
         for (LispObject head = entries; head != NIL; head = head.cdr()) {
             final LispObject key = head.car().car();
@@ -224,9 +226,11 @@ public final class zip extends Primitive
                 directories.ensure(jarEntry);
                 makeEntry(out, file, jarEntry);
             } catch (FileNotFoundException e) {
-                return error(new FileError("Failed to read file for incoporation in zip archive.", source));
+                return error(new FileError("Failed to read file for incoporation in zip archive.",
+                                           source));
             } catch (IOException e) {
-                return error(new FileError("Failed to add file to zip archive.", source));
+                return error(new FileError("Failed to add file to zip archive.",
+                                           source));
             }
         } 
         try {
