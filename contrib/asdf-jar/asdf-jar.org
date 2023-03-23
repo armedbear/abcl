@@ -5,6 +5,18 @@
 
 * Development
 
+** TODO package from system located in JAR
+
+Try to get a =java.io.File= reference to an entry in a jar file, so
+the current code path in =system-jar= works.
+
+#+caption: stuck at
+#+begin_example
+Caught java.lang.UnsupportedOperationException.
+   [Condition of type ERROR]
+#+end_example
+
+
 ** DONE don't package fasls by default
 CLOSED: [2023-03-21 Tue 08:47]
 
@@ -104,5 +116,5 @@ CLOSED: [2023-03-20 Mon 21:20]
   #+begin_example
     Mark <evenson@not.org>
     Created: 2023-03-06
-    Revised: <2023-03-21 Tue 08:46>
+    Revised: <2023-03-23 Thu 10:20>
   #+end_example
