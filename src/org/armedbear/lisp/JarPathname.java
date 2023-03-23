@@ -41,6 +41,9 @@ import java.net.URL;
 import java.net.URI;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -636,5 +639,23 @@ public class JarPathname
       .setName(entry.getName())
       .setType(entry.getType()); // ??? VERSION
     return result;
+  }
+
+  public File getFile() {
+    // Not going to work for nested jar entries
+    String jar = ((Pathname)getRootJar()).getNamestring();
+    URI jarURI = URI.create(jar);
+    Path jarPath = Path.of(jarURI);
+    //    Map<String, String> env = Map.of("create", "true");
+    FileSystem zipfs = null;
+    try {
+      zipfs = FileSystems.newFileSystem(jarPath, null);
+    } catch (IOException e) {
+      error(new JavaException(e));
+    }
+    String entryPath = getEntryPath().getNamestring();
+    String absoluteEntryPath = "/" + entryPath;
+    Path path = zipfs.getPath(absoluteEntryPath);
+    return path.toFile();
   }
 }
