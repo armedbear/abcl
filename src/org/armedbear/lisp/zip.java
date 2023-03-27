@@ -226,7 +226,7 @@ public final class zip extends Primitive
                 directories.ensure(jarEntry);
                 makeEntry(out, file, jarEntry);
             } catch (FileNotFoundException e) {
-                return error(new FileError("Failed to read file for incoporation in zip archive.",
+                return error(new FileError("Failed to read file for incorporation in zip archive.",
                                            source));
             } catch (IOException e) {
                 return error(new FileError("Failed to add file to zip archive.",
