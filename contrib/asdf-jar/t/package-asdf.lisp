@@ -16,10 +16,10 @@
 (let ((s :hunchentoot))
   (unless
       (ignore-errors (asdf:make s))
-    (ql:quickload s)))
-(prove:ok
- (asdf-jar:package s :verbose t :fasls nil)
- (format nil "Able to package ~a" s))
+    (ql:quickload s))
+  (prove:ok
+   (asdf-jar:package s :verbose t :fasls nil)
+   (format nil "Able to package ~a" s)))
 
 (prove:finalize)
 
