@@ -215,14 +215,15 @@ public final class zip extends Primitive
 
             final Pathname source = Lisp.coerceToPathname(key);
             final Pathname destination = Lisp.coerceToPathname(value);
-            final File file = source.getFile();
             try {
                 String jarEntry = destination.getNamestring();
                 if (jarEntry.startsWith("/")) {
                     jarEntry = jarEntry.substring(1);
                 }
                 directories.ensure(jarEntry);
-                makeEntry(out, file, jarEntry);
+                InputStream input = source.getInputStream();
+                long lastModified = source.getLastModified();
+                makeEntry(out, input, jarEntry, lastModified);
             } catch (FileNotFoundException e) {
                 return error(new FileError("Failed to read file for incorporation in zip archive.",
                                            source));
