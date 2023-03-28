@@ -5,8 +5,11 @@
 
 * Development
 
-** TODO package from system located in JAR
+** DONE package from system located in JAR
+CLOSED: [2023-03-28 Tue 09:54]
 
+- CLOSING NOTE [2023-03-28 Tue 09:54] \\
+  Implemented with new method in zip.java that uses a =java.io.InputStream= as well as an explicit lastModified parameter.
 Try to get a =java.io.File= reference to an entry in a jar file, so
 the current code path in =system-jar= works.
 
@@ -112,9 +115,13 @@ CLOSED: [2023-03-20 Mon 21:20]
 (rig-asdf)
 #+end_src
 
+* References
+
+** <https://docs.oracle.com/javase/8/docs/technotes/guides/io/fsp/zipfilesystemprovider.html>
+
 * Colophon  
   #+begin_example
     Mark <evenson@not.org>
     Created: 2023-03-06
-    Revised: <2023-03-23 Thu 10:20>
+    Revised: <2023-03-28 Tue 09:54>
   #+end_example
