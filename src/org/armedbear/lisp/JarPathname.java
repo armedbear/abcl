@@ -42,11 +42,13 @@ import java.net.URI;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -641,17 +643,20 @@ public class JarPathname
     return result;
   }
 
+  static final Map<String, ?> emptyEnvironment =  new HashMap();
+  
   public File getFile() {
-    // Not going to work for nested jar entries
-    String jar = ((Pathname)getRootJar()).getNamestring();
-    URI jarURI = URI.create(jar);
-    Path jarPath = Path.of(jarURI);
-    //    Map<String, String> env = Map.of("create", "true");
+    String jarFile = ((Pathname)getRootJar()).getNamestring();
+    URI jarURI = URI.create(JAR_URI_PREFIX + jarFile);
+    // Path jarPath = Path.of(jarURI);
+    // Map<String, String> env = Map.of("create", "true");
     FileSystem zipfs = null;
     try {
-      zipfs = FileSystems.newFileSystem(jarPath, null);
-    } catch (IOException e) {
-      error(new JavaException(e));
+      zipfs = FileSystems.newFileSystem(jarURI, emptyEnvironment);
+    } catch (FileSystemAlreadyExistsException e0) {
+      zipfs = FileSystems.getFileSystem(jarURI);
+    } catch (IOException e1) {
+      error(new JavaException(e1));
     }
     String entryPath = getEntryPath().getNamestring();
     String absoluteEntryPath = "/" + entryPath;
