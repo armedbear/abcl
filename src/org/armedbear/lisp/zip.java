@@ -40,6 +40,7 @@ import java.io.FileNotFoundException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -59,7 +60,6 @@ public final class zip extends Primitive
         super("zip", PACKAGE_SYS, true);
     }
     
-
     @Override
     public LispObject execute(LispObject first, LispObject second)
     {
@@ -98,8 +98,6 @@ public final class zip extends Primitive
         }
         return zipfilePathname;
     }
-
-    
 
     @Override
     public LispObject execute(LispObject first, LispObject second, LispObject third)
@@ -252,22 +250,28 @@ public final class zip extends Primitive
     private void makeEntry(ZipOutputStream zip, File file, String name) 
         throws FileNotFoundException, IOException
     {
-        byte[] buffer = new byte[4096];
-        if (file == null) {
-          throw new IOException("No file to work on.");
-        }
-        long lastModified = file.lastModified();
-        FileInputStream in = new FileInputStream(file);
-        ZipEntry entry = new ZipEntry(name);
-        if (lastModified > 0) {
-            entry.setTime(lastModified);
-        }
-        zip.putNextEntry(entry);
-        int n;
-        while ((n = in.read(buffer)) > 0)
-            zip.write(buffer, 0, n);
-        zip.closeEntry();
-        in.close();
+      if (file == null) {
+        throw new IOException("No file to work on.");
+      }
+      long lastModified = file.lastModified();
+      FileInputStream in = new FileInputStream(file);
+      makeEntry(zip, in, name, lastModified);
     }
-        
+
+  private void makeEntry(ZipOutputStream zip, InputStream source, String entryName, long lastModified) 
+    throws IOException
+  {
+    byte[] buffer = new byte[4096];
+    ZipEntry entry = new ZipEntry(entryName);
+    if (lastModified > 0) {
+      entry.setTime(lastModified);
+    }
+    zip.putNextEntry(entry);
+    int n;
+    while ((n = source.read(buffer)) > 0) {
+      zip.write(buffer, 0, n);
+    }
+    zip.closeEntry();
+    source.close();
+  }
 }
