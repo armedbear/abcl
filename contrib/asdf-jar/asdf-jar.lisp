@@ -4,9 +4,6 @@
 
 (in-package #:asdf-jar)
 
-;;; TODO remove me
-(defvar *debug* nil)
-
 (defun add-system-files-to-mapping! (system
                                      mapping
                                      system-base
