@@ -114,17 +114,30 @@ Returns the pathname of the packaged jar archive.
               package-jar))
     (asdf:compile-system system :force force)
     (when verbose
-      (format verbose "~&Packaging contents in ~A~%" package-jar))
+      (format verbose "~&Packaging contents in '~A'.~%" package-jar))
     (let ((hash-table
             (systems->hash-table 
              (append (list system) 
                      (when recursive
-                       (let ((dependencies (dependent-systems system)))
-                         (when (and verbose dependencies) 
+                       (let* ((dependencies
+                                (dependent-systems system))
+                              (washed-dependencies
+                                (remove-if-not
+                                 (lambda (s)
+                                   (if (asdf/component:component-pathname s)
+                                       t
+                                       (progn 
+                                         (when verbose
+                                           (format verbose
+                                                   "~&Ignoring dependency ~a without associated pathname.~%"
+                                                   s))
+                                         nil)))
+                                 dependencies)))
+                         (when (and verbose washed-dependencies) 
                            (format verbose
-                                   "~&  with recursive dependencies~{ ~A~^, ~}.~%"
-                                   dependencies))
-                         (mapcar #'asdf:find-system dependencies))))
+                                   "~&Packaging with recursive dependencies~{ ~A~^, ~}.~%"
+                                   washed-dependencies))
+                         (mapcar #'asdf:find-system washed-dependencies))))
              root
              :fasls fasls :verbose verbose)))
       (system:zip package-jar hash-table))))
@@ -162,19 +175,15 @@ Returns the pathname of the packaged jar archive.
   (let ((system
           (resolve-system-or-feature system-or-feature)))
     (when system
-      (let* ((dependencies
-               (loop :for dependency
-                       :in (asdf/component:component-sideway-dependencies system)
-                     :for resolved-dependency = (resolve-system-or-feature dependency)
-                     :when resolved-dependency
-                       :collect resolved-dependency))
-             (sub-depends
-               (dolist (dependency dependencies)
-                 (loop :for s :in (dependent-systems
-                                   (resolve-system-or-feature dependency))
-                       :for resolved-system = (resolve-system-or-feature s)
-                       :when resolved-system :collect resolved-system))))
-        (remove-duplicates `(,@dependencies ,@sub-depends))))))
+      (remove-duplicates
+       (loop :for dependency
+               :in (asdf/component:component-sideway-dependencies system)
+             :for resolved-dependency = (resolve-system-or-feature dependency)
+             :for dependents = (dependent-systems resolved-dependency)
+             :when resolved-dependency
+               :collect resolved-dependency
+             :when dependents
+               :append dependents)))))
 
 (defun archive-relative-path (base dir file) 
   (let* ((relative 
