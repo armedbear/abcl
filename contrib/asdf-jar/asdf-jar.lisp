@@ -92,7 +92,9 @@ before being added to the mapping. The purpose of having this option
 is to add the paths to an internal directory, such as (list :relative
 \"META-INF\" \"resources\") for generating WAR files.
 
-Returns the pathname of the packaged jar archive.
+Returns the pathname of the packaged jar archive as the first value,
+and the hash of its members source to destination locations as the
+second.
 "
   (when (not (typep system 'asdf:system))
              (setf system (asdf:find-system system)))
@@ -146,7 +148,9 @@ Returns the pathname of the packaged jar archive.
                          (mapcar #'asdf:find-system washed-dependencies))))
              root
              :fasls fasls :verbose verbose)))
-      (system:zip package-jar hash-table))))
+      (values
+       (system:zip package-jar hash-table)
+       hash-table))))
 
 (defun all-files (component)
   (loop :for c 
