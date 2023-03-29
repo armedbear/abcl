@@ -52,14 +52,20 @@ into a jar file."
       (let ((base (slot-value system 'asdf::absolute-pathname))
             (name (slot-value system 'asdf::name))
             (asdf (slot-value system 'asdf::source-file)))
-        (setf (gethash asdf mapping)
-              (let ((relative-path (archive-relative-path base name asdf)))
-                (merge-pathnames
-                 relative-path
-                 (make-pathname :directory root))))
-        (add-system-files-to-mapping! system mapping base name root
-                                      :fasls fasls
-                                      :verbose verbose)))
+        ;; For the purposes of locating their ASDF file, subsystems
+        ;; use the name of their parent.
+        (let ((position (position #\/ name)))
+          (when position
+            (setf name
+                  (subseq name 0 position)))
+          (setf (gethash asdf mapping)
+                (let ((relative-path (archive-relative-path base name asdf)))
+                  (merge-pathnames
+                   relative-path
+                   (make-pathname :directory root))))
+          (add-system-files-to-mapping! system mapping base name root
+                                        :fasls fasls
+                                        :verbose verbose))))
     mapping))
 
 (defun package (system &key 
