@@ -63,9 +63,22 @@ into a jar file."
                   (merge-pathnames
                    relative-path
                    (make-pathname :directory root))))
-          (add-system-files-to-mapping! system mapping base name root
-                                        :fasls fasls
-                                        :verbose verbose))))
+          (let ((additional
+                  (slot-value system 'asdf/component::additional-input-files)))
+            (when additional
+              (loop
+                :for (op file) :in additional
+                :when (and
+                       op ;; TODO: tighten allowed ops?
+                       (probe-file file))
+                  :do (setf (gethash file mapping)
+                            (let ((relative-path (archive-relative-path base name file)))
+                              (merge-pathnames
+                               relative-path
+                               (make-pathname :directory root))))))
+            (add-system-files-to-mapping! system mapping base name root
+                                          :fasls fasls
+                                          :verbose verbose)))))
     mapping))
 
 (defun package (system &key 
@@ -154,10 +167,10 @@ second.
 
 (defun all-files (component)
   (loop :for c 
-     :being :each :hash-value :of (slot-value component 'asdf::children-by-name)
+     :being :each :hash-value :of (slot-value component 'asdf/component:children-by-name)
      :when (typep c 'asdf:module)
      :append (all-files c)
-     :when (typep c 'asdf:source-file)
+     :when (subtypep c 'asdf/component:source-file)
        :append (list c)))
 
 (defun resolve-system-or-feature (system-or-feature)
