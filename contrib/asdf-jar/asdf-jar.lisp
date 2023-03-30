@@ -27,8 +27,8 @@ This function destructively modifies MAPPING returning nil."
                 source-entry)
       :do (format verbose "~&~A~%~T=>~A~%" source source-entry)
       :when (and fasls
-                 (typep component 'asdf::source-file)
-                 (not (typep component 'asdf::static-file)))
+                 (typep component 'asdf/component:source-file)
+                 (not (typep component 'asdf/component:static-file)))
         :do (let ((output 
                     (make-pathname
                      :defaults (asdf:apply-output-translations source)
@@ -49,9 +49,9 @@ This mapping will be used to zip the files of the system
 into a jar file."
   (let ((mapping (make-hash-table :test 'equal)))
     (dolist (system systems)
-      (let ((base (slot-value system 'asdf::absolute-pathname))
-            (name (slot-value system 'asdf::name))
-            (asdf (slot-value system 'asdf::source-file)))
+      (let ((base (slot-value system 'asdf/component:absolute-pathname))
+            (name (slot-value system 'asdf/component:name))
+            (asdf (slot-value system 'asdf/component:source-file)))
         ;; For the purposes of locating their ASDF file, subsystems
         ;; use the name of their parent.
         (let ((position (position #\/ name)))
@@ -112,7 +112,7 @@ second.
   (when (not (typep system 'asdf:system))
              (setf system (asdf:find-system system)))
   (let* ((name 
-          (slot-value system 'asdf::name))
+          (slot-value system 'asdf/component:name))
          (version (let ((v (slot-value system 'asdf:version)))
                     (when v
                       v)))
