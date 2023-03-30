@@ -166,12 +166,13 @@ second.
        hash-table))))
 
 (defun all-files (component)
-  (loop :for c 
-     :being :each :hash-value :of (slot-value component 'asdf/component:children-by-name)
-     :when (typep c 'asdf:module)
-     :append (all-files c)
-     :when (subtypep c 'asdf/component:source-file)
-       :append (list c)))
+  (loop
+    :for c 
+      :being :each :hash-value :of (slot-value component 'asdf/component:children-by-name)
+    :when (typep c 'asdf:module)
+      :append (all-files c)
+    :when (typep c 'asdf/component:source-file)
+      :append (list c)))
 
 (defun resolve-system-or-feature (system-or-feature)
   "Resolve SYSTEM-OR-FEATURE to an asdf system"
