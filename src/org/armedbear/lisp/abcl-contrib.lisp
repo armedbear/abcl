@@ -163,7 +163,6 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
 
 Initialized via SYSTEM:FIND-CONTRIB.")
 
-;;; FIXME: stop using the obsolete ASDF:*CENTRAL-REGISTRY*
 (defun add-contrib (abcl-contrib-jar
                     &key (verbose cl:*load-verbose*))
   "Introspects the ABCL-CONTRIB-JAR path for sub-directories which
@@ -171,12 +170,10 @@ Initialized via SYSTEM:FIND-CONTRIB.")
   (let ((jar-path (if (ext:pathname-jar-p abcl-contrib-jar)
                       abcl-contrib-jar
                       (make-pathname :device (list abcl-contrib-jar)))))
-    (dolist (asdf-file
-             (directory (merge-pathnames "*/*.asd" jar-path)))
-      (let ((asdf-directory (make-pathname :defaults asdf-file :name nil :type nil)))
-        (unless (find asdf-directory asdf:*central-registry* :test #'equal)
-          (push asdf-directory asdf:*central-registry*)
-          (format verbose "~&; Added ~A to ASDF.~%" asdf-directory))))))
+    (let ((asdf-files
+            (directory (merge-pathnames "*/*.asd" jar-path))))
+      (format verbose "~&; Adding to ASDF: ~{~%;~t<~a>~}~%" asdf-files)
+      (ext::register-asdf asdf-files))))
 
 (defun find-and-add-contrib (&key (verbose cl:*load-verbose*))
   "Attempt to find the ABCL contrib jar and add its contents to ASDF.
