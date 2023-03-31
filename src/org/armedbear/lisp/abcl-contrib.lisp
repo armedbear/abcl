@@ -3,6 +3,36 @@
 ;;;; `abcl-contrib`.
 (require :asdf)
 
+;;;; define this mechanism here as it needs to refer to ASDF
+(in-package :extensions)
+
+(defun register-asdf (asdf-file-or-files)
+  "Given ASDF-FILE-OR-FILES add their containing directories to registry"
+  (let* ((files
+           (if (consp asdf-file-or-files)
+               asdf-file-or-files
+               (list asdf-file-or-files)))
+         (pathnames
+           (mapcar #'pathname files))
+         (directories
+           (mapcar
+            (lambda (f)
+              (make-pathname :defaults f :name nil :type nil))
+            pathnames))
+         (directives
+           (loop :for directive :in asdf:*source-registry-parameter*
+                 :when (consp directive)
+                   :collect directive)))
+    (dolist (d directories)
+      (pushnew `(:directory ,d) directives :test 'equalp))
+    (asdf:initialize-source-registry
+     `(:source-registry
+       ,@directives
+       :inherit-configuration))))
+
+(export '(register-asdf)
+        :extensions)
+
 (in-package :system)
 
 (defun boot-classloader ()
@@ -243,3 +273,5 @@ returns the pathname of the contrib if it can be found."
 
 (when (find-and-add-contrib :verbose cl:*load-verbose*)
   (provide :abcl-contrib))
+
+
