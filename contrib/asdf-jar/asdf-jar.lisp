@@ -227,7 +227,7 @@ second.
      :directory (nconc (pathname-directory temp-path)
                        (list name)))))
 
-(defun add-to-asdf (jar &key (use-jar-fasls t))
+(defun add-to-asdf (jar &key (use-jar-fasls t) (verbose *standard-output*))
   "Make a given JAR output by the package mechanism loadable by asdf.
 
 The parameter passed to :USE-JAR-FASLS determines whether to instruct
@@ -240,12 +240,10 @@ conventions."
     (setf jar (make-pathname :device (list jar))))
 
   ;;; Inform ASDF of all the system definitions in the jar
-  (loop :for asd 
-     :in (directory (merge-pathnames "*/*.asd" jar))
-     :do (pushnew (make-pathname :defaults asd
-                                 :name nil :type nil)
-                  asdf:*central-registry*))
-
+  (let ((asdf-files
+          (directory (merge-pathnames "*/*.asd" jar))))
+    (format verbose "~&Adding to ASDF: ~{~%~t<~a>~}~%" asdf-files)
+    (ext:register-asdf asdf-files))
   ;;; Load the FASLs directly from the jar
   (when use-jar-fasls                    
     (asdf:initialize-output-translations
