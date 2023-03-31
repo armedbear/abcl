@@ -124,7 +124,18 @@ CLOSED: [2023-03-31 Fri 14:20]
   TODO:  add an equivalent API to fiddle with asdf output-translations?  The current plan is to include that machinery in the ASDF-JAR contrib
 <[[file:~/work/abcl/src/org/armedbear/lisp/abcl-contrib.lisp::defun register-asdf (asdf-file-or-files]]>
 
-** TODO Use fasls from jar 
+** TODO Use fasls from jar
+
+* Fragments
+
+** use EXT:ADD-TO-ASDF
+#+begin_src lisp
+  (ext:register-asdf '("/Users/evenson/easye/work/illithid/illithid.asd"
+                       "/Users/evenson/net/slack.net/home/mevenson/work/etch/etch.asd"))
+#+end_src
+
+#+RESULTS:
+
 * References
 
 ** <https://docs.oracle.com/javase/8/docs/technotes/guides/io/fsp/zipfilesystemprovider.html>
