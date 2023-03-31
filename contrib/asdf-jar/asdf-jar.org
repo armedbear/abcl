@@ -19,7 +19,6 @@ Caught java.lang.UnsupportedOperationException.
    [Condition of type ERROR]
 #+end_example
 
-
 ** DONE don't package fasls by default
 CLOSED: [2023-03-21 Tue 08:47]
 
@@ -30,8 +29,11 @@ CLOSED: [2023-03-21 Tue 08:12]
 
 - CLOSING NOTE [2023-03-21 Tue 08:12] \\
   Test present:  JSS still not working.
-** TODO eval IF-FEATURE for individual source files
-
+** DONE eval IF-FEATURE for individual source files
+CLOSED: [2023-03-31 Fri 14:19]
+- CLOSING NOTE [2023-03-31 Fri 14:19] \\
+  Implemented as a semi-hacky thing that tries to interpret its arg as a system if it can't parse it as a feature.
+<[[file:asdf-jar.lisp::defun resolve-system-or-feature (system-or-feature]]>
 ** DONE configure ASDF to find a contrib on the filesystem
 CLOSED: [2023-03-20 Mon 21:20]
 
@@ -115,6 +117,14 @@ CLOSED: [2023-03-20 Mon 21:20]
 (rig-asdf)
 #+end_src
 
+** DONE Refactored rig-asdf as EXT:REGISTER-ASDF
+CLOSED: [2023-03-31 Fri 14:20]
+
+- CLOSING NOTE [2023-03-31 Fri 14:20] \\
+  TODO:  add an equivalent API to fiddle with asdf output-translations?  The current plan is to include that machinery in the ASDF-JAR contrib
+<[[file:~/work/abcl/src/org/armedbear/lisp/abcl-contrib.lisp::defun register-asdf (asdf-file-or-files]]>
+
+** TODO Use fasls from jar 
 * References
 
 ** <https://docs.oracle.com/javase/8/docs/technotes/guides/io/fsp/zipfilesystemprovider.html>
@@ -123,5 +133,5 @@ CLOSED: [2023-03-20 Mon 21:20]
   #+begin_example
     Mark <evenson@not.org>
     Created: 2023-03-06
-    Revised: <2023-03-28 Tue 09:54>
+    Revised: <2023-03-31 Fri 14:41>
   #+end_example
