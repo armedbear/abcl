@@ -238,7 +238,6 @@ conventions."
     (setf jar (pathname jar)))
   (when (null (pathname-device jar))
     (setf jar (make-pathname :device (list jar))))
-
   ;;; Inform ASDF of all the system definitions in the jar
   (let ((asdf-files
           (directory (merge-pathnames "*/*.asd" jar))))
@@ -247,7 +246,8 @@ conventions."
   ;;; Load the FASLs directly from the jar
   (when use-jar-fasls                    
     (asdf:initialize-output-translations
-     `(:output-translations (,(merge-pathnames "/**/*.*" jar)) 
+     `(:output-translations (,(make-pathname :defaults jar
+                                             :directory '(:ABSOLUTE :WILD-INFERIORS) :name :wild :type :wild))
                             :inherit-configuration))))
 
 (defun prepare-for-war (system &key 
