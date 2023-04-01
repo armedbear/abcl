@@ -227,13 +227,15 @@ second.
      :directory (nconc (pathname-directory temp-path)
                        (list name)))))
 
-(defun add-to-asdf (jar &key (use-jar-fasls t) (verbose *standard-output*))
+(defun add-to-asdf (jar &key (use-jar-fasls nil) (verbose *standard-output*))
   "Make a given JAR output by the package mechanism loadable by asdf.
 
+NOTICE: the use of fasls from the jar does not currently seem to work.
+
 The parameter passed to :USE-JAR-FASLS determines whether to instruct
-asdf to use the fasls packaged in the jar.  If this is nil, the fasls
-will be compiled with respect to the usual asdf output translation
-conventions."
+asdf to use the fasls packaged in the jar.  If this is nil, the
+default, the fasls will be compiled with respect to the usual asdf
+output translation conventions."
   (when (not (typep jar 'pathname))
     (setf jar (pathname jar)))
   (when (null (pathname-device jar))
@@ -244,11 +246,15 @@ conventions."
     (format verbose "~&Adding to ASDF: ~{~%~t<~a>~}~%" asdf-files)
     (ext:register-asdf asdf-files))
   ;;; Load the FASLs directly from the jar
-  (when use-jar-fasls                    
-    (asdf:initialize-output-translations
-     `(:output-translations (,(make-pathname :defaults jar
-                                             :directory '(:ABSOLUTE :WILD-INFERIORS) :name :wild :type :wild))
-                            :inherit-configuration))))
+  (when use-jar-fasls
+    (let* ((source
+             (make-pathname :defaults jar
+                            :directory '(:ABSOLUTE :WILD-INFERIORS) :name :wild :type :wild))
+           (destination
+             source))
+      (asdf:initialize-output-translations
+       `(:output-translations (,source ,destination) :inherit-configuration)))))
+
 
 (defun prepare-for-war (system &key 
                                  (out #p"/var/tmp/") 
