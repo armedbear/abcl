@@ -174,10 +174,18 @@ distribution contains Netbeans-specific project artifacts under
 
 With Netbeans, one should be able to open the ABCL directory as a
 project whereupon the usual build, run, and debug targets as invoked
-in the GUI are available.  Use the 'slime' config with a suitably
-linked SLIME `swank.asd` ASDF configuration
-<file:~/.config/common-lisp/source-registry.conf.d/> to connect a REPL
-to the NetBeans debug process.
+in the GUI are available.  To launch the debugging target it is
+currently necessary to have the `abcl.build.incremental` Ant property
+be set to `true`.  This can most easily be affected by running the
+autoconfigure mechanism for the underlying JVM platform as documented
+in the previous section entitlted "BUILDING FROM SOURCE RELEASE".
+
+To connect to the running Netbeans process, one may use the `slime`
+Netbeans configuration connecting to <tcp:4:localhost:4005> when
+prompted from an invocation M-x slime-connect with Emacs.  For this to
+work, ASDF must be configured to find a suitably linked SLIME
+`swank.asd`; the Lisp stanzas in the subsequent section entitled
+"SLIME" affect this in the local installation.
 
 [netbeans]:     <https://netbeans.org/downloads/>
 
