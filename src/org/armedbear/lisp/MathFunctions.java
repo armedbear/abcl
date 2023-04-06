@@ -524,6 +524,8 @@ public final class MathFunctions
                 else
                     return new SingleFloat((float)d);
             }
+	    /* The spec says, "If base is zero, log returns zero." */
+	    if (base.zerop()) return Fixnum.ZERO;
             return log(number).divideBy(log(base));
         }
     };
