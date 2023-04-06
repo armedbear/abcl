@@ -401,6 +401,30 @@
   (log 17d0 10d0)
   1.2304489213782739d0)
 
+(deftest log.8
+  (log -2 0)
+  0)
+
+(deftest log.9
+  (log 2 0.0)
+  0)
+
+(deftest log.10
+  (log 1.0 0)
+  0)
+
+(deftest log.11
+  (log 1.0 0.0)
+  0)
+
+(deftest log.12
+  (log -1 0.0)
+  0)
+
+(deftest log.13
+  (log #C(1 2) 0)
+  0)
+
 (deftest pi.1
   pi
   #+clisp 3.1415926535897932385l0
