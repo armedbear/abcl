@@ -19,6 +19,8 @@ Some characteristics:
 
 ':s' will resume the evaluation until the next form to be analyzed (you can type :step)
 
+':sn' will to step to the next form
+
 ':l' will show the local bindings for variables and functions
 in the current environment passed to the current form to evaluate (you can type :locals)
 
@@ -660,7 +662,42 @@ step 3 ==> value: 22
 step 2 ==> value: 22
 step 1 ==> value: 22
 22
-STEP-NEXT(30):
+STEP-NEXT(30): (stepper:step (values (list (cons 1 3) (cons 1 7))
+                      (list (cons 2 4) (cons 2 8))))
+We are in the stepper mode
+Evaluating step 1 -->
+(VALUES (LIST (CONS 1 3) (CONS 1 7)) (LIST (CONS 2 4) (CONS 2 8)))
+Type ':?' for a list of options
+:s
+We are in the stepper mode
+Evaluating step 2 -->
+(LIST (CONS 1 3) (CONS 1 7))
+Type ':?' for a list of options
+:s
+We are in the stepper mode
+Evaluating step 3 -->
+(CONS 1 3)
+Type ':?' for a list of options
+:s
+step 3 ==> value: (1 . 3)
+We are in the stepper mode
+Evaluating step 4 -->
+(CONS 1 7)
+Type ':?' for a list of options
+:s
+step 4 ==> value: (1 . 7)
+step 2 ==> value: ((1 . 3) (1 . 7))
+We are in the stepper mode
+Evaluating step 5 -->
+(LIST (CONS 2 4) (CONS 2 8))
+Type ':?' for a list of options
+:sn
+step 5 ==> value: ((2 . 4) (2 . 8))
+step 1 ==> value: ((1 . 3) (1 . 7))
+step 1 ==> value: ((2 . 4) (2 . 8))
+((1 . 3) (1 . 7))
+((2 . 4) (2 . 8))
+STEP-NEXT(31):
 ```
 
 For steps with ASDF systems we can use asdf:load-source-op

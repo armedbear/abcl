@@ -49,6 +49,19 @@
 (defparameter *stepper-watch-symbols* nil
   "List of symbols in which will be printed in every step")
 
+(defparameter *step-next-table* (make-hash-table)
+  "Used for the feature step-next, show the number of steps that have been completed")
+
+(defparameter *step-next-counter* -1
+  "Indicates if the feature step-next is active by showing the current step to be completed")
+
+(defun clear-step-next ()
+  (setf *step-next-counter* -1)
+  (setf *step-next-table* (make-hash-table)))
+
+(defun set-step-counter-completed (current-step-counter)
+  (setf (gethash current-step-counter *step-next-table*) t))
+
 (defmacro without-active-stepping (&body body)
   `(progn (sys:%set-stepper-off)
           ,@body
@@ -134,6 +147,7 @@
   (print-stepper-str "Type ':c' to resume the evaluation until the end without the stepper" t)
   (print-stepper-str "Type ':n' to resume the evaluation until the next form previously selected to step in" t)
   (print-stepper-str "Type ':s' to step into the form" t)
+  (print-stepper-str "Type ':sn' to step to the next form" t)
   (print-stepper-str "Type ':i' to inspect the current value of a variable or symbol" t)
   (print-stepper-str "Type ':b' to add a symbol as a breakpoint to use with next (n)" t)
   (print-stepper-str "Type ':r' to remove a symbol used as a breakpoint with next (n)" t)
@@ -179,6 +193,13 @@ states of the stepper"
                   '(system:%set-delimited-stepping-off)))
       (equal fun #'sys:%set-stepper-off))
      ;; we don't step the expansion of 'step' macro
+     nil)
+    ((and (/= *step-next-counter* -1)
+          (gethash *step-next-counter* *step-next-table*))
+     (clear-step-next)
+     t)
+    ((and (/= *step-next-counter* -1)
+          (not (gethash *step-next-counter* *step-next-table*)))
      nil)
     (delimited-stepping
      ;; Analyze next symbols
@@ -233,6 +254,9 @@ states of the stepper"
                  (without-active-stepping (list-locals env)))
                 ((:c :continue)
                  (sys:%set-stepper-off)
+                 (setf leave-prompt t))
+                ((:sn :step-next)
+                 (setf *step-next-counter* (sys:%get-step-counter))
                  (setf leave-prompt t))
                 ((:n :next)
                  (sys:%set-delimited-stepping-on)
@@ -292,6 +316,7 @@ states of the stepper"
          (warn-not-yet-ready))
         (t
          (sys:%set-stepper-off)
+         (clear-step-next)
          (sys:%set-delimited-stepping-off))))
 
 (defmacro step (form)
@@ -307,6 +332,7 @@ states of the stepper"
                   (sys:%set-stepper-on)
                   (multiple-value-prog1 ,form
                     (sys:%set-stepper-off)
+                    (clear-step-next)
                     (sys:%set-delimited-stepping-off))))))))
 
 (provide :abcl-stepper)

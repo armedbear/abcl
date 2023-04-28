@@ -95,6 +95,10 @@ public final class Lisp
     stepNumber = 0;
   }
 
+  public static LispObject getStepCounter () {
+    return LispInteger.getInstance(stepNumber);
+  }
+
   public static void setSteppingOff () {
     stepping = false;
   }
@@ -564,6 +568,19 @@ public static synchronized final void handleInterrupt()
     return eval(obj, new Environment(), LispThread.currentThread());
   }
 
+  public static final void setStepCounterCompleted (long stepNumberInternal) {
+    if (stepping) {
+      LispThread currentThread = LispThread.currentThread();
+      Package stepper = Packages.findPackageGlobally("ABCL-STEPPER");
+      Symbol symbolSetStepCounterCompleted = stepper.findAccessibleSymbol("SET-STEP-COUNTER-COMPLETED");
+      LispObject functionSetStepCounterCompleted = coerceToFunction(symbolSetStepCounterCompleted);
+      LispObject[] values = currentThread._values;
+      funcall(functionSetStepCounterCompleted,
+              new LispObject[] {LispInteger.getInstance(stepNumberInternal)},
+              currentThread);
+      currentThread._values = values;
+    }
+  }
 
   public static synchronized final void handleStepping (LispObject function, LispObject args,
                                                         Environment env, LispInteger stepCount) {
@@ -590,6 +607,19 @@ public static synchronized final void handleInterrupt()
     }
     setSteppingOn();
     funcall(functionHandleUserInteraction, new LispObject[]{env}, currentThread);
+  }
+
+  public static final void printStepValue(long stepNumberInternal, LispObject result, LispThread thread) {
+    LispObject[] values = thread._values;
+    if (values != null) {
+      for (int i = 0; i < values.length; i++) {
+        System.out.println("step " + stepNumberInternal + " ==> value: " + values[i].printObject());
+      }
+    }
+    else {
+      System.out.println("step " + stepNumberInternal + " ==> value: " + result.printObject());
+    }
+    thread._values = values;
   }
 
   public static final LispObject eval(final LispObject obj,
@@ -653,8 +683,9 @@ public static synchronized final void handleInterrupt()
                 }
                 LispObject result = fun.execute(((Cons)obj).cdr, env);
                 if (stepInSymbolResult != NIL) {
-                  System.out.println("step " + stepNumberInternal + " ==> value: " + result.printObject());
+                  printStepValue(stepNumberInternal, result, thread);
                 }
+                setStepCounterCompleted(stepNumberInternal);
                 return result;
               }
             if (fun instanceof MacroObject)
@@ -714,8 +745,9 @@ public static synchronized final void handleInterrupt()
     if (args == NIL) {
       result = thread.execute(function);
       if (stepInSymbolResult != NIL) {
-        System.out.println("step " + stepNumberInternal + " ==> value: " + result.printObject());
+        printStepValue(stepNumberInternal, result, thread);
       }
+      setStepCounterCompleted(stepNumberInternal);
       return result;
     }
     LispObject first = eval(args.car(), env, thread);
@@ -724,8 +756,9 @@ public static synchronized final void handleInterrupt()
       thread._values = null;
       result = thread.execute(function, first);
       if (stepInSymbolResult != NIL) {
-        System.out.println("step " + stepNumberInternal + " ==> value: " + result.printObject());
+        printStepValue(stepNumberInternal, result, thread);
       }
+      setStepCounterCompleted(stepNumberInternal);
       return result;
     }
     LispObject second = eval(args.car(), env, thread);
@@ -734,8 +767,9 @@ public static synchronized final void handleInterrupt()
       thread._values = null;
       result = thread.execute(function, first, second);
       if (stepInSymbolResult != NIL) {
-        System.out.println("step " + stepNumberInternal + " ==> value: " + result.printObject());
+        printStepValue(stepNumberInternal, result, thread);
       }
+      setStepCounterCompleted(stepNumberInternal);
       return result;
     }
     LispObject third = eval(args.car(), env, thread);
@@ -744,8 +778,9 @@ public static synchronized final void handleInterrupt()
       thread._values = null;
       result = thread.execute(function, first, second, third);
       if (stepInSymbolResult != NIL) {
-        System.out.println("step " + stepNumberInternal + " ==> value: " + result.printObject());
+        printStepValue(stepNumberInternal, result, thread);
       }
+      setStepCounterCompleted(stepNumberInternal);
       return result;
     }
     LispObject fourth = eval(args.car(), env, thread);
@@ -754,8 +789,9 @@ public static synchronized final void handleInterrupt()
       thread._values = null;
       result = thread.execute(function, first, second, third, fourth);
       if (stepInSymbolResult != NIL) {
-        System.out.println("step " + stepNumberInternal + " ==> value: " + result.printObject());
+        printStepValue(stepNumberInternal, result, thread);
       }
+      setStepCounterCompleted(stepNumberInternal);
       return result;
     }
     LispObject fifth = eval(args.car(), env, thread);
@@ -764,8 +800,9 @@ public static synchronized final void handleInterrupt()
       thread._values = null;
       result = thread.execute(function, first, second, third, fourth, fifth);
       if (stepInSymbolResult != NIL) {
-        System.out.println("step " + stepNumberInternal + " ==> value: " + result.printObject());
+        printStepValue(stepNumberInternal, result, thread);
       }
+      setStepCounterCompleted(stepNumberInternal);
       return result;
     }
     LispObject sixth = eval(args.car(), env, thread);
@@ -775,8 +812,9 @@ public static synchronized final void handleInterrupt()
       result = thread.execute(function, first, second, third, fourth, fifth,
                             sixth);
       if (stepInSymbolResult != NIL) {
-        System.out.println("step " + stepNumberInternal + " ==> value: " + result.printObject());
+        printStepValue(stepNumberInternal, result, thread);
       }
+      setStepCounterCompleted(stepNumberInternal);
       return result;
     }
     LispObject seventh = eval(args.car(), env, thread);
@@ -786,8 +824,9 @@ public static synchronized final void handleInterrupt()
       result = thread.execute(function, first, second, third, fourth, fifth,
                             sixth, seventh);
       if (stepInSymbolResult != NIL) {
-        System.out.println("step " + stepNumberInternal + " ==> value: " + result.printObject());
+        printStepValue(stepNumberInternal, result, thread);
       }
+      setStepCounterCompleted(stepNumberInternal);
       return result;
     }
     LispObject eighth = eval(args.car(), env, thread);
@@ -797,8 +836,9 @@ public static synchronized final void handleInterrupt()
       result = thread.execute(function, first, second, third, fourth, fifth,
                             sixth, seventh, eighth);
       if (stepInSymbolResult != NIL) {
-        System.out.println("step " + stepNumberInternal + " ==> value: " + result.printObject());
+        printStepValue(stepNumberInternal, result, thread);
       }
+      setStepCounterCompleted(stepNumberInternal);
       return result;
     }
     // More than CALL_REGISTERS_MAX arguments.
@@ -819,8 +859,9 @@ public static synchronized final void handleInterrupt()
     thread._values = null;
     result = thread.execute(function, array);
     if (stepInSymbolResult != NIL) {
-      System.out.println("step " + stepNumberInternal + " ==> value: " + result.printObject());
+      printStepValue(stepNumberInternal, result, thread);
     }
+    setStepCounterCompleted(stepNumberInternal);
     return result;
 
   }
@@ -2488,6 +2529,18 @@ public static synchronized final void handleInterrupt()
       {
         initializeStepCounter();
         return NIL;
+      }
+    };
+
+  // ### %get-step-counter
+  public static final Primitive GET_STEP_COUNTER =
+    new Primitive("%get-step-counter", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute()
+
+      {
+        return getStepCounter();
       }
     };
 
