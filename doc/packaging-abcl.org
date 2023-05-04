@@ -7,15 +7,22 @@ The standard ABCL build process as described in the ~build.xml~ file
 and executed by the Ant build tool results in two artifacts:
 ~abcl.jar~ and ~abcl-contrib.jar~.  ~abcl.jar~ contains all the Java
 and Common Lisp code necessary that constitute the ANSI conforming
-implementation runtime. The ~abcl-contrib.jar~ (aka "contrib")
-artifact contains additional Common Lisp-only code that extends the
-implementation in useful manners.  
+implementation runtime, plus the latest stable ASDF. The
+~abcl-contrib.jar~ (aka "contrib") artifact contains additional Common
+Lisp-only code that extends the implementation in useful manners.  At
+some point in the future,
 
 We create two separate jar artifacts in order to:
 
-1. To place an upper bound of size of ~abcl.jar~ regardless of what we
-   package in ~abcl-contrib.jar~.
+1. To place an upper bound of size and complexity of ~abcl.jar~
+   regardless of what we package in ~abcl-contrib.jar~.  Having a
+   restricted core ANSI implementation plus ASDF enables us to:
 
+   1.1. More easily bootstrap ABCL when porting to JVM runtimes other
+        than the OpenJDK (Davlik, CLR, …)
+
+   1.2. Subsequently use ASDF to package ABCL extension components.
+   
 2. Clearly mark which parts of the code-base are covered under
    GPLv2+classpath from those that may have other licensing terms.  By
    making the loading of "contrib" a dynamic operation, we defer
@@ -26,24 +33,22 @@ Users often want to simply package both artifacts in a single jar for
 deployment convenience.  abcl-1.5.0 introduced the build machinery to
 create such an "all-in-one" artifact via the [[https://github.com/armedbear/abcl/blob/master/build.xml#L517][~abcl-aio.jar~]] target.
 Upon invoking the ~abcl-aio.jar~ target
-
 #+begin_src shell
 ant -f build.xml abcl-aio.jar
 #+end_src
-
 the resulting artifact contains both the core implementation and the
 ABCL contrib which may be run as usual via
 #+begin_src shell
 java -jar dist/abcl-aio.jar
 #+end_src
 
-* abcl-jar contrib
+* ASDF-JAR contrib
 
-The ABCL-JAR contrib provides a mechanism for package ASDF systems and
+The ASDF-JAR contrib provides a mechanism for package ASDF systems and
 their recursive dependencies in a jar archive.  
 
-An example of using this to package the CL-PPCRE system from Quicklisp
-
+An example of using this to package the CL-PPCRE system from
+Quicklisp:
 #+begin_src lisp
 ;; 
 (require :abcl-contrib)
@@ -100,13 +105,11 @@ system, I would rather that we add the necessary machinery
 those who know Common Lisp.
 
 
-
-
 * Colophon
   #+begin_example
   Mark <evenson.not.org@gmail.com>
   Created: <2019-11-25 Mon>
-  Revised: <2019-11-25 Mon 14:07>
+  Revised: <2023-05-04 Thu 11:33>
   #+end_example
 
   
