@@ -40,6 +40,11 @@ public class StructureObject extends LispObject
   private final StructureClass structureClass;
   final LispObject[] slots;
 
+  public StructureObject() {
+    structureClass = null;
+    slots = null;
+  }
+
   public StructureObject(Symbol symbol)
 
   {

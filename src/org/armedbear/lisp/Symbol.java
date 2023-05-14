@@ -3070,6 +3070,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("AUTOCOMPILE");
   public static final Symbol CLASS_BYTES =
     PACKAGE_SYS.addExternalSymbol("CLASS-BYTES");
+  public static final Symbol CLOS_STREAM =
+    PACKAGE_SYS.addExternalSymbol("CLOS-STREAM");
   public static final Symbol _CLASS_SLOTS =
     PACKAGE_SYS.addExternalSymbol("%CLASS-SLOTS");
   public static final Symbol COMPILED_LISP_FUNCTION_P =

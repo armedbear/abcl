@@ -248,11 +248,9 @@ public final class EchoStream extends Stream
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            if (!(first instanceof Stream))
-                return type_error(first, Symbol.STREAM);
-            if (!(second instanceof Stream))
-                return type_error(second, Symbol.STREAM);
-            return new EchoStream((Stream) first, (Stream) second);
+            Stream input = checkStream(first);
+            Stream output = checkStream(second);
+            return new EchoStream(input, output);
         }
     };
 

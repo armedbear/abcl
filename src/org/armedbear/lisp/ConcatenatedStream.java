@@ -253,16 +253,16 @@ public final class ConcatenatedStream extends Stream
         {
             LispObject streams = NIL;
             for (int i = 0; i < args.length; i++) {
-                if (args[i] instanceof Stream) {
-                    Stream stream = (Stream) args[i];
-                    if (stream.isInputStream()) {
-                        //                         streams[i] = (Stream) args[i];
-                        streams = new Cons(stream, streams);
-                        continue;
+                Stream s = checkStream(args[i]);
+                if (s instanceof Stream) {
+                    if (s.isInputStream()
+                        || (s instanceof CLOSProxyStream)) {
+                            streams = new Cons(s, streams);
+                            continue;
                     }
                 }
                 error(new TypeError(String.valueOf(args[i]) +
-                                     " is not an input stream."));
+                                    " is not an input stream."));
             }
             return new ConcatenatedStream(streams.nreverse());
         }

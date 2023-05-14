@@ -2686,5 +2686,4 @@ public class Stream extends StructureObject {
     public PushbackReader getWrappedReader() {
         return reader;
     }
-
 }

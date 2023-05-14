@@ -238,15 +238,16 @@ public final class BroadcastStream extends Stream
         {
             Stream[] streams = new Stream[args.length];
             for (int i = 0; i < args.length; i++) {
-                if (args[i] instanceof Stream) {
-                    if (((Stream)args[i]).isOutputStream()) {
-                        streams[i] = (Stream) args[i];
+                Stream s = checkStream(args[i]);
+                if (s instanceof Stream) {
+                    if (s.isOutputStream()
+                        || (s instanceof CLOSProxyStream)) {
+                        streams[i] = s;
                         continue;
-                    } else
-                        return type_error(args[i],
-                                          list(Symbol.SATISFIES, Symbol.OUTPUT_STREAM_P));
-                } else
-                    return type_error(args[i], Symbol.STREAM);
+                    }
+                }
+                return type_error(args[i],
+                                  list(Symbol.SATISFIES, Symbol.OUTPUT_STREAM_P));
             }
             // All is well.
             return new BroadcastStream(streams);
