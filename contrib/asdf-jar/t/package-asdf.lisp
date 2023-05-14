@@ -13,13 +13,9 @@
 (asdf:make :quicklisp-abcl)
 
 (prove:plan 1)
-(let ((s :hunchentoot))
-  (unless
-      (ignore-errors (asdf:make s))
-    (ql:quickload s))
-  (prove:ok
-   (asdf-jar:package s :verbose t :fasls nil)
-   (format nil "Able to package ~a" s)))
+(prove:ok
+ (asdf-jar:package :hunchentoot :verbose t :fasls nil)
+ (format nil "Able to package HUNCHENTOOT"))
 
 (prove:finalize)
 
