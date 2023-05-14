@@ -192,8 +192,9 @@ public class BuiltInClass extends LispClass
   public static final LispClass CONCATENATED_STREAM =
     addClass(Symbol.CONCATENATED_STREAM,
              new StructureClass(Symbol.CONCATENATED_STREAM, list(SYSTEM_STREAM)));
-
-
+  public static final LispClass CLOS_STREAM =
+    addClass(Symbol.CLOS_STREAM,
+             new StructureClass(Symbol.CLOS_STREAM, list(SYSTEM_STREAM)));
 
     // Implementation defined streams
   public static final LispClass SOCKET_STREAM =

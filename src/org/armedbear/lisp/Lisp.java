@@ -1755,10 +1755,15 @@ public static synchronized final void handleInterrupt()
   public static final Stream checkStream(LispObject obj)
 
   {
-      if (obj instanceof Stream)
-                  return (Stream) obj;
-          return (Stream) // Not reached.
-        type_error(obj, Symbol.STREAM);
+    if (obj instanceof Stream) {
+      return (Stream) obj;
+    }
+    if (obj.typep(Symbol.STREAM).equal(T)) {
+      Stream result = new CLOSProxyStream(obj);
+      return result;
+    }
+    return (Stream) // Not reached.
+    type_error(obj, Symbol.STREAM);
   }
 
   public static final Stream checkCharacterInputStream(LispObject obj)
