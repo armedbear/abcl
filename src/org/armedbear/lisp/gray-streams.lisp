@@ -246,6 +246,10 @@
 
 (defclass fundamental-binary-stream (fundamental-stream) ())
 
+(defmethod gray-stream-element-type ((s fundamental-binary-stream))
+  (declare (ignore s))
+  '(unsigned-byte 8))
+
 (defgeneric stream-read-byte (stream))
 (defgeneric stream-write-byte (stream integer))
 
