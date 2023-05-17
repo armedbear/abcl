@@ -223,10 +223,12 @@ public final class SynonymStream extends Stream
     }
 
     // ### make-synonym-stream symbol => synonym-stream
-    private static final Primitive MAKE_SYNONYM_STREAM =
-        new Primitive("make-synonym-stream", "symbol")
-    {
-        @Override
+    private static final Primitive MAKE_SYNONYM_STREAM
+        = new pf_make_synonym_string();
+    private static final class pf_make_synonym_string extends Primitive {
+        pf_make_synonym_string() {
+            super("make-synonym-stream", PACKAGE_CL, true, "symbol");
+        }
         public LispObject execute(LispObject arg)
         {
             return new SynonymStream(checkSymbol(arg));
@@ -234,10 +236,13 @@ public final class SynonymStream extends Stream
     };
 
     // ### synonym-stream-symbol synonym-stream => symbol
-    private static final Primitive SYNONYM_STREAM_STREAMS =
-        new Primitive("synonym-stream-symbol", "synonym-stream")
-    {
-        @Override
+    public static final Primitive SYNONYM_STREAM_SYMBOL
+        = new pf_synonym_stream_symbol();
+    private static final class pf_synonym_stream_symbol extends Primitive {
+        pf_synonym_stream_symbol() {
+            super("synonym-stream-symbol", PACKAGE_CL, true, "synonym-stream");
+        }
+
         public LispObject execute(LispObject arg)
         {
             if (arg instanceof SynonymStream) 
