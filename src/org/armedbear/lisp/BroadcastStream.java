@@ -241,7 +241,7 @@ public final class BroadcastStream extends Stream
                 Stream s = checkStream(args[i]);
                 if (s instanceof Stream) {
                     if (s.isOutputStream()
-                        || (s instanceof CLOSProxyStream)) {
+                        || (s instanceof GrayStream)) {
                         streams[i] = s;
                         continue;
                     }

@@ -89,7 +89,8 @@ public final class Lisp
     Packages.createPackage("PRECOMPILER");
   public static final Package PACKAGE_SEQUENCE =
     Packages.createPackage("SEQUENCE", 128); // EH 10-10-2010: Actual number 62
-
+  public static final Package PACKAGE_GRAY_STREAMS_JAVA =
+    Packages.createPackage("GRAY-STREAMS/JAVA");
 
   @DocString(name="nil")
   public static final Symbol NIL = Nil.NIL;
@@ -137,6 +138,7 @@ public final class Lisp
     PACKAGE_PRECOMPILER.usePackage(PACKAGE_EXT);
     PACKAGE_PRECOMPILER.usePackage(PACKAGE_SYS);
     PACKAGE_SEQUENCE.usePackage(PACKAGE_CL);
+    PACKAGE_GRAY_STREAMS_JAVA.usePackage(PACKAGE_CL);
   }
 
   // End-of-file marker.
@@ -1759,7 +1761,7 @@ public static synchronized final void handleInterrupt()
       return (Stream) obj;
     }
     if (obj.typep(Symbol.STREAM).equal(T)) {
-      Stream result = new CLOSProxyStream(obj);
+      Stream result = GrayStream.findOrCreate(obj);
       return result;
     }
     return (Stream) // Not reached.
@@ -1804,6 +1806,8 @@ public static synchronized final void handleInterrupt()
   {
           if (obj instanceof Stream)
             return (Stream) obj;
+          if (obj instanceof StandardObject)
+            return checkStream(obj);
           if (obj == T)
             return checkCharacterOutputStream(Symbol.TERMINAL_IO.symbolValue());
           if (obj == NIL)
@@ -1817,6 +1821,8 @@ public static synchronized final void handleInterrupt()
   {
     if (obj instanceof Stream)
       return (Stream) obj;
+    if (obj instanceof StandardObject)
+      return checkStream(obj);
     if (obj == T)
       return checkCharacterInputStream(Symbol.TERMINAL_IO.symbolValue());
     if (obj == NIL)
@@ -2375,10 +2381,7 @@ public static synchronized final void handleInterrupt()
     LispObject value = Symbol.STANDARD_OUTPUT.symbolValue();
     value = SynonymStream.OUT_SYNONYM_OF.execute(value);
     Stream result = checkStream(value);
-    if (!(result instanceof CLOSProxyStream)) {
-      return checkCharacterOutputStream(result);
-    }
-    return result;
+    return checkCharacterOutputStream(result);
   }
 
   static

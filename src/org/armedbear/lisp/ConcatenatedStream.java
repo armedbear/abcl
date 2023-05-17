@@ -256,7 +256,7 @@ public final class ConcatenatedStream extends Stream
                 Stream s = checkStream(args[i]);
                 if (s instanceof Stream) {
                     if (s.isInputStream()
-                        || (s instanceof CLOSProxyStream)) {
+                        || (s instanceof GrayStream)) {
                             streams = new Cons(s, streams);
                             continue;
                     }

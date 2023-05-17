@@ -42,10 +42,7 @@
 ;; maintained for any symbols that can't be automatically detected.
 
 
-
-
 (in-package "SYSTEM")
-
 
 ;; This one must be last, or at least past print-object and clos:
 ;; we don't want FORMATs executed before we can load those to end us

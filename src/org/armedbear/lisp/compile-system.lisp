@@ -318,6 +318,8 @@
       (load (do-compile "ldb.lisp"))
       (load (do-compile "destructuring-bind.lisp"))
       (load (do-compile "featurep.lisp"))
+      (load (do-compile "gray-streams.lisp"))
+      (load (do-compile "gray-streams-java.lisp"))
 
       ;; But not for these.
       (mapc #'do-compile '("adjoin.lisp"
@@ -375,7 +377,6 @@
                            "find-all-symbols.lisp"
                            "get-pid.lisp"
                            "gentemp.lisp"
-                           "gray-streams.lisp"
                            "gui.lisp"
                            "inline.lisp"
                            "inspect.lisp"
