@@ -440,7 +440,7 @@ public class Stream extends StructureObject {
     }
 
     // Character input.
-    public final int getLineNumber() {
+    public int getLineNumber() {
         return lineNumber;
     }
 
@@ -1698,6 +1698,11 @@ public class Stream extends StructureObject {
         return NIL;
     }
 
+    /**
+     Emit a newline unless at character position zero
+     
+     Return T if newline was emitted, NIL otherwise
+    */
     public LispObject freshLine() {
         if (charPos == 0)
             return NIL;
