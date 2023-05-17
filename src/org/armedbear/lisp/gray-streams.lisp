@@ -189,8 +189,9 @@
 (defvar *ansi-file-position* #'cl:file-position)
 
 (defun ansi-streamp (stream)
-  (or (xp::xp-structure-p stream)
-      (funcall *ansi-streamp* stream)))
+  (not
+   (subtypep (class-of stream)
+             'gray-streams::fundamental-stream)))
 
 (defclass fundamental-stream (standard-object stream)
   ((open-p :initform t
