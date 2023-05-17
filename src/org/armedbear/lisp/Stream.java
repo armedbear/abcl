@@ -2246,10 +2246,18 @@ public class Stream extends StructureObject {
     };
 
     // ### out-synonym-of stream-designator => stream
-    private static final Primitive OUT_SYNONYM_OF =
-    new Primitive("out-synonym-of", PACKAGE_SYS, true, "stream-designator") {
-        @Override
+    public static final Primitive OUT_SYNONYM_OF
+        = new pf_out_synonym_of();
+    private static final class pf_out_synonym_of extends Primitive  {
+        pf_out_synonym_of() {
+            super("out-synonym-of", PACKAGE_SYS, true, "stream-designator");
+        }
         public LispObject execute (LispObject arg) {
+            if (arg instanceof SynonymStream) {
+                Symbol symbol
+                    = (Symbol) SynonymStream.SYNONYM_STREAM_SYMBOL.execute(arg);
+                return symbol.symbolValue();
+            }
             if (arg instanceof Stream)
                 return arg;
             if (arg == T)
