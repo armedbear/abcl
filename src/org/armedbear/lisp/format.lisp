@@ -1747,7 +1747,10 @@
     ((member t)
      (%format *standard-output* control-string format-arguments)
      nil)
-    ((or stream xp::xp-structure)
+    (stream
+     (%format (sys:out-synonym-of destination) control-string format-arguments)
+     nil)
+    (xp::xp-structure
      (%format destination control-string format-arguments)
      nil)))
 
