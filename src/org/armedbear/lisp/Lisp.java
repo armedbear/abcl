@@ -2372,7 +2372,13 @@ public static synchronized final void handleInterrupt()
 
   public static final Stream getStandardOutput()
   {
-    return checkCharacterOutputStream(Symbol.STANDARD_OUTPUT.symbolValue());
+    LispObject value = Symbol.STANDARD_OUTPUT.symbolValue();
+    value = SynonymStream.OUT_SYNONYM_OF.execute(value);
+    Stream result = checkStream(value);
+    if (!(result instanceof CLOSProxyStream)) {
+      return checkCharacterOutputStream(result);
+    }
+    return result;
   }
 
   static
