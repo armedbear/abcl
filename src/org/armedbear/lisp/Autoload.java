@@ -98,6 +98,14 @@ public class Autoload extends Function
                                                   "org.armedbear.lisp.".concat(className)));
     }
 
+    public static void autoloadFile(Symbol symbol, String fileName)
+    {
+        if (symbol.getSymbolFunction() == null) {
+            symbol.setSymbolFunction(new Autoload(symbol, fileName, null));
+        }
+    }
+   
+
     private static void effectiveLoad(String className, String fileName) {
         if (className != null) {
             try {
