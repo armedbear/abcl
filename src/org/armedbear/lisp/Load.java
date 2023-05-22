@@ -760,9 +760,9 @@ public final class Load
     }
 
     // ### load-system-file
-    private static final Primitive LOAD_SYSTEM_FILE = new load_system_file();
-    private static class load_system_file extends Primitive {
-        load_system_file () {
+    public static final Primitive LOAD_SYSTEM_FILE = new pf_load_system_file();
+    private static class pf_load_system_file extends Primitive {
+        pf_load_system_file () {
             super("load-system-file", PACKAGE_SYS, true);
         }
         @Override
