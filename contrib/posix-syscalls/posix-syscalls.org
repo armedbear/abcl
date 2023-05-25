@@ -1,0 +1,53 @@
+#+title: POSIX SYSCALLS
+
+* POSIX_SYSCALLS contrib
+
+Created to respond to <https://mailman.common-lisp.net/pipermail/armedbear-devel/2023-April/004308.html>.
+
+This ABCL contrib provides and demonstrates the scaffolding for
+extending the implementation by use of direct syscalls via the foreign
+function interface (FFI) afforded by the JNA library.
+
+On loading this system, new implementations of the EXT:GETENV and
+UIOP/OS:GETENV functions are provided which use FFI to directly call
+the setenv() and getenv() library functions.  The setenv()
+functionality is provided by DEFSETF expander.
+
+** Usage
+
+*** Initialization 
+#+begin_src lisp
+  (require :abcl-contrib)
+  (asdf:load-system :posix-syscalls)
+#+end_src
+
+*** Example
+
+#+begin_src 
+CL-USER> (uiop/os:getenv "PATH")
+"/opt/local/bin:/opt/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin"
+CL-USER> (setf (uiop/os:getenv "PATH") "/usr/sbin")
+"/usr/sbin"
+CL-USER> (uiop/os:getenv "PATH")
+"/usr/sbin"
+CL-USER> 
+#+end_src
+
+** Notes
+
+CFFI isn't used to minimize dependencies.
+
+Posix syscalls is perhaps a terrible name.
+
+This isn't expected work on Windows (untested).
+
+
+* Colophon  
+  #+begin_example
+    Mark <evenson@not.org>
+    Created: 24-MAY-2023
+    Revised: <2023-05-25 Thu 08:38>
+  #+end_example
+
+
+
