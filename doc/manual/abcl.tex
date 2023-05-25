@@ -14,7 +14,7 @@
 \title{Armed Bear Common Lisp User Manual}
 \date{Version 1.9.2 DRAFT\\
 \smallskip
-February 2023}
+Unreleased}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -1533,6 +1533,15 @@ following behavior to the execution of \code{REQUIRE} on these symbols:
       See \ref{section:named-readtables} on
       \pageref{section:named-readtables} for further information.
 
+    \item[\code{posix-syscalls}] Provides and demonstrates the
+      scaffolding for extending the implementation by use of direct
+      syscalls via the foreign function interface (FFI) afforded by
+      the JNA library.  Upon loading this system, new implementations
+      of the \code{EXT:GETENV} and \code{UIOP/OS:GETENV} functions are
+      installed which use FFI to directly call the \sc{posix} syscalls
+      where available, which allows environment variables to be set.
+      \index{POSIX-SYSCALLS}
+      
     \end{description}
 \end{description}
 
