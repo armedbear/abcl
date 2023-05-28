@@ -205,7 +205,8 @@ states of the stepper"
      ;; Analyze next symbols
      (sys:%set-stepper-off)
      (let* ((function-name
-              (ignore-errors (nth-value 2 (function-lambda-expression fun))))
+              (or (ignore-errors (nth-value 2 (function-lambda-expression fun)))
+                  (ignore-errors (car object))))
             (stop-at-symbol-p-value
               (and function-name (stop-at-symbol-p function-name))))
        (sys:%set-stepper-on)
