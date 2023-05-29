@@ -15,6 +15,9 @@ else
 fi
 
 pushd ansi-test
+# pin known working version
+# <https://gitlab.common-lisp.net/ansi-test/ansi-test/-/issues/31>
+git checkout 1c832cf
 git show-ref
 git rev-parse
 popd
