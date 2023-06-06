@@ -167,7 +167,7 @@
 (define-class->%class-forwarder class-direct-default-initargs)
 (define-class->%class-forwarder (setf class-direct-default-initargs))
 
-(declaim (notinline add-direct-ubclass remove-direct-subclass))
+(declaim (notinline add-direct-subclass remove-direct-subclass))
 (defun add-direct-subclass (superclass subclass)
   (setf (class-direct-subclasses superclass)
         (adjoin subclass (class-direct-subclasses superclass))))
