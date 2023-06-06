@@ -8,6 +8,36 @@ Unreleased
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
 
+* [r15692][r15701]-[r15707] Substantially re-worked the Gray Stream
+  implementation to fix many of its outstanding issues.
+
+* [r15700] Introduced the POSIX-SYSCALLS contrib which allows one to
+  set environment variables in the hosting JVM process.
+
+* [r15698] (Uthar) Fix GRAY-STREAMS:STREAM-ELEMENT-TYPE for binary
+  streams.
+
+* [r15689] (jpellegrini) Fix CL:LOG for behavior at zero.
+
+* [r15686] Extensive grouting of accumulated bitrot in the ASDF-JAR
+  contrib to enable more complete packaging of non-compilation
+  artifacts as well as systems residing in jar files.
+
+* [r15683] EXTENSION:REGISTER-ASDF adds a directory to ASDF by using
+  the configuration API.
+
+* [r15682] SYSTEM:ZIP now works with source in jar files.
+
+* [r15674] (Uthar) Augment JAVA:JNEW-RUNTIME-CLASS docstring.
+
+* [r15673] The outdated GNU Info version of User Manual has been
+  removed.  The GNU Info conversion was done by hand, and is neither
+  easily reproducible nor particually accurate at this point.
+
+* [r15672] Fix build under podman by qualify remote registry for
+  containerization base.
+
+
 
 Version 1.9.1
 =============

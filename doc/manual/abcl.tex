@@ -12,9 +12,9 @@
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.9.2 DRAFT\\
+\date{Version 1.9.2 \\
 \smallskip
-Unreleased}
+June 2023}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -241,7 +241,7 @@ contemporary Common Lisp.
 \textsc{ABCL} is licensed under the terms of the \textsc{GPL} v2 of
 June 1991 with an added ``classpath-exception'' clause (see the file
 \texttt{COPYING} in the source distribution\footnote{See
-  \url{http://abcl.org/svn/trunk/tags/1.9.1/COPYING}} for the license,
+  \url{http://abcl.org/svn/trunk/tags/1.9.2/COPYING}} for the license,
 term 13 in the same file for the classpath exception).  This license
 broadly means that you must distribute the sources to \textsc{ABCL},
 including any changes you make, together with a program that includes
@@ -270,6 +270,7 @@ course.
 \item Scott Burson
 \item Samuel Hunter
 \item Phil Eaton
+\item jpellegrini  
 
   
 \item Andr\'as Simon (piso)
@@ -281,7 +282,7 @@ course.
 
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-\texttt{abcl.jar} or possibly something like \texttt{abcl-1.9.1.jar} if
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.9.2.jar} if
 using a versioned package on the local file-system from your system
 vendor.  This jar file can be executed from the command line to obtain a
 \textsc{REPL}\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
@@ -1639,7 +1640,7 @@ program performance.
 
 The \textsc{ABCL} contrib is packaged as a separate jar archive usually named
 \code{abcl-contrib.jar} or possibly something like
-\code{abcl-contrib-1.9.1.jar}.  The contrib jar is not loaded by the
+\code{abcl-contrib-1.9.2.jar}.  The contrib jar is not loaded by the
 implementation by default, and must be first initialized by the
 \code{REQUIRE} mechanism before using any specific contrib:
 
@@ -1734,7 +1735,7 @@ Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
 More extensive documentations and examples can be found at
-\url{http://abcl.org/svn/tags/1.9.1/contrib/abcl-asdf/README.markdown}.
+\url{http://abcl.org/svn/tags/1.9.2/contrib/abcl-asdf/README.markdown}.
 
 \section{asdf-jar}
 \label{section:asdf-jar}
@@ -1747,7 +1748,7 @@ this package will recursively package all the required source and
 fasls in a jar archive.
 
 The documentation for this contrib can be found at
-\url{http://abcl.org/svn/tags/1.9.1/contrib/asdf-jar/README.markdown}.
+\url{http://abcl.org/svn/tags/1.9.2/contrib/asdf-jar/README.markdown}.
 
 \section{jss}
 \label{section:jss}
@@ -1785,7 +1786,7 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp} %$ <-- un-confuse Emacs font-lock
 
 Some more information on jss can be found in its documentation at
-\url{http://abcl.org/svn/tags/1.9.1/contrib/jss/README.markdown}
+\url{http://abcl.org/svn/tags/1.9.2/contrib/jss/README.markdown}
 
 \section{jfli}
 \label{section:jfli}
@@ -1794,7 +1795,7 @@ The contrib contains a pure-Java version of \textsc{JFLI}, apparently
 a descendant of Rich Hickey's early experimentations with using Java
 from Common Lisp.
 
-\url{http://abcl.org/svn/tags/1.9.1/contrib/jfli/README}.
+\url{http://abcl.org/svn/tags/1.9.2/contrib/jfli/README}.
 
 \section{abcl-introspect}
 \label{section:abcl-introspect}
@@ -1902,7 +1903,7 @@ NIL
 \end{listing-lisp}
   
 
-\url{http://abcl.org/svn/tags/1.9.1/contrib/abcl-introspect/}.
+\url{http://abcl.org/svn/tags/1.9.2/contrib/abcl-introspect/}.
 
 \section{abcl-build}
 \label{section:abcl-build}
@@ -1933,7 +1934,7 @@ for system construction, namely
     archives from the network.
 \end{itemize}
 
-\url{http://abcl.org/svn/tags/1.9.1/contrib/abcl-build/}.
+\url{http://abcl.org/svn/tags/1.9.2/contrib/abcl-build/}.
 
 \section{named-readtables}
 \label{section:named-readtables}
@@ -1945,7 +1946,7 @@ readtables akin to the already-existing namespace of packages.
 This contrib was included from the source available from
 \url{https://github.com/melisgl/named-readtables/}.
 
-See \url{http://abcl.org/svn/tags/1.9.1/contrib/named-readtables/} for
+See \url{http://abcl.org/svn/tags/1.9.2/contrib/named-readtables/} for
 more information.
 
 \chapter{History}
@@ -2009,7 +2010,9 @@ We released abcl-1.8.0 under the darkening storms of October 2020.
 
 Halfway through the $\pi$ $\alpha$ $\nu$ $\delta$ $\eta$ $\mu$ o
 $\zeta$ \cite{pandemos}, we dyslexic worker bears untied abcl-1.9.0.
-We released abcl-1.9.1 as a maintenance release in February 2023.
+We released abcl-1.9.1 as a maintenance release in February 2023.  In
+June 2023, among other fixes we substantially improved out Gray Stream
+support in abcl-1.9.2.
 
 \appendix 
 

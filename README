@@ -53,18 +53,18 @@ to get something like
 
     illin:~/work/abcl$ podman run -it YOURID/abcl
     VM settings:
-    Max. Heap Size (Estimated): 498.00M
-    Using VM: OpenJDK 64-Bit Server VM
+        Max. Heap Size (Estimated): 3.89G
+        Using VM: OpenJDK 64-Bit Server VM
 
-    Armed Bear Common Lisp 1.9.1
-    Java 17.0.5 Oracle Corporation
+    Armed Bear Common Lisp 1.9.2
+    Java 17.0.2 Oracle Corporation
     OpenJDK 64-Bit Server VM
-    Low-level initialization completed in 0.952 seconds.
-    Startup completed in 4.248 seconds.
+    Low-level initialization completed in 0.432 seconds.
+    Startup completed in 2.246 seconds.
     Type ":help" for a list of available commands.
     CL-USER(1):
 
-To install Quicklisp for ABCL in the Docker container run:
+To install Quicklisp for ABCL in the container run:
 
     podman run -t YOURID/abcl abcl \
       --batch --load /home/abcl/work/abcl/ci/install-quicklisp.lisp
@@ -86,9 +86,9 @@ Java executable (`java`) is in your shell's path.  Java 8, 11, 17 are
 strongly supported by ABCL, but others may work with a little elbow
 grease.
 
-[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.9.1>
-[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.9.1>
-[abcl.org-release]:    <http://abcl.org/releases/1.9.1/>
+[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.9.2>
+[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.9.2>
+[abcl.org-release]:    <http://abcl.org/releases/1.9.2/>
 
 To start ABCL, simply issue the following command:
 
@@ -96,8 +96,8 @@ To start ABCL, simply issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.9.1
-    Java 17.0.5 OpenJDK Porters Group
+    Armed Bear Common Lisp 1.9.2
+    Java 17.0.7 OpenJDK Porters Group
     OpenJDK 64-Bit Server VM
     Low-level initialization completed in 0.107 seconds.
     Startup completed in 0.493 seconds.
@@ -218,7 +218,7 @@ ABCL has a [User Manual][manual] stating its conformance to the ANSI
 standard, providing a compliant and practical Common Lisp
 implementation.
 
-[manual]:       <https://abcl.org/releases/1.9.1/abcl-1.9.1.pdf>
+[manual]:       <https://abcl.org/releases/1.9.2/abcl-1.9.2.pdf>
 
 
 TESTS
@@ -226,12 +226,13 @@ TESTS
 
     | Version | Failures | Total |
     |---------+----------+-------|
+    |   1.9.2 |       63 | 21902 |
     |   1.9.1 |       60 | 21870 |
     |   1.9.0 |       61 | 21870 |
     |   1.8.0 |       49 | 21848 |
     |   1.5.0 |       48 | 21708 |
 
-ABCL 1.9.1 currently fails ~60 out of 21870 the current ANSI test
+ABCL 1.9.2 currently fails ~63 out of 21902 the current ANSI test
 suite derived from the tests originally written for GCL.
 
 [ansi-test]: <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git>
@@ -287,11 +288,12 @@ On behalf of all ABCL development team and contributors,
     Scott Burson
     Samuel Hunter
     Phil Eaton
+    jpellegrini
 
     András Simon
     Peter Graves
 
 Have fun!
 
-February 2023
+June 2023
 

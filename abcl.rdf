@@ -21,9 +21,9 @@
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
   dc:modified          "24-FEB-2024" ;
-  dc:version           "abcl-1.9.1" ;
-  dc:release           "dev" ;
-#  dc:release           "rc-0" ;
+  dc:version           "abcl-1.9.2" ;
+#  dc:release           "dev" ;
+  dc:release           "rc-0" ;
   abcl:git             <https://github.com/armedbear/abcl/> ;
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
   abcl:svn             <https://abcl.org/svn/trunk/abcl/> . 
@@ -105,12 +105,12 @@ _:user dc:identifier <https://ville.not.org/#me>  ;
      dc:license <https://usefulinc.com/doap/licenses/gplv2> ;
      dc:license <https://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
      dc:licenseDocument 
-       <https://abcl.org/svn/tags/1.9.1/src/org/armedbear/COPYING> ;
+       <https://abcl.org/svn/tags/1.9.2/src/org/armedbear/COPYING> ;
 ] .
 
 doap:Project rdfs:seeAlso [
   a rdf:Bag;
-  rdf:_0 <https://abcl.org/releases/1.9.1/abcl-1.9.1.jar> ;
+  rdf:_0 <https://abcl.org/releases/1.9.2/abcl-1.9.2.jar> ;
   rdf:_1 <https://abcl.org/trac/timeline> ;
   rdf:_2 <https://abcl.org/trac/wiki> ;
   rdf:_4 <https://github.com/armedbear/abcl/> ;
