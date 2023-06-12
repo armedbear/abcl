@@ -1,10 +1,10 @@
-#+TITLE: Notes Packaging ABCL for Distribution
+#+TITLE: Notes on Packaging ABCL for Distribution
 
 
-* abcl-aio
+* ABCL-AIO
 
 The standard ABCL build process as described in the ~build.xml~ file
-and executed by the Ant build tool results in two artifacts:
+and executed by the Ant build tool results in two archive artifacts:
 ~abcl.jar~ and ~abcl-contrib.jar~.  ~abcl.jar~ contains all the Java
 and Common Lisp code necessary that constitute the ANSI conforming
 implementation runtime, plus the latest stable ASDF. The
@@ -14,7 +14,7 @@ some point in the future,
 
 We create two separate jar artifacts in order to:
 
-1. To place an upper bound of size and complexity of ~abcl.jar~
+1. Place an upper bound of size and complexity of ~abcl.jar~
    regardless of what we package in ~abcl-contrib.jar~.  Having a
    restricted core ANSI implementation plus ASDF enables us to:
 
@@ -25,9 +25,10 @@ We create two separate jar artifacts in order to:
    
 2. Clearly mark which parts of the code-base are covered under
    GPLv2+classpath from those that may have other licensing terms.  By
-   making the loading of "contrib" a dynamic operation, we defer
-   possible infringement to the User who redistributes the resulting
-   jar artifact.  
+   making the loading of the "abcl-contrib" a dynamic, user-initiated,
+   operation, we maintain our license compliance.  Providing, but not
+   shipping, ABCL-AIO, defers possible infringement to the User who
+   redistributes the resulting jar artifact.
 
 Users often want to simply package both artifacts in a single jar for
 deployment convenience.  abcl-1.5.0 introduced the build machinery to
@@ -82,7 +83,7 @@ work well for:
 2. Libraries such as CFFI which depend on items to be have been make
    available via an operating system packaging mechanism.
 
-* Current hack
+* Implementation Status
 
 Ideally, we would like allow the AIO mechanism to include additional
 ASDF systems in the single jar artifact.  
@@ -92,24 +93,26 @@ Currently one can hack this together by:
 1.  Manually extracting the ~abcl-aio.jar~ artifact to a file-system.
 
 2.  Placing the necessary ASDF systems in the resulting "contrib"
-   directory.
+    directory.
 
 3.  Recreating the single archive from the file-system contents.
 
 * TODO Future directions
 
-Obviously, we could packaging ABCL applications as single archives
-much more convenient.  Rather than mucking around in the Ant build
-system, I would rather that we add the necessary machinery
+Obviously, we could provide more convenience in packaging ABCL
+applications as single archives .  Rather than mucking around in the
+Ant build system, I would rather that we add the necessary machinery
 =ABCL-BUILD= contrib as it will make customization much easier for
 those who know Common Lisp.
+
+Patches towards easier use are gratefully solicited.
 
 
 * Colophon
   #+begin_example
   Mark <evenson.not.org@gmail.com>
   Created: <2019-11-25 Mon>
-  Revised: <2023-05-04 Thu 11:33>
+  Revised: <2023-06-12 Mon 09:09>
   #+end_example
 
   
