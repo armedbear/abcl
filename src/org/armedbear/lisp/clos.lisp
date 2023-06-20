@@ -2561,19 +2561,28 @@ to ~S with argument list ~S."
                (checks-required (and (member '&key gf-lambda-list)
                                      (not (member '&allow-other-keys
                                                   gf-lambda-list))))
-              (applicable-keywords
-               (when checks-required
-                 ;; Don't do applicable keyword checks when this is
-                 ;; one of the 'exceptional four' or when the gf allows
-                 ;; other keywords.
-                 (compute-applicable-keywords gf applicable-methods))))
+               (applicable-keywords
+                 (when checks-required
+                   ;; Don't do applicable keyword checks when this is
+                   ;; one of the 'exceptional four' or when the gf allows
+                   ;; other keywords.
+                   (compute-applicable-keywords gf applicable-methods))))
           (when (and checks-required
                      (not (eq applicable-keywords :any)))
             (setf emfun
                   (wrap-emfun-for-keyword-args-check gf emfun non-keyword-args
                                                      applicable-keywords)))
-          ;;; Cache only understand classes and eql specializers
-          (when (eq (class-of gf) 'standard-generic-function)
+          ;; The EMFCache only understand classes and EQL
+          ;; specializers. Check the applicable methods and if any
+          ;; have a specializer that isn't an eql-specializer or
+          ;; class, in which case we don't cache
+          (unless (some (lambda (m) 
+                          (some 
+                           (lambda (x)
+                             (and (typep x 'specializer)
+                                  (not (typep x 'eql-specializer)) (not (typep x 'class))))
+                           (method-specializers m)))
+                        applicable-methods)
             (cache-emf gf args emfun))
           (funcall emfun args))
         (apply #'no-applicable-method gf args))))
