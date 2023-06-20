@@ -1,12 +1,20 @@
 Version 1.9.2
 =============
 
-Unreleased 
+June 21, 2023
 
 
-<https://abcl.org/svn/trunk/abcl/>
+<https://abcl.org/svn/tags/1.9.2/>
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
+
+* [r15712] JNA contrib has been updated to jna-5.13.0
+
+* [r15711] (Alan Ruttenberg) Restore most of the speed of the generic
+  function cache that was degraded with abcl-1.9.1
+
+* [r15709] (Alejandrozf) The ABCL-STEPPER contrib provides a
+  interpreted implementation of CL:STEP.
 
 * [r15692][r15701]-[r15707] Substantially re-worked the Gray Stream
   implementation to fix many of its outstanding issues.
