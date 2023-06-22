@@ -16,14 +16,14 @@
 @prefix dc:              <https://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <https://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.9.2#dev> ; # deprecated?
-  dc:identifier         <urn:abcl.org/release/1.9.2#> ;
+  dc:identifier         <urn:abcl.org/1.9.3#dev> ; # deprecated?
+  dc:identifier         <urn:abcl.org/release/1.9.3#> ;
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "24-FEB-2024" ;
-  dc:version           "abcl-1.9.2" ;
-#  dc:release           "dev" ;
-  dc:release           "rc-0" ;
+  dc:modified          "22-JUN-2023" ;
+  dc:version           "abcl-1.9.3" ;
+  dc:release           "dev" ;
+#  dc:release           "rc-0" ;
   abcl:git             <https://github.com/armedbear/abcl/> ;
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
   abcl:svn             <https://abcl.org/svn/trunk/abcl/> . 
@@ -136,6 +136,7 @@ doap:Project rdfs:seeAlso [
      rdf:_23 <https://abcl.org/releases/1.8.0/abcl-1.8.0.jar> ;
      rdf:_29 <https://abcl.org/releases/1.9.0/abcl-1.9.0.jar> ;
      rdf:_31 <https://abcl.org/releases/1.9.1/abcl-1.9.1.jar> ;
+     rdf:_37 <https://abcl.org/releases/1.9.1/abcl-1.9.2.jar> ;
   ] ;
 ] .
 
@@ -175,7 +176,7 @@ doap:Project rdfs:seeAlso
 ] .
 
 abcl:jna
-        dc:version "5.12.1" .
+        dc:version "5.13.0" .
 abcl:asdf
         dc:version "3.3.6" .
 
@@ -249,6 +250,6 @@ abcl:jss
    rdf:_18  openjdk:18 ;
    rdf:_19  openjdk:19 ;
    rdfs:comment "Supported build platforms" .
-
+p
 
   
