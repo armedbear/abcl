@@ -494,12 +494,6 @@ from ${abcl.home.dir}
     </target>
 
     <!-- 
-The usage of abcl.implementation.version is deprecated as not working.
-The intention of this value was that if a given source tree could be
-unidentified as being under source control by the presence of given
-revision control system artifacts, the abcl.implementation.version
-would contain a version derived from the revision control system.
-
 To hack around the non-prescriptive nature of Ant, chains of
 conditional targets had to be created that while might have once
 worked for Subversion, were going to get increasingly hairy for
@@ -507,7 +501,7 @@ Mercurial and Git.
     -->
 
     <target name="abcl.stamp.version" 
-            depends="abcl.version.src,abcl.stamp.version.1,abcl.stamp.version.2"
+            depends="abcl.version.src,abcl.stamp.version.1,abcl.stamp.version.2,abcl.stamp.version.uptodate"
             unless="abcl.stamp.version.uptodate.p">
       <mkdir dir="${abcl.version.path}/.."/>
       <echo>ABCL implementation version: ${abcl.implementation.version}</echo>
