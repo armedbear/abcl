@@ -475,6 +475,10 @@ public final class Lisp
     return error(new ProgramError(initArgs));
   }
 
+  public static final LispObject java_error(Throwable t) {
+    return error(new JavaException(t));
+  }
+
   public static volatile boolean interrupted;
   public static volatile LispThread threadToInterrupt;
 
