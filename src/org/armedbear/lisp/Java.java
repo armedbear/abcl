@@ -237,7 +237,7 @@ public final class Java
     private static final Primitive JFIELD = new pf_jfield();
     @DocString(name="jfield",
     args="class-ref-or-field field-or-instance &optional instance value",
-    doc="Retrieves or modifies a field in a Java class or instance.\n\n"+
+    doc="Retrieves or modifies a public field in a Java class or instance.\n\n"+
         "Supported argument patterns:\n\n"+
         "   Case 1: class-ref  field-name:\n"+
         "      Retrieves the value of a static field.\n\n"+
@@ -274,8 +274,8 @@ public final class Java
     private static final Primitive JFIELD_RAW = new pf_jfield_raw();
     @DocString(name="jfield",
     args="class-ref-or-field field-or-instance &optional instance value",
-    doc="Retrieves or modifies a field in a Java class or instance. Does not\n"+
-        "attempt to coerce its value or the result into a Lisp object.\n\n"+
+    doc="Retrieves or modifies a public field in a Java class or instance without\n"+
+        "attempting to coerce its value or the result into a Lisp object.\n\n"+
         "Supported argument patterns:\n\n"+
         "   Case 1: class-ref  field-name:\n"+
         "      Retrieves the value of a static field.\n\n"+
