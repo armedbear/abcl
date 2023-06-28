@@ -692,5 +692,7 @@ public class Autoload extends Function
         autoload(PACKAGE_EXT, "autoload-setf-expander", "AutoloadGeneralizedReference", true);
         autoload(PACKAGE_EXT, "autoload-setf-function", "AutoloadGeneralizedReference", true);
         autoload(PACKAGE_EXT, "autoload-ref-p", "AutoloadGeneralizedReference", true);
+
+        autoload(Symbol._CAS, "Atomic");
     }
 }
