@@ -376,20 +376,25 @@ CLASS-NAME may either be a symbol or a string according to the usual JSS convent
 (define-condition no-such-java-field (error)
   ((field-name
     :initarg :field-name
-    :reader field-name
-    )
+    :reader field-name)
    (object
     :initarg :object
-    :reader object
-    ))
+    :reader object))
   (:report (lambda (c stream)
-             (format stream "Unable to find a FIELD named ~a for ~a"
-                     (field-name c) (object c))))
-  )
+             (format stream "Unable to find a field named ~a in ~a"
+                     (field-name c) (object c)))))
 
 (defun get-java-field (object field &optional (try-harder *running-in-osgi*))
-  "Get the value of the FIELD contained in OBJECT.
-If OBJECT is a symbol it names a dot qualified static FIELD."
+  "Returns the value of the FIELD contained in OBJECT.
+
+If OBJECT is a symbol, it names a (possibly) dot qualified class
+containing a static FIELD.
+
+If OBJECT is an Java object instance, the corresponding FIELD instance
+is returned.
+
+If TRY-HARDER is non-nil, returns fields of classes regardless of Java
+private/protected access modifiers."
   (if try-harder
       (let* ((class (if (symbolp object)
                         (setq object (find-java-class object))
@@ -408,10 +413,11 @@ If OBJECT is a symbol it names a dot qualified static FIELD."
           (jfield field object))))
 
 (defun find-declared-field (field class)
-  "Return a FIELD object corresponding to the definition of FIELD
-\(a string\) visible at CLASS. *Not* restricted to public classes, and checks
-all superclasses of CLASS.
-   Returns NIL if no field object is found."
+  "Return a FIELD object corresponding to the definition of FIELD \(a
+string\) visible at CLASS. *Not* restricted to public fields or
+classes, and checks all superclasses of CLASS.
+
+Returns NIL if no field object is found."
   (loop while class
      for field-obj = (get-declared-field class field)
      if field-obj
