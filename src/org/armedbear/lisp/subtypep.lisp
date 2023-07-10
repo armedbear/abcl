@@ -553,6 +553,13 @@
            (dolist (tt i1)
              (let ((tv (%subtypep tt type2)))
                (when tv (return-from %subtypep (values t t)))))
+           (when
+               (and
+                (eq t2 'null)
+                (= (length i1) 2)
+                (member 'symbol i1)
+                (member 'list i1))
+             (return-from %subtypep (values t t)))
            (return-from %subtypep (values nil nil)))
           ((eq t1 'cons)
            (case t2
@@ -567,6 +574,13 @@
            (dolist (tt i2)
              (let ((tv (%subtypep type1 tt)))
                (when tv (return-from %subtypep (values t t)))))
+           (when
+               (and 
+                (eq t1 'list)
+                (= (length i2) 2)
+                (member 'null i2)
+                (member 'cons i2))
+             (return-from %subtypep (values t t)))
            (return-from %subtypep (values nil nil)))
           ((eq t2 'and)
            (dolist (tt i2)
