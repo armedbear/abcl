@@ -17,7 +17,7 @@ ABCL-INTROSPECT also contains a number of ASDF systems which provide
 modules to install as implementations for the JVM code analysis
 provided by CL:DISASSEMBLE.
 
-#+TABLE: Currently available decompilers as ASDF systems 
+#+TABLE: Currently available decompilers as ASDF systems
 |------------+--------------------------+-----------------------------------------------------------------------------|
 | ASDF       | status                   | URI                                                                         |
 |------------+--------------------------+-----------------------------------------------------------------------------|
@@ -25,7 +25,7 @@ provided by CL:DISASSEMBLE.
 | javap      | working                  | <<https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javap.html> |
 | cfr        | working                  | <https://www.benf.org/other/cfr>                                            |
 | jad        | fails ABCL-BUILD/install | <http://www.javadecompilers.com/jad/>                                       |
-| procyon    | loading                  | <https://bitbucket.org/mstrobel/procyon/wiki/Java%20Decompiler>             |
+| procyon    | working                  | <https://bitbucket.org/mstrobel/procyon/wiki/Java%20Decompiler>             |
 | fernflower | loading                  | <https://github.com/fesh0r/fernflower>                                      |
 
 
@@ -104,7 +104,7 @@ the SYS:*DISASSEMBLERS* variable.
     ;       LocalVariableTable:
     ;         Start  Length  Slot  Name   Signature
     ;             0      10     0  this   Lorg/armedbear/lisp/Primitives$pf_cons;
-    ; 
+    ;
     ;   public org.armedbear.lisp.LispObject execute(org.armedbear.lisp.LispObject, org.armedbear.lisp.LispObject);
     ;     descriptor: (Lorg/armedbear/lisp/LispObject;Lorg/armedbear/lisp/LispObject;)Lorg/armedbear/lisp/LispObject;
     ;     flags: ACC_PUBLIC
@@ -125,8 +125,8 @@ the SYS:*DISASSEMBLERS* variable.
     ;             0      10     2 second   Lorg/armedbear/lisp/LispObject;
     ; }
     ; SourceFile: "Primitives.java"
-#+end_src    
-    
+#+end_src
+
 * Colophon
 
 #+caption: Metadata Colophon
