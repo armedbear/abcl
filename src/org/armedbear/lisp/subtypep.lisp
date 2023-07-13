@@ -587,7 +587,15 @@
              (multiple-value-bind (tv flag) (%subtypep type1 tt)
                (unless tv (return-from %subtypep (values tv flag)))))
            (return-from %subtypep (values t t)))
-          ((null (or i1 i2))
+          ((eq t1 'mod)
+           (return-from %subtypep
+             (%subtypep `(integer 0 ,(1- (first i1)))
+                        type2)))
+          ((eq t2 'mod)
+           (return-from %subtypep
+             (%subtypep type1
+                        `(integer 0 ,(1- (first i2))))))
+           ((null (or i1 i2))
            (return-from %subtypep (values (simple-subtypep t1 t2) t)))
           ((eq t2 'SEQUENCE)
            (cond ((memq t1 '(null cons list))
