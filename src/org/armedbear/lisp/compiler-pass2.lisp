@@ -7199,6 +7199,78 @@ We need more thought here.
         (symbol-name (gensym "LFUN"))))
 
 
+(defmacro emit-princ-top-stack ()
+  `(progn
+     (emit 'dup)                        ; (A A)
+     (emit-getstatic +lisp-symbol+ "PRINC" +lisp-symbol+) ; ('cl:princ A A)
+     (emit-invokevirtual +lisp-symbol+ "getSymbolFunction" nil +lisp-object+) ; (#'cl:princ A A)
+     (emit 'swap) ; (A #'cl:princ A)
+     (emit-call-execute 1) ; (A A)
+     (emit 'pop)           ; (A)
+     ))
+
+
+(defmacro emit-call-step-function (function-name)
+  `(progn
+     (emit 'ldc (pool-string ,function-name))
+     (emit 'ldc (pool-string "COMPILER-BACKEND"))
+     (emit-invokestatic +lisp+ "internInPackage"
+                        (list +java-string+ +java-string+)
+                        +lisp-symbol+)
+     (emit-invokevirtual +lisp-symbol+ "getSymbolFunction" nil +lisp-object+)
+     (emit-call-execute 0)))
+
+
+(defmacro emit-step-handler ()
+  `(c-backend:with-backend
+     (:jvm-stepper
+      (emit-call-step-function "STEP-HANDLER")
+      (emit 'pop))))
+
+
+(defmacro emit-step-after-evaluation ()
+  `(c-backend:with-backend
+     (:jvm-stepper
+      (let ((thread-values-register (allocate-register nil))
+            (LABEL1 (gensym))
+            (LABEL2 (gensym)))
+
+        ;; save current thread values
+        (emit 'dup)
+        (emit-push-current-thread)
+        (emit 'swap)
+        (emit-push-constant-int 1)
+        (emit-invokevirtual +lisp-thread+ "getValues" (list +lisp-object+ :int) +lisp-object-array+)
+        (astore thread-values-register)
+
+        ;; determine if we need to print here
+        (emit-call-step-function "GET-STACK-TRACE-DATA")
+        (emit 'dup)
+        (emit-push-nil)
+        (emit 'if_acmpeq LABEL1)
+
+        ;; print the evaluation of the function
+        (emit-call-step-function "AFTER-STEP-HANDLER-1")
+        (emit 'pop)
+        (emit-invokevirtual +lisp-object+ "car" nil +lisp-object+) ;; stack => (step-counter A ... )
+        (emit-princ-top-stack)
+        (emit 'pop)
+        (emit-call-step-function "AFTER-STEP-HANDLER-2")
+        (emit 'pop)
+        (emit-princ-top-stack)
+        (emit-call-step-function "AFTER-STEP-HANDLER-3")
+        (emit 'pop)
+        (emit 'goto LABEL2)
+        (label LABEL1)
+        (emit 'pop)
+        (label LABEL2)
+
+        ;; restore previous thread values
+        (emit-push-current-thread)
+        (aload thread-values-register)
+        (emit-invokevirtual +lisp-thread+ "setValues" (list +lisp-object-array+) +lisp-object+)
+        ))))
+
 
 (defknown p2-compiland (t) t)
 (defun p2-compiland (compiland method)
@@ -7367,6 +7439,8 @@ We need more thought here.
                                   +lisp-special-binding+)
               (astore (variable-binding-register variable)))))
 
+        (emit-step-handler)
+
         (compile-progn-body body 'stack))
 
       (when (compiland-environment-register compiland)
@@ -7374,6 +7448,9 @@ We need more thought here.
 
       (unless *code*
         (emit-push-nil))
+
+      (emit-step-after-evaluation)
+
       (emit 'areturn)
 
       ;; Warn if any unused args. (Is this the right place?)
@@ -7482,8 +7559,7 @@ We need more thought here.
                                   (remove-if #'variable-references-allowed-p
                                              *visible-variables*)))))
 
-      ;; Pass 2.
-
+    ;; Pass 2.
     (with-class-file (compiland-class-file compiland)
       (compile-to-jvm-class compiland)
       (finish-class (compiland-class-file compiland) stream))))
