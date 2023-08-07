@@ -2910,36 +2910,43 @@ public final class Primitives {
         }
         @Override
         public LispObject execute(final LispObject[] args)
-
         {
             final int numArgs = args.length;
-            if (numArgs < 2)
+            if (numArgs < 2) {
                 return error(new WrongNumberOfArgumentsException(this, 2, -1));
-            int commonLength = -1;
-            for (int i = 1; i < numArgs; i++) {
-                if (!args[i].listp())
-                    type_error(args[i], Symbol.LIST);
-                int len = args[i].length();
-                if (commonLength < 0)
-                    commonLength = len;
-                else if (commonLength > len)
-                    commonLength = len;
             }
             final LispThread thread = LispThread.currentThread();
-            LispObject[] results = new LispObject[commonLength];
             final int numFunArgs = numArgs - 1;
             final LispObject[] funArgs = new LispObject[numFunArgs];
-            for (int i = 0; i < commonLength; i++) {
-                for (int j = 0; j < numFunArgs; j++)
-                    funArgs[j] = args[j+1].car();
-                results[i] = funcall(args[0], funArgs, thread);
-                for (int j = 1; j < numArgs; j++)
-                    args[j] = args[j].cdr();
-            }
+	    LispObject result = NIL;
+	    LispObject tail = NIL;
+	    boolean done = false; 
+            while (!done) {
+	      for (int j = 1; j < numArgs; j++) {
+		if (args[j] == NIL) {
+		  done = true;
+                }
+              }
+	      if (!done) {
+                for (int j = 0; j < numFunArgs; j++) {
+                  funArgs[j] = args[j+1].car();
+                }
+		  
+                LispObject one = funcall(args[0], funArgs, thread);
+
+                if (result == NIL) {
+                  result = new Cons(one,NIL);
+                  tail = result;
+                } else {
+                  tail.setCdr(new Cons(one,NIL));
+                  tail = tail.cdr();
+                }
+                for (int j = 1; j < numArgs; j++) {
+                  args[j] = args[j].cdr();
+                }
+              }
+	    }
             thread._values = null;
-            LispObject result = NIL;
-            for (int i = commonLength; i-- > 0;)
-                result = new Cons(results[i], result);
             return result;
         }
     };
@@ -2989,29 +2996,30 @@ public final class Primitives {
 
         {
             final int numArgs = args.length;
-            if (numArgs < 2)
-                return error(new WrongNumberOfArgumentsException(this, 2, -1));
-            int commonLength = -1;
-            for (int i = 1; i < numArgs; i++) {
-                if (!args[i].listp())
-                    type_error(args[i], Symbol.LIST);
-                int len = args[i].length();
-                if (commonLength < 0)
-                    commonLength = len;
-                else if (commonLength > len)
-                    commonLength = len;
+            if (numArgs < 2) {
+              return error(new WrongNumberOfArgumentsException(this, 2, -1));
             }
             final LispThread thread = LispThread.currentThread();
-            LispObject result = args[1];
             final int numFunArgs = numArgs - 1;
+	    LispObject result = args[1];
+	    boolean done = false;
             final LispObject[] funArgs = new LispObject[numFunArgs];
-            for (int i = 0; i < commonLength; i++) {
-                for (int j = 0; j < numFunArgs; j++)
+            while (!done) {
+	      for (int j = 1; j < numArgs; j++) {
+		if (args[j] == NIL) {
+		  done = true;
+                }
+              }
+	      if (!done) {
+                for (int j = 0; j < numFunArgs; j++) {
                     funArgs[j] = args[j+1].car();
+                }
                 funcall(args[0], funArgs, thread);
-                for (int j = 1; j < numArgs; j++)
-                    args[j] = args[j].cdr();
-            }
+                for (int j = 1; j < numArgs; j++) {
+                  args[j] = args[j].cdr();
+                }
+              }
+	    }
             thread._values = null;
             return result;
         }
