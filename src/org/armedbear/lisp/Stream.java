@@ -1514,6 +1514,9 @@ public class Stream extends StructureObject {
         String s = sb.toString();
         if (s.indexOf('/') >= 0)
             return makeRatio(s, radix);
+        if (s.length() == 0) {
+          return error(new ReaderError("Malformed number in a #b/#o/#x/#r macro."));
+        }
         // Integer.parseInt() below handles a prefixed '-' character correctly, but
         // does not accept a prefixed '+' character, so we skip over it here
         if (s.charAt(0) == '+')
