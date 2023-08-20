@@ -23,15 +23,15 @@ function determine_openjdk() {
         Darwin)
             case $jdk in
                 openjdk8)
-                    v=372
-                    build=b07
+                    v=382
+                    build=b05
                     version=1.8.0.${v}
                     topdir=jdk8u${v}-${build}
                     dist="https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u${v}-${build}/OpenJDK8U-jdk_x64_mac_hotspot_8u${v}${build}.tar.gz"
                     ;;
                 openjdk11)
-                    version=11.0.19
-                    build=7
+                    version=11.0.20
+                    build=8
                     topdir=jdk-${version}+${build}
                     dist="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-${version}%2B${build}/OpenJDK11U-jdk_x64_mac_hotspot_${version}_${build}.tar.gz"
                     ;;
@@ -51,7 +51,7 @@ function determine_openjdk() {
                     dist="https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_mac_hotspot_16.0.2_7.tar.gz"
                     ;;
                 openjdk17)
-                    version=17.0.7
+                    version=17.0.8
                     build=7
                     topdir="jdk-${version}+${build}"
                     dist="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-${version}%2B${build}/OpenJDK17U-jdk_x64_mac_hotspot_${version}_${build}.tar.gz"
@@ -67,7 +67,7 @@ function determine_openjdk() {
                     ;;
                 openjdk20)
                     v="20"
-                    id="${v}.0.1"
+                    id="${v}.0.2"
                     rev="9"
                     arch="jdk_x64_mac_hotspot"
                     topdir="jdk-${id}+${rev}"
@@ -78,14 +78,14 @@ function determine_openjdk() {
         Linux)
             case $jdk in
                 openjdk8)
-                    version=u372
-                    build=b07
+                    version=u382
+                    build=b05
                     topdir=jdk8${version}-${build}
                     dist="https://github.com/adoptium/temurin8-binaries/releases/download/jdk8${version}-${build}/OpenJDK8U-jdk_x64_linux_hotspot_8${version}${build}.tar.gz"
                     ;;
                 openjdk11)
-                    version=11.0.19
-                    build=7
+                    version=11.0.20
+                    build=8
                     topdir=jdk-${version}+${build}
                     dist="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-${version}%2B${build}/OpenJDK11U-jdk_x64_linux_hotspot_${version}_${build}.tar.gz"
                     ;;
@@ -105,7 +105,7 @@ function determine_openjdk() {
                     dist="https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_linux_hotspot_16.0.2_7.tar.gz"
                     ;;
                 openjdk17)
-                    version=17.0.7
+                    version=17.0.8
                     build=7
                     topdir="jdk-${version}+${build}"
                     dist="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-${version}%2B${build}/OpenJDK17U-jdk_x64_linux_hotspot_${version}_${build}.tar.gz"
@@ -121,7 +121,7 @@ function determine_openjdk() {
                     ;;
                 openjdk20)
                     v="20"
-                    id="${v}.0.1"
+                    id="${v}.0.2"
                     rev="9"
                     arch="jdk_x64_linux_hotspot"
                     topdir="jdk-${id}+${rev}"
