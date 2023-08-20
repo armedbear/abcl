@@ -1736,6 +1736,27 @@ public static synchronized final void handleInterrupt()
                   }
               }
           }
+        else if (car.equals(Symbol.UNSIGNED_BYTE))
+          {
+            LispObject bits = type.cadr();
+            if (!(bits instanceof Fixnum)) {
+              simple_error("bad size specified for UNSIGNED-BYTE type specifier: ~a", bits);
+            }
+            int b = ((Fixnum)bits).value;
+            if (0 == b) {
+              simple_error("bad size specified for UNSIGNED-BYTE type specifier: ~a", bits);
+            } else if (1 == b) {
+              return Symbol.BIT;
+            } else if (1 <= b && b <= 8) {
+              return UNSIGNED_BYTE_8;
+            } else if (9 <= b && b <= 16) {
+              return UNSIGNED_BYTE_16;
+            } else if (17 <= b && b <= 32) {
+              return UNSIGNED_BYTE_32;
+            } else {
+              return T;
+            }
+          }
         else if (car == Symbol.EQL)
           {
             LispObject obj = type.cadr();
