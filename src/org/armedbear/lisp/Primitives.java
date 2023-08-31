@@ -5900,4 +5900,50 @@ public final class Primitives {
         }
     }
     
+    private static final Primitive _VECTOR_REPLACE
+            = new pf_vector_replace();
+    private static class pf_vector_replace extends Primitive {
+        pf_vector_replace() {
+            super("%vector-replace", PACKAGE_SYS, false);
+        }
+
+        @Override
+        public LispObject execute(LispObject target, LispObject source,
+                                  LispObject targetStart, LispObject targetEnd,
+                                  LispObject sourceStart, LispObject sourceEnd) {
+          if (!(target instanceof AbstractVector))
+            return type_error(target, Symbol.VECTOR);
+          if (!(source instanceof AbstractVector))
+            return type_error(source, Symbol.VECTOR);
+          if (!(targetStart instanceof Fixnum))
+            return type_error(targetStart, Symbol.FIXNUM);
+          if (!(targetEnd instanceof Fixnum))
+            return type_error(targetEnd, Symbol.FIXNUM);
+          if (!(sourceStart instanceof Fixnum))
+            return type_error(sourceStart, Symbol.FIXNUM);
+          if (!(sourceEnd instanceof Fixnum))
+            return type_error(sourceEnd, Symbol.FIXNUM);
+
+          int sStart = sourceStart.intValue();
+          int sEnd   = sourceEnd.intValue();
+          int tStart = targetStart.intValue();
+          int tEnd   = targetEnd.intValue();
+
+          // TODO: Better error messages? These are user-facing.
+          if (!(0 <= tStart && tStart <= tEnd && tEnd <= target.length()))
+            error(new LispError("Bad target sequence bounds."));
+          if (!(0 <= sStart && sStart <= sEnd && sEnd <= source.length()))
+            error(new LispError("Bad source sequence bounds."));
+
+          // Clamp here so we don't have to repeat this in every method.
+          sStart = Math.max(0, sStart);
+          sEnd   = Math.min(sEnd, source.length());
+          tStart = Math.max(0, tStart);
+          tEnd   = Math.min(tEnd, target.length());
+
+          int nelts = Math.min(sEnd - sStart, tEnd - tStart);
+
+          return ((AbstractVector)target).replace(((AbstractVector)source), tStart, tStart + nelts, sStart, sStart + nelts);
+        }
+    }
 }

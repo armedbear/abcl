@@ -296,4 +296,19 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
     {
         return new ComplexVector(newCapacity, displacedTo, displacement);
     }
+
+    @Override
+    public AbstractVector replace(AbstractVector source,
+                                  int targetStart, int targetEnd,
+                                  int sourceStart, int sourceEnd)
+    {
+        if (source instanceof BasicVector_UnsignedByte16) {
+            System.arraycopy(((BasicVector_UnsignedByte16)source).elements, sourceStart,
+                             elements, targetStart,
+                             Math.min(targetEnd - targetStart, sourceEnd - sourceStart));
+            return this;
+        } else {
+            return super.replace(source, targetStart, targetEnd, sourceStart, sourceEnd);
+        }
+    }
 }

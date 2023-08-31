@@ -307,4 +307,28 @@ public abstract class AbstractVector extends AbstractArray
     {
       return adjustArray(dims[0], displacedTo, displacement);
   }
+
+  public AbstractVector replace(AbstractVector source,
+                                int targetStart, int targetEnd,
+                                int sourceStart, int sourceEnd)
+  {
+    int i, j;
+
+    // If we are copying around in the same vector, be careful not to copy the
+    // same elements over repeatedly. We do this by copying backwards. The spec
+    // allows us to ignore the case where structure is shared via displacement.
+    if (this == source && targetStart > sourceStart) {
+      int nelts = Math.min(targetEnd - targetStart, sourceEnd - sourceStart);
+      for (i = targetStart + nelts - 1, j = sourceStart + nelts - 1;
+           i >= targetStart && j >= sourceStart;
+           --i, --j)
+        aset(i, source.AREF(j));
+    } else {
+      for (i = targetStart, j = sourceStart;
+           i < targetEnd && j < sourceEnd;
+           ++i, ++j)
+        aset(i, source.AREF(j));
+    }
+    return this;
+  }
 }

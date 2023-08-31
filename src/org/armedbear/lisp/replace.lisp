@@ -43,27 +43,10 @@
 
 (eval-when (:compile-toplevel :execute)
 
-  ;;; If we are copying around in the same vector, be careful not to copy the
-  ;;; same elements over repeatedly.  We do this by copying backwards.
   (defmacro mumble-replace-from-mumble ()
-    `(if (and (eq target-sequence source-sequence) (> target-start source-start))
-         (let ((nelts (min (- target-end target-start) (- source-end source-start))))
-           (do ((target-index (+ (the fixnum target-start) (the fixnum nelts) -1)
-                              (1- target-index))
-                (source-index (+ (the fixnum source-start) (the fixnum nelts) -1)
-                              (1- source-index)))
-               ((= target-index (the fixnum (1- target-start))) target-sequence)
-             (declare (fixnum target-index source-index))
-             (setf (aref target-sequence target-index)
-                   (aref source-sequence source-index))))
-         (do ((target-index target-start (1+ target-index))
-              (source-index source-start (1+ source-index)))
-             ((or (= target-index (the fixnum target-end))
-                  (= source-index (the fixnum source-end)))
-              target-sequence)
-           (declare (fixnum target-index source-index))
-           (setf (aref target-sequence target-index)
-                 (aref source-sequence source-index)))))
+    `(%vector-replace target-sequence source-sequence
+                      target-start target-end
+                      source-start source-end))
 
   (defmacro list-replace-from-list ()
     `(if (and (eq target-sequence source-sequence) (> target-start source-start))

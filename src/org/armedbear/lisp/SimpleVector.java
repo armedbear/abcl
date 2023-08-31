@@ -363,6 +363,21 @@ public final class SimpleVector extends AbstractVector
     return new ComplexVector(newCapacity, displacedTo, displacement);
   }
 
+  @Override
+  public AbstractVector replace(AbstractVector source,
+                                int targetStart, int targetEnd,
+                                int sourceStart, int sourceEnd)
+  {
+    if (source instanceof SimpleVector) {
+      System.arraycopy(((SimpleVector)source).data, sourceStart,
+                       data, targetStart,
+                       Math.min(targetEnd - targetStart, sourceEnd - sourceStart));
+      return this;
+    } else {
+      return super.replace(source, targetStart, targetEnd, sourceStart, sourceEnd);
+    }
+  }
+
   // ### svref
   // svref simple-vector index => element
   private static final Primitive SVREF =
