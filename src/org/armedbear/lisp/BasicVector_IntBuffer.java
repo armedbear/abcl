@@ -308,4 +308,22 @@ public final class BasicVector_IntBuffer
                                      int displacement) {
     return new ComplexVector(newCapacity, displacedTo, displacement);
   }
+
+  @Override
+  public AbstractVector replace(AbstractVector source,
+                                int targetStart, int targetEnd,
+                                int sourceStart, int sourceEnd)
+  {
+    if (source instanceof BasicVector_IntBuffer) {
+      IntBuffer view = ((BasicVector_IntBuffer)source).elements.asReadOnlyBuffer();
+      view.position(sourceStart);
+      view.limit(sourceEnd);
+      elements.position(targetStart);
+      elements.put(view);
+      elements.position(0);
+      return this;
+    } else {
+      return super.replace(source, targetStart, targetEnd, sourceStart, sourceEnd);
+    }
+  }
 }
