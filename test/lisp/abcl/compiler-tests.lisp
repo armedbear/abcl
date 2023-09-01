@@ -446,7 +446,7 @@
 
 ;;; ticket #147
 #+abcl
-(deftest compiler.1 
+(deftest compiler.1
     (let ((tmpfile (ext::make-temp-file))
           (original-print-case *print-case*)
           (forms `((in-package :cl-user)
@@ -466,7 +466,7 @@
 #+abcl
 (deftest compiler.2
     (let ((tmpfile (ext::make-temp-file))
-          (line "(defconstant a #.(make-array '(8 256) 
+          (line "(defconstant a #.(make-array '(8 256)
                     :element-type '(unsigned-byte 32) :initial-element 0))"))
       (with-open-file (s tmpfile :direction :output)
         (format s "~A" line))
@@ -502,3 +502,79 @@
           (compile nil '(lambda (&key args &optional x))))
       (typep error 'program-error))
   t)
+
+
+;;; ticket #606 Github
+#+abcl
+(deftest compiler.5a
+    (let ((tmpfile (ext::make-temp-file))
+          (code
+             "(defun abcl/test/lisp::cp5a ()
+               '(0)
+               (let ((x #1='(0))
+                     (y (second '#1#)))
+                 (assert (equal x '(0)))
+                 (assert (equal y '(0)))
+                 (assert (eq x y))))"))
+      (with-open-file (s tmpfile :direction :output)
+        (format s "~A" code))
+      (load (compile-file tmpfile))
+      (delete-file tmpfile)
+      (prog1 (abcl/test/lisp::cp5a)
+        (fmakunbound 'abcl/test/lisp::cp5a)))
+  nil)
+
+#+abcl
+(deftest compiler.5b
+    (let ((tmpfile (ext::make-temp-file))
+          (code
+             "(defun abcl/test/lisp::cp5b ()
+               '(0)
+               (let ((x #1='(0 #1#))
+                     (y (second '#1#)))
+                 (assert (eq x y))))"))
+      (with-open-file (s tmpfile :direction :output)
+        (format s "~A" code))
+      (load (compile-file tmpfile))
+      (delete-file tmpfile)
+      (prog1 (abcl/test/lisp::cp5b)
+        (fmakunbound 'abcl/test/lisp::cp5b)))
+  nil)
+
+#+abcl
+(deftest compiler.5c
+    (let ((tmpfile (ext::make-temp-file))
+          (code
+             "(defun abcl/test/lisp::cp5c ()
+               '(0)
+               (let ((x #1='(0))
+                     (y (second (second ''#1#))))
+                 (assert (equal x '(0)))
+                 (assert (equal y '(0)))
+                 (assert (eq x y))))"))
+      (with-open-file (s tmpfile :direction :output)
+        (format s "~A" code))
+      (load (compile-file tmpfile))
+      (delete-file tmpfile)
+      (prog1 (abcl/test/lisp::cp5c)
+        (fmakunbound 'abcl/test/lisp::cp5c)))
+  nil)
+
+#+abcl
+(deftest compiler.5d
+    (let ((tmpfile (ext::make-temp-file))
+          (code
+             "(defun abcl/test/lisp::cp5d ()
+               '(0)
+               (let ((x #1='(0))
+                     (y (second (second (second '''#1#)))))
+                 (assert (equal x '(0)))
+                 (assert (equal y '(0)))
+                 (assert (eq x y))))"))
+      (with-open-file (s tmpfile :direction :output)
+        (format s "~A" code))
+      (load (compile-file tmpfile))
+      (delete-file tmpfile)
+      (prog1 (abcl/test/lisp::cp5d)
+        (fmakunbound 'abcl/test/lisp::cp5d)))
+  nil)

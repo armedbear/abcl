@@ -1288,6 +1288,61 @@ of the other types."
 4. The function to dispatch serialization to
 5. The type of the field to save the serialized result to")
 
+(defun shared-structure-p (object)
+  "Determines if a literal object shares some structure with previous externalized
+ objects"
+  (let ((circularity-hashtable (make-hash-table :test 'eq)))
+    (labels ((sh-str-helper (obj)
+               (unless (eq obj 'quote)
+                 (multiple-value-bind (value present-p)
+                     (gethash obj circularity-hashtable)
+                   (declare (ignore value))
+                   (if present-p
+                       (return-from sh-str-helper nil)
+                       (setf (gethash obj circularity-hashtable) t))))
+               (cond
+                 ((atom obj)
+                  (when (assoc obj *externalized-objects* :test #'eq)
+                    (return-from shared-structure-p t)))
+                 ((listp obj)
+                  (when (assoc obj *externalized-objects* :test #'eq)
+                    (return-from shared-structure-p t))
+                  (progn (sh-str-helper (car obj))
+                         (sh-str-helper (cdr obj))))
+                 (t nil))))
+      (sh-str-helper object))))
+
+(defun quoted-form-p (object)
+  "Determines if a literal object is a quoted form applied to a list object"
+  (and
+   (eq (car object) 'cl:quote)
+   (listp (second object))))
+
+
+(defmacro emit-cons2 (&key car (cdr '((emit-push-nil))))
+  `(progn
+     (emit-new +lisp-cons+)
+     (emit 'dup)
+     (progn
+       ,@car)
+     (progn
+       ,@cdr)
+     (emit-invokespecial-init +lisp-cons+ (lisp-object-arg-types 2))))
+
+
+(defun emit-shared-structure (object field-type cast)
+  "Emit code for the quoted form literal with shared structure with previous
+externalized objects"
+  (if (eq (car object) 'quote)
+      (emit-cons2 :car ((compile-form ''quote 'stack nil))
+                  :cdr ((emit-cons2
+                         :car ((emit-shared-structure (second object) field-type cast)))))
+      (let ((existing (assoc object *externalized-objects* :test #'eq)))
+        (emit-getstatic *this-class* (cdr existing) field-type)
+        (when cast
+          (emit-checkcast cast)))))
+
+
 (defknown emit-load-externalized-object (t &optional t) string)
 (defun emit-load-externalized-object (object &optional cast)
   "Externalizes `object' for use in a FASL.
@@ -1304,7 +1359,6 @@ the constructor if `*declare-inline*' is non-nil.
   ;; of the field it just loaded (to allow casting and what not).
   ;; The function should still do what it does today: de-serialize the
   ;; object and storing its value.
-
   (destructuring-bind
         (type prefix similarity-fn dispatch-fn field-type)
       (assoc-if #'(lambda (x)
@@ -1319,6 +1373,11 @@ the constructor if `*declare-inline*' is non-nil.
         (when cast
           (emit-checkcast cast))
         (return-from emit-load-externalized-object field-type)))
+
+    ;; for things like '#1#, ''#1#, '''#1# and so on ...
+    (when (and (shared-structure-p object) (quoted-form-p object))
+      (emit-shared-structure object field-type cast)
+      (return-from emit-load-externalized-object field-type))
 
     ;; We need to set up the serialized value
     (let ((field-name (symbol-name (gensym prefix))))
@@ -5557,18 +5616,18 @@ We need more thought here.
            (if list-star-p
                (compile-form (first (last args)) 'stack nil)
                (progn
-                 (emit-invokespecial-init 
+                 (emit-invokespecial-init
                   +lisp-cons+ (lisp-object-arg-types 1))
                  (pop cons-heads))) ; we've handled one of the args, so remove it
            (dolist (cons-head cons-heads)
              (declare (ignore cons-head))
-             (emit-invokespecial-init 
+             (emit-invokespecial-init
               +lisp-cons+ (lisp-object-arg-types 2)))
            (if list-star-p
                (progn
                  (apply #'maybe-emit-clear-values args)
                  (emit-move-from-stack target representation))
-               (progn 
+               (progn
                  (unless (every 'single-valued-p args)
                    (emit-clear-values))
                  (emit-move-from-stack target))))
@@ -7434,8 +7493,8 @@ We need more thought here.
 
 (defun make-compiler-error-form (form condition)
   `(lambda ,(cadr form)
-     (error 'program-error :format-control "Program error while compiling ~a" :format-arguments 
-            (if ,condition 
+     (error 'program-error :format-control "Program error while compiling ~a" :format-arguments
+            (if ,condition
                 (list (apply 'format nil ,(slot-value condition 'sys::format-control) ',(slot-value condition 'sys::format-arguments)))
                 (list "a form")))))
 
