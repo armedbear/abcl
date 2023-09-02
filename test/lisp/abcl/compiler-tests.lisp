@@ -578,3 +578,17 @@
       (prog1 (abcl/test/lisp::cp5d)
         (fmakunbound 'abcl/test/lisp::cp5d)))
   nil)
+
+#+abcl
+(deftest compiler.5e
+    (let ((tmpfile (ext::make-temp-file))
+          (code
+             "(defmacro cp5e (codelist)
+               `(list '(list) ,codelist))"))
+      (with-open-file (s tmpfile :direction :output)
+        (format s "~A" code))
+      (prog1
+          (load (compile-file tmpfile))
+        (delete-file tmpfile)
+        (fmakunbound 'abcl/test/lisp::cp5e)))
+  t)
