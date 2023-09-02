@@ -1301,9 +1301,8 @@ of the other types."
                        (return-from sh-str-helper nil)
                        (setf (gethash obj circularity-hashtable) t))))
                (cond
-                 ((atom obj)
-                  (when (assoc obj *externalized-objects* :test #'eq)
-                    (return-from shared-structure-p t)))
+                 ((and (atom obj) (not (eq obj 'quote)))
+                  (return-from shared-structure-p nil))
                  ((listp obj)
                   (when (assoc obj *externalized-objects* :test #'eq)
                     (return-from shared-structure-p t))
