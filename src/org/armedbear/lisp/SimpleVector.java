@@ -212,7 +212,7 @@ public final class SimpleVector<T extends LispObject> extends AbstractVector
   @Override
   public LispObject subseq(int start, int end)
   {
-    SimpleVector v = new SimpleVector(clazz, end - start);
+    SimpleVector v = new SimpleVector(end - start);
     int i = start, j = 0;
     try
       {
@@ -270,7 +270,7 @@ public final class SimpleVector<T extends LispObject> extends AbstractVector
   public void shrink(int n)
   {
     if (n < capacity) {
-      SimpleVector newArray = new SimpleVector(clazz, n);
+      SimpleVector newArray = new SimpleVector(n);
       System.arraycopy(data, 0, newArray.data, 0, n);
       data = (T[])newArray.data;
       capacity = n;
@@ -283,9 +283,8 @@ public final class SimpleVector<T extends LispObject> extends AbstractVector
   }
 
   @Override
-  public LispObject reverse()
-  {
-    SimpleVector result = new SimpleVector(clazz, capacity);
+  public LispObject reverse() {
+    SimpleVector result = new SimpleVector(capacity);
     int i, j;
     for (i = 0, j = capacity - 1; i < capacity; i++, j--) { 
       result.data[i] = data[j];
