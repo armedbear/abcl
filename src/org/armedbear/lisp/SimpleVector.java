@@ -36,7 +36,9 @@ package org.armedbear.lisp;
 import static org.armedbear.lisp.Lisp.*;
 
 import java.lang.reflect.Array;
+import java.text.MessageFormat;
 import java.util.Arrays;
+import java.text.MessageFormat;
 
 // "The type of a vector that is not displaced to another array, has no fill
 // pointer, is not expressly adjustable and is able to hold elements of any
@@ -212,23 +214,18 @@ public final class SimpleVector<T extends LispObject> extends AbstractVector
   @Override
   public LispObject subseq(int start, int end)
   {
-    SimpleVector v = new SimpleVector(end - start);
-    int i = start, j = 0;
-    try
-      {
-        while (i < end)
-          v.data[j++] = data[i++];
-        return v;
-      }
-    catch (ArrayIndexOutOfBoundsException e)
-      {
-        return error(new TypeError("Array index out of bounds: " + i + "."));
-      }
+    try {
+        T[] subseq = Arrays.copyOfRange(data, start, end);        
+        return new SimpleVector(subseq);
+    } catch (ArrayIndexOutOfBoundsException e) {
+      String m
+        = MessageFormat.format("The bounding indices {0} and {1} are bad for a sequence of length {2}.", start, end, length());
+      return type_error(m, new JavaObject(e), NIL); // Not really a type_error, as there is not one type
+    }
   }
 
   @Override
-  public void fill(LispObject obj)
-  {
+  public void fill(LispObject obj) {
     Arrays.fill(data, (T) obj);
   }
 
