@@ -105,7 +105,7 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
   {
     StringBuffer sb = new StringBuffer("A simple vector with ");
     sb.append(capacity);
-    sb.append(" elements");
+    sb.append(" elements.");
     return new SimpleString(sb);
   }
 
@@ -390,9 +390,7 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
             return sv.data[index];
           } catch (ArrayIndexOutOfBoundsException e) {
             int capacity = sv.capacity;
-            sv.badIndex(index, capacity);
-            // Not reached.
-            return NIL;
+            return sv.badIndex(index, capacity);
           }
         }
         return type_error(first, Symbol.SIMPLE_VECTOR);
