@@ -22,12 +22,8 @@ public final class BasicVectorBuffer<T extends Buffer>
     data = (T) ByteBuffer.allocate(capacity);
   }
 
-  // public BasicVectorBuffer(int capacity) {
-  //   this(ByteBuffer.class, capacity, false);
-  // }
-
   @Override
-  public LispObject classOf() {
+  public LispObject typeOf() {
     if (clazz.equals(ByteBuffer.class)) {
       return list(Symbol.SIMPLE_VECTOR, UNSIGNED_BYTE_8, new Cons(Fixnum.getInstance(capacity)));
     }
