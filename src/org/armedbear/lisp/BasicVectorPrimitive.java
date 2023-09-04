@@ -38,10 +38,7 @@ public final class BasicVectorPrimitive<T> extends SimpleVector {
   public LispObject typep(LispObject type) {
     if (type instanceof Cons) {
       if (type.car().equals(Symbol.SIMPLE_VECTOR)
-          && (type.cdr().equals(UNSIGNED_BYTE_8)
-              || (type.cdr().equals(UNSIGNED_BYTE_16)) 
-              || (type.cdr().equals(UNSIGNED_BYTE_32)) 
-              || (type.cdr().equals(UNSIGNED_BYTE_64)))) {
+          && (type.cdr().equals(getElementType()))) {
         return T;
       }
     }
