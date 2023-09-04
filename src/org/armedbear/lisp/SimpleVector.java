@@ -49,6 +49,10 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
   T[] data;
   Class clazz;
 
+  public SimpleVector() {
+    super();
+  }
+
   public SimpleVector(int capacity) {
     this(LispObject.class, capacity);
   }
