@@ -27,7 +27,7 @@ public final class BasicVectorBuffer<T extends Buffer>
     if (clazz.equals(ByteBuffer.class)) {
       return list(Symbol.SIMPLE_VECTOR, UNSIGNED_BYTE_8, new Cons(Fixnum.getInstance(capacity)));
     }
-    return program_error("Unimplemented classOf()");
+    return program_error("Unimplemented typeOf()");
   }
 
   public LispObject getDescription() {
@@ -37,17 +37,8 @@ public final class BasicVectorBuffer<T extends Buffer>
     return new SimpleString(sb);
   }
 
-  public LispObject typep(LispObject type)
-  {
-    if (type == Symbol.SIMPLE_VECTOR)
-      return T;
-    if (type == Symbol.SIMPLE_ARRAY)
-      return T;
-    if (type == BuiltInClass.SIMPLE_VECTOR)
-      return T;
-    if (type == BuiltInClass.SIMPLE_ARRAY)
-      return T;
-    // TODO return type based on CLAZZ and capacity
+  public LispObject typep(LispObject type) {
+    // FIXME type based on CLAZZ and capacity
     if (type instanceof Cons) {
       if (type.car().equals(Symbol.SIMPLE_VECTOR)
           && type.cdr().equals(UNSIGNED_BYTE_8)) {
