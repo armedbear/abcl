@@ -43,7 +43,7 @@ import java.text.MessageFormat;
 // "The type of a vector that is not displaced to another array, has no fill
 // pointer, is not expressly adjustable and is able to hold elements of any
 // type is a subtype of type SIMPLE-VECTOR."
-public final class SimpleVector<T extends LispObject> extends AbstractVector
+public class SimpleVector<T extends LispObject> extends AbstractVector
 {
   int capacity;
   T[] data;
@@ -305,6 +305,9 @@ public final class SimpleVector<T extends LispObject> extends AbstractVector
     return this;
   }
 
+  //
+  // TODO check logic on whether a SIMPLE-VECTOR should be adjustable
+  //
   @Override
   public AbstractVector adjustArray(int newCapacity,
                                      LispObject initialElement,
