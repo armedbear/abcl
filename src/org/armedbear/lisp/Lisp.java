@@ -1673,6 +1673,9 @@ public static synchronized final void handleInterrupt()
   public static final LispObject UNSIGNED_BYTE_32 =
     list(Symbol.UNSIGNED_BYTE, Fixnum.constants[32]);
 
+  public static final LispObject UNSIGNED_BYTE_64 =
+    list(Symbol.UNSIGNED_BYTE, Fixnum.constants[64]);
+
   public static final LispObject UNSIGNED_BYTE_32_MAX_VALUE
     = Bignum.getInstance(4294967295L);
 
