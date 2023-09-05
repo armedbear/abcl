@@ -1812,6 +1812,10 @@ public static synchronized final void handleInterrupt()
           return (byte)Fixnum.getValue(obj);
   }
 
+  public static final short coerceToJavaUnsignedShort(LispObject obj) {
+    return (short) (obj.longValue() & 0xffffL);
+  }
+
   public static final int coerceToJavaUnsignedInt(LispObject obj) {
     return (int) (obj.longValue() & 0xffffffffL);
   }
