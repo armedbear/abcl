@@ -12,7 +12,6 @@ public final class BasicVectorPrimitive<T> extends SimpleVector {
   Class type;
   
   public BasicVectorPrimitive(Class type, int capacity) {
-    super(capacity);
     this.type = type;
     data = (T[]) Array.newInstance(type, capacity);
   }
