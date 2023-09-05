@@ -50,5 +50,10 @@ public class LispInteger extends LispObject implements java.io.Serializable
       return Fixnum.getInstance(i);
   }
 
-
+  public static LispInteger getUnsignedInstance(long l) {
+    if (Long.signum(l) == -1) {
+      return Bignum.getInstance(Long.toUnsignedString(l), 10); // TOOD faster with bytes arithimetic
+    }
+    return getInstance(l);
+  }
 }
