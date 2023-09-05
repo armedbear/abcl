@@ -47,10 +47,9 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
 {
   int capacity;
   T[] data;
-  Class clazz;
+  Class type;
 
   public SimpleVector() {
-    super();
   }
 
   public SimpleVector(int capacity) {
@@ -58,8 +57,7 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
   }
 
   public SimpleVector(Class<LispObject> type, int capacity) {
-    //    data = new LispObject[capacity];
-    this.clazz = type;
+    this.type = type;
     this.capacity = capacity;
     data = (T[]) Array.newInstance(type, capacity);
     //    for (int i = capacity; i-- > 0;) {
