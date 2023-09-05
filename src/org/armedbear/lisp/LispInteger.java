@@ -56,4 +56,11 @@ public class LispInteger extends LispObject implements java.io.Serializable
     }
     return getInstance(l);
   }
+
+  public static long asUnsignedLong(LispInteger i) {
+    if (i instanceof Bignum) {
+      return ((Bignum)i).value.longValue();
+    }
+    return i.longValue();
+  }
 }
