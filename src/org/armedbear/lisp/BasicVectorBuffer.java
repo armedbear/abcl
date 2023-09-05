@@ -13,39 +13,24 @@ import java.util.Arrays;
 // A basic vector is a specialized vector that is not displaced to another
 // array, has no fill pointer, and is not expressly adjustable.
 public final class BasicVectorBuffer
-  extends SimpleVector
+  extends BasicVector
 {
   //  boolean directAllocation; directly allocate Buffer don't have backing arrays
   Buffer data;
-  BufferType specialization;
 
-  public enum BufferType {
-    BYTE, SHORT, INT, LONG
-  }
-  
   public BasicVectorBuffer(Class type, int capacity) {
-    this.type = type;
-    this.capacity = capacity;
-    if (type.equals(ByteBuffer.class)) {
-      specialization = BufferType.BYTE;
-    } else if (type.equals(ShortBuffer.class)) {
-      specialization = BufferType.SHORT;
-    } else if (type.equals(IntBuffer.class)) {
-      specialization = BufferType.INT;
-    } else if (type.equals(LongBuffer.class)) {
-      specialization = BufferType.LONG;
-    }
-    switch (specialization) {
-    case BYTE:
+    super(type, capacity);
+    switch (specializedOn) {
+    case U8:
       data = ByteBuffer.allocate(capacity);
       break;
-    case SHORT:
+    case U16:
       data = ShortBuffer.allocate(capacity);
       break;
-    case INT:
+    case U32:
       data = IntBuffer.allocate(capacity);
       break;
-    case LONG:
+    case U64:
       data = LongBuffer.allocate(capacity);
       break;
     }
@@ -63,36 +48,20 @@ public final class BasicVectorBuffer
   public long[] asLongArray() {
     return (long[])((LongBuffer)data).array();
   }
-    
-
-  @Override
-  public LispObject typeOf() {
-    switch (specialization) {
-    case BYTE:
-      return list(Symbol.SIMPLE_VECTOR, UNSIGNED_BYTE_8, new Cons(Fixnum.getInstance(capacity)));
-    case SHORT:
-      return list(Symbol.SIMPLE_VECTOR, UNSIGNED_BYTE_16, new Cons(Fixnum.getInstance(capacity)));      
-    case INT:
-      return list(Symbol.SIMPLE_VECTOR, UNSIGNED_BYTE_32, new Cons(Fixnum.getInstance(capacity)));      
-    case LONG:
-      return list(Symbol.SIMPLE_VECTOR, UNSIGNED_BYTE_64, new Cons(Fixnum.getInstance(capacity)));      
-    }
-    return program_error("Unreachable");
-  }
 
   public LispObject getDescription() {
     StringBuffer sb = new StringBuffer("A simple vector specialized on ");
-    switch (specialization) {
-    case BYTE:
+    switch (specializedOn) {
+    case U8:
       sb.append("(UNSIGNED-BYTE 8)");
       break;
-    case SHORT:
+    case U16:
       sb.append("(UNSIGNED-BYTE 16)");
       break;
-    case INT:
+    case U32:
       sb.append("(UNSIGNED-BYTE 32)");
       break;
-    case LONG:
+    case U64:
       sb.append("(UNSIGNED-BYTE 64)");
       break;
     }
@@ -102,51 +71,6 @@ public final class BasicVectorBuffer
     return new SimpleString(sb);
   }
 
-  public LispObject typep(LispObject type) {
-    // FIXME type based on CLAZZ and capacity
-    if (type instanceof Cons) {
-      if (type.car().equals(Symbol.SIMPLE_VECTOR)) {
-        LispObject vectorType = type.cdr();
-        switch (specialization) {
-        case BYTE:
-          if (vectorType.equals(UNSIGNED_BYTE_8)) {
-              return T;
-            }
-          break;
-        case SHORT:
-          if (vectorType.equals(UNSIGNED_BYTE_16)) {
-            return T;
-          }
-          break;
-        case INT:
-          if (vectorType.equals(UNSIGNED_BYTE_32)) {
-            return T;
-          }
-          break;
-        case LONG:
-          if (vectorType.equals(UNSIGNED_BYTE_64)) {
-            return T;
-          }
-          break;
-        }
-      }
-    }
-    return super.typep(type);
-  }
-
-  @Override
-  public LispObject getElementType() {
-    if (type.equals(ByteBuffer.class)) {
-      return UNSIGNED_BYTE_8;
-    } else if (type.equals(ShortBuffer.class)) {
-      return UNSIGNED_BYTE_16;
-    } else if (type.equals(IntBuffer.class)) {
-      return UNSIGNED_BYTE_32;
-    } else if (type.equals(LongBuffer.class)) {
-      return UNSIGNED_BYTE_64;
-    }
-    return super.getElementType();
-  }
 
   @Override
   public LispObject elt(int i) {
@@ -156,14 +80,14 @@ public final class BasicVectorBuffer
   @Override
   public LispObject AREF(int i) {
     try {
-      switch (specialization) {
-      case BYTE:
+      switch (specializedOn) {
+      case U8:
         return coerceFromJavaByte(((ByteBuffer)data).get(i));
-      case SHORT:
+      case U16:
         return Fixnum.getInstance(Short.toUnsignedInt(((ShortBuffer)data).get(i)));
-      case INT:
+      case U32:
         return Fixnum.getInstance(Integer.toUnsignedLong(((IntBuffer)data).get(i)));
-      case LONG:
+      case U64:
         return LispInteger.getUnsignedInstance(((LongBuffer)data).get(i));
       }
       return program_error("Bad ELT in BasicVectorBuffer.");
@@ -175,20 +99,20 @@ public final class BasicVectorBuffer
   @Override
   public void aset(int i, LispObject n) {
     try {
-      switch (specialization) {
-      case BYTE:
+      switch (specializedOn) {
+      case U8:
         byte b = coerceToJavaByte(n);
         ((ByteBuffer)data).put(i, b);
         break;
-      case SHORT:
+      case U16:
         short s = coerceToJavaUnsignedShort(n);
         ((ShortBuffer)data).put(i, s);
         break;
-      case INT:
+      case U32:
         int v  = coerceToJavaUnsignedInt(n);
         ((IntBuffer)data).put(i, v);
         break;
-      case LONG:
+      case U64:
         //        long v = ???
         //          ((IntBuffer)data).put(i, v);
         program_error("Unimplemented aset on long");
@@ -214,20 +138,20 @@ public final class BasicVectorBuffer
     int length = start - end;
     try {
       BasicVectorBuffer result = null;
-      switch (specialization) {
-      case BYTE:
+      switch (specializedOn) {
+      case U8:
         result = new BasicVectorBuffer(ByteBuffer.class, length);
         ((ByteBuffer)data).get(result.asByteArray(), start, length);
         break;
-      case SHORT:
+      case U16:
         result = new BasicVectorBuffer(ShortBuffer.class, length);
         ((ShortBuffer)data).get(result.asShortArray(), start, length);
         break;
-      case INT:
+      case U32:
         result = new BasicVectorBuffer(IntBuffer.class, length);
         ((IntBuffer)data).get(result.asIntArray(), start, length);
         break;
-      case LONG:
+      case U64:
         result = new BasicVectorBuffer(LongBuffer.class, length);
         ((LongBuffer)data).get(result.asLongArray(), start, length);
         break;
