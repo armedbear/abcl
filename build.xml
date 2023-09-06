@@ -766,7 +766,10 @@ will compile (if necessary) and load JSS.
         <os family="windows"/>
       </not>
     </condition>
-      
+
+    <!-- If the etags executable isn't found, one can specify the -->
+    <!-- correct absolute path via the etags.executable property: -->
+    <!-- ant -Detags.executable=/Users/evenson/bin/etags -->
     <target name="TAGS">
       <delete file="TAGS"/>
       <apply executable="${etags.executable}" parallel="true" verbose="true" maxparallel="300">
