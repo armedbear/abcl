@@ -180,8 +180,8 @@ public final class BasicVectorBuffer
     Arrays.fill(((ByteBuffer)data).array(), b);
   }
 
-
-  // TODO AbstractVector.deleteEq() could work, as well but is it faster?
+  // Does AbstractVector.deleteEq() could work, as well but is it faster?
+  /**
   @Override
   public LispObject deleteEq(LispObject item) {
     byte b = coerceToJavaByte(item);
@@ -204,6 +204,7 @@ public final class BasicVectorBuffer
     }
     return this;
   }
+  */
 
   //
   // TODO check on use of AbstractVector.deleteEql()
