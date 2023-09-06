@@ -63,4 +63,8 @@ public class LispInteger extends LispObject implements java.io.Serializable
     }
     return i.longValue();
   }
+
+  public static LispInteger coerce(LispObject o) {
+    return (LispInteger)o;
+  }
 }

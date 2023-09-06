@@ -119,9 +119,9 @@ public final class BasicVectorBuffer
         ((IntBuffer)data).put(i, v);
         break;
       case U64:
-        //        long v = ???
-        //          ((IntBuffer)data).put(i, v);
-        program_error("Unimplemented aset on long");
+        LispInteger lispInteger = LispInteger.coerce(n);
+        long l = LispInteger.asUnsignedLong(lispInteger);
+        ((LongBuffer)data).put(i, l);
         break;
       }
     } catch (IndexOutOfBoundsException e) {
@@ -228,13 +228,20 @@ public final class BasicVectorBuffer
 
   @Override
   public LispObject reverse() {
-    // thunk on CLAZZ
-    BasicVectorBuffer result
-      = new BasicVectorBuffer(ByteBuffer.class, capacity);
-    
+    BasicVectorBuffer result = new BasicVectorBuffer(type, capacity);
     int i, j;
-    ByteBuffer source = (ByteBuffer)data;
-    ByteBuffer destination = (ByteBuffer)result.data;
+    // switch (onSpecialization) {
+    // case U8:
+      ByteBuffer source = (ByteBuffer)data;
+      ByteBuffer destination = (ByteBuffer)result.data;
+    //   break;
+    // case U16:
+    //   break;
+    // case U32:
+    //   break;
+    // case U64:
+    //   break;
+    // }
     for (i = 0, j = capacity - 1; i < capacity; i++, j--) { 
       destination.put(i, source.get(j));
     }
@@ -245,6 +252,8 @@ public final class BasicVectorBuffer
   public LispObject nreverse() {
     int i = 0;
     int j = capacity() - 1;
+    // switch (onSpecialization) {
+    // case U8:
     ByteBuffer buffer = (ByteBuffer)data;
     while (i < j) {
       byte temp = buffer.get(i);
@@ -253,6 +262,15 @@ public final class BasicVectorBuffer
       ++i;
       --j;
     }
+    //   break;
+    // case U16:
+    //   break;
+    // case U32:
+    //   break;
+    // case U64:
+    //   break;
+    // }
+
     return this;
   }
 
