@@ -33,12 +33,17 @@
 
 package org.armedbear.lisp;
 
-/** This class merely serves as the super class for
- * Fixnum and Bignum
- */
-public class LispInteger extends LispObject implements java.io.Serializable
-{
+import static org.armedbear.lisp.Lisp.*;
 
+/** 
+ * An INTEGER is either a FIXNUM or a BIGNUM
+ *
+ * See the Fixnum and Bignum classes for the Java implementations.
+ */
+public class LispInteger
+  extends LispObject
+  implements java.io.Serializable
+{
   public static LispInteger getInstance(long l) {
       if (Integer.MIN_VALUE <= l && l <= Integer.MAX_VALUE)
           return Fixnum.getInstance((int)l);
@@ -65,6 +70,9 @@ public class LispInteger extends LispObject implements java.io.Serializable
   }
 
   public static LispInteger coerce(LispObject o) {
-    return (LispInteger)o;
+    if (o instanceof LispInteger) {
+      return (LispInteger)o;
+    }
+    return (LispInteger) type_error(o, (LispObject)new JavaObject(LispInteger.class));
   }
 }
