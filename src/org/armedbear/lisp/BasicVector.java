@@ -111,9 +111,8 @@ public class BasicVector
       sb.append("(UNSIGNED-BYTE 64)");
       break;
     }
-    sb.append(" with ");
-    sb.append(capacity);
-    sb.append(" elements");
+    sb.append(" with ").append(capacity).append(" elements").append(".")
+      .append("\n");
     return new SimpleString(sb);
   }
 

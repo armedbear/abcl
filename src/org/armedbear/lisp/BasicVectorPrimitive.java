@@ -56,7 +56,16 @@ public final class BasicVectorPrimitive
     u64 = data;
   }
 
-  
+  public LispObject getDescription() {
+    StringBuffer sb
+      = new StringBuffer("A simple vector backed by an array of Java primitive types. ")
+      .append("\n");
+    sb.append("Whose superimplementation is ").append("\n")
+      .append(super.getDescription());
+
+    return new SimpleString(sb);
+  }
+
   @Override
   public LispObject elt(int i) {
     return AREF(i);
