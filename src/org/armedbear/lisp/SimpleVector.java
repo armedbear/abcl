@@ -43,11 +43,13 @@ import java.text.MessageFormat;
 // "The type of a vector that is not displaced to another array, has no fill
 // pointer, is not expressly adjustable and is able to hold elements of any
 // type is a subtype of type SIMPLE-VECTOR."
-public class SimpleVector<T extends LispObject> extends AbstractVector
+public class SimpleVector
+  extends AbstractVector
+  implements java.io.Serializable
 {
   int capacity;
-  T[] data;
-  Class type;
+  LispObject[] data;
+  Class type;  // "always" LispObject for now
 
   public SimpleVector() {
   }
@@ -59,22 +61,19 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
   public SimpleVector(Class<LispObject> type, int capacity) {
     this.type = type;
     this.capacity = capacity;
-    data = (T[]) Array.newInstance(type, capacity);
-    //    for (int i = capacity; i-- > 0;) {
-    //data[i] = Fixnum.ZERO;
-    //}
-    Arrays.fill(data, (T) Fixnum.ZERO);     // is this necessary?
+    data = (LispObject[]) Array.newInstance(type, capacity);
+    Arrays.fill(data, (LispObject) Fixnum.ZERO);     // is this necessary? ECL fills with NIL
   }
 
   public SimpleVector(LispObject obj) {
     if (obj.listp()) {
-      data = (T[]) obj.copyToArray();
+      data = obj.copyToArray();
       capacity = data.length;
     } else if (obj instanceof AbstractVector) { 
       capacity = obj.length();
-      data = (T[]) new LispObject[capacity];
+      data = new LispObject[capacity];
       for (int i = 0; i < capacity; i++) {
-        data[i] = (T) obj.elt(i); // faster?  Implement AbstractVector.asArray()?
+        data[i] = (LispObject) obj.AREF(i); // faster?  Implement AbstractVector.asArray()?
       }
     } else {
       Debug.assertTrue(false);
@@ -82,7 +81,7 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
   }
 
   public SimpleVector(LispObject[] array) {
-    data = (T[])array;
+    data = array;
     capacity = array.length;
   }
 
@@ -187,7 +186,7 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
   public void svset(int index, LispObject newValue)
   {
     try {
-        data[index] = (T) newValue;
+        data[index] = newValue;
     } catch (ArrayIndexOutOfBoundsException e) {
       badIndex(index, capacity);
     }
@@ -197,18 +196,20 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
   public LispObject subseq(int start, int end)
   {
     try {
-        T[] subseq = Arrays.copyOfRange(data, start, end);        
+        LispObject[] subseq = Arrays.copyOfRange(data, start, end);        
         return new SimpleVector(subseq);
     } catch (ArrayIndexOutOfBoundsException e) {
       String m
-        = MessageFormat.format("The bounding indices {0} and {1} are bad for a sequence of length {2}.", start, end, length());
-      return type_error(m, new JavaObject(e), NIL); // Not really a type_error, as there is not one type
+        = MessageFormat.format("The bounding indices {0} and {1} are bad for a sequence of length {2}.",
+                               start, end, length());
+      // Not really a type_error, as there is not one type      
+      return type_error(m, new JavaObject(e), NIL); 
     }
   }
 
   @Override
   public void fill(LispObject obj) {
-    Arrays.fill(data, (T) obj);
+    Arrays.fill(data, obj);
   }
 
   @Override
@@ -221,7 +222,7 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
       {
         LispObject obj = data[i++];
         if (obj != item)
-          data[j++] = (T)obj;
+          data[j++] = obj;
       }
     if (j < limit)
       shrink(j);
@@ -238,7 +239,7 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
       {
         LispObject obj = data[i++];
         if (!obj.eql(item))
-          data[j++] = (T) obj;
+          data[j++] = obj;
       }
     if (j < limit)
       shrink(j);
@@ -251,7 +252,7 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
     if (n < capacity) {
       SimpleVector newArray = new SimpleVector(n);
       System.arraycopy(data, 0, newArray.data, 0, n);
-      data = (T[])newArray.data;
+      data = newArray.data;
       capacity = n;
       return;
     }
@@ -280,7 +281,7 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
       {
         LispObject temp = data[i];
         data[i] = data[j];
-        data[j] = (T) temp;
+        data[j] = temp;
         ++i;
         --j;
       }
@@ -345,9 +346,9 @@ public class SimpleVector<T extends LispObject> extends AbstractVector
                                 int sourceStart, int sourceEnd)
   {
     if (source instanceof SimpleVector) {
+      //      data = Array.copyOfRange ... ?
       System.arraycopy(((SimpleVector)source).data, sourceStart,
-                       data, targetStart,
-                       Math.min(targetEnd - targetStart, sourceEnd - sourceStart));
+                       data, targetStart, Math.min(targetEnd - targetStart, sourceEnd - sourceStart));
       return this;
     } else {
       return super.replace(source, targetStart, targetEnd, sourceStart, sourceEnd);
