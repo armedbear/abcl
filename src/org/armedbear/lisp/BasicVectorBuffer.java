@@ -15,7 +15,9 @@ import java.util.Arrays;
    A SIMPLE-VECTOR specialized on 8, 16, 32, and 64 unsigned byte
    types backed by a java.nio.Buffer implmentation.
 
+
 */
+// Only code paths for (UNSIGNED-BYTE 8) types right now.
 public final class BasicVectorBuffer
   extends BasicVector
 {
@@ -83,7 +85,7 @@ public final class BasicVectorBuffer
       case U64:
         return LispInteger.getUnsignedInstance(((LongBuffer)data).get(i));
       }
-      return program_error("Bad ELT in BasicVectorBuffer.");
+      return program_error("Bad array reference in BasicVectorBuffer for " + i);
     }  catch (ArrayIndexOutOfBoundsException e) {
       return badIndex(i, capacity);
     }
@@ -152,8 +154,10 @@ public final class BasicVectorBuffer
       return result;
     } catch (ArrayIndexOutOfBoundsException e) {
       String m
-        = MessageFormat.format("The bounding indices {0} and {1} are bad for a sequence of length {2}.", start, end, length());
-      return type_error(m, new JavaObject(e), NIL); // Not really a type_error, as there is not one type
+        = MessageFormat.format("The bounding indices {0} and {1} are bad for a sequence of length {2}.",
+                               start, end, length());
+      // Not really a type_error, as there is not one type
+      return type_error(m, new JavaObject(e), NIL);
     }
   }
 

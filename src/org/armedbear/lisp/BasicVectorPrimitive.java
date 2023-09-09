@@ -19,7 +19,7 @@ import java.util.Arrays;
 public final class BasicVectorPrimitive
   extends BasicVector
 {
-  // TODO we can theoretically do this as a single u8 array, with views as shorts, ints, and longs
+  // TODO do this as a single u8 array, with views as shorts, ints, and longs
   byte[] u8;
   short[] u16;
   int[] u32;
@@ -144,8 +144,10 @@ public final class BasicVectorPrimitive
       }
     } catch (ArrayIndexOutOfBoundsException e) {
       String m
-        = MessageFormat.format("The bounding indices {0} and {1} are bad for a sequence of length {2}.", start, end, length());
-      return type_error(m, new JavaObject(e), NIL); // Not really a type_error, as there is not one type
+        = MessageFormat.format("The bounding indices {0} and {1} are bad for a sequence of length {2}.",
+                               start, end, length());
+      // Not really a type_error, as there is not one type
+      return type_error(m, new JavaObject(e), NIL); 
     }
     return program_error("Unreachable");
   }
