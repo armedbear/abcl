@@ -2,6 +2,12 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
+/** 
+ A basic vector is a specialized vector that is not displaced to another
+ array, has no fill pointer, and is not expressly adjustable.
+ 
+ All BasicVectors are children of SimpleVector.
+*/
 public class BasicVector
   extends SimpleVector
 {
@@ -88,6 +94,27 @@ public class BasicVector
     return program_error("Unknown element type: " + type);
   }
 
-
+  @Override
+  public LispObject getDescription() {
+    StringBuffer sb = new StringBuffer("A simple vector specialized on ");
+    switch (specializedOn) {
+    case U8:
+      sb.append("(UNSIGNED-BYTE 8)");
+      break;
+    case U16:
+      sb.append("(UNSIGNED-BYTE 16)");
+      break;
+    case U32:
+      sb.append("(UNSIGNED-BYTE 32)");
+      break;
+    case U64:
+      sb.append("(UNSIGNED-BYTE 64)");
+      break;
+    }
+    sb.append(" with ");
+    sb.append(capacity);
+    sb.append(" elements");
+    return new SimpleString(sb);
+  }
 
 }

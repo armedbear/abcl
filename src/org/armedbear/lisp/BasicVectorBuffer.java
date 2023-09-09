@@ -10,12 +10,16 @@ import java.nio.ShortBuffer;
 import java.text.MessageFormat;
 import java.util.Arrays;
 
-// A basic vector is a specialized vector that is not displaced to another
-// array, has no fill pointer, and is not expressly adjustable.
+/**
+
+   A SIMPLE-VECTOR specialized on 8, 16, 32, and 64 unsigned byte
+   types backed by a java.nio.Buffer implmentation.
+
+*/
 public final class BasicVectorBuffer
   extends BasicVector
 {
-  //  boolean directAllocation; directly allocate Buffer don't have backing arrays
+  //  boolean directAllocation; directly allocate Buffer don't have backing arrays  TODO subclass that behavior
   Buffer data;
 
   public BasicVectorBuffer(Class type, int capacity) {
@@ -35,6 +39,8 @@ public final class BasicVectorBuffer
       break;
     }
   }
+
+  // TODO constructor that takes an existing ByteBuffer as its backing store
 
   public byte[] asByteArray() {
     return (byte[])((ByteBuffer)data).array();
@@ -69,8 +75,8 @@ public final class BasicVectorBuffer
     sb.append(capacity);
     sb.append(" elements");
     return new SimpleString(sb);
-  }
 
+  }
 
   @Override
   public LispObject elt(int i) {

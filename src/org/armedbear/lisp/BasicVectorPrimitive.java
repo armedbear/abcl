@@ -7,11 +7,19 @@ import java.nio.Buffer;
 import java.text.MessageFormat;
 import java.util.Arrays;
 
-// A basic vector is a specialized vector that is not displaced to another
-// array, has no fill pointer, and is not expressly adjustable.
+/**
+
+   A SIMPLE-VECTOR specialized on types of primitive arrays.
+
+   Currently only the four necessary primitives to implement the
+   UNSIGNED-BYTE 8, 16, 32, and 64 bit specializations have been
+   implemented on bytes, shorts, ints, and longs respectively.
+
+*/
 public final class BasicVectorPrimitive
   extends BasicVector
 {
+  // TODO we can theoretically do this as a single u8 array, with views as shorts, ints, and longs
   byte[] u8;
   short[] u16;
   int[] u32;
