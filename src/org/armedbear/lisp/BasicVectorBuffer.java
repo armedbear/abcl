@@ -15,7 +15,6 @@ import java.util.Arrays;
    A SIMPLE-VECTOR specialized on 8, 16, 32, and 64 unsigned byte
    types backed by a java.nio.Buffer implmentation.
 
-
 */
 // Only code paths for (UNSIGNED-BYTE 8) types right now.
 public final class BasicVectorBuffer
@@ -23,39 +22,108 @@ public final class BasicVectorBuffer
 {
   //  boolean directAllocation; directly allocate Buffer don't have backing arrays  TODO subclass that behavior
   Buffer data;
+  ByteBuffer bytes;
 
   public BasicVectorBuffer(Class type, int capacity) {
     super(type, capacity);
+    bytes = ByteBuffer.allocate(capacity * specializedOn.totalBytes);
+
     switch (specializedOn) {
     case U8:
-      data = ByteBuffer.allocate(capacity);
+      data = bytes;
       break;
     case U16:
-      data = ShortBuffer.allocate(capacity);
+      data = bytes.asShortBuffer();
       break;
     case U32:
-      data = IntBuffer.allocate(capacity);
+      data = bytes.asIntBuffer();
       break;
     case U64:
-      data = LongBuffer.allocate(capacity);
+      data = bytes.asLongBuffer();
       break;
     }
   }
 
+  /** 
+  public <T> asPrimitiveArray<T[]>() {
+    if (data.hasArray()) {
+      switch (specializedOn) {
+      case U8:
+        return (T[]) ((ByteBuffer)data).array();
+        break;
+      }
+    // case U8:
+
+    //   break;
+    // case U16:
+    //   data = bytes.asShortBuffer();
+    //   break;
+    // case U32:
+    //   data = bytes.asIntBuffer();
+    //   break;
+    // case U64:
+    //   data = bytes.asLongBuffer();
+    //   break;
+      
+    //   data.array();
+    }
+    program_error("Not able to get underlying bytes for BasicVectorBuffer.");
+    // not reached
+    return null;
+  }
+  */
+
+  byte[] asByteArray() {
+    if (data.hasArray()) {
+      data.array();
+    }
+    program_error("Not able to get underlying bytes for BasicVectorBuffer.");
+    // not reached
+    return null;
+  }
+
+  short[] asShortArray() {
+    if (data.hasArray()) {
+      data.array();
+    }
+    program_error("Not able to get underlying shorts for BasicVectorBuffer.");
+    // not reached
+    return null;
+  }
+
+  int[] asIntArray() {
+    if (data.hasArray()) {
+      data.array();
+    }
+    program_error("Not able to get underlying ints for BasicVectorBuffer.");
+    // not reached
+    return null;
+  }
+
+  long[] asLongArray() {
+    if (data.hasArray()) {
+      data.array();
+    }
+    program_error("Not able to get underlying longs for BasicVectorBuffer.");
+    // not reached
+    return null;
+  }
+
+
   // TODO constructor that takes an existing ByteBuffer as its backing store
 
-  public byte[] asByteArray() {
-    return (byte[])((ByteBuffer)data).array();
-  }
-  public short[] asShortArray() {
-    return (short[])((ShortBuffer)data).array();
-  }
-  public int[] asIntArray() {
-    return (int[])((IntBuffer)data).array();
-  }
-  public long[] asLongArray() {
-    return (long[])((LongBuffer)data).array();
-  }
+  // public byte[] asByteArray() {
+  //   return (byte[])((ByteBuffer)data).array();
+  // }
+  // public short[] asShortArray() {
+  //   return (short[])((ShortBuffer)data).array();
+  // }
+  // public int[] asIntArray() {
+  //   return (int[])((IntBuffer)data).array();
+  // }
+  // public long[] asLongArray() {
+  //   return (long[])((LongBuffer)data).array();
+  // }
 
   public LispObject getDescription() {
     StringBuffer sb
@@ -136,21 +204,18 @@ public final class BasicVectorBuffer
       switch (specializedOn) {
       case U8:
         result = new BasicVectorBuffer(ByteBuffer.class, length);
-        ((ByteBuffer)data).get(result.asByteArray(), start, length);
         break;
       case U16:
         result = new BasicVectorBuffer(ShortBuffer.class, length);
-        ((ShortBuffer)data).get(result.asShortArray(), start, length);
         break;
       case U32:
         result = new BasicVectorBuffer(IntBuffer.class, length);
-        ((IntBuffer)data).get(result.asIntArray(), start, length);
         break;
       case U64:
         result = new BasicVectorBuffer(LongBuffer.class, length);
-        ((LongBuffer)data).get(result.asLongArray(), start, length);
         break;
       }
+      result.bytes.put(asByteArray(), start, length * specializedOn.totalBytes);      
       return result;
     } catch (ArrayIndexOutOfBoundsException e) {
       String m
@@ -163,13 +228,25 @@ public final class BasicVectorBuffer
 
   @Override
   public void fill(LispObject obj) { // TODO switch on CLAZZ
-    byte b = coerceToJavaByte(obj);
-    fill(b);
+    switch (specializedOn) {
+    case U8:
+      byte b = coerceToJavaByte(obj);
+      Arrays.fill(asByteArray(), b);
+      break;
+    case U16:
+      short s = coerceToJavaUnsignedShort(obj);
+      Arrays.fill(asShortArray(), s);
+      break;
+    case U32:
+      int i = coerceToJavaUnsignedShort(obj);
+      Arrays.fill(asIntArray(), i);
+      break;
+    case U64:
+      break;
+    }
   }
 
-  public void fill(byte b) {
-    Arrays.fill(((ByteBuffer)data).array(), b);
-  }
+
 
   // Does AbstractVector.deleteEq() could work, as well but is it faster?
   /**

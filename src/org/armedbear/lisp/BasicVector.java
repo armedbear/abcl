@@ -12,7 +12,14 @@ public class BasicVector
   extends SimpleVector
 {
   public enum Specialization {
-    U8, U16, U32, U64
+    U8(1), U16(2), U32(4), U64(8);
+
+    public final int totalBytes;
+
+    private Specialization(int bytes) {
+      totalBytes = bytes;
+    }
+      
   }
   Specialization specializedOn;
 
