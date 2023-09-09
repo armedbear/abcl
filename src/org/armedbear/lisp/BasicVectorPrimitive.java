@@ -115,9 +115,10 @@ public final class BasicVectorPrimitive
         u32[i] = v;
         break;
       case U64:
-        //        long v = ???
-        //          ((IntBuffer)data).put(i, v);
-        program_error("Unimplemented aset on long");
+        // TODO: consider asUnsignedLong should be an instance method
+        LispInteger lispInteger = LispInteger.coerce(n);
+        long l = LispInteger.asUnsignedLong(lispInteger);
+        u64[i] = l;
         break;
       }
     } catch (IndexOutOfBoundsException e) {
