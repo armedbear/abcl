@@ -21,8 +21,13 @@ public final class BasicVectorBuffer
   extends BasicVector
 {
   //  boolean directAllocation; directly allocate Buffer don't have backing arrays  TODO subclass that behavior
+
+
+  /** The u8 bytes for this vector */
+  ByteBuffer bytes;  
+
+  /** A view of the underlying bytes by specialization */
   Buffer data;
-  ByteBuffer bytes;
 
   public BasicVectorBuffer(Class type, int capacity) {
     super(type, capacity);
@@ -43,35 +48,6 @@ public final class BasicVectorBuffer
       break;
     }
   }
-
-  /** 
-  public <T> asPrimitiveArray<T[]>() {
-    if (data.hasArray()) {
-      switch (specializedOn) {
-      case U8:
-        return (T[]) ((ByteBuffer)data).array();
-        break;
-      }
-    // case U8:
-
-    //   break;
-    // case U16:
-    //   data = bytes.asShortBuffer();
-    //   break;
-    // case U32:
-    //   data = bytes.asIntBuffer();
-    //   break;
-    // case U64:
-    //   data = bytes.asLongBuffer();
-    //   break;
-      
-    //   data.array();
-    }
-    program_error("Not able to get underlying bytes for BasicVectorBuffer.");
-    // not reached
-    return null;
-  }
-  */
 
   byte[] asByteArray() {
     if (data.hasArray()) {
@@ -274,44 +250,74 @@ public final class BasicVectorBuffer
   }
   */
 
-  //
   // TODO check on use of AbstractVector.deleteEql()
-  //
   
   @Override
   public void shrink(int n) {
     if (n < capacity) {
-      // thunk on CLAZZ
-      BasicVectorBuffer result
-        = new BasicVectorBuffer(ByteBuffer.class, n);
-      ((ByteBuffer)data).get(result.asByteArray(), 0, n);
+      bytes.limit(n * specializedOn.totalBytes);      
+      switch (specializedOn) {
+      case U8:
+        break;
+      case U16:
+        data = bytes.asShortBuffer();
+        data.limit(n);
+        break;
+      case U32:
+        data = bytes.asIntBuffer();
+        data.limit(n);
+        break;
+      case U64:
+        data = bytes.asLongBuffer();
+        data.limit(n);
+        break;
+      }
       capacity = n;
       return;
     }
     if (n == capacity) {
       return;
     }
-    error(new LispError());
+    simple_error("Unable to shrink vector ~a to size ~a.", this, n);
   }
 
   @Override
   public LispObject reverse() {
-    BasicVectorBuffer result = new BasicVectorBuffer(type, capacity);
+    BasicVectorBuffer result = null;
     int i, j;
-    // switch (onSpecialization) {
-    // case U8:
-      ByteBuffer source = (ByteBuffer)data;
-      ByteBuffer destination = (ByteBuffer)result.data;
-    //   break;
-    // case U16:
-    //   break;
-    // case U32:
-    //   break;
-    // case U64:
-    //   break;
-    // }
-    for (i = 0, j = capacity - 1; i < capacity; i++, j--) { 
-      destination.put(i, source.get(j));
+    switch (specializedOn) {
+    case U8:
+      result = new BasicVectorBuffer(ByteBuffer.class, capacity);
+      ByteBuffer byteSource = bytes;
+      ByteBuffer byteDestination = result.bytes;
+      for (i = 0, j = capacity - 1; i < capacity; i++, j--) { 
+        byteDestination.put(i, byteSource.get(j));
+      }
+      break;
+    case U16:
+      result = new BasicVectorBuffer(ShortBuffer.class, capacity);
+      ShortBuffer shortSource = (ShortBuffer)data;
+      ShortBuffer shortDestination = (ShortBuffer)result.data;
+      for (i = 0, j = capacity - 1; i < capacity; i++, j--) { 
+        shortDestination.put(i, shortSource.get(j));
+      }
+      break;
+    case U32:
+      result = new BasicVectorBuffer(IntBuffer.class, capacity);
+      IntBuffer intSource = (IntBuffer)data;
+      IntBuffer intDestination = (IntBuffer)result.data;
+      for (i = 0, j = capacity - 1; i < capacity; i++, j--) { 
+        intDestination.put(i, intSource.get(j));
+      }
+      break;
+    case U64:
+      result = new BasicVectorBuffer(LongBuffer.class, capacity);
+      LongBuffer longSource = (LongBuffer)data;
+      LongBuffer longDestination = (LongBuffer)result.data;
+      for (i = 0, j = capacity - 1; i < capacity; i++, j--) { 
+        longDestination.put(i, longSource.get(j));
+      }
+      break;
     }
     return result;
   }
@@ -320,25 +326,44 @@ public final class BasicVectorBuffer
   public LispObject nreverse() {
     int i = 0;
     int j = capacity() - 1;
-    // switch (onSpecialization) {
-    // case U8:
-    ByteBuffer buffer = (ByteBuffer)data;
-    while (i < j) {
-      byte temp = buffer.get(i);
-      buffer.put(i, buffer.get(j));
-      buffer.put(j, temp);
-      ++i;
-      --j;
+    switch (specializedOn) {
+    case U8:
+      ByteBuffer byteBuffer = (ByteBuffer)data;
+      while (i < j) {
+        byte temp = byteBuffer.get(i);
+        byteBuffer.put(i, byteBuffer.get(j));
+        byteBuffer.put(j, temp);
+        ++i; --j;
+      }
+      break;
+    case U16:
+      ShortBuffer shortBuffer = (ShortBuffer)data;
+      while (i < j) {
+        short temp = shortBuffer.get(i);
+        shortBuffer.put(i, shortBuffer.get(j));
+        shortBuffer.put(j, temp);
+        ++i; --j;
+      }
+      break; 
+    case U32:
+      IntBuffer intBuffer = (IntBuffer)data;
+      while (i < j) {
+        int temp = intBuffer.get(i);
+        intBuffer.put(i, intBuffer.get(j));
+        intBuffer.put(j, temp);
+        ++i; --j;
+      }
+      break; 
+    case U64:
+      LongBuffer longBuffer = (LongBuffer)data;
+      while (i < j) {
+        long temp = longBuffer.get(i);
+        longBuffer.put(i, longBuffer.get(j));
+        longBuffer.put(j, temp);
+        ++i; --j;
+      }
+      break; 
     }
-    //   break;
-    // case U16:
-    //   break;
-    // case U32:
-    //   break;
-    // case U64:
-    //   break;
-    // }
-
     return this;
   }
 
