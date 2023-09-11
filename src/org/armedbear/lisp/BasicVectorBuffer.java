@@ -174,21 +174,21 @@ public final class BasicVectorBuffer
 
   @Override
   public LispObject subseq(int start, int end) {
-    int length = start - end;
+    int length = end - start;
     try {
       BasicVectorBuffer result = null;
       switch (specializedOn) {
       case U8:
-        result = new BasicVectorBuffer(ByteBuffer.class, length);
+        result = new BasicVectorBuffer(Byte.class, length);
         break;
       case U16:
-        result = new BasicVectorBuffer(ShortBuffer.class, length);
+        result = new BasicVectorBuffer(Short.class, length);
         break;
       case U32:
-        result = new BasicVectorBuffer(IntBuffer.class, length);
+        result = new BasicVectorBuffer(Integer.class, length);
         break;
       case U64:
-        result = new BasicVectorBuffer(LongBuffer.class, length);
+        result = new BasicVectorBuffer(Long.class, length);
         break;
       }
       result.bytes.put(asByteArray(), start, length * specializedOn.totalBytes);      
@@ -288,7 +288,7 @@ public final class BasicVectorBuffer
     int i, j;
     switch (specializedOn) {
     case U8:
-      result = new BasicVectorBuffer(ByteBuffer.class, capacity);
+      result = new BasicVectorBuffer(Byte.class, capacity);
       ByteBuffer byteSource = bytes;
       ByteBuffer byteDestination = result.bytes;
       for (i = 0, j = capacity - 1; i < capacity; i++, j--) { 
@@ -296,7 +296,7 @@ public final class BasicVectorBuffer
       }
       break;
     case U16:
-      result = new BasicVectorBuffer(ShortBuffer.class, capacity);
+      result = new BasicVectorBuffer(Short.class, capacity);
       ShortBuffer shortSource = (ShortBuffer)data;
       ShortBuffer shortDestination = (ShortBuffer)result.data;
       for (i = 0, j = capacity - 1; i < capacity; i++, j--) { 
@@ -304,7 +304,7 @@ public final class BasicVectorBuffer
       }
       break;
     case U32:
-      result = new BasicVectorBuffer(IntBuffer.class, capacity);
+      result = new BasicVectorBuffer(Integer.class, capacity);
       IntBuffer intSource = (IntBuffer)data;
       IntBuffer intDestination = (IntBuffer)result.data;
       for (i = 0, j = capacity - 1; i < capacity; i++, j--) { 
@@ -312,7 +312,7 @@ public final class BasicVectorBuffer
       }
       break;
     case U64:
-      result = new BasicVectorBuffer(LongBuffer.class, capacity);
+      result = new BasicVectorBuffer(Long.class, capacity);
       LongBuffer longSource = (LongBuffer)data;
       LongBuffer longDestination = (LongBuffer)result.data;
       for (i = 0, j = capacity - 1; i < capacity; i++, j--) { 
