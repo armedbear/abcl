@@ -19,7 +19,7 @@ import java.util.Arrays;
 public final class BasicVectorPrimitive
   extends BasicVector
 {
-  // TODO do this as a single u8 array, with views as shorts, ints, and longs
+  // TODO ??? do this as a single u8 array, with views as shorts, ints, and longs
   byte[] u8;
   short[] u16;
   int[] u32;
@@ -100,24 +100,23 @@ public final class BasicVectorPrimitive
   }
 
   public void svset(int i, LispObject n) {
+    LispInteger o = coerceToElementType(n);
     try {
       switch (specializedOn) {
       case U8:
-        byte b = coerceToJavaByte(n);
+        byte b = coerceToJavaByte(o);
         u8[i] = b;
         break;
       case U16:
-        short s = coerceToJavaUnsignedShort(n);
+        short s = coerceToJavaUnsignedShort(o);
         u16[i] = s;
         break;
       case U32:
-        int v  = coerceToJavaUnsignedInt(n);
+        int v  = coerceToJavaUnsignedInt(o);
         u32[i] = v;
         break;
       case U64:
-        // TODO: consider asUnsignedLong should be an instance method
-        LispInteger lispInteger = LispInteger.coerce(n);
-        long l = LispInteger.asUnsignedLong(lispInteger);
+        long l = LispInteger.asUnsignedLong(o);
         u64[i] = l;
         break;
       }
@@ -154,21 +153,23 @@ public final class BasicVectorPrimitive
 
   @Override
   public void fill(LispObject obj) {
+    LispInteger o = coerceToElementType(obj);
     switch (specializedOn) {
     case U8:
-      byte b = coerceToJavaByte(obj);
+      byte b = coerceToJavaByte(o);
       Arrays.fill(u8, b);
       break;
     case U16:
-      short s = coerceToJavaUnsignedShort(obj);
+      short s = coerceToJavaUnsignedShort(o);
       Arrays.fill(u16, s);
       break;
     case U32:
-      int i = coerceToJavaUnsignedInt(obj);
-      Arrays.fill(u32,i);
+      int i = coerceToJavaUnsignedInt(o);
+      Arrays.fill(u32, i);
       break;
     case U64:
-      program_error("Unimplemented fill of U64");
+      long l = LispInteger.asUnsignedLong(o);
+      Arrays.fill(u64, l);
       break;
     }
   }

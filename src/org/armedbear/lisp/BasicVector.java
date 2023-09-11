@@ -8,7 +8,7 @@ import static org.armedbear.lisp.Lisp.*;
  
  All BasicVectors are children of SimpleVector.
 */
-public class BasicVector
+abstract public class BasicVector
   extends SimpleVector
 {
   public enum Specialization {
@@ -24,13 +24,13 @@ public class BasicVector
   Specialization specializedOn;
 
   public BasicVector(Class type) {
-    if (type.equals(Byte.class)) {
+    if (type.equals(Byte.class) || type.equals(byte.class)) {
       specializedOn = Specialization.U8;
-    } else if (type.equals(Short.class)) {
+    } else if (type.equals(Short.class) || type.equals(short.class)) {
       specializedOn = Specialization.U16;
-    } else if (type.equals(Integer.class)) {
+    } else if (type.equals(Integer.class) || type.equals(int.class)) {
       specializedOn = Specialization.U32;
-    } else if (type.equals(Long.class)) {
+    } else if (type.equals(Long.class)|| type.equals(long.class)) {
       specializedOn = Specialization.U64;
     }
   }
@@ -122,5 +122,31 @@ public class BasicVector
       .append("\n");
     return new SimpleString(sb);
   }
+
+  LispInteger coerceToElementType(LispObject o) {
+    LispInteger result = LispInteger.coerce(o);
+    switch (specializedOn) {
+    case U8:
+      if (result.isLessThan(0)
+          || result.isGreaterThan(255)) {
+        return (LispInteger) type_error(result, UNSIGNED_BYTE_8);
+      }
+      break;
+    case U16: 
+      if (result.isLessThan(0)
+          || result.isGreaterThan(65536)) {
+        return (LispInteger) type_error(result, UNSIGNED_BYTE_16);
+      }
+      break;
+    case U32:
+      if (result.isLessThan(0)
+          || result.isGreaterThan(Bignum.MAX_UNSIGNED_BYTE_32)) {
+        return (LispInteger) type_error(result, UNSIGNED_BYTE_32);
+      }
+      break;
+    }  
+    return result;
+  }
+
 
 }

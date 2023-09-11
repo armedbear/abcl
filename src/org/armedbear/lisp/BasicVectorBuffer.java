@@ -51,36 +51,36 @@ public final class BasicVectorBuffer
 
   byte[] asByteArray() {
     if (data.hasArray()) {
-      data.array();
+      return (byte[])data.array();
     }
-    program_error("Not able to get underlying bytes for BasicVectorBuffer.");
+    program_error("Unable to get underlying bytes for BasicVectorBuffer.");
     // not reached
     return null;
   }
 
   short[] asShortArray() {
     if (data.hasArray()) {
-      data.array();
+      return (short[])data.array();
     }
-    program_error("Not able to get underlying shorts for BasicVectorBuffer.");
+    program_error("Unable to get underlying shorts for BasicVectorBuffer.");
     // not reached
     return null;
   }
 
   int[] asIntArray() {
     if (data.hasArray()) {
-      data.array();
+      return (int[])data.array();
     }
-    program_error("Not able to get underlying ints for BasicVectorBuffer.");
+    program_error("Unable to get underlying ints for BasicVectorBuffer.");
     // not reached
     return null;
   }
 
   long[] asLongArray() {
     if (data.hasArray()) {
-      data.array();
+      return (long[])data.array();
     }
-    program_error("Not able to get underlying longs for BasicVectorBuffer.");
+    program_error("Unable to get underlying longs for BasicVectorBuffer.");
     // not reached
     return null;
   }
@@ -113,11 +113,11 @@ public final class BasicVectorBuffer
 
   @Override
   public LispObject elt(int i) {
-    return AREF(i);
+    return SVREF(i);
   }
 
   @Override
-  public LispObject AREF(int i) {
+  public LispObject SVREF(int i) {
     try {
       switch (specializedOn) {
       case U8:
@@ -136,24 +136,24 @@ public final class BasicVectorBuffer
   }
 
   @Override
-  public void aset(int i, LispObject n) {
+  public void svset(int i, LispObject n) {
+    LispInteger o = coerceToElementType(n);
     try {
       switch (specializedOn) {
       case U8:
-        byte b = coerceToJavaByte(n);
+        byte b = coerceToJavaByte(o);
         ((ByteBuffer)data).put(i, b);
         break;
       case U16:
-        short s = coerceToJavaUnsignedShort(n);
+        short s = coerceToJavaUnsignedShort(o);
         ((ShortBuffer)data).put(i, s);
         break;
       case U32:
-        int v  = coerceToJavaUnsignedInt(n);
+        int v  = coerceToJavaUnsignedInt(o);
         ((IntBuffer)data).put(i, v);
         break;
       case U64:
-        LispInteger lispInteger = LispInteger.coerce(n);
-        long l = LispInteger.asUnsignedLong(lispInteger);
+        long l = LispInteger.asUnsignedLong(o);
         ((LongBuffer)data).put(i, l);
         break;
       }
@@ -163,13 +163,13 @@ public final class BasicVectorBuffer
   }
 
   @Override
-  public LispObject SVREF(int i) {
-    return AREF(i);
+  public LispObject AREF(int i) {
+    return SVREF(i);
   }
 
   @Override
-  public void svset(int i, LispObject newValue) {
-    aset(i, newValue);
+  public void aset(int i, LispObject newValue) {
+    svset(i, newValue);
   }
 
   @Override
@@ -203,28 +203,29 @@ public final class BasicVectorBuffer
   }
 
   @Override
-  public void fill(LispObject obj) { // TODO switch on CLAZZ
+  public void fill(LispObject obj) { 
+    LispInteger o = coerceToElementType(obj);
     switch (specializedOn) {
     case U8:
-      byte b = coerceToJavaByte(obj);
+      byte b = coerceToJavaByte(o);
       Arrays.fill(asByteArray(), b);
       break;
     case U16:
-      short s = coerceToJavaUnsignedShort(obj);
+      short s = coerceToJavaUnsignedShort(o);
       Arrays.fill(asShortArray(), s);
       break;
     case U32:
-      int i = coerceToJavaUnsignedShort(obj);
+      int i = coerceToJavaUnsignedShort(o);
       Arrays.fill(asIntArray(), i);
       break;
     case U64:
+      long l = LispInteger.asUnsignedLong(o);
+      Arrays.fill(asLongArray(), l);      
       break;
     }
   }
 
-
-
-  // Does AbstractVector.deleteEq() could work, as well but is it faster?
+  // AbstractVector.deleteEq() should work, as well but is it faster?
   /**
   @Override
   public LispObject deleteEq(LispObject item) {
@@ -381,5 +382,6 @@ public final class BasicVectorBuffer
       return super.replace(source, targetStart, targetEnd, sourceStart, sourceEnd);
     }
   }
+
 }
                                                                 
