@@ -62,6 +62,7 @@ public class LispInteger
     return getInstance(l);
   }
 
+  // TODO ??? consider asUnsignedLong should be an instance method
   public static long asUnsignedLong(LispInteger i) {
     if (i instanceof Bignum) {
       return ((Bignum)i).value.longValue();
