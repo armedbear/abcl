@@ -1809,7 +1809,7 @@ public static synchronized final void handleInterrupt()
   }
 
   public static final byte coerceToJavaByte(LispObject obj) {
-          return (byte)Fixnum.getValue(obj);
+    return (byte)Fixnum.getValue(obj);
   }
 
   public static final short coerceToJavaUnsignedShort(LispObject obj) {
