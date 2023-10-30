@@ -532,3 +532,17 @@
     (dmc-test-args-with-optional.4c T)
   nil
   nil)
+
+(deftest propagation-init-args
+    ;; https://github.com/armedbear/abcl/issues/80
+
+    ;; just to ensure that the following code runs without errrors
+    ;; allowing the propagation of the initargs
+    (tagbody
+       (defclass a () ())
+       (defclass b (a) ())
+       (make-instance 'b)
+       (defclass a () ((s :accessor s :initarg :s)))
+       (make-instance 'a :s 1)
+       (make-instance 'b :s 1))
+  nil)

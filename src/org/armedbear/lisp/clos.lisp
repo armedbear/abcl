@@ -1939,7 +1939,7 @@ compare the method combination name to the symbol 'standard.")
               (eq (car specializer) 'java:jclass))
          (let ((jclass (eval specializer)))
            (java::ensure-java-class jclass)))
-        ((typep specializer 'specializer) 
+        ((typep specializer 'specializer)
          specializer)
         (t
          (error "Unknown specializer: ~S" specializer))))
@@ -2251,14 +2251,14 @@ Initialized with the true value near the end of the file.")
 (declaim (notinline add-direct-method))
 (defun add-direct-method (specializer method)
   (if (or (typep specializer 'eql-specializer)
-          (typep specializer 'specializer)) 
+          (typep specializer 'specializer))
       (pushnew method (std-slot-value specializer 'direct-methods))
       (pushnew method (class-direct-methods specializer))))
 
 (declaim (notinline remove-direct-method))
 (defun remove-direct-method (specializer method)
   (if (or (typep specializer 'eql-specializer)
-          (typep specializer 'specializer)) 
+          (typep specializer 'specializer))
       (setf (std-slot-value specializer 'direct-methods)
             (remove method (std-slot-value specializer 'direct-methods)))
       (setf (class-direct-methods specializer)
@@ -2576,8 +2576,8 @@ to ~S with argument list ~S."
           ;; specializers. Check the applicable methods and if any
           ;; have a specializer that isn't an eql-specializer or
           ;; class, in which case we don't cache
-          (unless (some (lambda (m) 
-                          (some 
+          (unless (some (lambda (m)
+                          (some
                            (lambda (x)
                              (and (typep x 'specializer)
                                   (not (typep x 'eql-specializer)) (not (typep x 'class))))
@@ -3599,23 +3599,29 @@ applicable methods."
            :format-control "Odd number of keyword arguments."))
   (unless (getf initargs :allow-other-keys)
     (multiple-value-bind (allowable-initargs present-p)
-                         (when cache
-                           (gethash (class-of instance) cache))
-       (unless present-p
-         (setf allowable-initargs
-               (calculate-allowable-initargs gf-list args instance
-                                             shared-initialize-param initargs))
-         (when cache
-           (setf (gethash (class-of instance) cache)
-                 allowable-initargs)))
-       (unless (eq t allowable-initargs)
-         (do* ((tail initargs (cddr tail))
-               (initarg (car tail) (car tail)))
-              ((null tail))
-              (unless (memq initarg allowable-initargs)
-                (error 'program-error
-                       :format-control "Invalid initarg ~S in call to ~S with arglist ~S."
-                       :format-arguments (list initarg call-site args))))))))
+        (when cache
+          (gethash (class-of instance) cache))
+      (flet ((extract-init-args (list-args)
+               (loop :for arg :in list-args :by #'cddr :collect arg)))
+        (when (or (not present-p)
+                  (eq allowable-initargs t)
+                  (and present-p
+                       (set-difference (extract-init-args initargs)
+                                       (set-difference allowable-initargs '(:allow-other-keys)))))
+          (setf allowable-initargs
+                (calculate-allowable-initargs gf-list args instance
+                                              shared-initialize-param initargs))
+          (when cache
+            (setf (gethash (class-of instance) cache)
+                  allowable-initargs)))
+        (unless (eq t allowable-initargs)
+          (do* ((tail initargs (cddr tail))
+                (initarg (car tail) (car tail)))
+               ((null tail))
+            (unless (memq initarg allowable-initargs)
+              (error 'program-error
+                     :format-control "Invalid initarg ~S in call to ~S with arglist ~S."
+                     :format-arguments (list initarg call-site args)))))))))
 
 (defun merge-initargs-sets (list1 list2)
   (cond
@@ -4465,7 +4471,7 @@ or T when any keyword is acceptable due to presence of
     (pushnew method (class-direct-methods specializer)))
   (:method ((specializer eql-specializer) (method method))
     (pushnew method (slot-value specializer 'direct-methods)))
-  (:method ((specializer specializer) (method method))                   
+  (:method ((specializer specializer) (method method))
     (pushnew method (slot-value specializer 'direct-methods))))
 
 ;;; AMOP pg. 227
