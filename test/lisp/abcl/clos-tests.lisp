@@ -546,3 +546,15 @@
        (make-instance 'a :s 1)
        (make-instance 'b :s 1))
   nil)
+
+(deftest propagation-changes-existent-instances
+    ;; https://github.com/armedbear/abcl/issues/630
+    (progn (defclass a () ())
+           (defclass b (a) ())
+           (setf olda (make-instance 'a))
+           (setf oldb (make-instance 'b))
+           (defclass a () ((s :accessor s :initarg :s :initform 1)))
+           (equal (list (slot-value olda 's)
+                        (slot-value oldb 's))
+                  '(1 1)))
+  t)
