@@ -242,8 +242,8 @@ public class StandardObject extends LispObject
             discarded = discarded.push(slotName);
             if (slots[i] != UNBOUND_VALUE)
               {
-                plist = plist.push(slotName);
                 plist = plist.push(slots[i]);
+                plist = plist.push(slotName);
               }
           }
       }
@@ -340,20 +340,20 @@ public class StandardObject extends LispObject
     }
     slots[index] = newValue;
   }
-  
+
   final public static StandardObject checkStandardObject(LispObject first)
   {
     if (first instanceof StandardObject)
       return (StandardObject) first;
     return (StandardObject) type_error(first, Symbol.STANDARD_OBJECT);
   }
-        
-  private static final Primitive SWAP_SLOTS 
-    = new pf_swap_slots(); 
+
+  private static final Primitive SWAP_SLOTS
+    = new pf_swap_slots();
   @DocString(name="swap-slots",
              args="instance-1 instance-2",
              returns="nil")
-  private static final class pf_swap_slots extends Primitive 
+  private static final class pf_swap_slots extends Primitive
   {
     pf_swap_slots()
     {
@@ -376,7 +376,7 @@ public class StandardObject extends LispObject
   @DocString(name="std-instance-layout")
   private static final class pf_std_instance_layout extends Primitive
   {
-    pf_std_instance_layout() 
+    pf_std_instance_layout()
     {
       super("std-instance-layout", PACKAGE_SYS, true);
     }
@@ -406,13 +406,13 @@ public class StandardObject extends LispObject
     @Override
     public LispObject execute(LispObject first, LispObject second)
     {
-      checkStandardObject(first).layout = checkLayout(second);          
+      checkStandardObject(first).layout = checkLayout(second);
       return second;
     }
   };
 
-  private static final Primitive STD_INSTANCE_CLASS 
-    = new pf_std_instance_class(); 
+  private static final Primitive STD_INSTANCE_CLASS
+    = new pf_std_instance_class();
   @DocString(name="std-instance-class")
   private static final class pf_std_instance_class extends Primitive
   {
@@ -516,7 +516,7 @@ public class StandardObject extends LispObject
     }
   };
 
-  private static final Primitive STD_SLOT_BOUNDP 
+  private static final Primitive STD_SLOT_BOUNDP
     = new pf_std_slot_boundp();
   @DocString(name="std-slot-boundp")
   private static final class pf_std_slot_boundp extends Primitive
@@ -654,7 +654,7 @@ public class StandardObject extends LispObject
     }
   };
 
-  private static final Primitive _STD_ALLOCATE_INSTANCE 
+  private static final Primitive _STD_ALLOCATE_INSTANCE
     = new pf__std_allocate_instance();
   @DocString(name="%std-allocate-instance",
              args="class",

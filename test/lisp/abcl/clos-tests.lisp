@@ -546,3 +546,32 @@
        (make-instance 'a :s 1)
        (make-instance 'b :s 1))
   nil)
+
+(deftest update-instance-for-redefined-class
+    ;; https://github.com/armedbear/abcl/issues/629
+
+    (progn
+      (defclass position () ())
+
+      (defclass x-y-position (position)
+        ((x :initform 0 :accessor position-x :initarg :x)
+         (y :initform 0 :accessor position-y :initarg :y)))
+
+      (defmethod update-instance-for-redefined-class :before
+          ((pos x-y-position) added deleted plist &key)
+        ;; Transform the x-y coordinates to polar coordinates
+        ;; and store into the new slots.
+        (let ((x (getf plist 'x))
+              (y (getf plist 'y)))
+          (setf (position-rho pos) (sqrt (+ (* x x) (* y y)))
+                (position-theta pos) (atan y x))))
+
+      (setf xy1 (make-instance 'x-y-position))
+
+      (defclass x-y-position (position)
+        ((rho :initform 0 :accessor position-rho)
+         (theta :initform 0 :accessor position-theta)))
+
+      (slot-value xy1 'rho))
+
+  0.0)
