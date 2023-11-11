@@ -3806,6 +3806,22 @@ or T when any keyword is acceptable due to presence of
 
 ;;; make-instances-obsolete
 
+(defmacro breadth-first-search-subclasses (class &body body)
+  `(let ((queue ())
+         visited v)
+       (push ,class visited)
+       (push ,class queue)
+       (loop :while (not (null queue))
+             :do (progn
+                   (setf v (car (last queue)))
+                   (setf queue (butlast queue))
+                   (progn ,@body)
+                   (dolist (c (reverse (class-direct-subclasses v)))
+                     (when (not (find c visited))
+                       (push c visited)
+                       (push c queue)))))))
+
+
 (defgeneric make-instances-obsolete (class))
 
 (defmethod make-instances-obsolete ((class standard-class))
@@ -3885,7 +3901,7 @@ or T when any keyword is acceptable due to presence of
                                                &allow-other-keys)
   (remhash class *make-instance-initargs-cache*)
   (remhash class *reinitialize-instance-initargs-cache*)
-  (%make-instances-obsolete class)
+  (breadth-first-search-subclasses class (%make-instances-obsolete v))
   (setf (class-finalized-p class) nil)
   (when direct-superclasses-p
     (let* ((old-supers (class-direct-superclasses class))
