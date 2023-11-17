@@ -1,4 +1,4 @@
-FROM docker.io/openjdk:17-bullseye
+FROM docker.io/eclipse-temurin:17
 
 RUN (export DEBIAN_FRONTEND='noninteractive' && \
     apt-get update  && \
