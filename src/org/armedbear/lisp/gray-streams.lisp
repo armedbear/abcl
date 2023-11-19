@@ -150,6 +150,7 @@
    "STREAM-READ-SEQUENCE"
    "STREAM-WRITE-SEQUENCE"
    "STREAM-FILE-POSITION"
+   "STREAM-FILE-LENGTH"
    "STREAM-ELEMENT-TYPE"
    "FUNDAMENTAL-BINARY-INPUT-STREAM"
    "FUNDAMENTAL-BINARY-OUTPUT-STREAM"))
@@ -188,6 +189,7 @@
 (defvar *ansi-two-way-stream-input-stream* #'cl:two-way-stream-input-stream)
 (defvar *ansi-two-way-stream-output-stream* #'cl:two-way-stream-output-stream)
 (defvar *ansi-file-position* #'cl:file-position)
+(defvar *ansi-file-length* #'cl:file-length)
 
 (defun ansi-streamp (stream)
   (not
@@ -609,7 +611,18 @@
       (if (ansi-streamp stream)
           (funcall *ansi-file-position* stream)
           (stream-file-position stream))))
-  
+
+(defgeneric stream-file-length (stream)
+  (:method (stream)
+    (error 'type-error
+           :datum stream
+           :expected-type 'file-stream)))
+
+(defun gray-file-length (stream)
+  (if (ansi-streamp stream)
+      (funcall *ansi-file-length* stream)
+      (stream-file-length stream)))
+
 #|
 (defstruct (two-way-stream-g (:include stream))
   input-stream output-stream)
@@ -659,6 +672,7 @@
 (setf (symbol-function 'common-lisp::read-sequence) #'gray-read-sequence)
 (setf (symbol-function 'common-lisp::write-sequence) #'gray-write-sequence)
 (setf (symbol-function 'common-lisp::file-position) #'gray-file-position)
+(setf (symbol-function 'common-lisp::file-length) #'gray-file-length)
 (setf (symbol-function 'common-lisp::listen) #'gray-listen)
 
 (dolist (e '((common-lisp::read-char gray-read-char)
@@ -689,6 +703,7 @@
              (common-lisp::read-sequence gray-read-sequence)
              (common-lisp::write-sequence gray-write-sequence)
              (common-lisp::file-position gray-file-position)
+             (common-lisp::file-length gray-file-length)
              (common-lisp::listen gray-listen)))
   (sys::put (car e) 'sys::source (cl:get (second e) 'sys::source)))
 
