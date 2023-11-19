@@ -231,6 +231,14 @@ public class GrayStream
     return result.longValue();
   }
 
+  public static final Symbol FILE_LENGTH
+    = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/FILE-LENGTH");
+  @Override
+  public LispObject fileLength() {
+    Function f = checkFunction(FILE_LENGTH.getSymbolFunction());
+    return f.execute(clos);
+  }
+
   public static final Symbol LINE_COLUMN
     = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/LINE-COLUMN");
   public int getCharPos() {
@@ -305,6 +313,7 @@ public class GrayStream
     Autoload.autoloadFile(GrayStream.WRITE_BYTE, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.FINISH_OUTPUT, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.FILE_POSITION, "gray-streams-java");
+    Autoload.autoloadFile(GrayStream.FILE_LENGTH, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.LINE_COLUMN, "gray-streams-java");
   }
 }

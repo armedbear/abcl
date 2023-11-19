@@ -2646,6 +2646,15 @@ public class Stream extends StructureObject {
         }
     };
 
+    // ### file-length
+    private static final Primitive FILE_LENGTH =
+    new Primitive("file-length", "stream") {
+        @Override
+        public LispObject execute(LispObject arg) {
+            return checkStream(arg).fileLength();
+        }
+    };
+
     // ### stream-line-number
     private static final Primitive STREAM_LINE_NUMBER =
     new Primitive("stream-line-number", PACKAGE_SYS, false, "stream") {

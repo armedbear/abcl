@@ -154,6 +154,16 @@
            (mop:method-function method)))
     (funcall method-function `(,object) nil)))
 
+(defun java/file-length (object)
+  (let* ((method
+           (find-method #'gray-streams:stream-file-length
+                        '()
+                        (list
+                         (class-of object))))
+         (method-function
+           (mop:method-function method)))
+    (funcall method-function `(,object) nil)))
+
 (defun java/line-column (object)
   (let* ((method
            (find-method #'gray-streams:stream-line-column

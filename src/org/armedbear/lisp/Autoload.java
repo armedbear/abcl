@@ -404,7 +404,6 @@ public class Autoload extends Function
         autoload("exp", "MathFunctions");
         autoload("expt", "MathFunctions");
         autoload("file-author", "file_author");
-        autoload("file-length", "file_length");
         autoload("file-string-length", "file_string_length");
         autoload("file-write-date", "file_write_date");
         autoload("float", "FloatFunctions");
