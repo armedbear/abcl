@@ -268,6 +268,9 @@
 (defgeneric stream-read-line (stream))
 (defgeneric stream-clear-input (stream))
 
+(defmethod stream-read-char-no-hang ((stream fundamental-character-input-stream))
+  (stream-read-char stream))
+
 (defmethod stream-peek-char ((stream fundamental-character-input-stream))
   (let ((character (stream-read-char stream)))
     (unless (eq character :eof)
@@ -308,7 +311,8 @@
 (defgeneric stream-write-string (stream string &optional start end))
 (defgeneric stream-terpri (stream))
 (defmethod stream-terpri (stream)
-  (stream-write-char stream #\Newline))
+  (stream-write-char stream #\Newline)
+  nil)
 
 (defgeneric stream-fresh-line (stream))
 (defgeneric stream-finish-output (stream))
