@@ -64,8 +64,12 @@
 (defvar *print-shared* nil)
 (export '(*print-shared*))
 
-(defvar *default-right-margin* 70.
+(defvar *default-right-margin* 80
   "controls default line length; must be a non-negative integer")
+
+(defun ext:line-length (stream)
+  (declare (ignore stream))
+  (max 0 (or *print-right-margin* *default-right-margin* 80)))
 
 (defvar *current-level* 0
   "current depth in logical blocks.")
@@ -290,9 +294,7 @@
 
 (defun initialize-xp (xp stream)
   (setf (base-stream xp) stream)
-  (setf (line-length xp) (max 0 (cond (*print-right-margin*)
-                                      ((output-width stream))
-                                      (t *default-right-margin*))))
+  (setf (line-length xp) (ext:line-length stream))
   (setf (line-limit xp) *print-lines*)
   (setf (line-no xp) 1)
   (setf (depth-in-blocks xp) 0)

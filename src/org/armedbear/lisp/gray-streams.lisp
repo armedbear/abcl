@@ -139,6 +139,7 @@
    "FUNDAMENTAL-CHARACTER-OUTPUT-STREAM"
    "STREAM-WRITE-CHAR"
    "STREAM-LINE-COLUMN"
+   "STREAM-LINE-LENGTH"
    "STREAM-START-LINE-P"
    "STREAM-WRITE-STRING"
    "STREAM-TERPRI"
@@ -308,6 +309,7 @@
 (defgeneric stream-write-char (stream character))
 (defgeneric stream-line-column (stream))
 (defgeneric stream-start-line-p (stream))
+(defgeneric stream-line-length (stream))
 (defgeneric stream-write-string (stream string &optional start end))
 (defgeneric stream-terpri (stream))
 (defmethod stream-terpri (stream)
@@ -412,6 +414,13 @@
                                   sequence &optional (start 0) end)
   (basic-write-sequence stream sequence start (or end (length sequence))
                         'signed-byte #'stream-write-byte))
+
+(defmethod stream-line-length (stream)
+  (declare (ignore stream))
+  nil)
+
+(defmethod stream-line-length ((stream xp::xp-structure))
+  (xp::line-length stream))
 
 (defun decode-read-arg (arg)
   (cond ((null arg) *standard-input*)
@@ -574,6 +583,13 @@
         nil ;(funcall *ansi-stream-column* stream)
         (stream-line-column stream))))
 
+(defun gray-line-length (stream)
+  (max 0
+       (or *print-right-margin*
+           (stream-line-length stream)
+           xp::*default-right-margin*
+           80)))
+
 (defmethod gray-stream-element-type (stream)
   (funcall *ansi-stream-element-type* stream))
 
@@ -678,6 +694,7 @@
 (setf (symbol-function 'common-lisp::file-position) #'gray-file-position)
 (setf (symbol-function 'common-lisp::file-length) #'gray-file-length)
 (setf (symbol-function 'common-lisp::listen) #'gray-listen)
+(setf (symbol-function 'ext:line-length) #'gray-line-length)
 
 (dolist (e '((common-lisp::read-char gray-read-char)
              (common-lisp::peek-char gray-peek-char)
