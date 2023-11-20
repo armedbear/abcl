@@ -1552,7 +1552,7 @@
                         ,@(expand-directive-list (pop segments))))
                 ,(expand-bind-defaults
                   ((extra 0)
-                   (line-len '(or #-abcl(sb!impl::line-length stream) 72)))
+                   (line-len '(ext:line-length stream)))
                   (format-directive-params first-semi)
                   `(setf extra-space ,extra line-len ,line-len))))
           ,@(mapcar (lambda (segment)
@@ -2798,7 +2798,7 @@
              (when (and first-semi (format-directive-colonp first-semi))
                (interpret-bind-defaults
                 ((extra 0)
-                 (len (or #-abcl(sb!impl::line-length stream) 72)))
+                 (len (ext:line-length stream)))
                 (format-directive-params first-semi)
                 (setf newline-string
                       (with-output-to-string (stream)

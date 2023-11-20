@@ -111,6 +111,13 @@
 
 (export 'charpos '#:extensions)
 
+;; Redefined in pprint.lisp and gray-streams.lisp
+(defun line-length (stream)
+  (declare (ignore stream))
+  (max 0 (or *print-right-margin* 80)))
+
+(export 'line-length '#:extensions)
+
 ;; Redefined in precompiler.lisp.
 (defun precompile (name &optional definition)
   (declare (ignore name definition))
