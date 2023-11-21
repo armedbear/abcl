@@ -70,10 +70,30 @@ public class LispInteger
     return i.longValue();
   }
 
-  public static LispInteger coerce(LispObject o) {
+  public static LispInteger coerceAsUnsigned(LispObject o) {
+    // TODO what should we return if we are already a negative
+    // LispInteger?  currently only used in coercing unsigned byte
+    // types, for which we should maybe use the expected size to
+    // interpret negative values?  This would help when dealing with
+    // converting signed Java byte/short/int/long but wouldn't be
+    // conforming ANSI behavior.
     if (o instanceof LispInteger) {
       return (LispInteger)o;
     }
-    return (LispInteger) type_error(o, (LispObject)new JavaObject(LispInteger.class));
+    if (o instanceof JavaObject) {
+      Object obj = o.javaInstance();
+      if (obj instanceof Byte) {
+        return getInstance(Byte.toUnsignedInt(((Byte)obj).byteValue()));
+      } else if (obj instanceof Short) {
+        return getInstance(Short.toUnsignedInt(((Short)obj).shortValue()));
+      } else if (obj instanceof Integer) {
+        return getUnsignedInstance(Integer.toUnsignedLong(((Integer)obj).intValue()));
+      } else if (obj instanceof Long) {
+        return getUnsignedInstance(((Long)obj).longValue());
+      }
+    }
+
+    return (LispInteger) type_error("Failed to coerce to unsigned integer",
+                                    o, (LispObject)new JavaObject(LispInteger.class)); 
   }
 }

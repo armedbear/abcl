@@ -123,8 +123,9 @@ abstract public class BasicVector
     return new SimpleString(sb);
   }
 
+  // should be coerceToUnsignedElementType???
   LispInteger coerceToElementType(LispObject o) {
-    LispInteger result = LispInteger.coerce(o);
+    LispInteger result = LispInteger.coerceAsUnsigned(o);
     switch (specializedOn) {
     case U8:
       if (result.isLessThan(0)
@@ -141,6 +142,12 @@ abstract public class BasicVector
     case U32:
       if (result.isLessThan(0)
           || result.isGreaterThan(Bignum.MAX_UNSIGNED_BYTE_32)) {
+        return (LispInteger) type_error(result, UNSIGNED_BYTE_32);
+      }
+      break;
+    case U64:
+      if (result.isLessThan(0)
+          || result.isGreaterThan(Bignum.MAX_UNSIGNED_BYTE_64)) {
         return (LispInteger) type_error(result, UNSIGNED_BYTE_32);
       }
       break;

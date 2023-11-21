@@ -100,23 +100,43 @@ public final class BasicVectorPrimitive
   }
 
   public void svset(int i, LispObject n) {
-    LispInteger o = coerceToElementType(n);
+    //    LispInteger o = coerceToElementType(n);
     try {
       switch (specializedOn) {
       case U8:
-        byte b = coerceToJavaByte(o);
+        byte b;
+        if (n instanceof JavaObject) {
+          b = ((java.lang.Number)((JavaObject)n).getObject()).byteValue();
+        } else {
+          b = coerceToJavaByte((LispInteger)n);
+        }
         u8[i] = b;
         break;
       case U16:
-        short s = coerceToJavaUnsignedShort(o);
+        short s;
+        if (n instanceof JavaObject) {
+          s = ((java.lang.Number)((JavaObject)n).getObject()).shortValue();
+        } else {
+          s = coerceToJavaUnsignedShort(n);
+        }
         u16[i] = s;
         break;
       case U32:
-        int v  = coerceToJavaUnsignedInt(o);
+        int v;
+        if (n instanceof JavaObject) {
+          v = ((java.lang.Number)((JavaObject)n).getObject()).intValue();
+        } else {
+          v = coerceToJavaUnsignedInt(n);
+        }
         u32[i] = v;
         break;
       case U64:
-        long l = LispInteger.asUnsignedLong(o);
+        long l;
+        if (n instanceof JavaObject) {
+          l = ((java.lang.Number)((JavaObject)n).getObject()).longValue();
+        } else {
+          l = LispInteger.asUnsignedLong((LispInteger)n);
+        }
         u64[i] = l;
         break;
       }

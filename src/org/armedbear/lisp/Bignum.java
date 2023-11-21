@@ -48,6 +48,8 @@ public final class Bignum extends LispInteger
 
   final static LispInteger MAX_UNSIGNED_BYTE_32
     = Bignum.getInstance("4294967296", 10); // 2^32
+  final static LispInteger MAX_UNSIGNED_BYTE_64
+    = Bignum.getInstance("4611686018427387904", 10); // 2^64
 
   public static LispInteger getInstance(long l) {
       if (Integer.MIN_VALUE <= l && l <= Integer.MAX_VALUE)

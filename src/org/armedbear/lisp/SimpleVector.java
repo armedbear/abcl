@@ -345,8 +345,9 @@ public class SimpleVector
                                 int targetStart, int targetEnd,
                                 int sourceStart, int sourceEnd)
   {
-    if (source instanceof SimpleVector) {
-      //      data = Array.copyOfRange ... ?
+    if (source instanceof SimpleVector
+        // XXX how to determine more elegantly an exact type
+        && this.getClass().getSimpleName().equals("SimpleVector")) {
       System.arraycopy(((SimpleVector)source).data, sourceStart,
                        data, targetStart, Math.min(targetEnd - targetStart, sourceEnd - sourceStart));
       return this;
