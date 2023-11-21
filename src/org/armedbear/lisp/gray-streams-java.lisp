@@ -7,6 +7,50 @@
 
 ;;;; N.b. The function symbols seemingly have to be unique across all
 ;;;; packages for this to work, hence the "java/…" prefixes. 
+(defun java/input-stream-p (object)
+  (let* ((method
+           (find-method #'gray-streams::gray-input-stream-p
+                        '()
+                        (list
+                         (class-of object))
+                        nil))
+         (method-function
+           (mop:method-function method)))
+    (funcall method-function `(,object) nil)))
+
+(defun java/output-stream-p (object)
+  (let* ((method
+           (find-method #'gray-streams::gray-output-stream-p
+                        '()
+                        (list
+                         (class-of object))
+                        nil))
+         (method-function
+           (mop:method-function method)))
+    (funcall method-function `(,object) nil)))
+
+(defun java/interactive-stream-p (object)
+  (let* ((method
+           (find-method #'gray-streams::gray-interactive-stream-p
+                        '()
+                        (list
+                         (class-of object))
+                        nil))
+         (method-function
+           (mop:method-function method)))
+    (funcall method-function `(,object) nil)))
+
+(defun java/open-stream-p (object)
+  (let* ((method
+           (find-method #'gray-streams::gray-open-stream-p
+                        '()
+                        (list
+                         (class-of object))
+                        nil))
+         (method-function
+           (mop:method-function method)))
+    (funcall method-function `(,object) nil)))
+
 (defun java/element-type (object)
   (let* ((method
            (or 

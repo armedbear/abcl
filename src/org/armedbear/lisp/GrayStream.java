@@ -35,59 +35,49 @@ public class GrayStream
     return wrappedStream;
   }
 
-    //
+  //
   // do what we can for Java code that wants to determine our valence(s)
   //
+  public static final Symbol INPUT_STREAM_P
+    = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/INPUT-STREAM-P");
   public boolean isInputStream() {
-    Function SUBTYPEP
-      = (Function)Symbol.SUBTYPEP.getSymbolFunction();
-    Package pkg
-      = getCurrentPackage().findPackage("GRAY-STREAMS");
-    Symbol fundamentalInputStream
-      = (Symbol) pkg.findSymbol("FUNDAMENTAL-INPUT-STREAM");
-    if (SUBTYPEP.execute(clos.typeOf(), fundamentalInputStream).equals(T)) {
-      return true;
-    }
-    return false;
+    Function f = checkFunction(INPUT_STREAM_P.getSymbolFunction());
+    return f.execute(clos).getBooleanValue();
   }
 
+  public static final Symbol OUTPUT_STREAM_P
+    = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/OUTPUT-STREAM-P");
   public boolean isOutputStream() {
-    Function SUBTYPEP
-      = (Function)Symbol.SUBTYPEP.getSymbolFunction();
-    Package pkg
-      = getCurrentPackage().findPackage("GRAY-STREAMS");
-    Symbol s
-      = (Symbol) pkg.findSymbol("FUNDAMENTAL-OUTPUT-STREAM");
-    if (SUBTYPEP.execute(clos.typeOf(), s).equals(T)) {
-      return true;
-    }
-    return false;
+    Function f = checkFunction(OUTPUT_STREAM_P.getSymbolFunction());
+    return f.execute(clos).getBooleanValue();
+  }
+
+  public static final Symbol INTERACTIVE_STREAM_P
+    = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/INTERACTIVE-STREAM-P");
+  public boolean isInteractive() {
+    Function f = checkFunction(INTERACTIVE_STREAM_P.getSymbolFunction());
+    return f.execute(clos).getBooleanValue();
+  }
+
+  public static final Symbol OPEN_STREAM_P
+    = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/OPEN-STREAM-P");
+  public boolean isOpen() {
+    Function f = checkFunction(OPEN_STREAM_P.getSymbolFunction());
+    return f.execute(clos).getBooleanValue();
   }
 
   public boolean isCharacterStream() {
     Function SUBTYPEP
       = (Function)Symbol.SUBTYPEP.getSymbolFunction();
     Package pkg
-      = getCurrentPackage().findPackage("GRAY-STREAMS");
+      = getCurrentPackage().findPackage("COMMON-LISP");
     Symbol s
-      = (Symbol) pkg.findSymbol("FUNDAMENTAL-CHARACTER-STREAM");
-    if (SUBTYPEP.execute(clos.typeOf(), s).equals(T)) {
-      return true;
-    }
-    return false;
+      = (Symbol) pkg.findSymbol("CHARACTER");
+    return SUBTYPEP.execute(getElementType(), s).getBooleanValue();
   }
 
   public boolean isBinaryStream() {
-    Function SUBTYPEP
-      = (Function)Symbol.SUBTYPEP.getSymbolFunction();
-    Package pkg
-      = getCurrentPackage().findPackage("GRAY-STREAMS");
-    Symbol s
-      = (Symbol) pkg.findSymbol("FUNDAMENTAL-BINARY-STREAM");
-    if (SUBTYPEP.execute(clos.typeOf(), s).equals(T)) {
-      return true;
-    }
-    return false;
+    return !isCharacterStream();
   }
 
   public boolean isCharacterInputStream() {
@@ -251,11 +241,6 @@ public class GrayStream
   // unimplemented interfaces of parent class
   //
   // we stub these to return Lisp-side errors
-  public boolean isInteractive() {
-    simple_error("unimplemented isInteractive()");
-    return false;  // unreached
-  }
-
   public void setInteractive(boolean b) {
     simple_error("unimplemented setInteractive(boolean)");
   }
@@ -272,11 +257,6 @@ public class GrayStream
 
   public void setExternalFormat(LispObject format) {
     simple_error("unimplemented setExternalFormat()");
-  }
-
-  public boolean isOpen() {
-    simple_error("unimplemented isOpen()");
-    return false; // unreached
   }
 
   public void setOpen(boolean b) {

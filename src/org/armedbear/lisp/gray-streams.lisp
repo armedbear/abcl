@@ -182,6 +182,7 @@
   #'(lambda (s) (and (input-stream-p s) (eql (stream-element-type s) 'character))))
 (defvar *ansi-input-stream-p* #'cl::input-stream-p)
 (defvar *ansi-output-stream-p* #'cl::output-stream-p)
+(defvar *ansi-interactive-stream-p* #'cl::interactive-stream-p)
 (defvar *ansi-open-stream-p* #'cl::open-stream-p)
 (defvar *ansi-streamp* #'cl::streamp)
 (defvar *ansi-read-sequence* #'cl::read-sequence)
@@ -208,6 +209,7 @@
 (defgeneric gray-input-stream-p (stream))
 (defgeneric gray-input-character-stream-p (stream)) ;; # fb 1.01
 (defgeneric gray-output-stream-p (stream))
+(defgeneric gray-interactive-stream-p (stream))
 (defgeneric gray-stream-element-type (stream))
 
 (defmethod gray-close ((stream fundamental-stream) &key abort)
@@ -220,6 +222,10 @@
 
 (defmethod gray-streamp ((s fundamental-stream))
   s)
+
+(defmethod gray-interactive-stream-p (stream)
+  (declare (ignore stream))
+  nil)
 
 (defclass fundamental-input-stream (fundamental-stream) ())
 
@@ -605,6 +611,9 @@
 (defmethod gray-output-stream-p (stream)
   (funcall *ansi-output-stream-p* stream))
 
+(defmethod gray-interactive-stream-p (stream)
+  (funcall *ansi-interactive-stream-p* stream))
+
 (defmethod gray-open-stream-p (stream)
   (funcall *ansi-open-stream-p* stream))
 
@@ -687,6 +696,7 @@
 (setf (symbol-function 'common-lisp::input-stream-p) #'gray-input-stream-p)
 (setf (symbol-function 'common-lisp::input-character-stream-p) #'gray-input-character-stream-p)  ;; # fb 1.01
 (setf (symbol-function 'common-lisp::output-stream-p) #'gray-output-stream-p)
+(setf (symbol-function 'common-lisp::interactive-stream-p) #'gray-interactive-stream-p)
 (setf (symbol-function 'common-lisp::open-stream-p) #'gray-open-stream-p)
 (setf (symbol-function 'common-lisp::streamp) #'gray-streamp)
 (setf (symbol-function 'common-lisp::read-sequence) #'gray-read-sequence)
