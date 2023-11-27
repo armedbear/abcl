@@ -7,6 +7,23 @@ Unreleased
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
 
+* [r15743] (Tarn W. Burton) Add support for implementing
+  CL:INTERACTIVE-STREAM-P in for Gray streams. This is done via by
+  making CL:INTERACTIVE-STREAM-P a generic function when the Gray
+  streams module is required.
+
+* [r15742] (Tarn W. Burton) Add support for stream specific line
+  lengths.  This is done via the GRAY-STREAMS:STREAM-LINE-LENGTH
+  generic function which is only used when CL:*PRINT-RIGHT-MARGIN* is
+  NIL. The pretty printer and format have been updated to respect
+  these line lengths.
+
+* [r15741] (Tarn W. Burton) Add some missing default methods in the
+  Gray streams module.
+
+* [r15739] (Tarn W. Burton) Add support for implementing
+  CL:FILE-LENGTH in for Gray streams. This is done via the
+  GRAY-STREAMS:STREAM-FILE-LENGTH generic function.
 
 
 Version 1.9.2
