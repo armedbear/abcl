@@ -4,8 +4,8 @@ import java.util.HashMap;
 import static org.armedbear.lisp.Lisp.*;
 
 /**
-   The Java stub for Gray streams which wraps the reference of the CLOS
-   object corresponding to the stream.
+   The Java proxy for Gray streams which wraps the reference of the
+   CLOS object corresponding to the stream.
 */
 public class GrayStream 
   extends Stream
@@ -280,6 +280,10 @@ public class GrayStream
 
 // TODO figure out why we can't add these to autoloads.lisp
   static {
+    Autoload.autoloadFile(GrayStream.INPUT_STREAM_P, "gray-streams-java");
+    Autoload.autoloadFile(GrayStream.OUTPUT_STREAM_P, "gray-streams-java");
+    Autoload.autoloadFile(GrayStream.INTERACTIVE_STREAM_P, "gray-streams-java");
+    Autoload.autoloadFile(GrayStream.OPEN_STREAM_P, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.ELEMENT_TYPE, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.FORCE_OUTPUT, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.WRITE_STRING, "gray-streams-java");
