@@ -1858,12 +1858,15 @@ public static synchronized final void handleInterrupt()
     if (obj instanceof Stream) {
       return (Stream) obj;
     }
-    if (obj.typep(Symbol.STREAM).equal(T)) {
-      Stream result = GrayStream.findOrCreate(obj);
-      return result;
+    if (obj instanceof StandardObject) {
+      Function subtypep = checkFunction(Symbol.SUBTYPEP.getSymbolFunction());
+      if (subtypep.execute(obj.typeOf(), Symbol.STREAM).equals(T)) {
+        Stream result = GrayStream.findOrCreate(obj);
+        return result;
+      }
     }
     return (Stream) // Not reached.
-    type_error(obj, Symbol.STREAM);
+      type_error(obj, Symbol.STREAM);
   }
 
   public static final Stream checkCharacterInputStream(LispObject obj)
