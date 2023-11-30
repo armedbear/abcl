@@ -101,8 +101,18 @@
 (defun java/write-chars (object string start end) ; The defaults for start and end are 0 and nil, respectively.
   (let* ((method
            (or
-            (find-method-or-nil (class-of object))
-            (find-method-or-nil (find-class 'gray-streams:fundamental-character-output-stream))))
+            (find-method #'gray-streams:stream-write-sequence
+                         '()
+                         (list
+                          (class-of object)
+                          (find-class t))
+                         nil)
+            (find-method #'gray-streams:stream-write-sequence
+                         '()
+                         (list
+                          (find-class 'gray-streams:fundamental-character-output-stream)
+                          (find-class t))
+                         nil)))
          (method-function
            (mop:method-function method)))
     (funcall method-function `(,object ,string ,start ,end) nil)))
