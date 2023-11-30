@@ -6,63 +6,61 @@
 ;;;; these methods.
 
 ;;;; N.b. The function symbols seemingly have to be unique across all
-;;;; packages for this to work, hence the "java/…" prefixes. 
+;;;; packages for this to work, hence the "java/…" prefixes.
+
+(defun find-method-or-nil (method specialization)
+  "Either return the method object for generic METHOD with a one argument
+  SPECIALIZATION or nil if it doesn't exist"
+  (find-method method '() (list specialization) nil))
+
 (defun java/input-stream-p (object)
   (let* ((method
-           (find-method #'gray-streams::gray-input-stream-p
-                        '()
-                        (list
-                         (class-of object))
-                        nil))
+           (or
+            (find-method-or-nil #'gray-streams::gray-input-stream-p
+                                (class-of object))
+            (find-method-or-nil #'gray-streams::gray-input-stream-p
+                                (find-class 'gray-streams:fundamental-input-stream))))
          (method-function
            (mop:method-function method)))
-    (funcall method-function `(,object) nil)))
+  (funcall method-function `(,object) nil)))
 
 (defun java/output-stream-p (object)
   (let* ((method
-           (find-method #'gray-streams::gray-output-stream-p
-                        '()
-                        (list
-                         (class-of object))
-                        nil))
+           (or 
+            (find-method-or-nil #'gray-streams::gray-output-stream-p
+                                (class-of object))
+            (find-method-or-nil #'gray-streams::gray-output-stream-p
+                                (find-class 'gray-streams:fundamental-output-stream))))
          (method-function
            (mop:method-function method)))
     (funcall method-function `(,object) nil)))
 
 (defun java/interactive-stream-p (object)
   (let* ((method
-           (find-method #'gray-streams::gray-interactive-stream-p
-                        '()
-                        (list
-                         (class-of object))
-                        nil))
+           (find-method-or-nil #'gray-streams::gray-interactive-stream-p
+                                (class-of object)))
          (method-function
            (mop:method-function method)))
     (funcall method-function `(,object) nil)))
 
 (defun java/open-stream-p (object)
   (let* ((method
-           (find-method #'gray-streams::gray-open-stream-p
-                        '()
-                        (list
-                         (class-of object))
-                        nil))
+           (or 
+            (find-method-or-nil #'gray-streams::gray-open-stream-p
+                                (class-of object))
+            (find-method-or-nil #'gray-streams::gray-open-stream-p
+                                (find-class 'gray-streams:fundamental-stream))))
          (method-function
            (mop:method-function method)))
     (funcall method-function `(,object) nil)))
 
 (defun java/element-type (object)
   (let* ((method
-           (or 
-            (find-method #'gray-streams:stream-element-type
-                         '()
-                         (list
-                          (class-of object))
-                         nil)
-            (find-method #'gray-streams::gray-stream-element-type
-                         '()
-                         (list
-                          (class-of object)))))
+           (or
+            (find-method-or-nil #'gray-streams:stream-element-type
+                                (class-of object))
+            (find-method-or-nil #'gray-streams::gray-stream-element-type
+                                (class-of object))))
          (method-function
            (mop:method-function method)))
     (funcall method-function `(,object) nil)))
@@ -101,20 +99,13 @@
     (funcall method-function `(,object ,char) nil)))
 
 (defun java/write-chars (object string start end) ; The defaults for start and end are 0 and nil, respectively.
-  (flet ((find-method-or-nil (specialized-on-class)
-           (find-method #'gray-streams:stream-write-sequence
-                        '()
-                        (list
-                         specialized-on-class
-                         (find-class t))
-                        nil)))
-    (let* ((method
-             (or
-              (find-method-or-nil (class-of object))
-              (find-method-or-nil (find-class 'gray-streams:fundamental-character-output-stream))))
-           (method-function
-             (mop:method-function method)))
-      (funcall method-function `(,object ,string ,start ,end) nil))))
+  (let* ((method
+           (or
+            (find-method-or-nil (class-of object))
+            (find-method-or-nil (find-class 'gray-streams:fundamental-character-output-stream))))
+         (method-function
+           (mop:method-function method)))
+    (funcall method-function `(,object ,string ,start ,end) nil)))
 
 (defun java/fresh-line (object)
   (let* ((method
