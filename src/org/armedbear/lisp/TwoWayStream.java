@@ -228,16 +228,15 @@ public class TwoWayStream extends Stream
 
         {
             final Stream in = checkStream(first);
-            final Stream out = checkStream(second);
-            if (!in.isInputStream()
-                && !(in instanceof GrayStream)) {
-                 return type_error(in, list(Symbol.SATISFIES,
-                                            Symbol.INPUT_STREAM_P));
+            if (!in.isInputStream()) {
+                return type_error(in, list(Symbol.SATISFIES,
+                                           Symbol.INPUT_STREAM_P));
             }
-            if (!out.isOutputStream()
-                && !(out instanceof GrayStream)) {
+
+            final Stream out = checkStream(second);
+            if (!out.isOutputStream()) {
                 return type_error(out, list(Symbol.SATISFIES,
-                                                  Symbol.OUTPUT_STREAM_P));
+                                            Symbol.OUTPUT_STREAM_P));
             }
             return new TwoWayStream(in, out);
         }
