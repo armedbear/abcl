@@ -5,7 +5,9 @@ import static org.armedbear.lisp.Lisp.*;
 
 /**
    The Java proxy for Gray streams which wraps the reference of the
-   CLOS object corresponding to the stream.
+   CLOS object corresponding to the stream, and trampolines calls to
+   overloaded Stream.java methods through the generic method
+   machinery.
 */
 public class GrayStream 
   extends Stream
@@ -67,13 +69,8 @@ public class GrayStream
   }
 
   public boolean isCharacterStream() {
-    Function SUBTYPEP
-      = (Function)Symbol.SUBTYPEP.getSymbolFunction();
-    Package pkg
-      = getCurrentPackage().findPackage("COMMON-LISP");
-    Symbol s
-      = (Symbol) pkg.findSymbol("CHARACTER");
-    return SUBTYPEP.execute(getElementType(), s).getBooleanValue();
+    Function subtypep = checkFunction(Symbol.SUBTYPEP.getSymbolFunction());
+    return subtypep.execute(getElementType(), Symbol.CHARACTER).getBooleanValue();
   }
 
   public boolean isBinaryStream() {
