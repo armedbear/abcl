@@ -60,7 +60,9 @@
             (find-method-or-nil #'gray-streams:stream-element-type
                                 (class-of object))
             (find-method-or-nil #'gray-streams::gray-stream-element-type
-                                (class-of object))))
+                                (find-class 'gray-streams:fundamental-character-stream))
+            (find-method-or-nil #'gray-streams::gray-stream-element-type
+                                (find-class 'gray-streams:fundamental-binary-stream))))
          (method-function
            (mop:method-function method)))
     (funcall method-function `(,object) nil)))
