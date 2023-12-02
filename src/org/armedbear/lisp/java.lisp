@@ -36,21 +36,18 @@
 
 (defvar *classloader* (get-default-classloader))
 
-
-
-(EXPORT '(JREGISTER-HANDLER JINTERFACE-IMPLEMENTATION JMAKE-INVOCATION-HANDLER
-          JMAKE-PROXY JPROPERTY-VALUE JOBJECT-CLASS JCLASS-SUPERCLASS
-          JCLASS-INTERFACES JCLASS-INTERFACE-P JCLASS-SUPERCLASS-P
-          JCLASS-ARRAY-P JARRAY-COMPONENT-TYPE JARRAY-LENGTH
-          JNEW-ARRAY-FROM-ARRAY JNEW-ARRAY-FROM-LIST JARRAY-FROM-LIST
-          JCLASS-CONSTRUCTORS JCONSTRUCTOR-PARAMS JCLASS-FIELD JCLASS-FIELDS
-          JFIELD-TYPE JFIELD-NAME JCLASS-METHODS JMETHOD-PARAMS JMETHOD-NAME
-          JINSTANCE-OF-P JMEMBER-STATIC-P JMEMBER-PUBLIC-P JMEMBER-PROTECTED-P
-          JNEW-RUNTIME-CLASS DEFINE-JAVA-CLASS ENSURE-JAVA-CLASS CHAIN
-          JMETHOD-LET JEQUAL))
-
-
-
+(export '(jregister-handler jinterface-implementation jmake-invocation-handler
+          jmake-proxy jproperty-value jobject-class jclass-superclass
+          jclass-interfaces jclass-interface-p jclass-superclass-p
+          jclass-array-p jarray-component-type jarray-length
+          jnew-array-from-array jnew-array-from-list jarray-from-list
+          vector-from-jarray list-from-jarray
+          list-from-jenumeration
+          jclass-constructors jconstructor-params jclass-field jclass-fields
+          jfield-type jfield-name jclass-methods jmethod-params jmethod-name
+          jinstance-of-p jmember-static-p jmember-public-p jmember-protected-p
+          jnew-runtime-class define-java-class ensure-java-class chain
+          jmethod-let jequal))
 
 (defun add-url-to-classpath (url &optional (classloader *classloader*))
   (jcall "addUrl" classloader url))
@@ -116,24 +113,29 @@ directory to search for classes or a list of such values."))
   (fmakunbound 'jmake-proxy))
 
 (defgeneric jmake-proxy (interface implementation &optional lisp-this)
-  (:documentation "Returns a proxy Java object implementing the provided interface(s) using methods implemented in Lisp - typically closures, but implementations are free to provide other mechanisms. You can pass an optional 'lisp-this' object that will be passed to the implementing methods as their first argument. If you don't provide this object, NIL will be used. The second argument of the Lisp methods is the name of the Java method being implemented. This has the implication that overloaded methods are merged, so you have to manually discriminate them if you want to. The remaining arguments are java-objects wrapping the method's parameters."))
+  (:documentation "Returns a proxy Java object implementing the provided interface(s) using methods implemented in Lisp
+
+Method are typically closures, but implementations are free to provide other mechanisms. You can pass an optional 'lisp-this' object that will be passed to the implementing methods as their first argument. If you don't provide this object, NIL will be used. The second argument of the Lisp methods is the name of the Java method being implemented. This has the implication that overloaded methods are merged, so you have to manually discriminate them if you want to. The remaining arguments are java-objects wrapping the method's parameters."))
 
 (defun canonicalize-jproxy-interfaces (ifaces)
   (if (listp ifaces)
       (mapcar #'jclass ifaces)
       (list (jclass ifaces))))
 
-
 (defmethod jmake-proxy (interface invocation-handler &optional lisp-this)
-  "Basic implementation that directly uses an invocation handler."
+  "Java interface proxy that directly uses an invocation handler"
   (%jmake-proxy (canonicalize-jproxy-interfaces interface) invocation-handler lisp-this))
 
 (defmethod jmake-proxy (interface (implementation function) &optional lisp-this)
-  "Implements a Java interface forwarding method calls to a Lisp function."
-  (%jmake-proxy (canonicalize-jproxy-interfaces interface) (jmake-invocation-handler implementation) lisp-this))
+  "Implements a Java interface forwarding method calls to a Lisp function"
+  (%jmake-proxy
+   (canonicalize-jproxy-interfaces interface)
+   (jmake-invocation-handler implementation) lisp-this))
 
 (defmethod jmake-proxy (interface (implementation package) &optional lisp-this)
-  "Implements a Java interface mapping Java method names to symbols in a given package. javaMethodName is mapped to a JAVA-METHOD-NAME symbol. An error is signaled if no such symbol exists in the package, or if the symbol exists but does not name a function."
+  "Implements a Java interface mapping Java method names to symbols in a given package
+
+The implementing javaMethodName is mapped to a JAVA-METHOD-NAME symbol. An error is signaled if no such symbol exists in the package, or if the symbol exists but does not name a function."
   (flet ((java->lisp (name)
            (with-output-to-string (str)
              (let ((last-lower-p nil))
@@ -162,7 +164,7 @@ directory to search for classes or a list of such values."))
                   lisp-this)))
 
 (defmethod jmake-proxy (interface (implementation hash-table) &optional lisp-this)
-  "Implements a Java interface using closures in an hash-table keyed by Java method name."
+  "Implements a Java interface using closures in an hash-table keyed by Java method name"
   (%jmake-proxy (canonicalize-jproxy-interfaces interface)
                 (jmake-invocation-handler 
                  (lambda (obj method &rest args)
@@ -187,21 +189,21 @@ directory to search for classes or a list of such values."))
   (jcall (jmethod "java.lang.Class" "getSuperclass") (jclass class)))
 
 (defun jclass-interfaces (class)
-  "Returns the vector of interfaces of CLASS"
+  "Returns a list of interfaces of CLASS"
   (jcall (jmethod "java.lang.Class" "getInterfaces") (jclass class)))
 
 (defun jclass-interface-p (class)
-  "Returns T if CLASS is an interface"
+  "Boolean predicate for whether CLASS is an interface"
   (jcall (jmethod "java.lang.Class" "isInterface") (jclass class)))
 
 (defun jclass-superclass-p (class-1 class-2)
-  "Returns T if CLASS-1 is a superclass or interface of CLASS-2"
+  "Boolean predicate for whether CLASS-1 is a superclass or interface of CLASS-2"
   (jcall (jmethod "java.lang.Class" "isAssignableFrom" "java.lang.Class")
          (jclass class-1)
          (jclass class-2)))
 
 (defun jclass-array-p (class)
-  "Returns T if CLASS is an array class"
+  "Boolean predicate for whether CLASS is an array class"
   (jcall (jmethod "java.lang.Class" "isArray") (jclass class)))
 
 (defun jarray-component-type (atype)
@@ -210,15 +212,16 @@ directory to search for classes or a list of such values."))
   (jcall (jmethod "java.lang.Class" "getComponentType") atype))
 
 (defun jarray-length (java-array)
-  "Returns the length of a Java primitive array."
+  "Returns the length of a Java primitive JAVA-ARRAY"
   (jstatic "getLength" "java.lang.reflect.Array" java-array)  )
 
 (defun (setf jarray-ref) (new-value java-array &rest indices)
   (apply #'jarray-set java-array new-value indices))
 
 (defun jnew-array-from-array (element-type array)
-  "Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
-   initialized from ARRAY."
+  "Returns a new Java array with base type ELEMENT-TYPE initialized from ARRAY
+
+ELEMENT-TYPE is either a string or a class reference."
   (flet
     ((row-major-to-index (dimensions n)
                          (loop for dims on dimensions
@@ -237,8 +240,9 @@ directory to search for classes or a list of such values."))
         (apply #'(setf jarray-ref) (row-major-aref array i) jarray (row-major-to-index dimensions i))))))
 
 (defun jnew-array-from-list (element-type list)
-  "Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
-   initialized from a Lisp list."
+  "Returns a new Java array with base type ELEMENT-TYPE initialized from a Lisp list
+
+ELEMENT-TYPE is either a string or a class reference."
   (let ((jarray (jnew-array element-type (length list)))
         (i 0))
     (dolist (x list)
@@ -247,7 +251,7 @@ directory to search for classes or a list of such values."))
     jarray))
 
 (defun jarray-from-list (list)
-  "Return a Java array from LIST whose type is inferred from the first element.
+  "Return a Java array from LIST whose type is inferred from the first element
 
 For more control over the type of the array, use JNEW-ARRAY-FROM-LIST."
   (jnew-array-from-list
@@ -255,20 +259,21 @@ For more control over the type of the array, use JNEW-ARRAY-FROM-LIST."
    list))
 
 (defun list-from-jarray (jarray)
-  "Returns a list with the elements of `jarray`."
+  "Returns a list with the elements of JARRAY coerced to corresponding Lisp types"
   (loop for i from 0 below (jarray-length jarray)
         collect (jarray-ref jarray i)))
 
 (defun vector-from-jarray (jarray)
-  "Returns a vector with the elements of `jarray`."
+  "Returns a vector with the elements of JARRAY coerced to corresponding Lisp types"
   (loop with vec = (make-array (jarray-length jarray))
         for i from 0 below (jarray-length jarray)
         do (setf (aref vec i) (jarray-ref jarray i))
         finally (return vec)))
 
 (defun list-from-jenumeration (jenumeration)
-  "Returns a list with the elements returned by successive `nextElement`
-calls on the java.util.Enumeration `jenumeration`."
+  "Returns a list with the elements returned by successive nextElement() calls on the JENUMERATION
+
+JENUMERATION is a reference to a java.util.Enumeration."
   (loop while (jcall jenumeration
                      (jmethod "java.util.Enumeration" "hasMoreElements"))
         collect (jcall jenumeration
@@ -283,22 +288,25 @@ calls on the java.util.Enumeration `jenumeration`."
   (jcall (jmethod "java.lang.reflect.Constructor" "getParameterTypes") constructor))
 
 (defun jclass-fields (class &key declared public)
-  "Returns a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) fields of CLASS"
+  "Returns a list of all fields of CLASS
+
+The values of the generalized booleans DECLARED and PUBLIC restrict
+the returned values to fields that were declared or public respectively."
   (let* ((getter (if declared "getDeclaredFields" "getFields"))
          (fields (jcall (jmethod "java.lang.Class" getter) (jclass class))))
     (if public (delete-if-not #'jmember-public-p fields) fields)))
 
 (defun jclass-field (class field-name)
-  "Returns the field named FIELD-NAME of CLASS"
+  "Returns the reflected FIELD-NAME of CLASS"
   (jcall (jmethod "java.lang.Class" "getField" "java.lang.String")
          (jclass class) field-name))
 
 (defun jfield-type (field)
-  "Returns the type (Java class) of FIELD"
+  "Returns the type of a reflected Java FIELD"
   (jcall (jmethod "java.lang.reflect.Field" "getType") field))
 
 (defun jfield-name (field)
-  "Returns the name of FIELD as a Lisp string"
+  "Returns the name of reflected Java FIELD"
   (jcall (jmethod "java.lang.reflect.Field" "getName") field))
 
 
@@ -310,17 +318,21 @@ calls on the java.util.Enumeration `jenumeration`."
       (jfield class-ref-or-field field-or-instance nil newvalue)))
 
 (defun jclass-methods (class &key declared public)
-  "Return a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) methods of CLASS"
+  "Returns list of the methods of CLASS
+
+The values of the generalized booleans DECLARED and PUBLIC restrict
+the returned values to methods that were either declared or public
+respectively."
   (let* ((getter (if declared "getDeclaredMethods" "getMethods"))
          (methods (jcall (jmethod "java.lang.Class" getter) (jclass class))))
     (if public (delete-if-not #'jmember-public-p methods) methods)))
 
 (defun jmethod-params (method)
-  "Returns a vector of parameter types (Java classes) for METHOD"
+  "Returns a list of the Java relected parameter types for METHOD"
   (jcall (jmethod "java.lang.reflect.Method" "getParameterTypes") method))
 
 (defun jmethod-return-type (method)
-  "Returns the result type (Java class) of the METHOD"
+  "Returns the Java reflected result type of the METHOD"
   (jcall (jmethod "java.lang.reflect.Method" "getReturnType") method))
 
 (defun jmethod-declaring-class (method)
@@ -337,19 +349,19 @@ calls on the java.util.Enumeration `jenumeration`."
        (jcall (jmethod "java.lang.Class" "isInstance" "java.lang.Object") (jclass class) obj)))
 
 (defun jmember-static-p (member)
-  "MEMBER is a static member of its declaring class"
+  "Predicate for whether MEMBER is a static member of its declaring class"
   (jstatic (jmethod "java.lang.reflect.Modifier" "isStatic" "int")
            "java.lang.reflect.Modifier"
            (jcall (jmethod "java.lang.reflect.Member" "getModifiers") member)))
 
 (defun jmember-public-p (member)
-  "MEMBER is a public member of its declaring class"
+  "Predixate for whether MEMBER is a public member of its declaring class"
   (jstatic (jmethod "java.lang.reflect.Modifier" "isPublic" "int")
            "java.lang.reflect.Modifier"
            (jcall (jmethod "java.lang.reflect.Member" "getModifiers") member)))
 
 (defun jmember-protected-p (member)
-  "MEMBER is a protected member of its declaring class"
+  "Prediate for whether MEMBER is a protected member of its declaring class"
   (jstatic (jmethod "java.lang.reflect.Modifier" "isProtected" "int")
            "java.lang.reflect.Modifier"
            (jcall (jmethod "java.lang.reflect.Member" "getModifiers") member)))
@@ -405,7 +417,7 @@ calls on the java.util.Enumeration `jenumeration`."
 ;;; higher-level operators
 
 (defmacro chain (target op &rest ops)
-  "Performs chained method invocations. 
+  "Performs chained method invocations
 
 TARGET is either the receiver object when the first call is a virtual method
 call or a list in the form (:static <jclass>) when the first method
@@ -523,14 +535,14 @@ is equivalent to the following Java code:
                                            :java-class +java-lang-object+)))
 
 (defun jclass-additional-superclasses (jclass)
-  "Extension point to put additional CLOS classes on the CPL of a CLOS Java class."
+  "Extension point to put additional CLOS classes on the CPL of a CLOS Java class"
   (let ((supers nil))
     (when (jclass-interface-p jclass)
       (push (find-class 'java-object) supers))
     supers))
 
 (defun ensure-java-class (jclass)
-  "Attempt to ensure that the Java class referenced by JCLASS exists in the current process of the implementation."
+  "Attempt to ensure that the Java class referenced by JCLASS exists in the current process of the implementation"
   (let ((class (%find-java-class jclass)))
     (if class
         class
@@ -581,7 +593,7 @@ is equivalent to the following Java code:
   (error "make-instance not supported for ~S" class))
 
 (defun jinput-stream (pathname)
-  "Returns a java.io.InputStream for resource denoted by PATHNAME."
+  "Returns a java.io.InputStream for resource denoted by PATHNAME"
   (sys:get-input-stream pathname))
 
 (provide "JAVA")
