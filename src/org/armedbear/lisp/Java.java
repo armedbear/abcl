@@ -1384,7 +1384,7 @@ public final class Java
             }
             catch (StackOverflowError oos) {
                 oos.printStackTrace();
-                return error(new StorageCondition("Stack overflow."));
+                return error(new StorageCondition("Stack overflow encountered in closure execution"));
             }
         }
     };

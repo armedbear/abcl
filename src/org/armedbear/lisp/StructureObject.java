@@ -522,7 +522,7 @@ public class StructureObject extends LispObject
       }
     catch (StackOverflowError e)
       {
-        error(new StorageCondition("Stack overflow."));
+        error(new StorageCondition("Stack overflow printing structure object"));
         return null; // Not reached.
       }
   }
