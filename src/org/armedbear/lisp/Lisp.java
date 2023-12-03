@@ -295,7 +295,7 @@ public final class Lisp
           {
             thread.setSpecialVariable(_SAVED_BACKTRACE_,
                                       thread.backtrace(0));
-            return error(new StorageCondition("Stack overflow."));
+            return error(new StorageCondition("Stack overflow in interactive eval"));
           }
         catch (ControlTransfer c)
           {
@@ -386,10 +386,13 @@ public final class Lisp
     return Symbol.ERROR.execute(condition);
   }
 
+  // stackError() calls are emitted by the compiler
+  // in [[file:compiler-pass2.lisp::emit-invokestatic +lisp+ "stackError" nil +lisp-object+]]
+  // it would be nice to visit that code to add some kind of reference to which block exhausted the stack
   public static final LispObject stackError()
   {
     pushJavaStackFrames();
-    return Symbol.ERROR.execute(new StorageCondition("Stack overflow."));
+    return Symbol.ERROR.execute(new StorageCondition("Stack overflow from compiled code"));
   }
 
   public static final LispObject memoryError(OutOfMemoryError exception)
