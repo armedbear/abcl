@@ -575,20 +575,29 @@ public static synchronized final void handleInterrupt()
                   if (!sampling)
                     fun.incrementCallCount();
                 // Don't eval args!
-                LispObject stepInSymbolResult = stepInSymbolP(fun, obj);
-                long stepNumberInternal = 0;
-                if (stepInSymbolResult != NIL) {
-                  stepNumber += 1;
-                  stepNumberInternal = stepNumber;
-                  handleStepping(fun, (obj != NIL) ? ((Cons)obj).cdr : obj, env,
-                                 LispInteger.getInstance(stepNumberInternal));
+                {
+                  LispObject stepInSymbolResult = NIL;
+                  long stepNumberInternal = 0;
+                  if (stepping) {
+                    stepInSymbolResult = stepInSymbolP(fun, obj);
+                    if (stepInSymbolResult != NIL) {
+                      stepNumber += 1;
+                      stepNumberInternal = stepNumber;
+                      handleStepping(fun, (obj != NIL) ? ((Cons)obj).cdr : obj, env,
+                                     LispInteger.getInstance(stepNumberInternal));
+                    }
+                  }
+                  // BEGIN Original code without step instrumentation
+                  LispObject result = fun.execute(((Cons)obj).cdr, env);
+                  // END Original code 
+                  if (stepping) {
+                    if (stepInSymbolResult != NIL) {
+                      printStepValue(stepNumberInternal, result, thread);
+                    }
+                    setStepCounterCompleted(stepNumberInternal);                    
+                  }
+                  return result;
                 }
-                LispObject result = fun.execute(((Cons)obj).cdr, env);
-                if (stepInSymbolResult != NIL) {
-                  printStepValue(stepNumberInternal, result, thread);
-                }
-                setStepCounterCompleted(stepNumberInternal);
-                return result;
               }
             if (fun instanceof MacroObject)
               {
@@ -633,7 +642,87 @@ public static synchronized final void handleInterrupt()
                                           LispObject args,
                                           Environment env,
                                           LispThread thread)
+  {
+    if (stepping) {
+      return evalCallStepper(function, args, env, thread);
+    }
+    if (args == NIL) {
+      return thread.execute(function);
+    }
+    LispObject first = eval(args.car(), env, thread);
+    args = ((Cons)args).cdr;
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first);
+    }
+    LispObject second = eval(args.car(), env, thread);
+    args = ((Cons)args).cdr;
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second);
+    }
+    LispObject third = eval(args.car(), env, thread);
+    args = ((Cons)args).cdr;
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second, third);
+    }
+    LispObject fourth = eval(args.car(), env, thread);
+    args = ((Cons)args).cdr;
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second, third, fourth);
+    }
+    LispObject fifth = eval(args.car(), env, thread);
+    args = ((Cons)args).cdr;
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second, third, fourth, fifth);
+    }
+    LispObject sixth = eval(args.car(), env, thread);
+    args = ((Cons)args).cdr;
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second, third, fourth, fifth,
+                            sixth);
+    }
+    LispObject seventh = eval(args.car(), env, thread);
+    args = ((Cons)args).cdr;
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second, third, fourth, fifth,
+                            sixth, seventh);
+    }
+    LispObject eighth = eval(args.car(), env, thread);
+    args = ((Cons)args).cdr;
+    if (args == NIL) {
+      thread._values = null;
+      return thread.execute(function, first, second, third, fourth, fifth,
+                            sixth, seventh, eighth);
+    }
+    // More than CALL_REGISTERS_MAX arguments.
+    final int length = args.length() + CALL_REGISTERS_MAX;
+    LispObject[] array = new LispObject[length];
+    array[0] = first;
+    array[1] = second;
+    array[2] = third;
+    array[3] = fourth;
+    array[4] = fifth;
+    array[5] = sixth;
+    array[6] = seventh;
+    array[7] = eighth;
+    for (int i = CALL_REGISTERS_MAX; i < length; i++) {
+      array[i] = eval(args.car(), env, thread);
+      args = args.cdr();
+    }
+    thread._values = null;
+    return thread.execute(function, array);
+  }
 
+  public static final LispObject evalCallStepper(LispObject function,
+                                                 LispObject args,
+                                                 Environment env,
+                                                 LispThread thread)
   {
     LispObject stepInSymbolResult = stepInSymbolP(function, args);
     long stepNumberInternal = 0;
