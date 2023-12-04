@@ -7,6 +7,10 @@ Unreleased
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
 
+* [r15753] (Tarn W. Burton) Always return second value indicating EOF
+  in Gray stream version of CL:READ-LINE as per the ANSI
+  specification.
+
 * [r15743] (Tarn W. Burton) Add support for implementing
   CL:INTERACTIVE-STREAM-P in for Gray streams. This is done via by
   making CL:INTERACTIVE-STREAM-P a generic function when the Gray
