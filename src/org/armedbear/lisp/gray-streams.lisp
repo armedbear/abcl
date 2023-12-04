@@ -490,12 +490,11 @@
     (if (ansi-streamp stream)
         (funcall *ansi-read-line* stream eof-error-p eof-value recursive-p)
         (multiple-value-bind (string eofp)
-          (stream-read-line stream)
-          (if eofp
-              (if (= (length string) 0)
-                  (report-eof stream eof-error-p eof-value)
-                  (values string t))
-              (values string nil))))))
+            (stream-read-line stream)
+          (values (if (and eofp (zerop (length string)))
+                      (report-eof stream eof-error-p eof-value)
+                      string)
+                  eofp)))))
 
 (defun gray-clear-input (&optional input-stream)
   (let ((stream (decode-read-arg input-stream)))
