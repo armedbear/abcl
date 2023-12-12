@@ -194,9 +194,7 @@
 (defvar *ansi-file-length* #'cl:file-length)
 
 (defun ansi-streamp (stream)
-  (not
-   (subtypep (class-of stream)
-             'gray-streams::fundamental-stream)))
+  (typep stream '(or sys::system-stream xp::xp-structure)))
 
 (defclass fundamental-stream (standard-object stream)
   ((open-p :initform t

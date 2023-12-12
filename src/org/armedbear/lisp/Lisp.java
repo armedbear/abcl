@@ -1950,12 +1950,8 @@ public static synchronized final void handleInterrupt()
     if (obj instanceof Stream) {
       return (Stream) obj;
     }
-    if (obj instanceof StandardObject) {
-      Function subtypep = checkFunction(Symbol.SUBTYPEP.getSymbolFunction());
-      if (subtypep.execute(obj.typeOf(), Symbol.STREAM).equals(T)) {
-        Stream result = GrayStream.findOrCreate(obj);
-        return result;
-      }
+    if (Symbol.STREAMP.getSymbolFunction().execute(obj).getBooleanValue()) {
+      return GrayStream.findOrCreate(obj);
     }
     return (Stream) // Not reached.
       type_error(obj, Symbol.STREAM);
