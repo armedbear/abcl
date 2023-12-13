@@ -192,6 +192,8 @@
 (defvar *ansi-two-way-stream-output-stream* #'cl:two-way-stream-output-stream)
 (defvar *ansi-file-position* #'cl:file-position)
 (defvar *ansi-file-length* #'cl:file-length)
+(defvar *ansi-pathname* #'cl:pathname)
+(defvar *ansi-truename* #'cl:truename)
 
 (defun ansi-streamp (stream)
   (typep stream '(or sys::system-stream xp::xp-structure)))
@@ -209,6 +211,8 @@
 (defgeneric gray-output-stream-p (stream))
 (defgeneric gray-interactive-stream-p (stream))
 (defgeneric gray-stream-element-type (stream))
+(defgeneric gray-pathname (pathspec))
+(defgeneric gray-truename (filespec))
 
 (defmethod gray-close ((stream fundamental-stream) &key abort)
   (declare (ignore abort))
@@ -617,6 +621,12 @@
 (defmethod gray-streamp (stream)
   (funcall *ansi-streamp* stream))
 
+(defmethod gray-pathname (pathspec)
+  (funcall *ansi-pathname* pathspec))
+
+(defmethod gray-truename (pathspec)
+  (funcall *ansi-truename* pathspec))
+
 (defun gray-write-sequence (sequence stream &key (start 0) end)
   (if (ansi-streamp stream)
       (funcall *ansi-write-sequence* sequence stream :start start :end end)
@@ -702,6 +712,8 @@
 (setf (symbol-function 'common-lisp::file-length) #'gray-file-length)
 (setf (symbol-function 'common-lisp::listen) #'gray-listen)
 (setf (symbol-function 'ext:line-length) #'gray-line-length)
+(setf (symbol-function 'common-lisp::pathname) #'gray-pathname)
+(setf (symbol-function 'common-lisp::truename) #'gray-truename)
 
 (dolist (e '((common-lisp::read-char gray-read-char)
              (common-lisp::peek-char gray-peek-char)
@@ -732,7 +744,9 @@
              (common-lisp::write-sequence gray-write-sequence)
              (common-lisp::file-position gray-file-position)
              (common-lisp::file-length gray-file-length)
-             (common-lisp::listen gray-listen)))
+             (common-lisp::listen gray-listen)
+             (common-lisp::pathname gray-pathname)
+             (common-lisp::truename gray-truename)))
   (sys::put (car e) 'sys::source (cl:get (second e) 'sys::source)))
 
 #|
