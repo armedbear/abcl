@@ -211,6 +211,7 @@
 (defgeneric gray-output-stream-p (stream))
 (defgeneric gray-interactive-stream-p (stream))
 (defgeneric gray-stream-element-type (stream))
+(defgeneric (setf gray-stream-element-type) (new-value stream))
 (defgeneric gray-pathname (pathspec))
 (defgeneric gray-truename (filespec))
 
@@ -699,6 +700,7 @@
 (setf (symbol-function 'common-lisp::write-byte) #'gray-write-byte)
 (setf (symbol-function 'common-lisp::stream-column) #'gray-stream-column)
 (setf (symbol-function 'common-lisp::stream-element-type) #'gray-stream-element-type)
+(setf (fdefinition '(setf common-lisp::stream-element-type)) #'(setf gray-stream-element-type))
 (setf (symbol-function 'common-lisp::close) #'gray-close)
 (setf (symbol-function 'common-lisp::input-stream-p) #'gray-input-stream-p)
 (setf (symbol-function 'common-lisp::input-character-stream-p) #'gray-input-character-stream-p)  ;; # fb 1.01
