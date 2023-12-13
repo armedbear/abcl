@@ -7,6 +7,12 @@ Unreleased
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
 
+* [r15760] (Tarn W. Burton) Add SETF for STREAM-ELEMENT-TYPE in
+  gray-streams module.
+
+* [r15759] (Tarn W. Burton) Add generic CL:PATHNAME and CL:TRUENAME in
+  gray-streams module.
+
 * [r15753] (Tarn W. Burton) Always return second value indicating EOF
   in Gray stream version of CL:READ-LINE as per the ANSI
   specification.
