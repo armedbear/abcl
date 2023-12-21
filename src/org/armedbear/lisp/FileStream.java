@@ -161,6 +161,7 @@ public final class FileStream extends Stream
             racf.setEncoding(encoding);
     }
 
+    @Override
     public Pathname getPathname()
     {
         return pathname;

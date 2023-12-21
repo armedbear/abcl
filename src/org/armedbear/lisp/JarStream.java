@@ -113,6 +113,7 @@ public final class JarStream extends Stream
         super.setExternalFormat(format);
     }
 
+    @Override
     public Pathname getPathname()
     {
         return pathname;

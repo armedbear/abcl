@@ -112,6 +112,7 @@ public final class URLStream extends Stream
         super.setExternalFormat(format);
     }
 
+    @Override
     public Pathname getPathname()
     {
         return pathname;
