@@ -226,6 +226,14 @@ public class GrayStream
     return f.execute(clos);
   }
 
+  public static final Symbol PATHNAME
+    = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/PATHNAME");
+  @Override
+  public Pathname getPathname() {
+    Function f = checkFunction(PATHNAME.getSymbolFunction());
+    return (Pathname)f.execute(clos);
+  }
+
   public static final Symbol LINE_COLUMN
     = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/LINE-COLUMN");
   public int getCharPos() {
@@ -295,6 +303,7 @@ public class GrayStream
     Autoload.autoloadFile(GrayStream.FINISH_OUTPUT, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.FILE_POSITION, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.FILE_LENGTH, "gray-streams-java");
+    Autoload.autoloadFile(GrayStream.PATHNAME, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.LINE_COLUMN, "gray-streams-java");
   }
 }

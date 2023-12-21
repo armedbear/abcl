@@ -1821,6 +1821,11 @@ public class Stream extends StructureObject {
         return n;
     }
 
+    public Pathname getPathname()
+    {
+        return null;
+    }
+
     /** Puts a character back into the (underlying) stream
      *
      * @param n

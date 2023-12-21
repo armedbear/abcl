@@ -2143,12 +2143,10 @@ public static synchronized final void handleInterrupt()
       return (Pathname) arg;
     if (arg instanceof AbstractString)
       return (Pathname)Pathname.create(((AbstractString)arg).toString());
-    if (arg instanceof FileStream)
-      return ((FileStream)arg).getPathname();
-    if (arg instanceof JarStream)
-      return ((JarStream)arg).getPathname();
-    if (arg instanceof URLStream)
-      return ((URLStream)arg).getPathname();
+    Stream s = checkStream(arg);
+    Pathname p = s.getPathname();
+    if (p != null)
+      return p;
     type_error(arg, list(Symbol.OR,
                          Symbol.STRING,
                          Symbol.PATHNAME, Symbol.JAR_PATHNAME, Symbol.URL_PATHNAME,
