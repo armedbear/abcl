@@ -67,6 +67,9 @@
 (defun java/file-length (object)
   (gray-streams:stream-file-length object))
 
+(defun java/pathname (object)
+  (gray-streams::gray-pathname object))
+
 (defun java/line-column (object)
   (gray-streams:stream-line-column object))
 
