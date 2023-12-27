@@ -44,6 +44,9 @@ jobs:
       - name:  Install Jeannie for testing
         run: bash -x ./ci/install-jeannie.bash
 
+      - name:  Install NONTRIVIAL-GRAY-STREAMS for testing
+        run: bash -x ./ci/install-nontrivial-gray-streams.bash
+
       - name: Install the ANSI-TEST suite
         run: bash -x ./ci/install-ansi-test.bash
 
@@ -68,6 +71,9 @@ jobs:
       - name: Test Jeannie
         run: ./abcl --batch --load ./ci/ensure-maven.lisp --load ./ci/test-jeannie.lisp
 
+      - name: Test NONTRIVIAL-GRAY-STREAMS
+        run: ./abcl --batch --load ./ci/ensure-maven.lisp --load ./ci/test-nontrivial-gray-streams.lisp
+        
       - name: Test CFFI
         run: ./abcl --batch --load ./ci/ensure-maven.lisp --load ./ci/test-cffi.lisp
 
