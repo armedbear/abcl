@@ -143,8 +143,8 @@
 (define-opcode ldc2_w 20 3 2 nil "P")
 (define-opcode iload 21 2 1 t)
 (define-opcode lload 22 2 2 t)
-(define-opcode fload 23 2 nil t)
-(define-opcode dload 24 2 nil t)
+(define-opcode fload 23 2 1 t)
+(define-opcode dload 24 2 2 t)
 (define-opcode aload 25 2 1 t)
 (define-opcode iload_0 26 1 1 0)
 (define-opcode iload_1 27 1 1 1)
@@ -154,14 +154,14 @@
 (define-opcode lload_1 31 1 2 1)
 (define-opcode lload_2 32 1 2 2)
 (define-opcode lload_3 33 1 2 3)
-(define-opcode fload_0 34 1 nil 0)
-(define-opcode fload_1 35 1 nil 1)
-(define-opcode fload_2 36 1 nil 2)
-(define-opcode fload_3 37 1 nil 3)
-(define-opcode dload_0 38 1 nil 0)
-(define-opcode dload_1 39 1 nil 1)
-(define-opcode dload_2 40 1 nil 2)
-(define-opcode dload_3 41 1 nil 3)
+(define-opcode fload_0 34 1 1 0)
+(define-opcode fload_1 35 1 1 1)
+(define-opcode fload_2 36 1 1 2)
+(define-opcode fload_3 37 1 1 3)
+(define-opcode dload_0 38 1 2 0)
+(define-opcode dload_1 39 1 2 1)
+(define-opcode dload_2 40 1 2 2)
+(define-opcode dload_3 41 1 2 3)
 (define-opcode aload_0 42 1 1 0)
 (define-opcode aload_1 43 1 1 1)
 (define-opcode aload_2 44 1 1 2)
@@ -176,8 +176,8 @@
 (define-opcode saload 53 1 nil nil)
 (define-opcode istore 54 2 -1 t)
 (define-opcode lstore 55 2 -2 t)
-(define-opcode fstore 56 2 nil t)
-(define-opcode dstore 57 2 nil t)
+(define-opcode fstore 56 2 -1 t)
+(define-opcode dstore 57 2 -2 t)
 (define-opcode astore 58 2 -1 t)
 (define-opcode istore_0 59 1 -1 0)
 (define-opcode istore_1 60 1 -1 1)
@@ -187,14 +187,14 @@
 (define-opcode lstore_1 64 1 -2 1)
 (define-opcode lstore_2 65 1 -2 2)
 (define-opcode lstore_3 66 1 -2 3)
-(define-opcode fstore_0 67 1 nil 0)
-(define-opcode fstore_1 68 1 nil 1)
-(define-opcode fstore_2 69 1 nil 2)
-(define-opcode fstore_3 70 1 nil 3)
-(define-opcode dstore_0 71 1 nil 0)
-(define-opcode dstore_1 72 1 nil 1)
-(define-opcode dstore_2 73 1 nil 2)
-(define-opcode dstore_3 74 1 nil 3)
+(define-opcode fstore_0 67 1 -1 0)
+(define-opcode fstore_1 68 1 -1 1)
+(define-opcode fstore_2 69 1 -1 2)
+(define-opcode fstore_3 70 1 -1 3)
+(define-opcode dstore_0 71 1 -2 0)
+(define-opcode dstore_1 72 1 -2 1)
+(define-opcode dstore_2 73 1 -2 2)
+(define-opcode dstore_3 74 1 -2 3)
 (define-opcode astore_0 75 1 -1 0)
 (define-opcode astore_1 76 1 -1 1)
 (define-opcode astore_2 77 1 -1 2)
@@ -292,11 +292,10 @@
 ;;(define-opcode ret 169 2 0) their use results in JVM verifier errors
 (define-opcode tableswitch 170 0 nil nil)
 (define-opcode lookupswitch 171 0 nil nil)
-(define-opcode ireturn 172 1 nil nil)
-(define-opcode lreturn 173 1 nil nil)
-(define-opcode freturn 174 1 nil nil)
-(define-opcode dreturn 175 1 nil nil)
 (define-opcode ireturn 172 1 -1 nil)
+(define-opcode lreturn 173 1 -2 nil)
+(define-opcode freturn 174 1 -1 nil)
+(define-opcode dreturn 175 1 -2 nil)
 (define-opcode areturn 176 1 -1 nil)
 (define-opcode return 177 1 0 nil)
 (define-opcode getstatic 178 3 1 nil "P")
@@ -479,6 +478,60 @@
     (3 (emit 'istore_3))
     (t (emit 'istore index))))
 
+(defknown lload (fixnum) t)
+(defun lload (index)
+  (case index
+    (0 (emit 'lload_0))
+    (1 (emit 'lload_1))
+    (2 (emit 'lload_2))
+    (3 (emit 'lload_3))
+    (t (emit 'lload index))))
+
+(defknown lstore (fixnum) t)
+(defun lstore (index)
+  (case index
+    (0 (emit 'lstore_0))
+    (1 (emit 'lstore_1))
+    (2 (emit 'lstore_2))
+    (3 (emit 'lstore_3))
+    (t (emit 'lstore index))))
+
+(defknown fload (fixnum) t)
+(defun fload (index)
+  (case index
+    (0 (emit 'fload_0))
+    (1 (emit 'fload_1))
+    (2 (emit 'fload_2))
+    (3 (emit 'fload_3))
+    (t (emit 'fload index))))
+
+(defknown fstore (fixnum) t)
+(defun fstore (index)
+  (case index
+    (0 (emit 'fstore_0))
+    (1 (emit 'fstore_1))
+    (2 (emit 'fstore_2))
+    (3 (emit 'fstore_3))
+    (t (emit 'fstore index))))
+
+(defknown dload (fixnum) t)
+(defun dload (index)
+  (case index
+    (0 (emit 'dload_0))
+    (1 (emit 'dload_1))
+    (2 (emit 'dload_2))
+    (3 (emit 'dload_3))
+    (t (emit 'dload index))))
+
+(defknown dstore (fixnum) t)
+(defun dstore (index)
+  (case index
+    (0 (emit 'dstore_0))
+    (1 (emit 'dstore_1))
+    (2 (emit 'dstore_2))
+    (3 (emit 'dstore_3))
+    (t (emit 'dstore index))))
+
 (declaim (ftype (function (t) t) branch-p)
          (inline branch-p))
 (defun branch-p (opcode)
@@ -621,6 +674,18 @@
                  27 ; iload_1
                  28 ; iload_2
                  29 ; iload_3
+                 30 ; lload_0
+                 31 ; lload_1
+                 32 ; lload_2
+                 33 ; lload_3
+                 34 ; fload_0
+                 35 ; fload_1
+                 36 ; fload_2
+                 37 ; fload_3
+                 38 ; dload_0
+                 39 ; dload_1
+                 40 ; dload_2
+                 41 ; dload_3
                  42 ; aload_0
                  43 ; aload_1
                  44 ; aload_2
@@ -635,6 +700,18 @@
                  60 ; istore_1
                  61 ; istore_2
                  62 ; istore_3
+                 63 ; lstore_0
+                 64 ; lstore_1
+                 65 ; lstore_2
+                 66 ; lstore_3
+                 67 ; fstore_0
+                 68 ; fstore_1
+                 69 ; fstore_2
+                 70 ; fstore_3
+                 71 ; dstore_0
+                 72 ; dstore_1
+                 73 ; dstore_2
+                 74 ; dstore_3
                  75 ; astore_0
                  76 ; astore_1
                  77 ; astore_2
@@ -708,6 +785,9 @@
                  166 ; if_acmpne
                  167 ; goto
                  172 ; ireturn
+                 173 ; lreturn
+                 174 ; freturn
+                 175 ; dreturn
                  176 ; areturn
                  177 ; return
                  189 ; anewarray
@@ -774,6 +854,22 @@
 ;; lstore
 (define-resolver 55 (instruction)
   (load/store-resolver instruction 63 55 "LSTORE unsupported case"))
+
+;; fload
+(define-resolver 23 (instruction)
+  (load/store-resolver instruction 34 23 "FLOAD unsupported case"))
+
+;; fstore
+(define-resolver 56 (instruction)
+  (load/store-resolver instruction 67 56 "FSTORE unsupported case"))
+
+;; dload
+(define-resolver 24 (instruction)
+  (load/store-resolver instruction 38 24 "DLOAD unsupported case"))
+
+;; dstore
+(define-resolver 57 (instruction)
+  (load/store-resolver instruction 71 57 "DSTORE unsupported case"))
 
 ;; bipush, sipush
 (define-resolver (16 17) (instruction)
