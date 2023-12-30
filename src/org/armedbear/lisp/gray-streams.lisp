@@ -177,6 +177,7 @@
 (defvar *ansi-read-byte* #'read-byte)
 (defvar *ansi-write-byte* #'write-byte)
 (defvar *ansi-stream-element-type* #'cl::stream-element-type)
+(defvar *ansi-stream-external-format* #'cl::stream-external-format)
 (defvar *ansi-close* #'cl::close)
 (defvar *ansi-input-character-stream-p*
   #'(lambda (s) (and (input-stream-p s) (eql (stream-element-type s) 'character))))
@@ -212,6 +213,8 @@
 (defgeneric gray-interactive-stream-p (stream))
 (defgeneric gray-stream-element-type (stream))
 (defgeneric (setf gray-stream-element-type) (new-value stream))
+(defgeneric gray-stream-external-format (stream))
+(defgeneric (setf gray-stream-external-format) (new-value stream))
 (defgeneric gray-pathname (pathspec))
 (defgeneric gray-truename (filespec))
 
@@ -234,6 +237,9 @@
 
 (defmethod gray-streamp ((s fundamental-stream))
   s)
+
+(defmethod gray-stream-external-format ((s fundamental-stream))
+  :default)
 
 (defmethod gray-interactive-stream-p (stream)
   (declare (ignore stream))
@@ -608,6 +614,16 @@
       (funcall *ansi-stream-element-type* stream)
       (bug-or-error stream 'gray-stream-element-type)))
 
+(defmethod gray-stream-external-format (stream)
+  (if (ansi-streamp stream)
+      (funcall *ansi-stream-external-format* stream)
+      (bug-or-error stream 'gray-stream-external-format)))
+
+(defmethod (setf gray-stream-external-format) (new-value stream)
+  (if (ansi-streamp stream)
+      (sys::%set-stream-external-format stream new-value)
+      (bug-or-error stream 'gray-stream-external-format)))
+
 (defmethod gray-close (stream &key abort)
   (if (ansi-streamp stream)
       (funcall *ansi-close* stream :abort abort)
@@ -734,6 +750,8 @@
 (setf (symbol-function 'common-lisp::stream-column) #'gray-stream-column)
 (setf (symbol-function 'common-lisp::stream-element-type) #'gray-stream-element-type)
 (setf (fdefinition '(setf common-lisp::stream-element-type)) #'(setf gray-stream-element-type))
+(setf (symbol-function 'common-lisp::stream-external-format) #'gray-stream-external-format)
+(setf (fdefinition '(setf common-lisp::stream-external-format)) #'(setf gray-stream-external-format))
 (setf (symbol-function 'common-lisp::close) #'gray-close)
 (setf (symbol-function 'common-lisp::input-stream-p) #'gray-input-stream-p)
 (setf (symbol-function 'common-lisp::input-character-stream-p) #'gray-input-character-stream-p)  ;; # fb 1.01
@@ -769,6 +787,7 @@
              (common-lisp::write-byte gray-write-byte)
              (common-lisp::stream-column gray-stream-column)
              (common-lisp::stream-element-type gray-stream-element-type)
+             (common-lisp::stream-external-format gray-stream-external-format)
              (common-lisp::close gray-close)
              (common-lisp::input-stream-p gray-input-stream-p)
              (common-lisp::input-character-stream-p gray-input-character-stream-p) ;; # fb 1.01
