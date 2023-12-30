@@ -28,6 +28,12 @@
 (defun java/element-type (object)
   (gray-streams::gray-stream-element-type object))
 
+(defun java/external-format (object)
+  (gray-streams::gray-stream-external-format object))
+
+(defun java/set-external-format (object new-value)
+  (setf (gray-streams::gray-stream-external-format object) new-value))
+
 (defun java/force-output (object)
   (gray-streams:stream-force-output object))
 

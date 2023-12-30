@@ -108,11 +108,28 @@ public class GrayStream
 
   public static final Symbol ELEMENT_TYPE
     = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/ELEMENT-TYPE");
+  @Override
   public LispObject getElementType() {
     Function f = checkFunction(ELEMENT_TYPE.getSymbolFunction());
     return f.execute(clos);
   }
   
+  public static final Symbol EXTERNAL_FORMAT
+    = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/EXTERNAL-FORMAT");
+  @Override
+  public LispObject getExternalFormat() {
+    Function f = checkFunction(EXTERNAL_FORMAT.getSymbolFunction());
+    return f.execute(clos);
+  }
+
+  public static final Symbol SET_EXTERNAL_FORMAT
+    = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/SET-EXTERNAL-FORMAT");
+  @Override
+  public void setExternalFormat(LispObject format) {
+    Function f = checkFunction(SET_EXTERNAL_FORMAT.getSymbolFunction());
+    f.execute(clos, format);
+  }
+
   public static final Symbol FORCE_OUTPUT
     = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/FORCE-OUTPUT");
   public void _forceOutput() {
@@ -250,18 +267,9 @@ public class GrayStream
     simple_error("unimplemented setInteractive(boolean)");
   }
 
-  public LispObject getExternalFormat() {
-    simple_error("unimplemented getExternalFormat()");
-    return null;  // unreached
-  }
-
   public String getEncoding() {
     simple_error("unimplemented getEncoding()");
     return null;  // unreached
-  }
-
-  public void setExternalFormat(LispObject format) {
-    simple_error("unimplemented setExternalFormat()");
   }
 
   public void setOpen(boolean b) {
@@ -290,6 +298,8 @@ public class GrayStream
     Autoload.autoloadFile(GrayStream.INTERACTIVE_STREAM_P, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.OPEN_STREAM_P, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.ELEMENT_TYPE, "gray-streams-java");
+    Autoload.autoloadFile(GrayStream.EXTERNAL_FORMAT, "gray-streams-java");
+    Autoload.autoloadFile(GrayStream.SET_EXTERNAL_FORMAT, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.FORCE_OUTPUT, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.WRITE_STRING, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.WRITE_CHAR, "gray-streams-java");
