@@ -215,6 +215,15 @@
 (defgeneric gray-pathname (pathspec))
 (defgeneric gray-truename (filespec))
 
+(defun assert-stream (stream)
+  (if (gray-streamp stream)
+      t
+      (error 'type-error :datum stream :expected-type 'stream)))
+
+(defun bug-or-error (stream fun)
+  (assert-stream stream)
+  (error "The stream ~S has no suitable method for ~S." stream fun))
+
 (defmethod gray-close ((stream fundamental-stream) &key abort)
   (declare (ignore abort))
   (setf (stream-open-p stream) nil)
@@ -259,10 +268,6 @@
   'character)
 
 (defclass fundamental-binary-stream (fundamental-stream) ())
-
-(defmethod gray-stream-element-type ((s fundamental-binary-stream))
-  (declare (ignore s))
-  '(unsigned-byte 8))
 
 (defgeneric stream-read-byte (stream))
 (defgeneric stream-write-byte (stream integer))
@@ -599,33 +604,61 @@
            80)))
 
 (defmethod gray-stream-element-type (stream)
-  (funcall *ansi-stream-element-type* stream))
+  (if (ansi-streamp stream)
+      (funcall *ansi-stream-element-type* stream)
+      (bug-or-error stream 'gray-stream-element-type)))
 
 (defmethod gray-close (stream &key abort)
-  (funcall *ansi-close* stream :abort abort))
+  (if (ansi-streamp stream)
+      (funcall *ansi-close* stream :abort abort)
+      (bug-or-error stream 'gray-close)))
 
 (defmethod gray-input-stream-p (stream)
-  (funcall *ansi-input-stream-p* stream))
+  (cond ((ansi-streamp stream)
+         (funcall *ansi-input-stream-p* stream))
+        (t
+         (assert-stream stream)
+         nil)))
 
 (defmethod gray-input-character-stream-p (stream)
-  (funcall *ansi-input-character-stream-p* stream))
+  (cond ((ansi-streamp stream)
+         (funcall *ansi-input-character-stream-p* stream))
+        (t
+         (assert-stream stream)
+         nil)))
 
 (defmethod gray-output-stream-p (stream)
-  (funcall *ansi-output-stream-p* stream))
+  (cond ((ansi-streamp stream)
+         (funcall *ansi-output-stream-p* stream))
+        (t
+         (assert-stream stream)
+         nil)))
 
 (defmethod gray-interactive-stream-p (stream)
-  (funcall *ansi-interactive-stream-p* stream))
+  (cond ((ansi-streamp stream)
+         (funcall *ansi-interactive-stream-p* stream))
+        (t
+         (assert-stream stream)
+         nil)))
 
 (defmethod gray-open-stream-p (stream)
-  (funcall *ansi-open-stream-p* stream))
+  (cond ((ansi-streamp stream)
+         (funcall *ansi-open-stream-p* stream))
+        (t
+         (assert-stream stream)
+         nil)))
 
 (defmethod gray-streamp (stream)
   (funcall *ansi-streamp* stream))
 
 (defmethod gray-pathname (pathspec)
+  (unless (typep pathspec '(or string pathname stream))
+    (error 'type-error :datum pathspec :expected-type '(or string pathname stream)))
   (funcall *ansi-pathname* pathspec))
 
 (defmethod gray-truename (pathspec)
+  (unless (typep pathspec '(or string pathname stream))
+    (error 'type-error :datum pathspec :expected-type '(or string pathname stream)))
   (funcall *ansi-truename* pathspec))
 
 (defun gray-write-sequence (sequence stream &key (start 0) end)
