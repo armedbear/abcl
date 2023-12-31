@@ -152,6 +152,7 @@
    "STREAM-WRITE-SEQUENCE"
    "STREAM-FILE-POSITION"
    "STREAM-FILE-LENGTH"
+   "STREAM-FILE-STRING-LENGTH"
    "STREAM-ELEMENT-TYPE"
    "FUNDAMENTAL-BINARY-INPUT-STREAM"
    "FUNDAMENTAL-BINARY-OUTPUT-STREAM"))
@@ -193,6 +194,7 @@
 (defvar *ansi-two-way-stream-output-stream* #'cl:two-way-stream-output-stream)
 (defvar *ansi-file-position* #'cl:file-position)
 (defvar *ansi-file-length* #'cl:file-length)
+(defvar *ansi-file-string-length* #'cl:file-string-length)
 (defvar *ansi-pathname* #'cl:pathname)
 (defvar *ansi-truename* #'cl:truename)
 
@@ -709,6 +711,18 @@
       (funcall *ansi-file-length* stream)
       (stream-file-length stream)))
 
+(defgeneric stream-file-string-length (stream object))
+
+(defmethod stream-file-string-length
+    ((stream fundamental-character-output-stream) object)
+  (declare (ignore object))
+  nil)
+
+(defun gray-file-string-length (stream object)
+  (if (ansi-streamp stream)
+      (funcall *ansi-file-string-length* stream object)
+      (stream-file-string-length stream object)))
+
 #|
 (defstruct (two-way-stream-g (:include stream))
   input-stream output-stream)
@@ -763,6 +777,7 @@
 (setf (symbol-function 'common-lisp::write-sequence) #'gray-write-sequence)
 (setf (symbol-function 'common-lisp::file-position) #'gray-file-position)
 (setf (symbol-function 'common-lisp::file-length) #'gray-file-length)
+(setf (symbol-function 'common-lisp::file-string-length) #'gray-file-string-length)
 (setf (symbol-function 'common-lisp::listen) #'gray-listen)
 (setf (symbol-function 'ext:line-length) #'gray-line-length)
 (setf (symbol-function 'common-lisp::pathname) #'gray-pathname)
@@ -798,6 +813,7 @@
              (common-lisp::write-sequence gray-write-sequence)
              (common-lisp::file-position gray-file-position)
              (common-lisp::file-length gray-file-length)
+             (common-lisp::file-string-length gray-file-string-length)
              (common-lisp::listen gray-listen)
              (common-lisp::pathname gray-pathname)
              (common-lisp::truename gray-truename)))

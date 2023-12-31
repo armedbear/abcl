@@ -257,6 +257,14 @@ public class GrayStream
     return f.execute(clos);
   }
 
+  public static final Symbol FILE_STRING_LENGTH
+    = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/FILE-STRING-LENGTH");
+  @Override
+  public LispObject fileStringLength(LispObject arg) {
+    Function f = checkFunction(FILE_STRING_LENGTH.getSymbolFunction());
+    return f.execute(clos, arg);
+  }
+
   public static final Symbol PATHNAME
     = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/PATHNAME");
   @Override
@@ -324,6 +332,7 @@ public class GrayStream
     Autoload.autoloadFile(GrayStream.FILE_POSITION, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.SET_FILE_POSITION, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.FILE_LENGTH, "gray-streams-java");
+    Autoload.autoloadFile(GrayStream.FILE_STRING_LENGTH, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.PATHNAME, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.LINE_COLUMN, "gray-streams-java");
   }

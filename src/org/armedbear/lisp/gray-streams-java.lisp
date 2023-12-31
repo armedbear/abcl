@@ -79,6 +79,9 @@
 (defun java/file-length (object)
   (gray-streams:stream-file-length object))
 
+(defun java/file-string-length (object string)
+  (gray-streams:stream-file-string-length object string))
+
 (defun java/pathname (object)
   (gray-streams::gray-pathname object))
 
