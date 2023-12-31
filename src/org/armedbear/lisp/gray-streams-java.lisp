@@ -73,6 +73,9 @@
 (defun java/file-position (object)
   (gray-streams:stream-file-position object))
 
+(defun java/set-file-position (object position)
+  (gray-streams:stream-file-position object position))
+
 (defun java/file-length (object)
   (gray-streams:stream-file-length object))
 
