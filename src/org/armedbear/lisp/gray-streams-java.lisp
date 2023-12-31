@@ -64,6 +64,9 @@
 (defun java/write-byte (object n)
   (gray-streams:stream-read-byte object n))
 
+(defun java/clear-input (object)
+  (gray-streams:stream-clear-input object))
+
 (defun java/finish-output (object)
   (gray-streams:stream-finish-output object))
 

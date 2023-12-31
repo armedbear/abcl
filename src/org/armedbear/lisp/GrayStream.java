@@ -220,6 +220,13 @@ public class GrayStream
     f.execute(clos, LispInteger.getInstance(n));
   }
 
+  public static final Symbol CLEAR_INPUT
+    = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/CLEAR-INPUT");
+  public void _clearInput() {
+    Function f = checkFunction(CLEAR_INPUT.getSymbolFunction());
+    f.execute(clos);
+  }
+
   public static final Symbol FINISH_OUTPUT
     = PACKAGE_GRAY_STREAMS_JAVA.addExternalSymbol("JAVA/FINISH-OUTPUT");
   public void _finishOutput() {
@@ -286,12 +293,7 @@ public class GrayStream
     return 0;  // unreached 
   }
 
-  public void _clearInput() {
-    // inherited implementation uses available bytes on stream
-    simple_error("unimplemented _clearInput()");
-  }
-
-// TODO figure out why we can't add these to autoloads.lisp
+  // TODO figure out why we can't add these to autoloads.lisp
   static {
     Autoload.autoloadFile(GrayStream.INPUT_STREAM_P, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.OUTPUT_STREAM_P, "gray-streams-java");
@@ -310,6 +312,7 @@ public class GrayStream
     Autoload.autoloadFile(GrayStream.STREAM_LISTEN, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.READ_BYTE, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.WRITE_BYTE, "gray-streams-java");
+    Autoload.autoloadFile(GrayStream.CLEAR_INPUT, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.FINISH_OUTPUT, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.FILE_POSITION, "gray-streams-java");
     Autoload.autoloadFile(GrayStream.FILE_LENGTH, "gray-streams-java");
