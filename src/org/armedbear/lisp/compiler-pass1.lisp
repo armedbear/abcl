@@ -767,7 +767,7 @@ where each of the vars returned is a list with these elements:
                  ;; tag.
                  (setf live nil))
                (push (p1 subform) new-body))))
-      (setf (tagbody-form block) (list* 'TAGBODY (nreverse new-body))))
+      (setf (tagbody-form block) (cons form (list* 'TAGBODY (nreverse new-body)))))
     (when (some #'tag-used-non-locally (tagbody-tags block))
       (push (setf (tagbody-id-variable block)
                   (make-variable :name (gensym)

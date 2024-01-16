@@ -658,6 +658,17 @@ until predicate returns non-NIL, returning that value.
         (t
          nil)))
 
+(defknown node-constant-value-p (t) boolean)
+(defun node-constant-value-p (object)
+  (cond ((node-p object)
+         nil)
+        ((var-ref-p object)
+         (var-ref-constant-p object))
+        ((constantp object)
+         t)
+        (t
+         nil)))
+
 (defknown block-requires-non-local-exit-p (t) boolean)
 (defun block-requires-non-local-exit-p (object)
   "A block which *always* requires a 'non-local-exit' is a block which
