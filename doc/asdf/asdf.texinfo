@@ -65,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @titlepage
 @title ASDF: Another System Definition Facility
-@subtitle Manual for Version 3.3.6
+@subtitle Manual for Version 3.3.7
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -82,7 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @node Top, Introduction, (dir), (dir)
 @top ASDF: Another System Definition Facility
 @ifnottex
-Manual for Version 3.3.6
+Manual for Version 3.3.7
 @end ifnottex
 
 
@@ -2669,19 +2669,34 @@ not be translated by the enclosing @code{:around} method.
 
 @findex component-depends-on
 @item @code{component-depends-on}
-If the action of performing the operation on a component has dependencies,
-you must define a method on @code{component-depends-on}.
+@emph{Previously,} if you were adding a new operation, and it had
+dependencies, it was necessary to define
+a method on @code{component-depends-on}.
 
-Your method will take as specialized arguments
-an operation and a component which together identify an action,
+@tindex downward-operation
+@tindex upward-operation
+@tindex sideway-operation
+@tindex selfward-operation
+@tindex non-propagating-operation
+@emph{For most cases this is no longer necessary,} now ASDF has built in
+@code{operation} subclasses that provide dependency management for you,
+specifically the classes
+@code{downward-operation} @code{upward-operation}
+@code{sideway-operation} @code{selfward-operation}
+@code{non-propagating-operation}.
+
+Only if one of those operations does not meet your needs should you
+write a method for @code{component-depends-on}.
+In this case, your method will take as specialized arguments
+an @code{operation} and a @code{component} which together identify an action,
 and return a list of entries describing actions that this action depends on.
 The format of entries is described below.
 
-It is @emph{strongly} advised that
-you should always append the results of @code{(call-next-method)}
+We @emph{strongly} advise
+appending the results of @code{(call-next-method)}
 to the results of your method,
-or ``interesting'' failures will likely occur,
-unless you're a true specialist of ASDF internals.
+or ``interesting'' failures are likely to occur,
+unless you're a true expert in ASDF internals.
 It is unhappily too late to compatibly use the @code{append} method combination,
 but conceptually that's the protocol that is being manually implemented.
 
@@ -2715,12 +2730,17 @@ An operation @emph{may} provide methods for the following generic functions:
 
 @item @code{input-files}
 @findex input-files
-A method for this function is often not needed,
-since ASDF has a pretty clever default @code{input-files} mechanism.
-You only need create a method if there are multiple ultimate input
-files.
-Most operations inherit from @code{selfward-operation}, which
-appropriately sets the input-files to include the source file itself.
+@code{(input-files @var{operation} @var{component})} should return a
+list of the files taken as input when applying @var{operation} to
+@var{component}. ASDF will inspect the file modification timestamps on
+these files to decide whether to re-run an action. A return value of @code{nil}
+denotes an action which takes no files as input.
+
+Operations which subclass @code{selfward-operation} will usually not need to define a method on @code{input-files}, as a method on @code{selfward-operation} collects the @code{output-files} of all the selfward dependencies.
+
+Operations which take no files as input need not define a method, as a default method returns @code{nil}.
+
+Operations which are not selfward and read files as input should define methods on this function.
 
 @c FIXME: Add documentation of built-in operation types.
 
@@ -3118,23 +3138,13 @@ End side note
 
 In ASDF, the dependency information for a given component and operation
 can be queried using @code{(component-depends-on operation component)},
-which returns a list
+which returns a list of sublists, each of which defines an action.
 
 @lisp
-((load-op "a") (load-op "b") (compile-op "c") ...)
+((load-op "a") (load-op "b") (compile-op "c") (load-op "d" "e") ...)
 @end lisp
 
-@code{component-depends-on} can be subclassed for more specific
-component/operation types: these need to @code{(call-next-method)}
-and append the answer to their dependency, unless
-they have a good reason for completely overriding the default dependencies.
-
-If it weren't for CLISP, we'd be using @code{LIST} method
-combination to do this transparently.
-But, we need to support CLISP.
-If you have the time for some CLISP hacking,
-I'm sure they'd welcome your fixes.
-@c Doesn't CLISP now support LIST method combination?
+For more information about @code{component-depends-on}, @pxref{Creating new operations}.
 
 A minimal version can be specified for a component you depend on
 (typically another system), by specifying @code{(:version "other-system" "1.2.3")}
