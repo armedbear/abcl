@@ -7,6 +7,8 @@ Unreleased
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
 
+* [r15774] Update to asdf-3.3.7
+
 * [r15760] (Tarn W. Burton) Add SETF for STREAM-ELEMENT-TYPE in
   gray-streams module.
 

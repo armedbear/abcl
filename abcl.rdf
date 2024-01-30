@@ -178,7 +178,7 @@ doap:Project rdfs:seeAlso
 abcl:jna
         dc:version "5.13.0" .
 abcl:asdf
-        dc:version "3.3.6" .
+        dc:version "3.3.7" .
 
 abcl:abcl-introspect  
   rdfs:seeAlso <file:contrib/abcl-introspect/README.org> .                             
