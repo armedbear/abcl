@@ -198,7 +198,7 @@
                          combos
                          :key #'first)))
            (filter-setf-combos (combos)
-             (filter-combos 
+             (filter-combos
               (remove-multi-combo-symbols
                (remove-if (lambda (x) (member x '("clos") :test #'string=)) combos :key #'first))))
            (symbols-pathspec (filespec)
@@ -218,7 +218,7 @@
         (terpri f)
         (dolist (package '(:format :sequence :loop :mop :xp :precompiler
                            :profiler :java :jvm :extensions :threads
-                           :top-level :system :cl))
+                           :top-level :system :cl :compiler-backend))
           ;; Limit the set of packages:
           ;;  During incremental compilation, the packages GRAY-STREAMS
           ;;    and ASDF are not being created. Nor are these packages
@@ -284,6 +284,7 @@
       (load (do-compile "coerce.lisp"))
       (load (do-compile "open.lisp"))
       (load (do-compile "dump-form.lisp"))
+      (load (do-compile "compiler-backend.lisp"))
       (load (do-compile "compiler-types.lisp"))
       (load (do-compile "compile-file.lisp"))
       (load (do-compile "precompiler.lisp"))
@@ -518,10 +519,9 @@
          (home (pathname *lisp-home*))
          (src (format nil "~A**/*.*" home))
          (java (format nil "~A../../../**/*.*" home)))
-    (with-open-file (s system :direction :output 
+    (with-open-file (s system :direction :output
                        :if-exists :supersede)
       (pprint `(setf (logical-pathname-translations "sys")
                     '(("SYS:SRC;**;*.*" ,src)
                       ("SYS:JAVA;**;*.*" ,java)))
        s))))
-      
