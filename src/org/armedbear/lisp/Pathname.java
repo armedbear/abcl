@@ -581,7 +581,11 @@ public class Pathname extends LispObject
             } else if (getType() == Keyword.WILD) {
                 sb.append('*');
             } else {
-                Debug.assertTrue(false);
+              type_error("TYPE is not a string, :UNSPECIFIC, NIL, or :WILD.",
+                         getType(),
+                         list(Symbol.OR,
+                              Symbol.STRING, Keyword.UNSPECIFIC, NIL, Keyword.WILD));
+
             }
         }
             
