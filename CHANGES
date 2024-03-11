@@ -7,6 +7,8 @@ Unreleased
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
 
+* [r15775] Update to jna-5.14.0 seemingly fixing problems with CFFI for at least arm64-openjdk-21
+
 * [r15774] Update to asdf-3.3.7
 
 * [r15760] (Tarn W. Burton) Add SETF for STREAM-ELEMENT-TYPE in

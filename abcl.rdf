@@ -20,7 +20,7 @@
   dc:identifier         <urn:abcl.org/release/1.9.3#> ;
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "22-JUN-2023" ;
+  dc:modified          "11-MAR-2024" ;
   dc:version           "abcl-1.9.3" ;
   dc:release           "dev" ;
 #  dc:release           "rc-0" ;
@@ -212,6 +212,9 @@ abcl:jss
   rdf:_17  openjdk:17 ;
   rdf:_18  openjdk:18 ;
   rdf:_19  openjdk:19 ;
+  rdf:_20  openjdk:20 ;
+  rdf:_21  openjdk:21 ;
+  rdf:_22  openjdk:22 ;       
   rdfs:comment "Compatible Java runtimes" .
 
 [abcl:run _:options]
@@ -224,6 +227,8 @@ abcl:jss
     openjdk:15 "-XX:CompileThreshold=10" ;
     openjdk:16 "-XX:CompileThreshold=10" ;
     openjdk:17 "-XX:CompileThreshold=10" ;
+    openjdk:21 "-XX:CompileThreshold=10" ;
+    openjdk:20 "-XX:CompileThreshold=10" ;
     rdfs:comment "Java platform runtime options" .
 
 [abcl:build _:options]
@@ -249,7 +254,9 @@ abcl:jss
    rdf:_17  openjdk:17 ;
    rdf:_18  openjdk:18 ;
    rdf:_19  openjdk:19 ;
+   rdf:_21  openjdk:21 ;     
+   rdf:_22  openjdk:22 ;     
    rdfs:comment "Supported build platforms" .
-p
+
 
   
