@@ -9,10 +9,13 @@ fi
 
 . ${DIR}/ensure-jenv-is-present.bash
 
+# hack
+export PROMP_COMMAND=""
 jenv enable-plugin ant
 jenv enable-plugin maven
 jenv enable-plugin export 
 
-jenv doctor
+
+
 
 

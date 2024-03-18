@@ -35,6 +35,9 @@ function set_jdk() {
         openjdk20)
             version=$(jenv versions | grep ^\ *20\.[0-9] | tail -1 | sed s/*//)
             ;;
+        openjdk21)
+            version=$(jenv versions | grep ^\ *21\.[0-9] | tail -1 | sed s/*//)
+            ;;
         *)
             echo Failed to find an available JDK matching ${abcl_jdk}
             echo   in $(jenv versions)
@@ -63,4 +66,4 @@ function set_jdk() {
     popd
 }
 
-set_jdk ${ABCL_JDK} ${ABCL_ROOT}
+set_jdk ${JDK_VERSION} ${ABCL_VERSION}

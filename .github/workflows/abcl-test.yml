@@ -19,36 +19,41 @@ jobs:
         run: echo "JDK_VERSION=${{ matrix.jdk }}" >> $GITHUB_ENV
 
       - name: Clone ABCL
-        uses: actions/checkout@v2
-        
-      - name: Install Java base for Ant
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
+        uses: actions/checkout@v4
 
-      - name: Setup jenv
-        run: bash -x ./ci/ensure-jenv-is-present.bash && ant abcl.diagnostic
+      - name: Install jenv
+        run: |
+          . ./ci/install-jenv.bash
+          echo ~/.jenv/bin >> $GITHUB_PATH
         
       - name: Install OpenJDK
-        run: bash -x ./ci/install-openjdk.bash ${JDK_VERSION}
+        run: . ./ci/install-openjdk.bash ${JDK_VERSION}
 
+      - name: Install Ant
+        run: |
+          bash -x ./ci/install-ant.bash
+          echo ~/.local/share/java/apache-ant/bin >> $GITHUB_PATH
+
+      - name: Ensure we are using the correct JDK
+        run: . ./ci/ensure-jenv-is-present.bash && ant abcl.diagnostic
+        
       - name: Set abcl.properties for build
-        run: bash -x ./ci/create-abcl-properties.bash ${JDK_VERSION}
+        run: . ./ci/create-abcl-properties.bash ${JDK_VERSION}
 
       - name: Build ABCL
-        run: bash -x ./ci/ensure-jenv-is-present.bash && $HOME/.jenv/shims/ant abcl
+        run: . ./ci/ensure-jenv-is-present.bash && ant abcl
 
       - name: Configure ASDF to find abcl
-        run: bash -x ./ci/asdf-finds-abcl.bash
+        run: . ./ci/asdf-finds-abcl.bash
 
       - name:  Install Jeannie for testing
-        run: bash -x ./ci/install-jeannie.bash
+        run: . ./ci/install-jeannie.bash
 
       - name:  Install NONTRIVIAL-GRAY-STREAMS for testing
-        run: bash -x ./ci/install-nontrivial-gray-streams.bash
+        run: . ./ci/install-nontrivial-gray-streams.bash
 
       - name: Install the ANSI-TEST suite
-        run: bash -x ./ci/install-ansi-test.bash
+        run: . ./ci/install-ansi-test.bash
 
       - name: Install Quicklisp
         run: |
