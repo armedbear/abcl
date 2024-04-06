@@ -1,38 +1,46 @@
 # -*- Mode: n3 -*-
 
-@prefix abcl:            <https://abcl.org#> .
-<> 
- abcl:is "W3C Turtle RDF serializations format" .
-
-@prefix doap:            <https://usefulinc.com/ns/doap#> .
 @prefix rdf:             <https://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:            <https://www.w3.org/2000/01/rdf-schema#> .
-
-<> a doap:Project .
-
-<> rdfs:seeAlso         <urn:abcl.not.org> .
-<> rdfs:seeAlso         <urn:not.org> .
-
+@prefix doap:            <https://usefulinc.com/ns/doap#> .
 @prefix dc:              <https://purl.org/dc/elements/1.1/> .
+
+@prefix abcl:            <https://abcl.org#> .
+@prefix urn:             <https://example.not.org#urn> .
+<>
+ a doap:Project ;
+ abcl:is "W3C Turtle RDF serializations format" ;
+ dc:Standard  "<urn:abcl.org/ansi/common-lisp#X3J13>" ;
+   rdfs:seeAlso [ 
+     a rdf:Bag ;
+     rdf:_1  "<urn:ansi.common-lisp>" ; 
+     rdf:_2 "ANSI+INCITS+226-1994+(R2004).pdf" ;
+   ] ;
+   dc:abstract  
+     """
+ANSI INCITS 226-1994 (R2004) American National Standard for Programming Language Common LISP (X3J13)
+""" ;
+  rdfs:seeAlso "<file:README>" ;
+  rdfs:seeAlso "<file:MANUAL>" ;
+  rdfs:seeAlso "<file:CHANGES>" ;
+  rdfs:seeAlso "<file:doc/manual/abcl.tex>" ;
+  rdfs:seeAlso "<https://abcl.not.org>" ;
+.
+
 <> 
   abcl:branch           <https://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.9.3#dev> ; # deprecated?
-  dc:identifier         <urn:abcl.org/release/1.9.3#> ;
+  dc:identifier         "urn:abcl.org/1.10.0" ; 
+  dc:identifier         "urn:abcl.org/release/1.10.0#" ;
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "11-MAR-2024" ;
-  dc:version           "abcl-1.9.3" ;
-  dc:release           "dev" ;
-#  dc:release           "rc-0" ;
+  dc:modified          "26-JAN-2026" ;
+  dc:version           "abcl-1.10.0" ;
+#  dc:release           "dev" ;
+  dc:release           "rc-0" ;
   abcl:git             <https://github.com/armedbear/abcl/> ;
   abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
-  abcl:svn             <https://abcl.org/svn/trunk/abcl/> . 
- 
-<> 
-  rdfs:seeAlso <file:README> ;
-  rdfs:seeAlso <file:MANUAL> ;
-  rdfs:seeAlso <file:CHANGES> ;
-  rdfs:seeAlso <file:doc/manual/abcl.tex> .
+  abcl:svn             <https://abcl.org/svn/trunk/abcl/> ;
+.
 
 @prefix dc:              <https://purl.org/dc/elements/1.1/> .
 
@@ -47,16 +55,19 @@
 
 <abcl:doap>  doap:language  "Common Lisp" .
 
-<> <urn:abcl.org:releng:implementation:language> [ 
+<abcl:doap>
    a rdf:Bag;
    rdf:_0 "Common Lisp"; 
    rdf:_1 "Java";
    rdf:_2 "Ant"; 
    rdf:_3 "Bourne Shell Script"; 
-   rdf:_4 "Windows Batch Script" 
-] .
+   rdf:_4 "Windows Batch Script" ;
+.
 
-<abcl:doap> 
+<abcl:doap>
+  rdfs:comment """
+Established nicknames for all source revisions to Armed Bear Common Lisp
+""" ;
   dc:contributor [ 
     a rdf:Bag;
     rdf:_1024 _:peter ;
@@ -93,8 +104,10 @@
 
 <abcl:doap>  
   doap:language 
-  "Common Lisp", "Java", "Ant", "Bourne Shell Script", "Windows Batch Script"  .
+  "Common Lisp", "Java",
+  "Ant", "Bourne Shell Script", "Windows Batch Script"  .
 
+# ad-hoc nickname adjustments
 _:user dc:identifier <https://ville.not.org/#me>  ; 
        rdf:label "V-ille"  .
 
@@ -105,12 +118,12 @@ _:user dc:identifier <https://ville.not.org/#me>  ;
      dc:license <https://usefulinc.com/doap/licenses/gplv2> ;
      dc:license <https://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
      dc:licenseDocument 
-       <https://abcl.org/svn/tags/1.9.2/src/org/armedbear/COPYING> ;
+       <https://abcl.org/svn/tags/1.10.0/src/org/armedbear/COPYING> ;
 ] .
 
 doap:Project rdfs:seeAlso [
   a rdf:Bag;
-  rdf:_0 <https://abcl.org/releases/1.9.2/abcl-1.9.2.jar> ;
+  rdf:_0 <https://abcl.org/releases/1.10.0/abcl-1.10.0.jar> ;
   rdf:_1 <https://abcl.org/trac/timeline> ;
   rdf:_2 <https://abcl.org/trac/wiki> ;
   rdf:_4 <https://github.com/armedbear/abcl/> ;
@@ -136,23 +149,15 @@ doap:Project rdfs:seeAlso [
      rdf:_23 <https://abcl.org/releases/1.8.0/abcl-1.8.0.jar> ;
      rdf:_29 <https://abcl.org/releases/1.9.0/abcl-1.9.0.jar> ;
      rdf:_31 <https://abcl.org/releases/1.9.1/abcl-1.9.1.jar> ;
-     rdf:_37 <https://abcl.org/releases/1.9.1/abcl-1.9.2.jar> ;
+     rdf:_37 <https://abcl.org/releases/1.9.2/abcl-1.9.2.jar> ;
+     rdf:_41 <https://abcl.org/releases/1.10.0/abcl-1.10.0.jar> ;
   ] ;
 ] .
 
 <> abcl:provides <release#abcl-contrib.jar> ;
-   rdfs:seeAlso <file:contrib/README.markdown>.
+   rdfs:seeAlso "<file:contrib/README.markdown>".
 
-<> dc:Standard  <urn:abcl.org/ansi/common-lisp#X3J13> ;
-   rdfs:seeAlso [ 
-     a rdf:Bag ;
-     rdf:_1  <urn:ansi.common-lisp> ; 
-     rdf:_2 "ANSI+INCITS+226-1994+(R2004).pdf" 
-   ] ;
-   dc:abstract  
-     "ANSI INCITS 226-1994 (R2004) American National Standard for Programming Language Common LISP (X3J13)" .
-
-<> rdfs:seeAlso <urn:abcl.org/ansi/common-lisp#X3J13> .
+<> rdfs:seeAlso "<urn:abcl.org/ansi/common-lisp#X3J13>" .
 
 doap:Project rdfs:seeAlso 
   <https://abcl.org/trac/timeline> , 
@@ -176,23 +181,24 @@ doap:Project rdfs:seeAlso
 ] .
 
 abcl:jna
-        dc:version "5.13.0" .
+        dc:version "5.18.1" .
 abcl:asdf
         dc:version "3.3.7" .
 
-abcl:abcl-introspect  
-  rdfs:seeAlso <file:contrib/abcl-introspect/README.org> .                             
-
 abcl:abcl-contrib  
-  rdfs:seeAlso <file:contrib/README.markdown> .                             
+  rdfs:seeAlso "<file:contrib/README.markdown>" .                             
+abcl:abcl-introspect  
+  rdfs:seeAlso "<file:contrib/abcl-introspect/README.org>" .                             
 abcl:abcl-asdf
-  rdfs:seeAlso <file:contrib/asdf-asdf/README.markdown> .                             
+  rdfs:seeAlso "<file:contrib/asdf-asdf/README.markdown>" .                             
 abcl:asdf-jar 
-  rdfs:seeAlso <file:contrib/asdf-jar/README.markdown> .                             
+  rdfs:seeAlso "<file:contrib/asdf-jar/README.markdown>" .                             
 abcl:jfli
-  rdfs:seeAlso <file:contrib/jfli/README> .                             
+  rdfs:seeAlso "<file:contrib/jfli/README>" .                             
 abcl:jss
-  rdfs:seeAlso <file:contrib/jss/README.markdown> .                             
+  rdfs:seeAlso "<file:contrib/jss/README.markdown>" .
+abcl:named-readtables
+  rdfs:seeAlso "<file:contrib/named-readtables/README.md>" .
 
 # FIXME: figure out the right way to specify these values ontologically
 @prefix java:            <https://rdf.not.org/java#> .
@@ -201,23 +207,15 @@ abcl:jss
 
 [abcl:run _:supported]
   a rdf:Bag ;
-  rdf:_6   openjdk:6 ;
-  rdf:_7   openjdk:7 ;
   rdf:_8   openjdk:8 ;
   rdf:_11  openjdk:11 ;
-  rdf:_13  openjdk:13 ;
-  rdf:_14  openjdk:14 ;
-  rdf:_15  openjdk:15 ;
-  rdf:_16  openjdk:16 ;
   rdf:_17  openjdk:17 ;
-  rdf:_18  openjdk:18 ;
-  rdf:_19  openjdk:19 ;
-  rdf:_20  openjdk:20 ;
   rdf:_21  openjdk:21 ;
-  rdf:_22  openjdk:22 ;       
-  rdfs:comment "Compatible Java runtimes" .
+  rdf:_25  openjdk:25 ;       
+  rdfs:comment "Tested compatible Java runtimes" .
 
 [abcl:run _:options]
+    rdfs:seeAlso <https://abcl.org/svn/tags/1.10.0/ci/create-abcl-properties.bash> ;
     not.org:base "-XShowSettings:vm -DFile.encoding=UTF-8" ;
     openjdk:6 "-XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g -XX:+UseConcMarkSweepGC" ;
     openjdk:8 "-XX:+AggressiveOpts" ;
@@ -231,6 +229,7 @@ abcl:jss
     openjdk:20 "-XX:CompileThreshold=10" ;
     rdfs:comment "Java platform runtime options" .
 
+# untested, deprecrated
 [abcl:build _:options]
     not.org:target "1.8" ;
 #    not.org:source "1.6" ;
@@ -238,12 +237,8 @@ abcl:jss
     not.org:debug "true" ;
     rdfs:comment "Java build options" .
 
- [abcl:build _:supported]
+[abcl:build _:possibly-works-on]
    a rdf:Bag ;
-   rdf:_6   openjdk:6 ;
-   rdf:_6     not.org:deprecated ;        
-   rdf:_7   openjdk:7 ;
-   rdf:_7     not.org:deprecated ;        
    rdf:_8   openjdk:8 ;
    rdf:_8     not.org:deprecated ;        
    rdf:_11  openjdk:11 ;
@@ -256,7 +251,17 @@ abcl:jss
    rdf:_19  openjdk:19 ;
    rdf:_21  openjdk:21 ;     
    rdf:_22  openjdk:22 ;     
+   rdf:_23  openjdk:23 ;     
+   rdf:_24  openjdk:24 ;     
+   rdf:_25  openjdk:25 ;     
    rdfs:comment "Supported build platforms" .
+
+[abcl:build _:build-possible-via-interpreter]
+   rdf:_6   openjdk:6 ;
+   rdf:_6     not.org:deprecated ;        
+   rdf:_7   openjdk:7 ;
+   rdf:_7     not.org:deprecated .
+   
 
 
   
