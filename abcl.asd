@@ -1,10 +1,10 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP -*-
 (defsystem abcl
-  :version "1.9.2"
+  :version "1.9.3"
   :in-order-to ((test-op (test-op "abcl/test/lisp"))))
 
 (defsystem abcl/test/lisp
-  :version "1.9.2"
+  :version "1.9.3"
   :description "Test ABCL with the its own collection of unit tests."
   :perform  (test-op (o s)
                      (uiop:symbol-call :abcl.test.lisp '#:run))

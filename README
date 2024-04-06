@@ -56,7 +56,7 @@ to get something like
         Max. Heap Size (Estimated): 3.89G
         Using VM: OpenJDK 64-Bit Server VM
 
-    Armed Bear Common Lisp 1.9.2
+    Armed Bear Common Lisp 1.9.3
     Java 17.0.2 Oracle Corporation
     OpenJDK 64-Bit Server VM
     Low-level initialization completed in 0.432 seconds.
@@ -86,9 +86,9 @@ Java executable (`java`) is in your shell's path.  Java 8, 11, 17 are
 strongly supported by ABCL, but others may work with a little elbow
 grease.
 
-[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.9.2>
-[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.9.2>
-[abcl.org-release]:    <http://abcl.org/releases/1.9.2/>
+[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.9.3>
+[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.9.3>
+[abcl.org-release]:    <http://abcl.org/releases/1.9.3/>
 
 To start ABCL, simply issue the following command:
 
@@ -96,11 +96,14 @@ To start ABCL, simply issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.9.2
-    Java 17.0.7 OpenJDK Porters Group
+VM settings:
+    Max. Heap Size (Estimated): 4.00G
+    Using VM: OpenJDK 64-Bit Server VM
+
+    Armed Bear Common Lisp 1.9.3-dev
+    Java 21.0.2 MacPorts
     OpenJDK 64-Bit Server VM
-    Low-level initialization completed in 0.107 seconds.
-    Startup completed in 0.493 seconds.
+    Low-level initialization completed in 0.136 seconds.
     CL-USER(1):
 
 Yer now at the interactive ABCL "Read Eval Print Loop" (REPL): hacks
@@ -226,6 +229,7 @@ TESTS
 
     | Version | Failures | Total |
     |---------+----------+-------|
+    |   1.9.3 |          |       |
     |   1.9.2 |       63 | 21902 |
     |   1.9.1 |       60 | 21870 |
     |   1.9.0 |       61 | 21870 |
