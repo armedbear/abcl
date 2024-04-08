@@ -296,8 +296,6 @@ public class Pathname extends LispObject
       result.setDirectory(new Cons(Keyword.RELATIVE));
       return result;
     } 
-    if (s.startsWith("./"))
-      { s = s.substring(2); }
     if (s.equals("..") || s.equals("../")) {
       result.setDirectory(list(Keyword.RELATIVE, Keyword.UP));
       return result;
@@ -424,6 +422,9 @@ public class Pathname extends LispObject
     private static final LispObject parseDirectory(String d) {
         if (d.equals("/") || (Utilities.isPlatformWindows && d.equals("\\"))) {
             return new Cons(Keyword.ABSOLUTE);
+        }
+        if (d.equals("./")) {
+            return new Cons(Keyword.RELATIVE);
         }
         LispObject result;
         if (d.startsWith("/") || (Utilities.isPlatformWindows && d.startsWith("\\"))) {
