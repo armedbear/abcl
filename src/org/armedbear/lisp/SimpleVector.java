@@ -35,42 +35,52 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
+import java.lang.reflect.Array;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.text.MessageFormat;
+
 // "The type of a vector that is not displaced to another array, has no fill
 // pointer, is not expressly adjustable and is able to hold elements of any
 // type is a subtype of type SIMPLE-VECTOR."
-public final class SimpleVector extends AbstractVector
+public class SimpleVector
+  extends AbstractVector
+  implements java.io.Serializable
 {
   int capacity;
   LispObject[] data;
+  Class type;  // "always" LispObject for now
 
-  public SimpleVector(int capacity)
-  {
-    data = new LispObject[capacity];
-    for (int i = capacity; i-- > 0;)
-      data[i] = Fixnum.ZERO;
+  public SimpleVector() {
+  }
+
+  public SimpleVector(int capacity) {
+    this(LispObject.class, capacity);
+  }
+
+  public SimpleVector(Class<LispObject> type, int capacity) {
+    this.type = type;
     this.capacity = capacity;
+    data = (LispObject[]) Array.newInstance(type, capacity);
+    Arrays.fill(data, (LispObject) Fixnum.ZERO);     // is this necessary? ECL fills with NIL
   }
 
-  public SimpleVector(LispObject obj)
-  {
-    if (obj.listp())
-      {
-        data = obj.copyToArray();
-        capacity = data.length;
+  public SimpleVector(LispObject obj) {
+    if (obj.listp()) {
+      data = obj.copyToArray();
+      capacity = data.length;
+    } else if (obj instanceof AbstractVector) { 
+      capacity = obj.length();
+      data = new LispObject[capacity];
+      for (int i = 0; i < capacity; i++) {
+        data[i] = (LispObject) obj.AREF(i); // faster?  Implement AbstractVector.asArray()?
       }
-    else if (obj instanceof AbstractVector)
-      {
-        capacity = obj.length();
-        data = new LispObject[capacity];
-        for (int i = 0; i < capacity; i++)
-          data[i] = obj.elt(i);
-      }
-    else
+    } else {
       Debug.assertTrue(false);
+    }
   }
 
-  public SimpleVector(LispObject[] array)
-  {
+  public SimpleVector(LispObject[] array) {
     data = array;
     capacity = array.length;
   }
@@ -92,7 +102,7 @@ public final class SimpleVector extends AbstractVector
   {
     StringBuffer sb = new StringBuffer("A simple vector with ");
     sb.append(capacity);
-    sb.append(" elements");
+    sb.append(" elements.");
     return new SimpleString(sb);
   }
 
@@ -149,93 +159,57 @@ public final class SimpleVector extends AbstractVector
   @Override
   public LispObject elt(int index)
   {
-    try
-      {
-        return data[index];
-      }
-    catch (ArrayIndexOutOfBoundsException e)
-      {
-        badIndex(index, capacity);
-        return NIL; // Not reached.
-      }
+    return SVREF(index);
   }
 
   @Override
-  public LispObject AREF(int index)
-  {
-    try
-      {
-        return data[index];
-      }
-    catch (ArrayIndexOutOfBoundsException e)
-      {
-        badIndex(index, data.length);
-        return NIL; // Not reached.
-      }
+  public LispObject AREF(int index) {
+    return SVREF(index);
   }
 
   @Override
-  public void aset(int index, LispObject newValue)
-  {
-    try
-      {
-        data[index] = newValue;
-      }
-    catch (ArrayIndexOutOfBoundsException e)
-      {
-        badIndex(index, capacity);
-      }
+  public void aset(int index, LispObject newValue) {
+    svset(index, newValue);
   }
 
   @Override
-  public LispObject SVREF(int index)
-  {
-    try
-      {
-        return data[index];
-      }
-    catch (ArrayIndexOutOfBoundsException e)
-      {
-        badIndex(index, data.length);
-        return NIL; // Not reached.
-      }
+  public LispObject SVREF(int index) {
+    try {
+      return data[index];
+    } catch (ArrayIndexOutOfBoundsException e) {
+      badIndex(index, data.length);
+      return NIL; // Not reached.
+    }
   }
 
   @Override
   public void svset(int index, LispObject newValue)
   {
-    try
-      {
+    try {
         data[index] = newValue;
-      }
-    catch (ArrayIndexOutOfBoundsException e)
-      {
-        badIndex(index, capacity);
-      }
+    } catch (ArrayIndexOutOfBoundsException e) {
+      badIndex(index, capacity);
+    }
   }
 
   @Override
   public LispObject subseq(int start, int end)
   {
-    SimpleVector v = new SimpleVector(end - start);
-    int i = start, j = 0;
-    try
-      {
-        while (i < end)
-          v.data[j++] = data[i++];
-        return v;
-      }
-    catch (ArrayIndexOutOfBoundsException e)
-      {
-        return error(new TypeError("Array index out of bounds: " + i + "."));
-      }
+    try {
+        LispObject[] subseq = Arrays.copyOfRange(data, start, end);        
+        return new SimpleVector(subseq);
+    } catch (ArrayIndexOutOfBoundsException e) {
+      String m
+        = MessageFormat.format("The bounding indices {0} and {1} are bad for a sequence of length {2}.",
+                               start, end, length());
+      // Not really a type_error, as there is not one type      
+      return type_error(m, new JavaObject(e), NIL); 
+    }
   }
 
   @Override
-  public void fill(LispObject obj)
-  {
-    for (int i = capacity; i-- > 0;)
-      data[i] = obj;
+  public void fill(LispObject obj) {
+    Arrays.fill(data, obj);
   }
 
   @Override
@@ -275,26 +249,26 @@ public final class SimpleVector extends AbstractVector
   @Override
   public void shrink(int n)
   {
-    if (n < capacity)
-      {
-        LispObject[] newData = new LispObject[n];
-        System.arraycopy(data, 0, newData, 0, n);
-        data = newData;
-        capacity = n;
-        return;
-      }
-    if (n == capacity)
+    if (n < capacity) {
+      SimpleVector newArray = new SimpleVector(n);
+      System.arraycopy(data, 0, newArray.data, 0, n);
+      data = newArray.data;
+      capacity = n;
       return;
+    }
+    if (n == capacity) {
+      return;
+    }
     error(new LispError());
   }
 
   @Override
-  public LispObject reverse()
-  {
+  public LispObject reverse() {
     SimpleVector result = new SimpleVector(capacity);
     int i, j;
-    for (i = 0, j = capacity - 1; i < capacity; i++, j--)
+    for (i = 0, j = capacity - 1; i < capacity; i++, j--) { 
       result.data[i] = data[j];
+    }
     return result;
   }
 
@@ -314,6 +288,9 @@ public final class SimpleVector extends AbstractVector
     return this;
   }
 
+  //
+  // TODO check logic on whether a SIMPLE-VECTOR should be adjustable
+  //
   @Override
   public AbstractVector adjustArray(int newCapacity,
                                      LispObject initialElement,
@@ -368,10 +345,11 @@ public final class SimpleVector extends AbstractVector
                                 int targetStart, int targetEnd,
                                 int sourceStart, int sourceEnd)
   {
-    if (source instanceof SimpleVector) {
+    if (source instanceof SimpleVector
+        // XXX how to determine more elegantly an exact type
+        && this.getClass().getSimpleName().equals("SimpleVector")) {
       System.arraycopy(((SimpleVector)source).data, sourceStart,
-                       data, targetStart,
-                       Math.min(targetEnd - targetStart, sourceEnd - sourceStart));
+                       data, targetStart, Math.min(targetEnd - targetStart, sourceEnd - sourceStart));
       return this;
     } else {
       return super.replace(source, targetStart, targetEnd, sourceStart, sourceEnd);
@@ -384,23 +362,22 @@ public final class SimpleVector extends AbstractVector
     new Primitive("svref", "simple-vector index")
     {
       @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-                        if (first instanceof SimpleVector) {
-                                final SimpleVector sv = (SimpleVector)first;
-                    int index = Fixnum.getValue(second);
-                                try {
-                                        return sv.data[index];
-                                } catch (ArrayIndexOutOfBoundsException e) {
-                                        int capacity = sv.capacity;
-                                         sv.badIndex(index, capacity);
-                                        // Not reached.
-                                        return NIL;
-                                }
-                        }
-                        return type_error(first, Symbol.SIMPLE_VECTOR);
-                }
+      public LispObject execute(LispObject first, LispObject second) {
+        int index = Fixnum.getValue(second);
+          if (first instanceof BasicVectorPrimitive) {
+            return ((BasicVectorPrimitive)first).SVREF(index);
+          }
+          if (first instanceof SimpleVector) {
+            final SimpleVector sv = (SimpleVector)first;            
+            try {
+              return sv.data[index];
+            } catch (ArrayIndexOutOfBoundsException e) {
+              int capacity = sv.capacity;
+              return sv.badIndex(index, capacity);
+            }
+          }
+          return type_error(first, Symbol.SIMPLE_VECTOR);
+      }
     };
 
   // ### svset simple-vector index new-value => new-value
@@ -410,22 +387,22 @@ public final class SimpleVector extends AbstractVector
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-
       {
-                        if (first instanceof SimpleVector) {
-                                final SimpleVector sv = (SimpleVector)first;
-                    int index = Fixnum.getValue(second);
-                                try {
-                                        sv.data[index] = third;
-                                        return third;
-                                } catch (ArrayIndexOutOfBoundsException e) {
-                                        int capacity = sv.capacity;
-                                         sv.badIndex(index, capacity);
-                                        // Not reached.
-                                        return NIL;
-                                }
-                        }
-                        return type_error(first, Symbol.SIMPLE_VECTOR);
+        int index = Fixnum.getValue(second);
+        if (first instanceof BasicVectorPrimitive) {
+          ((BasicVectorPrimitive)first).svset(index, third);
+        }
+        if (first instanceof SimpleVector) {
+          final SimpleVector sv = (SimpleVector)first;
+          try {
+            sv.data[index] = third;
+            return third;
+          } catch (ArrayIndexOutOfBoundsException e) {
+            int capacity = sv.capacity;
+            return sv.badIndex(index, capacity);
+          }
+        }
+        return type_error(first, Symbol.SIMPLE_VECTOR);
       }
     };
 }
