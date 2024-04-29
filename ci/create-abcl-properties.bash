@@ -78,6 +78,16 @@ case $jdk in
 	ant_build_javac_target=19
 	ant_build_javac_source=1.8
         ;;
+    21:openjdk21)
+        options="-XX:CompileThreshold=10 ${opens}"
+	ant_build_javac_target=21
+	ant_build_javac_source=1.8
+        ;;
+    22:openjdk19)
+        options="-XX:CompileThreshold=10 ${opens}"
+	ant_build_javac_target=22
+	ant_build_javac_source=1.8
+        ;;
     *)
         options="-XX:CompileThreshold=10 ${opens}"
         ant_build_javac_target=19

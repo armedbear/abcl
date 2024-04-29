@@ -1355,6 +1355,22 @@ JVM System Properties
       </exec>
     </target>
 
+    <target name="abcl.properties.autoconfigure.openjdk.21">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        <arg value="openjdk21"/>
+      </exec>
+    </target>
+
+    <target name="abcl.properties.autoconfigure.openjdk.22">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        <arg value="openjdk22"/>
+      </exec>
+    </target>
+    
     <import file="etc/ant/netbeans-build.xml"
             optional="true"/> 
     <import file="etc/ant/build-snapshot.xml"

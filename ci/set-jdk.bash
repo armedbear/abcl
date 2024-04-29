@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 function set_jdk() {
     abcl_jdk=$1
     if [[ -z ${abcl_jdk} ]]; then
@@ -21,23 +23,27 @@ function set_jdk() {
 
     case ${abcl_jdk} in
         openjdk8)
-            version=$(jenv versions | grep ^\ *1\.8\.[0-9] | tail -1 | sed s/*//)
+            version=$(jenv versions | grep ^..1\.8\.[0-9] | tail -1 | sed s/*// | awk '{print $1}')
             ;;
         openjdk11)
-            version=$(jenv versions | grep ^\ *11\.[0-9] | tail -1 | sed s/*//)
+            version=$(jenv versions | grep ^..11\.[0-9] | tail -1 | sed s/*// | awk '{print $1}')
             ;;
         openjdk17)
-            version=$(jenv versions | grep ^\ *17\.[0-9] | tail -1 | sed s/*//)
+            version=$(jenv versions | grep ^..17\.[0-9] | tail -1 | sed s/*// | awk '{print $1}')
             ;;
         openjdk17)
-            version=$(jenv versions | grep ^\ *19\.[0-9] | tail -1 | sed s/*//)
+            version=$(jenv versions | grep ^..19\.[0-9] | tail -1 | sed s/*// | awk '{print $1}')
             ;;
         openjdk20)
-            version=$(jenv versions | grep ^\ *20\.[0-9] | tail -1 | sed s/*//)
+            version=$(jenv versions | grep ^..20\.[0-9] | tail -1 | sed s/*// | awk '{print $1}')
             ;;
         openjdk21)
-            version=$(jenv versions | grep ^\ *21\.[0-9] | tail -1 | sed s/*//)
+            version=$(jenv versions | grep ^..21\.[0-9] | tail -1 | sed s/*// | awk '{print $1}')
             ;;
+        openjdk22)
+            version=$(jenv versions | grep ^..22\.[0-9] | tail -1 | sed s/*// | awk '{print $1}')
+            ;;
+
         *)
             echo Failed to find an available JDK matching ${abcl_jdk}
             echo   in $(jenv versions)
@@ -53,17 +59,17 @@ function set_jdk() {
 
     pushd ${dir}
 
-    if [[ 0 -ne $(jenv local ${version}) ]]; then 
-       echo Failed to set local JDK to ${version}
-    fi 
-    # but practically we guard every invocation of jenv this way
-    if [[ 0 -ne $(jenv global ${version}) ]]; then 
-       echo Failed to set global JDK to ${version}
-    fi 
+    jenv local ${version}
+    if [[ 0 -ne $? ]]; then
+        echo Failed to set local JDK in ${dir} to ${version}
+    fi
 
-    echo Local version to set $(jenv version)
+    jenv global ${version}
+    if [[ 0 -ne $? ]]; then
+        echo Failed to set global JDK to ${version}
+    fi
 
     popd
 }
 
-set_jdk ${JDK_VERSION} ${ABCL_VERSION}
+set_jdk $1 $2
