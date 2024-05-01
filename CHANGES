@@ -1,15 +1,17 @@
 Version 1.9.3
 =============
 
-April 29, 2024
+May 1, 2024
 
 <https://abcl.org/svn/tags/1.9.3/>
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
 
-* [r15780] Correcly signal error for incorrect MAKE-PATHNAME-TYPE
+* [r15780] Correctly signal error for incorrect MAKE-PATHNAME-TYPE
 
-* [r15775] Update to jna-5.14.0 
+* [r15775] Update to jna-5.14.0.  Support for CFFI is wonky under
+  darwin-arm64 with later JDKs: openjdk{11,17} succeed without segv
+  but with dubious results.
 
 * [r15779] (Tarn W. Burton) Add support for implementing
   CL:FILE-LENGTH in for Gray streams. This is done via the

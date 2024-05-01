@@ -14,7 +14,7 @@
 \title{Armed Bear Common Lisp User Manual}
 \date{Version 1.9.3  \\
 \smallskip
-April 2024}
+May 2024}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -124,9 +124,16 @@ Support (``LTS'') versions of the \textsc{OpenJDK}, namely
 \textsc{openjdk21}.  We intend to drop one or more of these platforms
 for the next edition in order to more completely overhaul the
 implementations use of compare and swap on memory originally allocated
-outside the hosting \textsc{JVM}.  The release binaries for Tenth
-edition are built with \textsc{openjdk11} but should run best
-on \textsc{openjdk21}.
+outside the hosting \textsc{JVM}.  
+
+\subsubsection{Preface to the Tenth Edition, Second Revision}
+
+With this release, the binaries for Second Revision of the Tenth
+Edition are built with \textsc{openjdk11}.  Users wishing to run on
+the venerable \textsc{openjdk8} platform may use the
+\textsc{ABCL-BUILD} contrib to recompile the implementation locally
+from source (see Section~\ref{section:abcl-build}
+page~\pageref{section:abcl-build}).
 
 \chapter{Introduction}
 
