@@ -91,6 +91,8 @@ public final class Lisp
     Packages.createPackage("SEQUENCE", 128); // EH 10-10-2010: Actual number 62
   public static final Package PACKAGE_GRAY_STREAMS_JAVA =
     Packages.createPackage("GRAY-STREAMS/JAVA");
+  public static final Package PACKAGE_COMPILER_BACKEND =
+    Packages.createPackage("COMPILER-BACKEND");
 
   @DocString(name="nil")
   public static final Symbol NIL = Nil.NIL;
@@ -139,6 +141,8 @@ public final class Lisp
     PACKAGE_PRECOMPILER.usePackage(PACKAGE_SYS);
     PACKAGE_SEQUENCE.usePackage(PACKAGE_CL);
     PACKAGE_GRAY_STREAMS_JAVA.usePackage(PACKAGE_CL);
+    PACKAGE_COMPILER_BACKEND.addNickname("C-BACKEND");
+    PACKAGE_COMPILER_BACKEND.usePackage(PACKAGE_CL);
   }
 
   // End-of-file marker.
@@ -3350,6 +3354,20 @@ public static synchronized final void handleInterrupt()
         throw new Return(stepperBlock.symbol, stepperBlock.value, NIL);
       }
     };
+
+  // ### %return-from-environment
+  public static final Primitive RETURN_FROM_ENVIRONMENT =
+    new Primitive("%return-from-environment", PACKAGE_SYS, true)
+    {
+      @Override
+      public LispObject execute(LispObject env)
+
+      {
+        Binding block = ((Environment)env).getOuterMostBlock();
+        throw new Return(block.symbol, block.value, NIL);
+      }
+    };
+
 
   // ### %set-stepper-off
   public static final Primitive SET_STEPPER_OFF =
