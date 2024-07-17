@@ -221,7 +221,7 @@ ABCL has a [User Manual][manual] stating its conformance to the ANSI
 standard, providing a compliant and practical Common Lisp
 implementation.
 
-[manual]:       <https://abcl.org/releases/1.9.2/abcl-1.9.2.pdf>
+[manual]:       <https://abcl.org/releases/1.9.3/abcl-1.9.3.pdf>
 
 
 TESTS

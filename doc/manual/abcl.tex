@@ -14,7 +14,7 @@
 \title{Armed Bear Common Lisp User Manual}
 \date{Version 1.9.3  \\
 \smallskip
-May 2024}
+July 2024}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -126,6 +126,7 @@ for the next edition in order to more completely overhaul the
 implementations use of compare and swap on memory originally allocated
 outside the hosting \textsc{JVM}.  
 
+%%Preface to the Tenth edition, abcl-1.9.2
 \subsubsection{Preface to the Tenth Edition, Second Revision}
 
 With this release, the binaries for Second Revision of the Tenth
@@ -134,6 +135,22 @@ the venerable \textsc{openjdk8} platform may use the
 \textsc{ABCL-BUILD} contrib to recompile the implementation locally
 from source (see Section~\ref{section:abcl-build}
 page~\pageref{section:abcl-build}).
+
+
+%%Preface to the Tenth edition, abcl-1.9.3
+\subsubsection{Preface to the Tenth Edition, Third Revision}
+
+The Third Revison of the Tenth Edition, aka abcl-1.9.3 incorporates
+most of Tarn Burton's work on providing reasonable CLOS scaffolding
+for GRAY-STREAMS implementation.
+
+We note that the implmentation is currently failing for CFFI interface
+on arm64 architectures, such as Apple Silicon's M[1-4] series.  But
+this seems to be true for other open implementations that the Bear
+tested, so who knows.
+
+In any event the implementation works comfortably on all LTS releases
+from openjdk8 onwards, including the most receet openjdk21.
 
 \chapter{Introduction}
 
@@ -2021,7 +2038,9 @@ $\zeta$ \cite{pandemos}, we dyslexic worker bears untied abcl-1.9.0.
 We released abcl-1.9.1 as a maintenance release in February 2023.  In
 June 2023, among other fixes, we substantially improved our
 GRAY-STREAM support in abcl-1.9.2.  In anticipation of a week of
-Common Lisp for SBCL25/ELS2024, we tidied up abcl-1.9.3.
+Common Lisp for SBCL25/ELS2024, we tidied up abcl-1.9.3, but in the
+excitement of seeing contemporary Common Lisp alive and well, failed
+to make a public release until July 2024.
 
 \appendix 
 
