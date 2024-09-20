@@ -11,7 +11,8 @@
         (let* ((root
                  (first (last entries)))
                (lib
-                 (merge-pathnames  "./lib/" root )))
+                 (truename
+                  (merge-pathnames  "./lib/" root))))
           (abcl-asdf:with-aether (lib)
             (values
              (and
