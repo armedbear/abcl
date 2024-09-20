@@ -1,14 +1,16 @@
 ;;; <https://github.com/armedbear/abcl/issues/177>
 
-(prove:plan 2) ;;; why is this two tests?  
+(prove:plan 1) 
 
-(prove:is
- (let ((condition (handler-case (/ 6 0) (division-by-zero (c) c)))
-       result)
-   (and 
-    (arithmetic-error-operands condition)
-    (arithmetic-error-operation condition)))
- t
+(prove:ok
+ (let ((condition (handler-case (/ 6 0) (division-by-zero (c) c))))
+   (and
+    (equal 
+     (arithmetic-error-operands condition)
+     '(6 0))
+    (equal 
+     (arithmetic-error-operation condition)
+     '/)))
  "DIVISION-BY-ZERO problems with operands and operation")
 
 (prove:finalize)
