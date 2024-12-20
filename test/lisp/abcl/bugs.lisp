@@ -163,4 +163,12 @@ nil)
      result)
   t)
 
-        
+;;; https://abcl.org/trac/ticket/454
+(deftest bugs.tagbody.1
+    (functionp (compile nil '(lambda () (tagbody (catch 'c 100)))))
+  t)
+
+;;; https://abcl.org/trac/ticket/455
+(deftest bugs.boole.1
+    (eval (funcall (compile nil '(lambda () (let ((a 15)) (boole boole-2 (logior 0 (setf a 14)) a))))))
+  14)
