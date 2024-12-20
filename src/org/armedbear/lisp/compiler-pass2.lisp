@@ -5627,8 +5627,7 @@ We need more thought here.
                  (apply #'maybe-emit-clear-values args)
                  (emit-move-from-stack target representation))
                (progn
-                 (unless (every 'single-valued-p args)
-                   (emit-clear-values))
+                 (emit-clear-values)
                  (emit-move-from-stack target))))
           (t
            (compile-function-call form target representation)))))
