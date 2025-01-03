@@ -149,7 +149,7 @@ public abstract class AbstractVector extends AbstractArray
     return index;
   }
 
-  protected void badIndex(int index, int limit)
+  protected LispObject badIndex(int index, int limit)
   {
     StringBuilder sb = new StringBuilder("Invalid array index ");
     sb.append(index);
@@ -161,12 +161,11 @@ public abstract class AbstractVector extends AbstractArray
         sb.append(limit);
         sb.append(").");
       }
-    error(new TypeError(sb.toString(),
-                         Fixnum.getInstance(index),
-                         list(Symbol.INTEGER,
-                               Fixnum.ZERO,
-                               Fixnum.getInstance(limit - 1))));
-
+    return error(new TypeError(sb.toString(),
+                               Fixnum.getInstance(index),
+                               list(Symbol.INTEGER,
+                                    Fixnum.ZERO,
+                                    Fixnum.getInstance(limit - 1))));
   }
 
   public void setFillPointer(int n)
