@@ -23,6 +23,17 @@
                     (java:jfield "name" this))))))
   "Actor")
 
+(deftest runtime-class.doubles
+  (flet ((dub (ignored-this x) (* 2 x)))
+    (let ((class
+            (java:jnew-runtime-class "Doubler"
+                                :superclass "java.lang.Object"
+                                :access-flags '(:public)
+                                :methods `(
+                                           ("dub" :double (:double) ,#'dub)))))
+      (java:jcall "dub" (java:jnew class) 2)))
+  4.0d0)
+
 ;; inheritance of type
 (deftest runtime-class.3
     (let ((class-loader (java::make-memory-class-loader)))
