@@ -144,7 +144,7 @@
 (define-opcode iload 21 2 1 t)
 (define-opcode lload 22 2 2 t)
 (define-opcode fload 23 2 nil t)
-(define-opcode dload 24 2 nil t)
+(define-opcode dload 24 2 2 t)
 (define-opcode aload 25 2 1 t)
 (define-opcode iload_0 26 1 1 0)
 (define-opcode iload_1 27 1 1 1)
@@ -158,10 +158,10 @@
 (define-opcode fload_1 35 1 nil 1)
 (define-opcode fload_2 36 1 nil 2)
 (define-opcode fload_3 37 1 nil 3)
-(define-opcode dload_0 38 1 nil 0)
-(define-opcode dload_1 39 1 nil 1)
-(define-opcode dload_2 40 1 nil 2)
-(define-opcode dload_3 41 1 nil 3)
+(define-opcode dload_0 38 1 2 0)
+(define-opcode dload_1 39 1 2 1)
+(define-opcode dload_2 40 1 2 2)
+(define-opcode dload_3 41 1 2 3)
 (define-opcode aload_0 42 1 1 0)
 (define-opcode aload_1 43 1 1 1)
 (define-opcode aload_2 44 1 1 2)
@@ -295,7 +295,7 @@
 (define-opcode ireturn 172 1 nil nil)
 (define-opcode lreturn 173 1 nil nil)
 (define-opcode freturn 174 1 nil nil)
-(define-opcode dreturn 175 1 nil nil)
+(define-opcode dreturn 175 1 -2 nil)
 (define-opcode ireturn 172 1 -1 nil)
 (define-opcode areturn 176 1 -1 nil)
 (define-opcode return 177 1 0 nil)
@@ -461,6 +461,15 @@
     (3 (emit 'astore_3))
     (t (emit 'astore index))))
 
+(defknown dload (fixnum) t)
+(defun dload (index)
+  (case index
+    (0 (emit 'dload_0))
+    (1 (emit 'dload_1))
+    (2 (emit 'dload_2))
+    (3 (emit 'dload_3))
+    (t (emit 'dload index))))
+
 (defknown iload (fixnum) t)
 (defun iload (index)
   (case index
@@ -621,6 +630,10 @@
                  27 ; iload_1
                  28 ; iload_2
                  29 ; iload_3
+                 38 ; dload_0
+                 39 ; dload_1
+                 40 ; dload_2
+                 41 ; dload_3
                  42 ; aload_0
                  43 ; aload_1
                  44 ; aload_2
@@ -708,6 +721,7 @@
                  166 ; if_acmpne
                  167 ; goto
                  172 ; ireturn
+                 175 ; dreturn
                  176 ; areturn
                  177 ; return
                  189 ; anewarray
@@ -774,6 +788,10 @@
 ;; lstore
 (define-resolver 55 (instruction)
   (load/store-resolver instruction 63 55 "LSTORE unsupported case"))
+
+;; dload
+(define-resolver 24 (instruction)
+  (load/store-resolver instruction 38 24 "DLOAD unsupported case"))
 
 ;; bipush, sipush
 (define-resolver (16 17) (instruction)

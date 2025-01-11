@@ -63,24 +63,52 @@
 
 (defconstant +abcl-lisp-integer-object+ (make-jvm-class-name "org.armedbear.lisp.LispInteger"))
 
-(defun box-arguments (argument-types offset all-argc)
-  ;;Box each argument
+(defconstant +abcl-lisp-double-object+
+  (make-jvm-class-name "org.armedbear.lisp.DoubleFloat"))
+
+(defun arg-size (type)
+  (if (keywordp type)
+      (representation-size type)
+      1))
+
+(defun box-arguments (argument-types offset all-arg-size)
+  "Emits bytecode to box Java method arguments to lisp types.
+
+The boxed arguments end up, in the same order, immediately after the actual
+arguments in the local variable space.
+
+ARGUMENT-TYPES: list of argument types, each as in the JNEW-RUNTIME-CLASS
+    form after being passed to JAVA::CANONICALIZE-JAVA-TYPE.
+OFFSET: Extra space used before the args, currently 1 for 'this' or zero for
+    static method.
+ALL-ARG-SIZE: The number of 'local variables' (per JVMS23 2.6.1) used to
+    hold the arguments to this method.  This would be the number of
+    arguments, except that long and double arguments take up two variables."
   (loop
     :for arg-type :in argument-types
-    :for i :from offset
+    :for argn :from offset
+    :for arg-offset :from offset
     :do (progn
           (cond
             ((eq arg-type :int)
-             (iload i)
+             (iload arg-offset)
              (emit-invokestatic +abcl-lisp-integer-object+ "getInstance"
                                 (list :int) +abcl-lisp-integer-object+))
+            ((eq arg-type :double)
+             (dload arg-offset)
+             (incf arg-offset); doubles take two spots
+             (emit-invokestatic +abcl-lisp-double-object+ "getInstance"
+                                (list :double) +abcl-lisp-double-object+))
             ((keywordp arg-type)
              (error "Unsupported arg-type: ~A" arg-type))
-            (t (aload i)
+            (t (aload arg-offset)
                (emit 'iconst_1) ;;true
                (emit-invokestatic +abcl-java-object+ "getInstance"
                                   (list +java-object+ :boolean) +lisp-object+)))
-          (astore (+ i all-argc)))))
+          (astore (+
+                   all-arg-size; passed arguments size
+                   argn; boxed argument offset
+                   )))))
 
 (defun java::%jnew-runtime-class
     (class-name stream &key (superclass "java.lang.Object")
@@ -193,6 +221,9 @@
     ((eq return-type :boolean)
      (emit-invokevirtual +lisp-object+ "getBooleanValue" nil :boolean)
      (emit 'ireturn))
+    ((eq return-type :double)
+     (emit-invokestatic +abcl-lisp-double-object+ "getValue" (list +lisp-object+) :double)
+     (emit 'dreturn))
     ((jvm-class-name-p return-type)
      (emit 'ldc_w (pool-class return-type))
      (emit-invokevirtual +lisp-object+ "javaInstance" (list +java-class+) +java-object+)
@@ -202,19 +233,27 @@
      (error "Unsupported return type: ~A" return-type))))
 
 (defun java::runtime-class-add-methods (class-file methods)
+  (mapcan (lambda (method) (java::runtime-class-add-method class-file method))
+          methods))
+
+(defun java::runtime-class-add-method (class-file method)
+   "Compute METHOD definition and add it to CLASS-FILE.
+
+Returns method implementation fields."
   (let (method-implementation-fields)
-    (dolist (method methods)
       (destructuring-bind (name return-type argument-types function
                            &key (modifiers '(:public)) annotations override)
           method
         (let* ((argument-types (mapcar #'java::canonicalize-java-type argument-types))
                (argc (length argument-types))
+               (args-size (reduce #'+ (mapcar #'arg-size argument-types)))
                (return-type (java::canonicalize-java-type return-type))
                (jmethod (make-jvm-method name return-type argument-types :flags modifiers))
                (field-name (string (gensym name)))
                (staticp (member :static modifiers))
-               (offset (if staticp 0 1))
-               (all-argc (+ argc offset)))
+               (this-offset (if staticp 0 1))
+               (all-argc (+ argc this-offset))
+               (all-args-size (+ args-size this-offset)))
           (class-add-method class-file jmethod)
           (let ((field (make-field field-name +lisp-object+ :flags '(:public :static))))
             (class-add-field class-file field)
@@ -223,27 +262,32 @@
             (method-add-attribute jmethod (make-runtime-visible-annotations-attribute
                                            :list (mapcar #'parse-annotation annotations))))
           (with-code-to-method (class-file jmethod)
-            ;;Allocate registers (2 * argc to load and store arguments + 2 to box "this")
-            (dotimes (i (* 2 all-argc))
+            ;;Allocate registers
+            (dolist (type argument-types)
+              ;; allocate register(s) to store raw argument
+              (allocate-register (if (keywordp type) type nil))
+              ;; allocate register to store boxed argument
               (allocate-register nil))
             (unless staticp
+              (allocate-register nil); raw 'this'
+              (allocate-register nil); boxed 'this'
               ;;Box "this" (to be passed as the first argument to the Lisp function)
               (aload 0)
               (emit 'iconst_1) ;;true
               (emit-invokestatic +abcl-java-object+ "getInstance"
                                  (list +java-object+ :boolean) +lisp-object+)
-              (astore all-argc))
-            (box-arguments argument-types offset all-argc)
+              (astore all-args-size))
+            (box-arguments argument-types this-offset all-args-size)
             ;;Load the Lisp function from its static field
             (emit-getstatic (class-file-class class-file) field-name +lisp-object+)
-            (if (<= all-argc call-registers-limit)
+            (if (<= all-args-size call-registers-limit)
                 (progn
                   ;;Load the boxed this
                   (unless staticp
-                    (aload all-argc))
+                    (aload all-args-size))
                   ;;Load each boxed argument
                   (dotimes (i argc)
-                    (aload (+ i 1 all-argc))))
+                    (aload (+ i 1 all-args-size))))
                 (error "execute(LispObject[]) is currently not supported"))
             (emit-call-execute all-argc)
             (java::emit-unbox-and-return return-type))
@@ -279,7 +323,7 @@
                    ((jvm-class-name-p return-type)
                     (emit 'areturn))
                    (t
-                    (error "Unsupported return type: ~A" return-type))))))))))
+                    (error "Unsupported return type: ~A" return-type)))))))))
     method-implementation-fields))
 
 (defun java::runtime-class-add-fields (class-file fields)
