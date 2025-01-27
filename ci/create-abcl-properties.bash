@@ -13,7 +13,9 @@ echo "Configuring for $jdk from <${prop_in}>."
 
 # Unused
 # zgc="-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -Xmx<size> -Xlog:gc"
-opens="--add-opens java.base/sun.nio.ch=ALL-UNNAMED  --add-opens java.base/java.io=ALL-UNNAMED"
+opens="--add-opens java.base/sun.nio.ch=ALL-UNNAMED\
+ --add-opens java.base/java.io=ALL-UNNAMED\
+ --add-opens java.base/java.lang=ALL-UNNAMED"
 
 abcl_javac_source=1.8
 case $jdk in
@@ -73,24 +75,24 @@ case $jdk in
 	ant_build_javac_target=18
 	ant_build_javac_source=1.8
         ;;
-    19:openjdk19)
+    19|openjdk19)
         options="-XX:CompileThreshold=10 ${opens}"
 	ant_build_javac_target=19
 	ant_build_javac_source=1.8
         ;;
-    21:openjdk21)
+    21|openjdk21)
         options="-XX:CompileThreshold=10 ${opens}"
 	ant_build_javac_target=21
 	ant_build_javac_source=1.8
         ;;
-    22:openjdk19)
+    22|openjdk22)
         options="-XX:CompileThreshold=10 ${opens}"
 	ant_build_javac_target=22
 	ant_build_javac_source=1.8
         ;;
-    *)
+    23|openjdk23|*)
         options="-XX:CompileThreshold=10 ${opens}"
-        ant_build_javac_target=19
+	ant_build_javac_target=23
 	ant_build_javac_source=1.8
         ;;
 esac
