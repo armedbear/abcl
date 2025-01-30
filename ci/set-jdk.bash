@@ -43,7 +43,9 @@ function set_jdk() {
         openjdk22)
             version=$(jenv versions | grep ^..22\.[0-9] | tail -1 | sed s/*// | awk '{print $1}')
             ;;
-
+        openjdk23)
+            version=$(jenv versions | grep ^..23\.[0-9] | tail -1 | sed s/*// | awk '{print $1}')
+            ;;
         *)
             echo Failed to find an available JDK matching ${abcl_jdk}
             echo   in $(jenv versions)
