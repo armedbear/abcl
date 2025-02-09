@@ -62,6 +62,10 @@
         jclass))))
 
 (defconstant +abcl-lisp-integer-object+ (make-jvm-class-name "org.armedbear.lisp.LispInteger"))
+(defconstant +abcl-lisp-object-object+ (make-jvm-class-name "org.armedbear.lisp.LispObject"))
+(defconstant +abcl-single-float-object+ (make-jvm-class-name "org.armedbear.lisp.SingleFloat"))
+(defconstant +abcl-double-float-object+ (make-jvm-class-name "org.armedbear.lisp.DoubleFloat"))
+(defconstant +abcl-lisp-character-object+ (make-jvm-class-name "org.armedbear.lisp.LispCharacter"))
 
 (defun box-arguments (argument-types offset all-argc)
   ;;Box each argument
@@ -70,10 +74,30 @@
     :for i :from offset
     :do (progn
           (cond
-            ((eq arg-type :int)
+            ((member arg-type '(:int :short :byte))
              (iload i)
              (emit-invokestatic +abcl-lisp-integer-object+ "getInstance"
                                 (list :int) +abcl-lisp-integer-object+))
+            ((eq arg-type :long)
+             (lload i)
+             (emit-invokestatic +abcl-lisp-integer-object+ "getInstance"
+                                (list :long) +abcl-lisp-integer-object+))
+            ((eq arg-type :float)
+             (fload i)
+             (emit-invokestatic +abcl-single-float-object+ "getInstance"
+                                (list :float) +abcl-single-float-object+))
+            ((eq arg-type :double)
+             (dload i)
+             (emit-invokestatic +abcl-double-float-object+ "getInstance"
+                                (list :double) +abcl-double-float-object+))
+            ((eq arg-type :boolean)
+             (iload i)
+             (emit-invokestatic +abcl-lisp-object-object+ "getInstance"
+                                (list :boolean) +abcl-lisp-object-object+))
+            ((eq arg-type :char)
+             (iload i)
+             (emit-invokestatic +abcl-lisp-character-object+ "getInstance"
+                                (list :char) +abcl-lisp-character-object+))
             ((keywordp arg-type)
              (error "Unsupported arg-type: ~A" arg-type))
             (t (aload i)
@@ -187,11 +211,26 @@
     ((eq return-type :void)
      (emit 'pop)
      (emit 'return))
-    ((eq return-type :int)
+    ((member return-type '(:int :short :byte))
      (emit-invokevirtual +lisp-object+ "intValue" nil :int)
      (emit 'ireturn))
+    ((eq return-type :long)
+     (emit-invokevirtual +lisp-object+ "longValue" nil :long)
+     (emit 'lreturn))
+    ((eq return-type :float)
+     (emit-invokevirtual +lisp-object+ "floatValue" nil :float)
+     (emit 'freturn))
+    ((eq return-type :double)
+     (emit-invokevirtual +lisp-object+ "doubleValue" nil :double)
+     (emit 'dreturn))
     ((eq return-type :boolean)
      (emit-invokevirtual +lisp-object+ "getBooleanValue" nil :boolean)
+     (emit 'ireturn))
+    ((eq return-type :char)
+     ;; FIXME: how does this call not work?
+     ;; (emit-invokevirtual +lisp-character+ "getValue" nil :char)
+     (emit-invokestatic +lisp-character+ "getValue"
+                        (list +lisp-object+) :char)
      (emit 'ireturn))
     ((jvm-class-name-p return-type)
      (emit 'ldc_w (pool-class return-type))
