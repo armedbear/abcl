@@ -31,7 +31,7 @@
 
 ;;; From SBCL.
 
-;; For a working stepper implementation, see the contrib ABCL-STEPPER
+;; For working stepper implementations, see the contribs ABCL-STEPPER and ABCL-JVM-STEPPER
 
 (in-package "SYSTEM")
 
