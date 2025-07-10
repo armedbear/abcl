@@ -74,8 +74,8 @@
 	   (,actual-global-bindings (generate-bindings ,global-bindings))
 	   (,actual-engine-bindings (generate-bindings ,engine-bindings)))
        (eval `(let (,@,actual-global-bindings)
+		,(generate-special-declarations ,global-bindings)
 		(let (,@,actual-engine-bindings)
-		  ,(generate-special-declarations ,global-bindings)
 		  ,(generate-special-declarations ,engine-bindings)
 		  (prog1
 		      (progn ,@,body)
