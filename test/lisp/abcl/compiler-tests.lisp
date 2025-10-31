@@ -592,3 +592,21 @@
         (delete-file tmpfile)
         (fmakunbound 'abcl/test/lisp::cp5e)))
   t)
+
+#+abcl
+(deftest compiler.5f
+    (let ((tmpfile (ext::make-temp-file))
+          (code
+             "(in-package :cl-user)
+              (define-symbol-macro foo (list 'foo))
+              (defmacro macro-using-foo (xx)
+                `((lambda (x) (print (cons x foo))) ,xx))
+
+              (defun foobar ()
+                (macro-using-foo 'bar))"))
+      (with-open-file (s tmpfile :direction :output)
+        (format s "~A" code))
+      (load (compile-file tmpfile))
+      (delete-file tmpfile)
+      (equal (cl-user::foobar) '(cl-user::bar cl-user::foo)))
+  t)
