@@ -382,7 +382,7 @@
   (let ((op (car form)))
     (when (and (consp op) (eq (%car op) 'LAMBDA))
       (return-from precompile-function-call
-        (or (precompile-function-position-lambda op (cdr form))
+        (or (precompile1 (precompile-function-position-lambda op (cdr form)))
             (cons (precompile-lambda op)
                   (mapcar #'precompile1 (cdr form))))))
     (when (or (not *in-jvm-compile*) (notinline-p op))
