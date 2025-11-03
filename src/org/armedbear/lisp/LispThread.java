@@ -97,6 +97,10 @@ public final class LispThread
     /** Stack holding bindings for evaluated functions */
     public Stack<Environment>envStack = new Stack<Environment>();
 
+    public Stack<Environment> getEnvStack () {
+      return envStack;
+    }
+
     LispThread(Thread javaThread)
     {
         this.javaThread = javaThread;
