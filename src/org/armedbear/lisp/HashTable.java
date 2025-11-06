@@ -255,8 +255,7 @@ public class HashTable
         int hash = comparator.hash(key);
         HashEntry e = b[hash & (b.length - 1)];
         while (e != null) {
-            if (hash == e.hash &&
-                    (key == e.key || comparator.keysEqual(key, e.key))) {
+            if (comparator.keysEqual(key, e.key)) {
                 return e;
             }
             e = e.next;
