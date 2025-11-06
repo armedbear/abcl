@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 
-pushd ${ABCL_ROOT}/..
+uri="https://gitlab.common-lisp.net/ansi-test/ansi-test"
+commitish="master"
 
+topdir="$(dirname ${ABCL_ROOT:-/tmp}/..)"
+if [ ! -d "${topdir}" ]; then
+  mkdir -p "${topdir}"
+fi 
+
+pushd "${topdir}" && echo "Cloning <${uri}> under <file://${topdir}>."
 if [[ ! -r ansi-test ]]; then
-    git clone https://gitlab.common-lisp.net/ansi-test/ansi-test
+    git clone "${uri}"
 else
     pushd ansi-test
     if [[ -r .hg ]]; then
@@ -15,11 +22,12 @@ else
 fi
 
 pushd ansi-test
-# pin known working version
+# DEPRECATED pin known working version
 # <https://gitlab.common-lisp.net/ansi-test/ansi-test/-/issues/31>
-git checkout 1c832cf
-git show-ref
-git rev-parse
-popd
+# git checkout 1c832cf
+echo "Explicitly updating <file://${topdir}> worktree to <commit:${commitish}>." \
+    && git checkout  "$commitish"
+echo "References to <commit:${commitish}>: " && git show-ref "$commitish"
+popd 
 
-popd
+popd 
