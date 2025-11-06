@@ -35,8 +35,9 @@ function determine_openjdk() {
                     ;;
                 # LTS
                 openjdk11)
-                    version=11.0.29
-                    build=7
+                    # N.b. with 17.0.16 different than aarch64 or linux versions                    
+                    version=11.0.28
+                    build=6
                     topdir=jdk-${version}+${build}
                     dist="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-${version}%2B${build}/OpenJDK11U-jdk_x64_mac_hotspot_${version}_${build}.tar.gz"
                     ;;
@@ -57,8 +58,9 @@ function determine_openjdk() {
                     ;;
                 # LTS
                 openjdk17)
-                    version=17.0.17
-                    build=10
+                    # N.b. with 17.0.16 different than aarch64 or linux versions
+                    version=17.0.16
+                    build=8
                     topdir="jdk-${version}+${build}"
                     dist="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-${version}%2B${build}/OpenJDK17U-jdk_x64_mac_hotspot_${version}_${build}.tar.gz"
                     ;;
