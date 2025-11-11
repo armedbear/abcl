@@ -283,7 +283,7 @@ want to avoid the overhead of the dynamic dispatch."
           (let ((matcher (#0"matcher" last-name-pattern name)))
             (#"matches" matcher)
             (#"group" matcher 1))))
-    (let* ((bucket (gethash last-name *class-name-to-full-case-insensitive*))
+    (let* ((bucket (gethash last-name table))
            (bucket-length (length bucket)))
       (or (find name bucket :test 'equalp)
           (flet ((matches-end (end full test)
