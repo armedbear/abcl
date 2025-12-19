@@ -20,6 +20,10 @@ opens="--add-opens java.base/sun.nio.ch=ALL-UNNAMED\
 
 # --add-opens app=ALL-UNNAMED\
 
+# <https://wiki.openjdk.org/spaces/shenandoah/pages/25002018/Main>
+# Use -Xlog:gc+ergo or -Xlog:gc+stats for diagnostics
+#  -XX:+UseLargePages not supported on arm64-macos-openjdk25
+gc_shenandoah="-XX:+UseShenandoahGC -Xlog:gc+ergo -XX:+AlwaysPreTouch"
 
 abcl_javac_source=1.8
 case $jdk in
