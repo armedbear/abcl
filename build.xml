@@ -11,6 +11,8 @@ Main Ant targets:
 
  abcl.wrapper 
    -- [default] create executable wrapper for ABCL.
+ abcl.config
+   -- configure local ABCL source with latest LTS openjdk compiler (openjdk25)
  abcl.compile  
    -- compile ABCL to ${build.classes.dir}.
  abcl.jar      
@@ -1394,6 +1396,7 @@ JVM System Properties
     </target>
 
     <!-- TODO guess at a reasonable value -->
+    <target name="abcl.config" depends="abcl.configure"/>
     <target name="abcl.configure"
       depends="abcl.properties.autoconfigure.openjdk.25">
     </target>
