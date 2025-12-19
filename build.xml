@@ -1022,10 +1022,16 @@ ${basedir}/../cl-bench
 
     <property name="junit.path"
               value="${abcl.ext.dir}/junit-4.8.1.jar"/>
+
+    <!-- maven-3.9.x+ supported for openjdk8
+	 <https://maven.apache.org/docs/history.html>
+    -->
+    <property name="maven.version"
+	      value="3.9.12"/>
     <property name="maven.dist.name"
-              value="apache-maven-3.3.9-bin.zip"/>
+              value="apache-maven-${maven.version}-bin.zip"/>
     <property name="maven.dist.uri"
-              value="http://www-eu.apache.org/dist/maven/maven-3/3.3.9/binaries/${maven.dist.name}"/>
+              value="http://www.apache.org/dist/maven/maven-3/${maven.version}/binaries/${maven.dist.name}"/>
     <property name="maven.local.path"
               value="${abcl.ext.dir}/${maven.dist.name}"/>
 
@@ -1072,7 +1078,7 @@ ${basedir}/../cl-bench
       <javac destdir="${abcl.test.classes.dir}"
              classpathref="abcl.test.compile.classpath"
              debug="true"
-             target="1.5">
+             target="1.8">
         <src path="${abcl.test.src.dir}"/>
         <patternset refid="abcl.test.source.java"/>
       </javac>
@@ -1105,7 +1111,7 @@ ${basedir}/../cl-bench
             depends="test.ansi.compiled,test.abcl,test.cl-bench"/>
 
     <target name="test.ansi.interpreted" depends="abcl.jar">
-      <echo>Recording test output in ${abcl.test.log.file}.</echo>
+      <echo>==] Recording test output in ${abcl.test.log.file}.</echo>
       <record name="${abcl.test.log.file}" emacsmode="true" action="start" append="yes"/>
       <java fork="true" dir="${basedir}"
             classpathref="abcl.classpath.dist"
@@ -1118,11 +1124,11 @@ ${basedir}/../cl-bench
         <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
-      <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
+      <echo>[== Finished recording test output in ${abcl.test.log.file}.</echo>
     </target>
 
     <target name="test.ansi.compiled" depends="abcl.jar">
-      <echo>Recording test output in ${abcl.test.log.file}.</echo>
+      <echo>==] Recording test output in ${abcl.test.log.file}.</echo>
       <record name="${abcl.test.log.file}" emacsmode="true" action="start" append="yes"/>
       <java fork="true" dir="${basedir}"
             classpathref="abcl.classpath.dist"
@@ -1140,7 +1146,7 @@ ${basedir}/../cl-bench
     </target>
 
     <target name="test.abcl" depends="abcl.jar">
-      <echo>Recording test output in ${abcl.test.log.file}.</echo>
+      <echo>[== Recording test output in ${abcl.test.log.file}.</echo>
       <record name="${abcl.test.log.file}" emacsmode="true" action="start" append="yes"/>
       <java fork="true" dir="${basedir}"
             classpathref="abcl.classpath.dist"
@@ -1153,11 +1159,11 @@ ${basedir}/../cl-bench
         <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
-      <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
+      <echo>==] Finished recording test output in ${abcl.test.log.file}.</echo>
     </target>
 
     <target name="test.cl-bench" depends="abcl.jar">
-      <echo>Recording test output in ${abcl.test.log.file}.</echo>
+      <echo>==] Recording test output in ${abcl.test.log.file}.</echo>
       <record name="${abcl.test.log.file}" emacsmode="true" action="start" append="yes"/>
       <java fork="true" dir="${basedir}"
             classpathref="abcl.classpath.dist"
@@ -1172,7 +1178,7 @@ ${basedir}/../cl-bench
         <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
-      <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
+      <echo>[== Finished recording test output in ${abcl.test.log.file}.</echo>
     </target>
 
 
