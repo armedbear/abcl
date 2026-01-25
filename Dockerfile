@@ -1,10 +1,13 @@
-FROM docker.io/eclipse-temurin:17
+FROM docker.io/eclipse-temurin:25
 
 RUN (export DEBIAN_FRONTEND='noninteractive' && \
     apt-get update  && \
     apt-get upgrade -y && \
-    apt-get install -y \
-    libffi-dev ant maven)
+    apt-get install -y ant maven)
+
+# CFFI system packages neeeded.  Omit to save space
+RUN (export DEBIAN_FRONTEND='noninteractive' && \
+    apt-get install -y maven gcc libffi-dev libc-dev pkg-config)
 
 USER root
 RUN useradd -ms /bin/bash abcl
@@ -22,11 +25,15 @@ USER abcl
 # Diagnostics for debugging ABCL construction
 #RUN ls -lR ${work}/abcl
 
-RUN cd ${work}/abcl && bash ci/create-abcl-properties.bash openjdk11
+USER root
+RUN (export DEBIAN_FRONTEND='noninteractive' && \
+    apt-get install -y bash gawk)
+USER abcl
+RUN cd ${work}/abcl && bash ci/create-abcl-properties.bash openjdk25
 
 RUN cd ${work}/abcl && ant clean && ant abcl
-ENV abcl_exec_path  "${work}/abcl/abcl"
 
+ENV abcl_exec_path  "${work}/abcl/abcl"
 USER root
 RUN ln -s ${abcl_exec_path} /usr/local/bin/abcl
 
