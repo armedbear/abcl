@@ -27,7 +27,7 @@ function determine_openjdk() {
             case $jdk in
                 # LTS Legacy
                 openjdk8)
-                    v=462
+                    v=482
                     build=b08
                     version=1.8.0.${v}
                     topdir=jdk8u${v}-${build}
@@ -36,8 +36,8 @@ function determine_openjdk() {
                 # LTS
                 openjdk11)
                     # N.b. with 17.0.16 different than aarch64 or linux versions                    
-                    version=11.0.28
-                    build=6
+                    version=11.0.30
+                    build=7
                     topdir=jdk-${version}+${build}
                     dist="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-${version}%2B${build}/OpenJDK11U-jdk_x64_mac_hotspot_${version}_${build}.tar.gz"
                     ;;
@@ -59,7 +59,7 @@ function determine_openjdk() {
                 # LTS
                 openjdk17)
                     # N.b. with 17.0.16 different than aarch64 or linux versions
-                    version=17.0.16
+                    version=17.0.18
                     build=8
                     topdir="jdk-${version}+${build}"
                     dist="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-${version}%2B${build}/OpenJDK17U-jdk_x64_mac_hotspot_${version}_${build}.tar.gz"
@@ -85,8 +85,8 @@ function determine_openjdk() {
                 # LTS
                 openjdk21)
                     v="21"
-                    id="${v}.0.9"
-                    rev="10"
+                    id="${v}.0.10"
+                    rev="7"
                     arch="jdk_x64_mac_hotspot"
                     topdir="jdk-${id}+${rev}"
                     dist="https://github.com/adoptium/temurin${v}-binaries/releases/download/jdk-${id}%2B${rev}/OpenJDK${v}U-${arch}_${id}_${rev}.tar.gz"
@@ -112,8 +112,8 @@ function determine_openjdk() {
                 # LTS 
                 openjdk25)
                     v="25"
-                    id="${v}.0.1"
-                    rev="8"
+                    id="${v}.0.2"
+                    rev="10"
                     arch="jdk_x64_mac_hotspot"
                     topdir="jdk-${id}+${rev}"
                     dist="https://github.com/adoptium/temurin${v}-binaries/releases/download/jdk-${id}%2B${rev}/OpenJDK${v}U-${arch}_${id}_${rev}.tar.gz"
@@ -125,14 +125,14 @@ function determine_openjdk() {
             case $jdk in
                 # Legacy
                 openjdk8)
-                    version=u462
+                    version=u482
                     build=b08
                     topdir=jdk8${version}-${build}
                     dist="https://github.com/adoptium/temurin8-binaries/releases/download/jdk8${version}-${build}/OpenJDK8U-jdk_x64_linux_hotspot_8${version}${build}.tar.gz"
                     ;;
                 # LTS 
                 openjdk11)
-                    version=11.0.29
+                    version=11.0.30
                     build=7
                     topdir=jdk-${version}+${build}
                     dist="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-${version}%2B${build}/OpenJDK11U-jdk_x64_linux_hotspot_${version}_${build}.tar.gz"
@@ -154,8 +154,8 @@ function determine_openjdk() {
                     ;;
                 # LTS
                 openjdk17)
-                    version=17.0.17
-                    build=10
+                    version=17.0.18
+                    build=8
                     topdir="jdk-${version}+${build}"
                     dist="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-${version}%2B${build}/OpenJDK17U-jdk_x64_linux_hotspot_${version}_${build}.tar.gz"
                     ;;
@@ -180,8 +180,8 @@ function determine_openjdk() {
                 # LTS
                 openjdk21)
                     v="21"
-                    id="${v}.0.9"
-                    rev="10"
+                    id="${v}.0.10"
+                    rev="7"
                     arch="jdk_x64_linux_hotspot"
                     topdir="jdk-${id}+${rev}"
                     dist="https://github.com/adoptium/temurin${v}-binaries/releases/download/jdk-${id}%2B${rev}/OpenJDK${v}U-${arch}_${id}_${rev}.tar.gz"
@@ -207,8 +207,8 @@ function determine_openjdk() {
                 # LTS 
                 openjdk25)
                     v="25"
-                    id="${v}.0.1"
-                    rev="8"
+                    id="${v}.0.2"
+                    rev="10"
                     arch="jdk_x64_linux_hotspot"
                     topdir="jdk-${id}+${rev}"
                     dist="https://github.com/adoptium/temurin${v}-binaries/releases/download/jdk-${id}%2B${rev}/OpenJDK${v}U-${arch}_${id}_${rev}.tar.gz"
