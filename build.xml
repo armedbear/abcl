@@ -1075,11 +1075,12 @@ ${basedir}/../cl-bench
     </target>
         
     <target name="abcl.test.compile" 
-            depends="abcl.test.pre-compile">
+            depends="abcl,abcl.test.pre-compile">
       <mkdir dir="${abcl.test.classes.dir}"/>
       <javac destdir="${abcl.test.classes.dir}"
              classpathref="abcl.test.compile.classpath"
              debug="true"
+             includeantruntime="false"
              target="1.8">
         <src path="${abcl.test.src.dir}"/>
         <patternset refid="abcl.test.source.java"/>
