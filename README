@@ -56,11 +56,15 @@ to get something like
         Max. Heap Size (Estimated): 3.89G
         Using VM: OpenJDK 64-Bit Server VM
 
-    Armed Bear Common Lisp 1.9.2
-    Java 17.0.2 Oracle Corporation
+VM settings:
+    Max. Heap Size (Estimated): 4.00G
+    Using VM: OpenJDK 64-Bit Server VM
+
+    Armed Bear Common Lisp 1.10.0
+    Java 11.0.24 Eclipse Adoptium
     OpenJDK 64-Bit Server VM
-    Low-level initialization completed in 0.432 seconds.
-    Startup completed in 2.246 seconds.
+    Low-level initialization completed in 0.201 seconds.
+    Startup completed in 1.013 seconds.
     Type ":help" for a list of available commands.
     CL-USER(1):
 
@@ -86,9 +90,9 @@ Java executable (`java`) is in your shell's path.  Java 8, 11, 17 are
 strongly supported by ABCL, but others may work with a little elbow
 grease.
 
-[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.9.2>
-[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.9.2>
-[abcl.org-release]:    <http://abcl.org/releases/1.9.2/>
+[maven-abcl]:          <https://mvnrepository.com/artifact/org.abcl/abcl/1.10.0>
+[maven-abcl-contrib]:  <https://mvnrepository.com/artifact/org.abcl/abcl-contrib/1.10.0>
+[abcl.org-release]:    <http://abcl.org/releases/1.10.0/>
 
 To start ABCL, simply issue the following command:
 
@@ -96,11 +100,15 @@ To start ABCL, simply issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.9.2
-    Java 17.0.7 OpenJDK Porters Group
+VM settings:
+    Max. Heap Size (Estimated): 4.00G
+    Using VM: OpenJDK 64-Bit Server VM
+
+    Armed Bear Common Lisp 1.10.0
+    Java 21.0.2 MacPorts
     OpenJDK 64-Bit Server VM
-    Low-level initialization completed in 0.107 seconds.
-    Startup completed in 0.493 seconds.
+    Low-level initialization completed in 0.085 seconds.
+    Startup completed in 0.436 seconds.
     CL-USER(1):
 
 Yer now at the interactive ABCL "Read Eval Print Loop" (REPL): hacks
@@ -118,10 +126,10 @@ instructions <file:build.xml> expressed by the venerable Apache Ant
 tool.  Alternately, one may use the Apache Maven tool as a facade to
 Ant.
 
-To build, one must have a Java 8, 11, or 17 openjdk installed
-locally. Just the Java Runtime Environment (JRE) isn't enough, as you
-need the Java compiler ('javac') to compile the Java source of the
-ABCL implementation.
+To build, one must have a openjdk under Long Term Supported (LTS)
+status installed locally. Just the Java Runtime Environment (JRE)
+isn't enough, as you need the Java compiler ('javac') to compile the
+Java source of the ABCL implementation.
 
 Download a binary distribution [Ant version 1.7.1 or greater][ant].
 Unpack the files somewhere convenient, ensuring that the 'ant' (or
@@ -158,9 +166,8 @@ or from the shell as
 
     bash ci/create-abcl-properties.bash openjdk17
 
-Currently supported platforms are 'openjdk8', 'openjdk11',
-'openjdk13', 'openjdk14', 'openjdk15', 'openjd16', 'openjdk17',
-'openjdk18', and 'openjdk19'.
+Currently supported platforms are 'openjdk8', 'openjdk11', 'openjdk17',
+'openjdk21', and 'openjdk25'.
 
 
 USING APACHE NETBEANS
@@ -218,7 +225,7 @@ ABCL has a [User Manual][manual] stating its conformance to the ANSI
 standard, providing a compliant and practical Common Lisp
 implementation.
 
-[manual]:       <https://abcl.org/releases/1.9.2/abcl-1.9.2.pdf>
+[manual]:       <https://abcl.org/releases/1.10.0/abcl-1.10.0.pdf>
 
 
 TESTS
@@ -226,13 +233,14 @@ TESTS
 
     | Version | Failures | Total |
     |---------+----------+-------|
+    |   1.10.0|          |       |
     |   1.9.2 |       63 | 21902 |
     |   1.9.1 |       60 | 21870 |
     |   1.9.0 |       61 | 21870 |
     |   1.8.0 |       49 | 21848 |
     |   1.5.0 |       48 | 21708 |
 
-ABCL 1.9.2 currently fails ~63 out of 21902 the current ANSI test
+ABCL 1.10.0 currently fails ~63 out of 21902 the current ANSI test
 suite derived from the tests originally written for GCL.
 
 [ansi-test]: <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git>
