@@ -7,9 +7,9 @@ Version 1.10.0
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
 
-* [3450:3734edef398a] compiler: fix bug described by Samuel Ward 
+* [3450:3734edef398a] (Alejandro) Fix compiler bug reported by Samuel Ward .
 
-* [3449:046198495b7f] (alejandro) fix EQ hash table bug for CONS
+* [3449:046198495b7f] (Alejandro) Fix EQ hash table bug for CONS
 
 * [3447:7682875a6759] Container virtualization template
   (Podman/Docker) uses openjdk25
@@ -62,15 +62,15 @@ Version 1.10.0
 * [r15747] (Tarn W. Burton) Add some missing default methods in the
   Gray streams module.
 
-* [r15743] (Alejandrozf) Fix CLOS change propagation for all subclasses.
+* [r15743] (Alejandro) Fix CLOS change propagation for all subclasses.
 
-* [r15741] (Alejandrozf) Fix CLOS usage for 
+* [r15741] (Alejandro) Fix CLOS usage for 
   UPDATE-INSTANCE-FOR-REDEFINED-CLASS generic function.
 
-* [r15740] (Alejandrozf) Fix for issue with CLOS incorrectly
+* [r15740] (Alejandro) Fix for issue with CLOS incorrectly
   propagating initargs.
 
-* [r15735-6] (Alejandrozf) Fix compilation of literal quoted parts which
+* [r15735-6] (Alejandro) Fix compilation of literal quoted parts which
   share parts.
 
 * [r15734] Implement a more efficient vector-to-vector REPLACE.
