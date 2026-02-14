@@ -182,10 +182,12 @@ public final class make_array
               v = new BasicVector_ByteBuffer((java.nio.ByteBuffer)(((JavaObject)nioBuffer).getObject()),
                                              directAllocation);
             } else {
-              v = new BasicVector_ByteBuffer(size, directAllocation);
+              //              v = new BasicVector_ByteBuffer(size, directAllocation);
+              v = new BasicVectorBuffer(Byte.class, size);
             }
           } else { //if (Java.Buffers.active.equals(AllocationPolicy.PRIMITIVE_ARRAY)) {
-            v = new BasicVector_UnsignedByte8(size);
+            //v = new BasicVector_UnsignedByte8(size);
+            v = new BasicVectorPrimitive(Byte.class, size);
           }
         }
         defaultInitialElement = Fixnum.ZERO;
