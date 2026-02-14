@@ -845,3 +845,6 @@ step 1 ==> value: #<EQL HASH-TABLE 3 entries, 11 buckets {733688E9}>
 #<EQL HASH-TABLE 3 entries, 11 buckets {733688E9}>
 CL-USER(8):
 ```
+
+There is also a protocol (with a reference implementation) for create external(s) GUI(s) for the stepper process.
+See https://gitlab.com/cl-projects/abcl-visual-stepper
