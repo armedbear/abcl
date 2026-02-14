@@ -126,7 +126,8 @@
 (defvar *dd-slots*)
 (defvar *dd-inherited-accessors*)
 (defvar *dd-documentation*)
-
+(defvar *dd-optimize* t)
+  
 (defun keywordify (symbol)
   (intern (symbol-name symbol) +keyword-package+))
 
@@ -353,28 +354,30 @@
         (type (dsd-type slot)))
     (cond ((eq *dd-type* 'list)
            `((declaim (ftype (function * ,type) ,accessor-name))
-             (record-source-information-for-type ',accessor-name '(:structure-reader ,*dd-name*))
+	     (record-source-information-for-type ',accessor-name '(:structure-reader ,*dd-name*))
              (setf (symbol-function ',accessor-name)
                    (make-list-reader ,index))))
           ((or (eq *dd-type* 'vector)
                (and (consp *dd-type*) (eq (car *dd-type*) 'vector)))
            `((declaim (ftype (function * ,type) ,accessor-name))
-             (record-source-information-for-type ',accessor-name '(:structure-reader ,*dd-name*))
+	     (record-source-information-for-type ',accessor-name '(:structure-reader ,*dd-name*))
              (setf (symbol-function ',accessor-name)
                    (make-vector-reader ,index))
-             (record-source-information-for-type ',accessor-name '(:structure-reader ,*dd-name*))
-             (define-source-transform ,accessor-name (instance)
-               `(aref (truly-the ,',*dd-type* ,instance) ,,index))))
+	     (record-source-information-for-type ',accessor-name '(:structure-reader ,*dd-name*))
+             ,@(when *dd-optimize*
+                 `((define-source-transform ,accessor-name (instance)
+                 `(aref (truly-the ,',*dd-type* ,instance) ,,index))))))
           (t
            `((declaim (ftype (function * ,type) ,accessor-name))
              (setf (symbol-function ',accessor-name)
                    (make-structure-reader ,index ',*dd-name*))
-             (record-source-information-for-type ',accessor-name '(:structure-reader ,*dd-name*))
-             (define-source-transform ,accessor-name (instance)
+	     (record-source-information-for-type ',accessor-name '(:structure-reader ,*dd-name*))
+             ,@(when *dd-optimize*
+                 `((define-source-transform ,accessor-name (instance)
                ,(if (eq type 't)
                     ``(structure-ref (the ,',*dd-name* ,instance) ,,index)
                     ``(the ,',type
-                        (structure-ref (the ,',*dd-name* ,instance) ,,index)))))))))
+                        (structure-ref (the ,',*dd-name* ,instance) ,,index)))))))))))
 
 (defun make-list-writer (index)
   #'(lambda (value instance)
@@ -400,22 +403,24 @@
         (index (dsd-index slot)))
     (cond ((eq *dd-type* 'list)
            `((record-source-information-for-type '(setf ,accessor-name) '(:structure-writer ,*dd-name*))
-             (setf (get ',accessor-name 'setf-function)
+	     (setf (get ',accessor-name 'setf-function)
                    (make-list-writer ,index))))
           ((or (eq *dd-type* 'vector)
                (and (consp *dd-type*) (eq (car *dd-type*) 'vector)))
            `((setf (get ',accessor-name 'setf-function)
                    (make-vector-writer ,index))
-             (record-source-information-for-type '(setf ,accessor-name) '(:structure-writer ,*dd-name*))
-             (define-source-transform (setf ,accessor-name) (value instance)
-               `(aset (truly-the ,',*dd-type* ,instance) ,,index ,value))))
+	     (record-source-information-for-type '(setf ,accessor-name) '(:structure-writer ,*dd-name*))
+             ,@(when *dd-optimize*
+                 `((define-source-transform (setf ,accessor-name) (value instance)
+                     `(aset (truly-the ,',*dd-type* ,instance) ,,index ,value))))))
           (t
            `((setf (get ',accessor-name 'setf-function)
                    (make-structure-writer ,index ',*dd-name*))
-             (record-source-information-for-type '(setf ,accessor-name) '(:structure-writer ,*dd-name*))
-             (define-source-transform (setf ,accessor-name) (value instance)
-               `(structure-set (the ,',*dd-name* ,instance)
-                               ,,index ,value)))))))
+	     (record-source-information-for-type '(setf ,accessor-name) '(:structure-writer ,*dd-name*))
+             ,@(when *dd-optimize* 
+                 `((define-source-transform (setf ,accessor-name) (value instance)
+                     `(structure-set (the ,',*dd-name* ,instance)
+                                     ,,index ,value)))))))))
 
 (defun define-access-functions ()
   (let ((result ()))
@@ -493,7 +498,11 @@
      (setf *dd-type* (cadr option))
      (when (and (consp *dd-type*) (eq (car *dd-type*) 'vector))
        (unless (eq (second *dd-type*) '*)
-         (setf *dd-default-slot-type* (second *dd-type*)))))))
+         (setf *dd-default-slot-type* (second *dd-type*)))))
+    (:optimize
+     (setf *dd-optimize* (if (null (cadr option)) nil t)))
+
+     ))
 
 (defun parse-name-and-options (name-and-options)
   (setf *dd-name* (the symbol (car name-and-options)))
@@ -511,40 +520,43 @@
             (t
              (error "Unrecognized DEFSTRUCT option: ~S." option))))))
 
+(defvar *allow-defstruct-redefinition* nil)
+
 (defun compiler-defstruct (name &key
-                                conc-name
-                                default-constructor
-                                constructors
-                                copier
-                                include
-                                type
-                                named
-                                initial-offset
-                                predicate
-                                print-function
-                                print-object
-                                direct-slots
-                                slots
-                                inherited-accessors
-                                documentation)
+                                  conc-name
+                                  default-constructor
+                                  constructors
+                                  copier
+                                  include
+                                  type
+                                  named
+                                  initial-offset
+                                  predicate
+                                  print-function
+                                  print-object
+                                  direct-slots
+                                  slots
+                                  inherited-accessors
+                                  documentation
+                                  optimize)
   (let ((description
-         (make-defstruct-description :name name
-                                    :conc-name conc-name
-                                    :default-constructor default-constructor
-                                    :constructors constructors
-                                    :copier copier
-                                    :include include
-                                    :type type
-                                    :named named
-                                    :initial-offset initial-offset
-                                    :predicate predicate
-                                    :print-function print-function
-                                    :print-object print-object
-                                    :direct-slots direct-slots
-                                    :slots slots
-                                    :inherited-accessors inherited-accessors))
+          (make-defstruct-description :name name
+                                      :conc-name conc-name
+                                      :default-constructor default-constructor
+                                      :constructors constructors
+                                      :copier copier
+                                      :include include
+                                      :type type
+                                      :named named
+                                      :initial-offset initial-offset
+                                      :predicate predicate
+                                      :print-function print-function
+                                      :print-object print-object
+                                      :direct-slots direct-slots
+                                      :slots slots
+                                      :inherited-accessors inherited-accessors))
         (old (get name 'structure-definition)))
-    (when old
+    (when (and old (not (and *allow-defstruct-redefinition* (not optimize))))
       (unless
           ;; Assert that the structure definitions are exactly the same
           ;; we need to support this type of redefinition during bootstrap
@@ -572,15 +584,25 @@
                :format-arguments (list name)))
       ;; Since they're the same, continue with the old one.
       (setf description old))
-    (setf (get name 'structure-definition) description))
-  (%set-documentation name 'structure documentation)
-  (when (or (null type) named)
-    (let ((structure-class
-            (make-structure-class name direct-slots slots (car include))))
-      (%set-documentation name 'type documentation)
-      (%set-documentation structure-class t documentation)))
-  (when default-constructor
-    (proclaim `(ftype (function * t) ,default-constructor))))
+    (setf (get name 'structure-definition) description)
+    (%set-documentation name 'structure documentation)
+    (when (or (null type) named (and old *allow-defstruct-redefinition*))
+      (let ((structure-class
+              (if (and old *allow-defstruct-redefinition*)
+                  (progn
+                    (block warn
+                      (dolist (slot slots)
+                        (when (get-function-info-value (dsd-reader slot) :source-transform)
+                          (warn "Redefining structure ~a, previously optimized. You should recompile code using accessors"
+                                name)
+                          (return-from warn nil))))
+                    (dolist (slot slots) (set-function-info-value (dsd-reader slot) :source-transform nil))
+                    (reinitialize-structure-class name direct-slots slots (car include)))
+                  (make-structure-class name direct-slots slots (car include)))))
+        (%set-documentation name 'type documentation)
+        (%set-documentation structure-class t documentation)))
+    (when default-constructor
+      (proclaim `(ftype (function * t) ,default-constructor)))))
 
 (defmacro defstruct (name-and-options &rest slots)
   (let ((*dd-name* nil)
@@ -599,7 +621,8 @@
         (*dd-direct-slots* ())
         (*dd-slots* ())
         (*dd-inherited-accessors* ())
-        (*dd-documentation* nil))
+        (*dd-documentation* nil)
+        (*dd-optimize* t))
     (parse-name-and-options (if (atom name-and-options)
                                 (list name-and-options)
                                 name-and-options))
@@ -704,7 +727,8 @@
                              :direct-slots ',*dd-direct-slots*
                              :slots ',*dd-slots*
                              :inherited-accessors ',*dd-inherited-accessors*
-                             :documentation ',*dd-documentation*))
+                             :documentation ',*dd-documentation*
+                             :optimize ',*dd-optimize*))
        (record-source-information-for-type ',*dd-name* :structure)
        ,@(define-constructors)
        ,@(define-predicate)
