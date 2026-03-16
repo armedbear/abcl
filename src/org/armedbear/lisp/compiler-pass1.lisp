@@ -36,6 +36,7 @@
 (require "CLOS")
 (require "PRINT-OBJECT")
 (require "COMPILER-TYPES")
+(require "COMPILER-BACKEND")
 (require "KNOWN-FUNCTIONS")
 (require "KNOWN-SYMBOLS")
 (require "DUMP-FORM")
@@ -247,14 +248,14 @@ where each of the vars returned is a list with these elements:
                   (when (p-var var-info)
                     (push `(,(p-var var-info) nil) bindings)))))
           (setf bindings (nreverse bindings)))
-        
+
         (unless (or key-p rest (null arguments))
           (error 'lambda-list-mismatch :mismatch-type :too-many-arguments))
 
         ;;Keyword and rest arguments.
         (if key-p
             (multiple-value-bind (kbindings ktemps kignor)
-                (match-keyword-and-rest-args 
+                (match-keyword-and-rest-args
                  key allow-others-p rest arguments)
               (setf bindings (append bindings kbindings)
                     temp-bindings (append temp-bindings ktemps)
@@ -282,7 +283,7 @@ where each of the vars returned is a list with these elements:
     (when (oddp (list-length arguments))
       (error 'lambda-list-mismatch
              :mismatch-type :odd-number-of-keyword-arguments))
-    
+
     (let (temp-bindings bindings other-keys-found-p ignorables already-seen
           args)
       ;;If necessary, make up a fake argument to hold :allow-other-keys,
@@ -293,7 +294,7 @@ where each of the vars returned is a list with these elements:
         (let ((allow-other-keys-temp (gensym (symbol-name :allow-other-keys))))
           (push allow-other-keys-temp ignorables)
           (push (list allow-other-keys-temp nil nil :allow-other-keys) key)))
-      
+
       ;;First, let's bind the keyword arguments that have been passed by
       ;;the caller. If we encounter an unknown keyword, remember it.
       ;;As per the above, :allow-other-keys will never be considered
@@ -319,7 +320,7 @@ where each of the vars returned is a list with these elements:
                      (push g ignorables)
                      (unless var-info
                        (setf other-keys-found-p t))))))
-      
+
       ;;Then, let's bind those arguments that haven't been passed in
       ;;to their default value, in declaration order.
       (let (defaults)
@@ -330,7 +331,7 @@ where each of the vars returned is a list with these elements:
                  (when (p-var var-info)
                    (push `(,(p-var var-info) nil) defaults))))
         (setf bindings (append (nreverse defaults) bindings)))
-      
+
       ;;If necessary, check for unrecognized keyword arguments.
       (when (and other-keys-found-p (not allow-others-p))
         (if (loop
@@ -1152,7 +1153,7 @@ where each of the vars returned is a list with these elements:
 ;;               (listp (second symbols-form)))
 ;;      (dolist (name (second symbols-form))
 ;;        (let ((variable (make-variable :name name :special-p t)))
-;;          (push 
+;;          (push
     (setf (progv-environment-register block) t
           (progv-form block)
           `(progv ,symbols-form ,values-form ,@(p1-body body)))
