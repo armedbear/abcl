@@ -353,7 +353,11 @@ of the compilands being processed (p1: so far; p2: in total).")
                             ;;captured, because the function name is used in a
                             ;;(function ...) form. Obviously implies
                             ;;references-allowed-p.
-  )
+  ;; Alist mapping an enclosing compiland to a JVM register holding a
+  ;; cached closure-wrapped copy of this function. Ensures repeated
+  ;; #'f references within the same method return the same Java object,
+  ;; so #'f is EQ to #'f per ANSI.
+  (closure-cache-registers nil))
 
 (defvar *local-functions* ())
 

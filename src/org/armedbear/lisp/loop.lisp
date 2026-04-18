@@ -1884,8 +1884,20 @@ code to be loaded.
                                 start-value
                                 limit-value))
              (setq remaining-tests t)))
-         `(() (,indexv ,step)
-           ,remaining-tests ,step-hack () () ,first-test ,step-hack)))))
+         ;; Step into a temporary and only assign the iteration variable
+         ;; after the end-test passes, so it retains its last valid value
+         ;; for the FINALLY clause (per ANSI loop.1.40-43).
+         (if (and testfn (not (eq remaining-tests t)))
+             (let ((step-tmp (gensym "LOOP-STEP-TMP-")))
+               (loop-make-var step-tmp nil indexv-type nil t)
+               `(() (,step-tmp ,step)
+                 (,testfn ,step-tmp ,endform)
+                 ,(if step-hack
+                      `(,indexv ,step-tmp ,@step-hack)
+                      `(,indexv ,step-tmp))
+                 () () ,first-test ,step-hack))
+             `(() (,indexv ,step)
+               ,remaining-tests ,step-hack () () ,first-test ,step-hack))))))
 
 ;;;; interfaces to the master sequencer
 

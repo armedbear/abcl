@@ -2304,6 +2304,14 @@ is registered (or not)."
   (when (eq *current-compiland* (local-function-compiland local-function))
     (aload 0)
     (return-from emit-load-local-function))
+  (let ((cached (cdr (assoc *current-compiland*
+                            (local-function-closure-cache-registers
+                             local-function)))))
+    (when cached
+      ;; A previous reference within this method already wrapped the
+      ;; closure; reuse the cached instance so #'f is EQ to #'f.
+      (aload cached)
+      (return-from emit-load-local-function)))
   (multiple-value-bind
         (class field)
       (local-function-class-and-field local-function)
@@ -2314,6 +2322,31 @@ is registered (or not)."
     (emit-invokestatic +lisp+ "makeCompiledClosure"
                        (list +lisp-object+ +closure-binding-array+)
                        +lisp-object+)))
+
+(defun emit-cache-local-function-closure (local-function)
+  "When *closure-variables* is non-null, eagerly wrap LOCAL-FUNCTION
+into a CompiledClosure and store it in a fresh JVM register associated
+with *current-compiland*.  Subsequent #'f references in this method use
+the cached instance, preserving EQ identity."
+  (when (and *closure-variables*
+             (local-function-references-needed-p local-function)
+             (not (eq *current-compiland*
+                      (local-function-compiland local-function)))
+             (not (assoc *current-compiland*
+                         (local-function-closure-cache-registers
+                          local-function))))
+    (let ((register (allocate-register nil)))
+      (multiple-value-bind (class field)
+          (local-function-class-and-field local-function)
+        (emit-getstatic class field +lisp-object+))
+      (emit-checkcast +lisp-compiled-closure+)
+      (duplicate-closure-array *current-compiland*)
+      (emit-invokestatic +lisp+ "makeCompiledClosure"
+                         (list +lisp-object+ +closure-binding-array+)
+                         +lisp-object+)
+      (astore register)
+      (push (cons *current-compiland* register)
+            (local-function-closure-cache-registers local-function)))))
 
 
 
@@ -4193,6 +4226,8 @@ given a specific common representation.")
     (dolist (local-function local-functions)
       (compile-local-function local-function))
     (dolist (local-function local-functions)
+      (emit-cache-local-function-closure local-function))
+    (dolist (local-function local-functions)
       (push local-function *local-functions*))
     (dolist (special (flet-free-specials block))
       (push special *visible-variables*))
@@ -4212,6 +4247,8 @@ given a specific common representation.")
       (push local-function *local-functions*))
     (dolist (local-function local-functions)
       (compile-local-function local-function))
+    (dolist (local-function local-functions)
+      (emit-cache-local-function-closure local-function))
     (dolist (special (labels-free-specials block))
       (push special *visible-variables*))
     (with-saved-compiler-policy
@@ -7072,17 +7109,26 @@ We need more thought here.
     ((symbolp form)
      (cond
        ((null form)
-        (emit-push-false representation)
+        (cond ((or (null representation) (eq representation :boolean))
+               (emit-push-false representation))
+              (t
+               (emit-push-nil)
+               (convert-representation nil representation)))
         (emit-move-from-stack target representation))
        ((eq form t)
-        (emit-push-true representation)
+        (cond ((or (null representation) (eq representation :boolean))
+               (emit-push-true representation))
+              (t
+               (emit-push-t)
+               (convert-representation nil representation)))
         (emit-move-from-stack target representation))
        ((keywordp form)
-        (ecase representation
-          (:boolean
-           (emit 'iconst_1))
-          ((nil)
-           (emit-load-externalized-object form)))
+        (cond ((eq representation :boolean)
+               (emit 'iconst_1))
+              (t
+               (emit-load-externalized-object form)
+               (when representation
+                 (convert-representation nil representation))))
         (emit-move-from-stack target representation))
        (t
         ;; Shouldn't happen.
