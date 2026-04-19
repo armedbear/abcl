@@ -231,9 +231,15 @@
            (when (and width (> length width))
              ;; The string is too long. Shorten it by removing insignificant
              ;; trailing zeroes if possible.
-             (let ((minimum-width (+ (1+ index) (or fdigits 0))))
-               (when (< minimum-width width)
-                 (setf minimum-width width))
+             (let ((minimum-width (+ (1+ index) (or fdigits 0)))
+                   ;; When INDEX is 0 the caller will prepend a leading "0"
+                   ;; for readability, which consumes one column of WIDTH.
+                   ;; Shorten the digit string to leave room for that prefix.
+                   (effective-width (if (eql index 0)
+                                        (max (1- width) 0)
+                                        width)))
+               (when (< minimum-width effective-width)
+                 (setf minimum-width effective-width))
                (when (> length minimum-width)
                  ;; But we don't want to shorten e.g. "1.7d100"...
                  (when (every #'digit-char-p (subseq s (1+ index)))
@@ -266,30 +272,72 @@
 
 
 (defun scale-exponent (original-x)
-  (let* ((x (coerce original-x 'long-float)))
-    (multiple-value-bind (sig exponent) (decode-float x)
-      (declare (ignore sig))
-      (if (= x 0.0l0)
-          (values (float 0.0l0 original-x) 1)
-          (let* ((ex (locally (declare (optimize (safety 0)))
-                       (the fixnum
-                            (round (* exponent (log 2l0 10))))))
-                 (x (if (minusp ex)
-                        (if (float-denormalized-p x)
-                            (* x 1.0l16 (expt 10.0l0 (- (- ex) 16)))
-                            (* x 10.0l0 (expt 10.0l0 (- (- ex) 1))))
-                        (/ x 10.0l0 (expt 10.0l0 (1- ex))))))
-            (do ((d 10.0l0 (* d 10.0l0))
-                 (y x (/ x d))
-                 (ex ex (1+ ex)))
-                ((< y 1.0l0)
-                 (do ((m 10.0l0 (* m 10.0l0))
-                      (z y (* y m))
-                      (ex ex (1- ex)))
-                     ((>= z 0.1l0)
-                      (values (float z original-x) ex))
-                   (declare (long-float m) (integer ex))))
-              (declare (long-float d))))))))
+  ;; Return (mantissa, ex) with x = mantissa * 10^ex and 0.1 <= |mantissa| < 1.
+  ;; Uses exact rational arithmetic so extreme floats (e.g. 2.9085...d185)
+  ;; keep full precision through the exponent computation.
+  (cond ((zerop original-x)
+         (values (float 0 original-x) 1))
+        (t
+         (let* ((r (abs (rational original-x)))
+                ;; Initial estimate via integer-length (bit-length based log).
+                (ex (floor (* (- (integer-length (numerator r))
+                                 (integer-length (denominator r)))
+                              #.(log 2d0 10)))))
+           ;; Adjust up: want r < 10^ex.
+           (loop while (>= r (expt 10 ex)) do (incf ex))
+           ;; Adjust down: want 10^(ex-1) <= r.
+           (loop while (< r (expt 10 (1- ex))) do (decf ex))
+           (values (coerce (/ (rational original-x) (expt 10 ex))
+                           (type-of original-x))
+                   ex)))))
+
+(defun shortest-digits-and-exponent (x)
+  "Return (digits, exponent) such that |x| = 0.DDDD... * 10^exponent
+where DDDD... is the shortest round-trip digit string for the float X
+(no leading zeros, no trailing zeros), and |x| is nonzero.
+For zero, returns (\"0\", 0)."
+  (if (zerop x)
+      (values "0" 0)
+      (let* ((s (sys::float-string (abs x)))
+             (dot (position #\. s))
+             (int-part (if dot (subseq s 0 dot) s))
+             (frac-part (if dot (subseq s (1+ dot)) ""))
+             (digits (concatenate 'string int-part frac-part))
+             (int-len (length int-part))
+             (first-nz (position-if-not (lambda (c) (eql c #\0)) digits))
+             (last-nz (position-if-not (lambda (c) (eql c #\0)) digits
+                                       :from-end t)))
+        (if first-nz
+            (values (subseq digits first-nz (1+ last-nz))
+                    (- int-len first-nz))
+            (values "0" 0)))))
+
+(defun exact-round-digits (x n-sig)
+  "Round |X| to N-SIG significant decimal digits using exact rational
+arithmetic on (rational x). Returns (digits natural-exp) where
+DIGITS is a string of exactly N-SIG decimal digits and
+|X| approx = 0.DIGITS * 10^natural-exp. NATURAL-EXP already accounts
+for any rounding carry-out (e.g. 0.999... -> 1.000 bumps exp by 1)."
+  (cond
+    ((zerop x)
+     (values (make-string n-sig :initial-element #\0) 1))
+    ((<= n-sig 0)
+     (values "" 1))
+    (t
+     (let* ((r (abs (rational x)))
+            (ex (floor (* (- (integer-length (numerator r))
+                             (integer-length (denominator r)))
+                          #.(log 2d0 10)))))
+       (loop while (>= r (expt 10 ex)) do (incf ex))
+       (loop while (< r (expt 10 (1- ex))) do (decf ex))
+       ;; 10^(ex-1) <= r < 10^ex. Scale so 10^(n-sig - 1) <= scaled < 10^n-sig.
+       (let* ((scaled (* r (expt 10 (- n-sig ex))))
+              (int (round scaled)))
+         (when (>= int (expt 10 n-sig))
+           ;; carry: e.g. 0.999 rounds up to 1.000 -> bump exponent
+           (setf int (/ int 10))
+           (incf ex))
+         (values (format nil "~v,'0d" n-sig int) ex))))))
 
 (defconstant double-float-exponent-byte
   (byte 11 20))
@@ -2216,17 +2264,29 @@
         (when (and d (zerop d))
           (setf tpoint nil))
         (when w
-          (decf spaceleft len)
-          ;;optional leading zero
-          (when lpoint
-            (if (or (> spaceleft 0) tpoint) ;force at least one digit
-                (decf spaceleft)
-                (setq lpoint nil)))
-          ;;optional trailing zero
-          (when tpoint
-            (if (> spaceleft 0)
-                (decf spaceleft)
-                (setq tpoint nil))))
+          (decf spaceleft len))
+        ;; Reconcile the optional leading and trailing zeroes. When both are
+        ;; candidates (the zero/"." case), prefer TPOINT over LPOINT: ".0" is
+        ;; read as a float while "0." is read as an integer. When only one is
+        ;; set, keep it -- dropping would produce an invalid token (".") or an
+        ;; integer-looking result ("X.") for what must be a float.
+        (cond
+          ((and lpoint tpoint)
+           (cond
+             ((or (not w) (>= spaceleft 2))
+              (when w (decf spaceleft 2)))
+             (t
+              (setq lpoint nil)
+              (when w (decf spaceleft)))))
+          (lpoint
+           (when w
+             (cond
+               ((> spaceleft 0) (decf spaceleft))
+               ((string= str ".") (decf spaceleft))
+               (t (setq lpoint nil)))))
+          (tpoint
+           (when w
+             (decf spaceleft))))
         (cond ((and w (< spaceleft 0) ovf)
                ;;field width overflow
                (dotimes (i w) (write-char ovf stream))
@@ -2267,7 +2327,7 @@
 
 (defun format-exponent-marker (number)
   (if (typep number *read-default-float-format*)
-      #\e
+      #\E
       (typecase number
         (single-float #\f)
         (double-float #\d)
@@ -2291,47 +2351,117 @@
            (or (sys::float-infinity-p number)
                (sys::float-nan-p number)))
       (prin1 number stream)
-      (multiple-value-bind (num expt) (sys::scale-exponent (abs number))
-        (let* ((expt (- expt k))
-               (estr (decimal-string (abs expt)))
-               (elen (if e (max (length estr) e) (length estr)))
-               (fdig (if d (if (plusp k) (1+ (- d k)) d) nil))
-               (fmin (if (minusp k) (- 1 k) nil))
-               (spaceleft (if w
-                              (- w 2 elen
-                                 (if (or atsign (minusp number))
-                                     1 0))
-                              nil)))
-          (if (and w ovf e (> elen e)) ;exponent overflow
-              (dotimes (i w) (write-char ovf stream))
-              (multiple-value-bind (fstr flen lpoint)
-                (sys::flonum-to-string num spaceleft fdig k fmin)
-                (when w
-                  (decf spaceleft flen)
-                  (when lpoint
-                    (if (> spaceleft 0)
-                        (decf spaceleft)
-                        (setq lpoint nil))))
-                (cond ((and w (< spaceleft 0) ovf)
-                       ;;significand overflow
-                       (dotimes (i w) (write-char ovf stream)))
-                      (t (when w
-                           (dotimes (i spaceleft) (write-char pad stream)))
-                         (if (minusp number)
-                             (write-char #\- stream)
-                             (if atsign (write-char #\+ stream)))
-                         (when lpoint (write-char #\0 stream))
-                         (write-string fstr stream)
-                         (write-char (if marker
-                                         marker
-                                         (format-exponent-marker number))
-                                     stream)
-                         (write-char (if (minusp expt) #\- #\+) stream)
-                         (when e
-                           ;;zero-fill before exponent if necessary
-                           (dotimes (i (- e (length estr)))
-                             (write-char #\0 stream)))
-                         (write-string estr stream)))))))))
+      (let ((abs-num (abs number))
+            ;; Total significant digits we want to round to. For k>=1 the
+            ;; scaled form shows (k-1) leading significant digits beyond
+            ;; the first, so it's d+1; for k<=0 the placeholder zeros
+            ;; take up |k| fractional slots and the remaining (d+k) are
+            ;; actual significant digits.
+            (n-sig (when d (if (plusp k) (1+ d) (+ d k)))))
+        (multiple-value-bind (digits natural-exp)
+            (cond
+              ((zerop abs-num)
+               (values (if d (make-string (max n-sig 0)
+                                          :initial-element #\0)
+                          "0")
+                       1))
+              ((null d)
+               (sys::shortest-digits-and-exponent abs-num))
+              ((<= n-sig 0)
+               (values "" 1))
+              (t
+               (sys::exact-round-digits abs-num n-sig)))
+          (let* ((expt (- natural-exp k))
+                 (estr (decimal-string (abs expt)))
+                 (elen (if e (max (length estr) e) (length estr)))
+                 (digit-len (length digits))
+                 (fstr nil) (lpoint nil) (tpoint nil))
+            ;; Lay out the mantissa digits around the decimal point.
+            ;; LPOINT signals a leading "0"; TPOINT a trailing "0".
+            (cond
+              ((plusp k)
+               (cond
+                 ((>= digit-len k)
+                  (let ((before (subseq digits 0 k))
+                        (after (subseq digits k)))
+                    (setf fstr (concatenate 'string before "." after))
+                    (when (zerop (length after)) (setf tpoint t))))
+                 (t
+                  ;; Shift-in insignificant zeros when k exceeds the digit
+                  ;; count (unusual; e.g. a shortest-round-trip "1" with k=2).
+                  (setf fstr (concatenate 'string
+                                          digits
+                                          (make-string (- k digit-len)
+                                                       :initial-element #\0)
+                                          "."))
+                  (setf tpoint t))))
+              ((zerop k)
+               (setf fstr (concatenate 'string "." digits))
+               (setf lpoint t)
+               (when (zerop digit-len) (setf tpoint t)))
+              (t
+               ;; Negative k: "0." + (-k) leading zeros + digits.
+               (setf fstr (concatenate 'string
+                                       "."
+                                       (make-string (- k) :initial-element #\0)
+                                       digits))
+               (setf lpoint t)))
+            ;; If the user requested D digits after the decimal and the
+            ;; current scale already consumed all of them, drop the
+            ;; optional trailing zero (mirrors the fdig=0 rule).
+            (when (and d (plusp k) (>= k n-sig))
+              (setf tpoint nil))
+            (let ((flen (length fstr))
+                  (spaceleft (if w
+                                 (- w 2 elen
+                                    (if (or atsign (minusp number)) 1 0))
+                                 nil)))
+              (cond
+                ((and w ovf e (> elen e))
+                 (dotimes (i w) (write-char ovf stream)))
+                (t
+                 (when w (decf spaceleft flen))
+                 (cond
+                   ((and lpoint tpoint)
+                    (cond
+                      ((or (not w) (>= spaceleft 2))
+                       (when w (decf spaceleft 2)))
+                      ((and w (= spaceleft 1))
+                       (setq lpoint nil)
+                       (decf spaceleft))
+                      (t
+                       (setq lpoint nil)
+                       (setq tpoint nil))))
+                   (lpoint
+                    (when w
+                      (if (> spaceleft 0)
+                          (decf spaceleft)
+                          (setq lpoint nil))))
+                   (tpoint
+                    (when w
+                      (if (> spaceleft 0)
+                          (decf spaceleft)
+                          (setq tpoint nil)))))
+                 (cond ((and w (< spaceleft 0) ovf)
+                        (dotimes (i w) (write-char ovf stream)))
+                       (t
+                        (when w
+                          (dotimes (i spaceleft) (write-char pad stream)))
+                        (if (minusp number)
+                            (write-char #\- stream)
+                            (if atsign (write-char #\+ stream)))
+                        (when lpoint (write-char #\0 stream))
+                        (write-string fstr stream)
+                        (when tpoint (write-char #\0 stream))
+                        (write-char (if marker
+                                        marker
+                                        (format-exponent-marker number))
+                                    stream)
+                        (write-char (if (minusp expt) #\- #\+) stream)
+                        (when e
+                          (dotimes (i (- e (length estr)))
+                            (write-char #\0 stream)))
+                        (write-string estr stream)))))))))))
 
 (def-format-interpreter #\G (colonp atsignp params)
   (when colonp
