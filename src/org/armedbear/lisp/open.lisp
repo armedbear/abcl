@@ -152,7 +152,7 @@
           ;; this abstract pathname if and only if a file with this name does
           ;; not yet exist." See java.io.File.createNewFile().
           (create-new-file (namestring pathname))))
-       (make-file-stream pathname element-type :input nil external-format))
+       (make-file-stream p element-type :input nil external-format))
       (:probe
        (case if-does-not-exist
          (:error
@@ -166,7 +166,7 @@
           ;; this abstract pathname if and only if a file with this name does
           ;; not yet exist." See java.io.File.createNewFile().
           (create-new-file (namestring pathname))))
-       (let ((stream (make-file-stream pathname element-type
+       (let ((stream (make-file-stream p element-type
                                        :input nil external-format)))
          (when stream
            (close stream))
@@ -214,7 +214,7 @@
           (error 'simple-error
                  :format-control "Option not supported: ~S."
                  :format-arguments (list if-exists))))
-       (let ((stream (make-file-stream pathname element-type
+       (let ((stream (make-file-stream p element-type
                                        direction if-exists external-format)))
          (unless stream
            (error 'file-error

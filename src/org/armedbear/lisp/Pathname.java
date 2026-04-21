@@ -743,8 +743,12 @@ public class Pathname extends LispObject
                 // We have a namestring. Check for pathname components that
                 // can't be read from the namestring.
                 if ((getHost() != NIL && !isURL())
-                    || getVersion() != NIL) 
+                    || getVersion() != NIL)
                 {
+                    useNamestring = false;
+                } else if (getName() == NIL && getType() != NIL) {
+                    // Namestring would be ".type" which reads back with
+                    // name="type" rather than name=NIL, type=type.
                     useNamestring = false;
                 } else if (getName() instanceof AbstractString) {
                     String n = getName().getStringValue();

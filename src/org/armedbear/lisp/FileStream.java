@@ -71,7 +71,11 @@ public final class FileStream extends Stream
          *    http://www.weitz.de/flexi-streams/#make-external-format
          */
         super(Symbol.FILE_STREAM);
-        final File file = pathname.getFile();
+        final Pathname physicalPathname
+            = (pathname instanceof LogicalPathname)
+              ? (Pathname) LogicalPathname.translateLogicalPathname((LogicalPathname) pathname)
+              : pathname;
+        final File file = physicalPathname.getFile();
         String mode = null;
         if (direction == Keyword.INPUT) {
             mode = "r";
@@ -298,24 +302,29 @@ public final class FileStream extends Stream
                 direction != Keyword.IO)
                 error(new LispError("Direction must be :INPUT, :OUTPUT, or :IO."));
 
-            if (pathname.isJar())  {
+            final Pathname dispatchPathname
+                = (pathname instanceof LogicalPathname)
+                  ? (Pathname) LogicalPathname.translateLogicalPathname((LogicalPathname) pathname)
+                  : pathname;
+
+            if (dispatchPathname.isJar())  {
                 if (direction != Keyword.INPUT) {
-                    error(new FileError("Only direction :INPUT is supported for jar files.", pathname));
+                    error(new FileError("Only direction :INPUT is supported for jar files.", dispatchPathname));
                 }
-                try { 
-                    return new JarStream(pathname, 
+                try {
+                    return new JarStream(dispatchPathname,
                                          elementType, direction, ifExists,
                                          externalFormat);
                 } catch (IOException e) {
                     return error(new StreamError(null, e));
                 }
-            } else if (pathname instanceof URLPathname
-                       && !(URLPathname.isFile(pathname))) {
+            } else if (dispatchPathname instanceof URLPathname
+                       && !(URLPathname.isFile(dispatchPathname))) {
                 if (direction != Keyword.INPUT) {
-                    error(new FileError("Only direction :INPUT is supported for URLs.", pathname));
+                    error(new FileError("Only direction :INPUT is supported for URLs.", dispatchPathname));
                 }
-                try { 
-                    return new URLStream(pathname,
+                try {
+                    return new URLStream(dispatchPathname,
                                          elementType, direction, ifExists,
                                          externalFormat);
                 } catch (IOException e) {
@@ -323,7 +332,7 @@ public final class FileStream extends Stream
                 }
             } else {
                 try {
-                    return new FileStream(pathname, 
+                    return new FileStream(pathname,
                                           elementType, direction, ifExists,
                                           externalFormat);
                 }
