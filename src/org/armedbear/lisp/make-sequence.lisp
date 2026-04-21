@@ -38,9 +38,61 @@
          :format-control "The requested length (~D) does not match the specified type ~A."
          :format-arguments (list size type)))
 
+(defun %vector-type-element-type (type)
+  "Extract the element type from a vector type specifier, or return
+:UNKNOWN if the type is not a recognized vector type."
+  (cond ((atom type)
+         (case type
+           ((STRING SIMPLE-STRING BASE-STRING SIMPLE-BASE-STRING) 'character)
+           ((BIT-VECTOR SIMPLE-BIT-VECTOR) 'bit)
+           ((VECTOR SIMPLE-VECTOR) t)
+           (t :unknown)))
+        ((consp type)
+         (case (%car type)
+           ((STRING SIMPLE-STRING BASE-STRING SIMPLE-BASE-STRING) 'character)
+           ((BIT-VECTOR SIMPLE-BIT-VECTOR) 'bit)
+           ((VECTOR SIMPLE-VECTOR) (if (cdr type) (cadr type) t))
+           ((ARRAY SIMPLE-ARRAY) (if (cdr type) (cadr type) t))
+           (t :unknown)))
+        (t :unknown)))
+
 (defun make-sequence (type size &key (initial-element nil iesp))
   (let (element-type sequence class)
     (setf type (normalize-type type))
+    (when (and (consp type) (eq (%car type) 'or))
+      ;; For an OR type, only proceed if all branches share the same
+      ;; element type. Otherwise the result type is ambiguous and
+      ;; CLHS permits (and the ANSI suite requires) signaling an
+      ;; error.
+      (let ((branches (%cdr type))
+            (common-et nil)
+            (first-p t))
+        (dolist (branch branches)
+          (let ((et (%vector-type-element-type branch)))
+            (cond ((eq et :unknown)
+                   (setf common-et :unknown)
+                   (return))
+                  (first-p (setf common-et et first-p nil))
+                  ((equal common-et et) nil)
+                  (t (setf common-et :conflict) (return)))))
+        (when (or (eq common-et :unknown) (eq common-et :conflict))
+          (error 'simple-type-error
+                 :format-control "~S is not a sequence type."
+                 :format-arguments (list type)))
+        ;; All branches share a single element type; try each until
+        ;; one succeeds at the requested size.
+        (dolist (subtype branches)
+          (let ((result (handler-case
+                            (if iesp
+                                (make-sequence subtype size
+                                               :initial-element initial-element)
+                                (make-sequence subtype size))
+                          (error () :make-sequence-or-branch-failed))))
+            (unless (eq result :make-sequence-or-branch-failed)
+              (return-from make-sequence result))))
+        (error 'simple-type-error
+               :format-control "~S is not a sequence type."
+               :format-arguments (list type))))
     (cond ((atom type)
            (setf class (if (classp type) type (find-class type nil)))
            (when (classp type)

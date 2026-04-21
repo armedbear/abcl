@@ -613,7 +613,9 @@ public final class MathFunctions
                 return SingleFloat.ONE;
             }
             if (base.zerop())
-                return base;
+                // Type contagion: (expt 0 y) must match the result type of
+                // (* 0 y) so that e.g. (expt 0 2.0f0) => 0.0f0, not 0.
+                return base.multiplyBy(power);
             if (base.isEqualTo(1))
                 return base;
             
