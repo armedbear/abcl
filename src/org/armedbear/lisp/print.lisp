@@ -144,11 +144,11 @@
          (print-object object stream))
         ((java::java-object-p object)
          (print-object object stream))
+        ((functionp object)
+          (print-object object stream))
         ((xp::xp-structure-p stream)
          (let ((s (sys::%write-to-string object)))
            (xp::write-string++ s stream 0 (length s))))
-        ((functionp object)
-          (print-object object stream))
         (t
          (%output-object object stream))))
 
@@ -287,6 +287,12 @@
       (xp::output-pretty-object object stream)
       (output-ugly-object object stream)))
 
+(defvar *circularity-handled-object* nil
+  "Bound to the current object when %check-object has already consulted
+the circularity hash table on its behalf. Downstream callers of
+maybe-initiate-xp-printing use this to avoid a redundant check when
+pprint-logical-block is entered from a dispatched pretty-printer.")
+
 (defun %check-object (object stream)
   (multiple-value-bind (marker initiate)
       (check-for-circularity object t)
@@ -299,8 +305,10 @@
         ;; Otherwise...
         (if marker
             (when (handle-circularity marker stream)
-              (%print-object object stream))
-            (%print-object object stream)))))
+              (let ((*circularity-handled-object* object))
+                (%print-object object stream)))
+            (let ((*circularity-handled-object* object))
+              (%print-object object stream))))))
 
 ;;; Output OBJECT to STREAM observing all printer control variables.
 (defun output-object (object stream)
