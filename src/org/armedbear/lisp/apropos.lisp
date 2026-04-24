@@ -34,8 +34,16 @@
 (in-package #:system)
 
 
-(defun apropos-list (string-designator &optional package-designator
-                                                 external-only)
+(defun apropos-list (string-designator
+		     &optional package-designator external-only)
+  "Return the list of all symbols matching STRING-DESIGNATOR
+
+If the optional PACKAGE-DESIGNATOR is specified, restrict the match to
+symbols within the designated package.
+
+As an extension to ANSI, an optional true generalized boolean
+EXTERNAL-ONLY further restricts the results to symbols which are
+external to the package matching PACKAGE-DESIGNATOR."
   (if package-designator
       (let ((package (find-package package-designator))
             (string (string string-designator))
@@ -54,10 +62,20 @@
                 (apropos-list string-designator package external-only))
               (list-all-packages))))
 
-(defun apropos (string-designator &optional package-designator external-only)
+(defun apropos (string-designator
+		&optional package-designator external-only)
+  "Print the name of all symbols matching STRING-DESIGNATOR to the standard output
+
+If the optional PACKAGE-DESIGNATOR is specified, restrict the match to
+symbols within the designated package.
+
+As an extension to ANSI, an optional true generalized boolean
+EXTERNAL-ONLY further restricts the results to symbols which are
+external to the package matching PACKAGE-DESIGNATOR."
+
   (dolist (symbol (remove-duplicates (apropos-list string-designator
-                                                   package-designator
-                                                   external-only)))
+                                                    package-designator
+                                                    external-only)))
     (fresh-line)
     (prin1 symbol)
     (when (boundp symbol)

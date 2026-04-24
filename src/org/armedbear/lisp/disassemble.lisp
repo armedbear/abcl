@@ -210,6 +210,14 @@ CL:DISASSEMBLE."
 ;; (get-java-field (elt (#"get" (elt (#"getFields" (#"getClass" #'foo)) 0) #'foo) 0) "value")
 
 (defun disassemble (arg)
+  (unless (typep arg '(or function symbol
+                       (cons (eql setf) (cons symbol null))
+                       (cons (eql lambda) t)))
+    (error 'type-error
+           :datum arg
+           :expected-type '(or function symbol
+                            (cons (eql setf) (cons symbol null))
+                            (cons (eql lambda) t))))
   (print-lines-with-prefix (disassemble-function arg)))
 
 (defun print-lines-with-prefix (string)

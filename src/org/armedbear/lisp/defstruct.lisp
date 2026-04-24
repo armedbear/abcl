@@ -604,6 +604,30 @@
                                 (list name-and-options)
                                 name-and-options))
     (check-declaration-type *dd-name*)
+    ;; CLHS: the :predicate option is limited to use with structures
+    ;; that have no :type option or are typed and :named.  A non-default
+    ;; (user-supplied) predicate name is a symbol or NIL; the default is
+    ;; a string placeholder.
+    (when (and *dd-type*
+               (not *dd-named*)
+               *dd-predicate*
+               (symbolp *dd-predicate*))
+      (error 'simple-error
+             :format-control
+             "DEFSTRUCT ~S: :PREDICATE is not allowed on a typed structure unless :NAMED is also supplied."
+             :format-arguments (list *dd-name*)))
+    ;; CLHS: if :type is supplied and :named is supplied, the type must
+    ;; be able to hold the structure's name (a symbol).
+    (when (and *dd-type* *dd-named*
+               (consp *dd-type*) (eq (car *dd-type*) 'vector))
+      (let ((elt-type (second *dd-type*)))
+        (unless (or (eq elt-type '*)
+                    (eq elt-type t)
+                    (subtypep 'symbol elt-type))
+          (error 'simple-error
+                 :format-control
+                 "DEFSTRUCT ~S: vector element type ~S cannot hold the structure's name symbol (required by :NAMED)."
+                 :format-arguments (list *dd-name* elt-type)))))
     (if *dd-constructors*
         (dolist (constructor *dd-constructors*)
           (unless (cadr constructor)

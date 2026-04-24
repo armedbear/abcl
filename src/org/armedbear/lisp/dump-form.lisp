@@ -31,12 +31,228 @@
 
 (in-package "SYSTEM")
 
-(export '(dump-form dump-uninterned-symbol-index))
+(export '(dump-form dump-uninterned-symbol-index
+          %fasl-emit-toplevel-form
+          %fasl-init-instance-tables
+          *fasl-instance-count*
+          *fasl-stream*))
 
-(declaim (special *circularity* *circle-counter* *instance-forms*))
+(declaim (special *circularity* *circle-counter* *instance-forms*
+                  *fasl-instance-table*
+                  *fasl-instance-forms*
+                  *fasl-instance-refs*
+                  *fasl-instance-created-p*
+                  *fasl-instance-initialized-p*
+                  *fasl-instance-in-creation-p*
+                  *fasl-instance-in-init-p*
+                  *fasl-instance-count*
+                  *fasl-emitting-to-fasl-stream*
+                  *fasl-stream*))
 
+(defvar *fasl-emitting-to-fasl-stream* nil
+  "Bound to T while DUMP-FORM / %FASL-WRITE-RAW-FORM are writing
+material destined for the fasl stream.  When NIL, DUMP-INSTANCE and
+DF-CHECK-INSTANCE fall back to inline creation/initialization.")
+
+;;;; MAKE-LOAD-FORM ordering for the file compiler.
+;;;;
+;;;; CLHS requires creation and initialization forms from MAKE-LOAD-FORM
+;;;; to be dumped so that data-flow dependencies are honored: any object
+;;;; referenced in a creation form must already exist, and initialization
+;;;; forms run "as soon as possible" after their associated creation form
+;;;; subject to the dependencies of the initialization form.
+;;;;
+;;;; We implement this by tracking referenced instances file-wide.  For
+;;;; each literal instance we emit two separate fasl top-level forms:
+;;;;
+;;;;   (SETF (SVREF SYS::*FASL-INSTANCES* N) <creation-form>)
+;;;;   <initialization-form>
+;;;;
+;;;; and replace the original inline reference to the instance with
+;;;; "#.(SVREF SYS::*FASL-INSTANCES* N)".  The prologue allocates the
+;;;; vector once the total count is known.
+
+(defun %fasl-candidate-p (object)
+  (or (structure-object-p object)
+      (standard-object-p object)
+      (java:java-object-p object)))
+
+(defun %fasl-init-instance-tables ()
+  (setq *fasl-instance-table* (make-hash-table :test 'eq)
+        *fasl-instance-forms* (make-hash-table :test 'eq)
+        *fasl-instance-refs* (make-hash-table :test 'eq)
+        *fasl-instance-created-p* (make-hash-table :test 'eq)
+        *fasl-instance-initialized-p* (make-hash-table :test 'eq)
+        *fasl-instance-in-creation-p* (make-hash-table :test 'eq)
+        *fasl-instance-in-init-p* (make-hash-table :test 'eq)
+        *fasl-instance-count* 0))
+
+(defun %fasl-register-instance (object)
+  "Assign an index to OBJECT, caching its creation and initialization
+forms.  Returns the index."
+  (or (gethash object *fasl-instance-table*)
+      (multiple-value-bind (creation-form initialization-form)
+          (make-load-form object)
+        (let ((index *fasl-instance-count*))
+          (setf (gethash object *fasl-instance-table*) index)
+          (setf (gethash object *fasl-instance-forms*)
+                (cons creation-form initialization-form))
+          (setf (gethash object *fasl-instance-refs*)
+                (list 'svref 'sys::*fasl-instances* index))
+          (incf *fasl-instance-count*)
+          index))))
+
+(declaim (ftype (function (t stream) t)
+                %fasl-walk-for-deps
+                %fasl-walk-creation-deps
+                %fasl-walk-init-deps
+                %fasl-ensure-created
+                %fasl-ensure-initialized))
+
+(defun %fasl-map-embedded-instances (form fn)
+  "Call FN on every literal instance embedded in FORM, without
+revisiting already-seen subobjects."
+  (let ((seen (make-hash-table :test #'eq)))
+    (labels ((walk (x)
+               (unless (or (null x)
+                           (symbolp x)
+                           (numberp x)
+                           (characterp x)
+                           (stringp x)
+                           (bit-vector-p x)
+                           (gethash x seen))
+                 (setf (gethash x seen) t)
+                 (cond
+                   ((consp x)
+                    (walk (car x))
+                    (walk (cdr x)))
+                   ((vectorp x)
+                    (dotimes (i (length x)) (walk (aref x i))))
+                   ((%fasl-candidate-p x)
+                    (funcall fn x))))))
+      (walk form))))
+
+(defun %fasl-walk-creation-deps (form stream)
+  "Ensure creation forms are emitted for every instance embedded in
+FORM (creation-dep transitive closure)."
+  (%fasl-map-embedded-instances form
+                                (lambda (x) (%fasl-ensure-created x stream))))
+
+(defun %fasl-walk-init-deps (form stream)
+  "Ensure full init forms (and their creation prerequisites) are
+emitted for every instance embedded in FORM."
+  (%fasl-map-embedded-instances form
+                                (lambda (x) (%fasl-ensure-initialized x stream))))
+
+(defun %fasl-walk-for-deps (form stream)
+  "Drive the two-phase dep walk for a top-level FORM: ensure every
+embedded literal instance is fully created *and* initialized before
+FORM is emitted."
+  (%fasl-walk-init-deps form stream))
+
+(defun %fasl-init-deps-ready-p (object)
+  "Return T if every literal instance embedded in OBJECT's init form
+is already initialized (ignoring OBJECT itself).  This decides whether
+we can run OBJECT's init form eagerly, right after its creation, per
+the CLHS ASAP rule for init forms."
+  (let ((init-form (cdr (gethash object *fasl-instance-forms*)))
+        (ready t))
+    (%fasl-map-embedded-instances
+     init-form
+     (lambda (y)
+       (unless (or (eq y object)
+                   (gethash y *fasl-instance-initialized-p*))
+         (setf ready nil))))
+    ready))
+
+(defun %fasl-ensure-created (object stream)
+  "Emit OBJECT's creation form (after its creation-dep transitive
+closure) if not already emitted.  After emission, eagerly emit
+OBJECT's init form when all its init-deps are already initialized, so
+inits run ASAP after creation per CLHS."
+  (unless (and *fasl-instance-table* (%fasl-candidate-p object))
+    (return-from %fasl-ensure-created))
+  (let ((index (%fasl-register-instance object)))
+    (when (gethash object *fasl-instance-created-p*)
+      (return-from %fasl-ensure-created))
+    (when (gethash object *fasl-instance-in-creation-p*)
+      (error "Circular creation dependency in MAKE-LOAD-FORM for ~S"
+             object))
+    (setf (gethash object *fasl-instance-in-creation-p*) t)
+    (let ((creation-form (car (gethash object *fasl-instance-forms*))))
+      (%fasl-walk-creation-deps creation-form stream)
+      (%fasl-write-raw-form
+       `(setf (svref sys::*fasl-instances* ,index) ,creation-form)
+       stream))
+    (setf (gethash object *fasl-instance-created-p*) t)
+    (remhash object *fasl-instance-in-creation-p*)
+    (when (%fasl-init-deps-ready-p object)
+      (%fasl-ensure-initialized object stream))))
+
+(defun %fasl-ensure-initialized (object stream)
+  "Emit OBJECT's init form (after ensuring OBJECT is created and after
+recursing through init-dep transitive closure) if not already emitted."
+  (unless (and *fasl-instance-table* (%fasl-candidate-p object))
+    (return-from %fasl-ensure-initialized))
+  (%fasl-ensure-created object stream)
+  (when (gethash object *fasl-instance-initialized-p*)
+    (return-from %fasl-ensure-initialized))
+  (when (gethash object *fasl-instance-in-init-p*)
+    ;; In-progress init cycle: some earlier frame is already emitting
+    ;; OBJECT's init form.  Per CLHS the ordering is unspecified for
+    ;; init-level cycles; break here.
+    (return-from %fasl-ensure-initialized))
+  (setf (gethash object *fasl-instance-in-init-p*) t)
+  (let ((init-form (cdr (gethash object *fasl-instance-forms*))))
+    (when init-form
+      (%fasl-walk-init-deps init-form stream)
+      (%fasl-write-raw-form init-form stream)))
+  (setf (gethash object *fasl-instance-initialized-p*) t)
+  (remhash object *fasl-instance-in-init-p*))
+
+(defun %fasl-ensure-created-and-initialized (object stream)
+  "Compatibility shim retained for any external callers."
+  (%fasl-ensure-initialized object stream))
+
+(defun %fasl-write-raw-form (form stream)
+  "Dump FORM as a complete fasl top-level expression without running
+the dependency walk (the caller has already emitted deps)."
+  (let ((*print-fasl* t)
+        (*print-array* t)
+        (*print-base* 10)
+        (*print-case* :upcase)
+        (*print-circle* nil)
+        (*print-escape* t)
+        (*print-gensym* t)
+        (*print-length* nil)
+        (*print-level* nil)
+        (*print-lines* nil)
+        (*print-pretty* nil)
+        (*print-radix* nil)
+        (*print-right-margin* nil)
+        (*print-structure* t)
+        (*readtable* *the-fasl-printer-readtable*)
+        (*read-default-float-format* nil)
+        (*circularity* (make-hash-table :test #'eq))
+        (*instance-forms* (make-hash-table :test #'eq))
+        (*circle-counter* 0)
+        (*fasl-emitting-to-fasl-stream* t))
+    (unless *prevent-fasl-circle-detection*
+      (df-check-object form))
+    (dump-object form stream)
+    (%stream-terpri stream)))
+
+(defun %fasl-emit-toplevel-form (form stream)
+  "Public entry: emit FORM to the fasl STREAM, first pre-emitting any
+creation and initialization forms required by embedded literal
+instances."
+  (%fasl-walk-for-deps form stream)
+  (%fasl-write-raw-form form stream))
 
 (defun get-instance-form (object)
+  "Legacy inline creation-plus-init expression for literal instances.
+Used when dumping outside the fasl-stream context (e.g. embedding
+constants into class files via SERIALIZE-OBJECT)."
   (multiple-value-bind
         (value presence)
       (gethash object *instance-forms*)
@@ -83,7 +299,15 @@
     (df-check-object (aref object index))))
 
 (defun df-check-instance (object)
-  (df-check-object (get-instance-form object)))
+  (let ((ref (and *fasl-emitting-to-fasl-stream*
+                  *fasl-instance-refs*
+                  (gethash object *fasl-instance-refs*))))
+    (if ref
+        ;; New fasl path: DUMP-INSTANCE will emit this exact ref cons;
+        ;; walk it here so the same cons is registered in *circularity*
+        ;; before DUMP-OBJECT reaches it.
+        (df-check-object ref)
+        (df-check-object (get-instance-form object)))))
 
 (defun df-check-object (object)
   (unless (eq :circular (df-register-circularity object))
@@ -164,8 +388,20 @@
 
 (declaim (ftype (function (t stream) t) dump-instance))
 (defun dump-instance (object stream)
-  (write-string "#." stream)
-  (dump-object (get-instance-form object) stream))
+  (let ((ref (and *fasl-emitting-to-fasl-stream*
+                  *fasl-instance-refs*
+                  (gethash object *fasl-instance-refs*))))
+    (cond
+      (ref
+       ;; File-compiler path: emit a reference to the pre-populated
+       ;; per-fasl instance table.
+       (write-string "#." stream)
+       (dump-object ref stream))
+      (t
+       ;; Legacy path: inline creation and initialization at the
+       ;; point of reference.
+       (write-string "#." stream)
+       (dump-object (get-instance-form object) stream)))))
 
 (declaim (ftype (function (symbol) integer) dump-uninterned-symbol-index))
 (defun dump-uninterned-symbol-index (symbol)
