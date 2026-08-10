@@ -44,6 +44,21 @@ public final class make_array
     super("%make-array", PACKAGE_SYS, false);
   }
 
+  private static String checkArraySize(int size) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("The size specified for this array (");
+        sb.append(size);
+        sb.append(')');
+        if (size >= ARRAY_DIMENSION_MAX) {
+          sb.append(" is >= ARRAY-DIMENSION-LIMIT (");
+          sb.append(ARRAY_DIMENSION_MAX);
+          sb.append(").");
+        } else {
+          sb.append(" is negative.");
+        }
+        return sb.toString();
+  }
+
   @Override
   public LispObject execute(LispObject[] args) {
     // What a mess without keywords, but it still works…
@@ -83,6 +98,10 @@ public final class make_array
     if (displacedTo != NIL) {
         // FIXME Make sure element type (if specified) is compatible with
         // displaced-to array.
+        final int size = dimv[0];
+        if (size < 0 || size >= ARRAY_DIMENSION_MAX){
+            return error(new LispError(checkArraySize(size)));
+        }
         final AbstractArray array = checkArray(displacedTo);
         if (initialElementProvided != NIL) {
           return error(new LispError("Initial element must not be specified for a displaced array."));
@@ -140,18 +159,8 @@ public final class make_array
         return new ZeroRankArray(upgradedType, data, adjustable != NIL);
     } else if (rank == 1) {
       final int size = dimv[0];
-      if (size < 0 || size >= ARRAY_DIMENSION_MAX) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("The size specified for this array (");
-        sb.append(size);
-        sb.append(')');
-        if (size >= ARRAY_DIMENSION_MAX) {
-          sb.append(" is >= ARRAY-DIMENSION-LIMIT (");
-          sb.append(ARRAY_DIMENSION_MAX);
-          sb.append(").");
-        } else {
-          sb.append(" is negative.");}
-        return error(new LispError(sb.toString()));
+      if (size < 0 || size >= ARRAY_DIMENSION_MAX){
+          return error(new LispError(checkArraySize(size)));
       }
       final AbstractVector v;
       final LispObject defaultInitialElement;
