@@ -52,7 +52,7 @@ directory to search for classes or a list of such values.
 --- Macro: \textbf{chain} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Performs chained method invocations. 
+Performs chained method invocations
 
 TARGET is either the receiver object when the first call is a virtual method
 call or a list in the form (:static <jclass>) when the first method
@@ -129,7 +129,7 @@ not-documented
 --- Function: \textbf{ensure-java-class} [\textbf{java}] \textit{jclass}
 
 \begin{adjustwidth}{5em}{5em}
-Attempt to ensure that the Java class referenced by JCLASS exists in the current process of the implementation.
+Attempt to ensure that the Java class referenced by JCLASS exists in the current process of the implementation
 \end{adjustwidth}
 
 \paragraph{}
@@ -174,7 +174,7 @@ Returns the component type of the array type ATYPE
 --- Function: \textbf{jarray-from-list} [\textbf{java}] \textit{list}
 
 \begin{adjustwidth}{5em}{5em}
-Return a Java array from LIST whose type is inferred from the first element.
+Return a Java array from LIST whose type is inferred from the first element
 
 For more control over the type of the array, use JNEW-ARRAY-FROM-LIST.
 \end{adjustwidth}
@@ -185,7 +185,7 @@ For more control over the type of the array, use JNEW-ARRAY-FROM-LIST.
 --- Function: \textbf{jarray-length} [\textbf{java}] \textit{java-array}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the length of a Java primitive array.
+Returns the length of a Java primitive JAVA-ARRAY
 \end{adjustwidth}
 
 \paragraph{}
@@ -294,7 +294,7 @@ Returns a reference to the Java class designated by NAME-OR-CLASS-REF. If the CL
 --- Function: \textbf{jclass-array-p} [\textbf{java}] \textit{class}
 
 \begin{adjustwidth}{5em}{5em}
-Returns T if CLASS is an array class
+Boolean predicate for whether CLASS is an array class
 \end{adjustwidth}
 
 \paragraph{}
@@ -312,7 +312,7 @@ Returns a vector of constructors for CLASS
 --- Function: \textbf{jclass-field} [\textbf{java}] \textit{class field-name}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the field named FIELD-NAME of CLASS
+Returns the reflected FIELD-NAME of CLASS
 \end{adjustwidth}
 
 \paragraph{}
@@ -321,7 +321,10 @@ Returns the field named FIELD-NAME of CLASS
 --- Function: \textbf{jclass-fields} [\textbf{java}] \textit{class \&key declared public}
 
 \begin{adjustwidth}{5em}{5em}
-Returns a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) fields of CLASS
+Returns a list of all fields of CLASS
+
+The values of the generalized booleans DECLARED and PUBLIC restrict
+the returned values to fields that were declared or public respectively.
 \end{adjustwidth}
 
 \paragraph{}
@@ -330,7 +333,7 @@ Returns a vector of all (or just the declared/public, if DECLARED/PUBLIC is true
 --- Function: \textbf{jclass-interface-p} [\textbf{java}] \textit{class}
 
 \begin{adjustwidth}{5em}{5em}
-Returns T if CLASS is an interface
+Boolean predicate for whether CLASS is an interface
 \end{adjustwidth}
 
 \paragraph{}
@@ -339,7 +342,7 @@ Returns T if CLASS is an interface
 --- Function: \textbf{jclass-interfaces} [\textbf{java}] \textit{class}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the vector of interfaces of CLASS
+Returns a list of interfaces of CLASS
 \end{adjustwidth}
 
 \paragraph{}
@@ -348,7 +351,11 @@ Returns the vector of interfaces of CLASS
 --- Function: \textbf{jclass-methods} [\textbf{java}] \textit{class \&key declared public}
 
 \begin{adjustwidth}{5em}{5em}
-Return a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) methods of CLASS
+Returns list of the methods of CLASS
+
+The values of the generalized booleans DECLARED and PUBLIC restrict
+the returned values to methods that were either declared or public
+respectively.
 \end{adjustwidth}
 
 \paragraph{}
@@ -368,9 +375,7 @@ When called with one argument, returns the name of the Java class
 --- Function: \textbf{jclass-of} [\textbf{java}] \textit{object \&optional name}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the name of the Java class of OBJECT. If the NAME argument is
-  supplied, verifies that OBJECT is an instance of the named class. The name
-  of the class or nil is always returned as a second value.
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -388,7 +393,7 @@ Returns the superclass of CLASS, or NIL if it hasn't got one
 --- Function: \textbf{jclass-superclass-p} [\textbf{java}] \textit{class-1 class-2}
 
 \begin{adjustwidth}{5em}{5em}
-Returns T if CLASS-1 is a superclass or interface of CLASS-2
+Boolean predicate for whether CLASS-1 is a superclass or interface of CLASS-2
 \end{adjustwidth}
 
 \paragraph{}
@@ -433,7 +438,7 @@ Compares obj1 with obj2 using java.lang.Object.equals()
 --- Function: \textbf{jfield} [\textbf{java}] \textit{class-ref-or-field field-or-instance \&optional instance value}
 
 \begin{adjustwidth}{5em}{5em}
-Retrieves or modifies a field in a Java class or instance.
+Retrieves or modifies a public field in a Java class or instance.
 
 Supported argument patterns:
 
@@ -470,7 +475,7 @@ Supported argument patterns:
 --- Function: \textbf{jfield-name} [\textbf{java}] \textit{field}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the name of FIELD as a Lisp string
+Returns the name of reflected Java FIELD
 \end{adjustwidth}
 
 \paragraph{}
@@ -479,8 +484,8 @@ Returns the name of FIELD as a Lisp string
 --- Function: \textbf{jfield-raw} [\textbf{java}] \textit{class-ref-or-field field-or-instance \&optional instance value}
 
 \begin{adjustwidth}{5em}{5em}
-Retrieves or modifies a field in a Java class or instance. Does not
-attempt to coerce its value or the result into a Lisp object.
+Retrieves or modifies a public field in a Java class or instance without
+attempting to coerce its value or the result into a Lisp object.
 
 Supported argument patterns:
 
@@ -517,7 +522,7 @@ Supported argument patterns:
 --- Function: \textbf{jfield-type} [\textbf{java}] \textit{field}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the type (Java class) of FIELD
+Returns the type of a reflected Java FIELD
 \end{adjustwidth}
 
 \paragraph{}
@@ -526,7 +531,7 @@ Returns the type (Java class) of FIELD
 --- Function: \textbf{jinput-stream} [\textbf{java}] \textit{pathname}
 
 \begin{adjustwidth}{5em}{5em}
-Returns a java.io.InputStream for resource denoted by PATHNAME.
+Returns a java.io.InputStream for resource denoted by PATHNAME
 \end{adjustwidth}
 
 \paragraph{}
@@ -573,7 +578,9 @@ not-documented
 --- Generic Function: \textbf{jmake-proxy} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Returns a proxy Java object implementing the provided interface(s) using methods implemented in Lisp - typically closures, but implementations are free to provide other mechanisms. You can pass an optional 'lisp-this' object that will be passed to the implementing methods as their first argument. If you don't provide this object, NIL will be used. The second argument of the Lisp methods is the name of the Java method being implemented. This has the implication that overloaded methods are merged, so you have to manually discriminate them if you want to. The remaining arguments are java-objects wrapping the method's parameters.
+Returns a proxy Java object implementing the provided interface(s) using methods implemented in Lisp
+
+Method are typically closures, but implementations are free to provide other mechanisms. You can pass an optional 'lisp-this' object that will be passed to the implementing methods as their first argument. If you don't provide this object, NIL will be used. The second argument of the Lisp methods is the name of the Java method being implemented. This has the implication that overloaded methods are merged, so you have to manually discriminate them if you want to. The remaining arguments are java-objects wrapping the method's parameters.
 \end{adjustwidth}
 
 \paragraph{}
@@ -582,7 +589,7 @@ Returns a proxy Java object implementing the provided interface(s) using methods
 --- Function: \textbf{jmember-protected-p} [\textbf{java}] \textit{member}
 
 \begin{adjustwidth}{5em}{5em}
-MEMBER is a protected member of its declaring class
+Prediate for whether MEMBER is a protected member of its declaring class
 \end{adjustwidth}
 
 \paragraph{}
@@ -591,7 +598,7 @@ MEMBER is a protected member of its declaring class
 --- Function: \textbf{jmember-public-p} [\textbf{java}] \textit{member}
 
 \begin{adjustwidth}{5em}{5em}
-MEMBER is a public member of its declaring class
+Predixate for whether MEMBER is a public member of its declaring class
 \end{adjustwidth}
 
 \paragraph{}
@@ -600,7 +607,7 @@ MEMBER is a public member of its declaring class
 --- Function: \textbf{jmember-static-p} [\textbf{java}] \textit{member}
 
 \begin{adjustwidth}{5em}{5em}
-MEMBER is a static member of its declaring class
+Predicate for whether MEMBER is a static member of its declaring class
 \end{adjustwidth}
 
 \paragraph{}
@@ -636,7 +643,7 @@ Returns the name of METHOD as a Lisp string
 --- Function: \textbf{jmethod-params} [\textbf{java}] \textit{method}
 
 \begin{adjustwidth}{5em}{5em}
-Returns a vector of parameter types (Java classes) for METHOD
+Returns a list of the Java relected parameter types for METHOD
 \end{adjustwidth}
 
 \paragraph{}
@@ -645,7 +652,7 @@ Returns a vector of parameter types (Java classes) for METHOD
 --- Function: \textbf{jmethod-return-type} [\textbf{java}] \textit{method}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the result type (Java class) of the METHOD
+Returns the Java reflected result type of the METHOD
 \end{adjustwidth}
 
 \paragraph{}
@@ -672,8 +679,9 @@ Creates a new Java array of type ELEMENT-TYPE, with the given DIMENSIONS.
 --- Function: \textbf{jnew-array-from-array} [\textbf{java}] \textit{element-type array}
 
 \begin{adjustwidth}{5em}{5em}
-Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
-   initialized from ARRAY.
+Returns a new Java array with base type ELEMENT-TYPE initialized from ARRAY
+
+ELEMENT-TYPE is either a string or a class reference.
 \end{adjustwidth}
 
 \paragraph{}
@@ -682,8 +690,9 @@ Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
 --- Function: \textbf{jnew-array-from-list} [\textbf{java}] \textit{element-type list}
 
 \begin{adjustwidth}{5em}{5em}
-Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
-   initialized from a Lisp list.
+Returns a new Java array with base type ELEMENT-TYPE initialized from a Lisp list
+
+ELEMENT-TYPE is either a string or a class reference.
 \end{adjustwidth}
 
 \paragraph{}
@@ -814,6 +823,26 @@ Invokes the static method METHOD on class CLASS with ARGS. Does not attempt to c
 \end{adjustwidth}
 
 \paragraph{}
+\label{JAVA:LIST-FROM-JARRAY}
+\index{LIST-FROM-JARRAY}
+--- Function: \textbf{list-from-jarray} [\textbf{java}] \textit{jarray}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a list with the elements of JARRAY coerced to corresponding Lisp types
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:LIST-FROM-JENUMERATION}
+\index{LIST-FROM-JENUMERATION}
+--- Function: \textbf{list-from-jenumeration} [\textbf{java}] \textit{jenumeration}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a list with the elements returned by successive nextElement() calls on the JENUMERATION
+
+JENUMERATION is a reference to a java.util.Enumeration.
+\end{adjustwidth}
+
+\paragraph{}
 \label{JAVA:MAKE-CLASSLOADER}
 \index{MAKE-CLASSLOADER}
 --- Function: \textbf{make-classloader} [\textbf{java}] \textit{\&optional parent}
@@ -855,6 +884,15 @@ Registers the Java Throwable named by the symbol EXCEPTION-NAME as the condition
 
 \begin{adjustwidth}{5em}{5em}
 Unregisters the Java Throwable EXCEPTION-NAME previously registered by REGISTER-JAVA-EXCEPTION.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:VECTOR-FROM-JARRAY}
+\index{VECTOR-FROM-JARRAY}
+--- Function: \textbf{vector-from-jarray} [\textbf{java}] \textit{jarray}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a vector with the elements of JARRAY coerced to corresponding Lisp types
 \end{adjustwidth}
 
 \paragraph{}

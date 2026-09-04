@@ -58,8 +58,16 @@ not-documented
 --- Function: \textbf{get-java-field} [\textbf{jss}] \textit{object field \&optional (try-harder *running-in-osgi*)}
 
 \begin{adjustwidth}{5em}{5em}
-Get the value of the FIELD contained in OBJECT.
-If OBJECT is a symbol it names a dot qualified static FIELD.
+Returns the value of the FIELD contained in OBJECT.
+
+If OBJECT is a symbol, it names a (possibly) dot qualified class
+containing a static FIELD.
+
+If OBJECT is an Java object instance, the corresponding FIELD instance
+is returned.
+
+If TRY-HARDER is non-nil, returns fields of classes regardless of Java
+private/protected access modifiers.
 \end{adjustwidth}
 
 \paragraph{}

@@ -1,43 +1,99 @@
-Version 1.9.3
-=============
+Version 1.10.0
+==============
 
-Unreleased
+14-FEB-2026
 
-<https://abcl.org/svn/trunk/abcl/>
+<https://abcl.org/svn/tags/1.10.0/>
 <https://github.com/armedbear/abcl/>
 <https://gitlab.common-lisp.net/abcl/abcl/>
 
-* [r15775] Update to jna-5.14.0 seemingly fixing problems with CFFI for at least arm64-openjdk-21
+* [3450:3734edef398a] (Alejandro) Fix compiler bug reported by Samuel Ward .
+
+* [3449:046198495b7f] (Alejandro) Fix EQ hash table bug for CONS
+
+* [3447:7682875a6759] Container virtualization template
+  (Podman/Docker) uses openjdk25
+
+* [r15780] Correctly signal error for incorrect MAKE-PATHNAME-TYPE
+
+* [r15775]ff. Update to jna-5.18.1.  Support for CFFI is wonky under
+  darwin-arm64 with later JDKs: openjdk{11,17,25} succeed without segv
+  but with dubious results.
+
+* [r15779] (Tarn W. Burton) Add support for implementing
+  CL:FILE-LENGTH in for Gray streams. This is done via the
+  GRAY-STREAMS:STREAM-FILE-LENGTH generic function.
+
+* [r15776] (Tarn W. Burton) Implement SETfable Gray streams format
+  support with GRAY-STREAMS:STREAM-EXTERNAL-FORMAT.
 
 * [r15774] Update to asdf-3.3.7
 
-* [r15760] (Tarn W. Burton) Add SETF for STREAM-ELEMENT-TYPE in
+* [r15776] (Tarn W. Burton) Add type checks to Gray streams default
+  methods to prevent recursion.
+
+* [r15769] Add Tarn W. Burton's NONTRIVIAL-GRAY-STREAMS to the Github
+  CI workflow.
+
+* [r15766] (Tarn W. Burton) Add SETF forn STREAM-ELEMENT-TYPE in
   gray-streams module.
 
-* [r15759] (Tarn W. Burton) Add generic CL:PATHNAME and CL:TRUENAME in
+* [r15765] (Tarn W. Burton) Add generic CL:PATHNAME and CL:TRUENAME in
   gray-streams module.
 
-* [r15753] (Tarn W. Burton) Always return second value indicating EOF
+* [r15762] Attempt to be more computationally efficient when the
+  stepper instrumentation is not active.
+
+* [r15759] (Tarn W. Burton) Always return second value indicating EOF
   in Gray stream version of CL:READ-LINE as per the ANSI
   specification.
 
-* [r15743] (Tarn W. Burton) Add support for implementing
+* [r15749] (Tarn W. Burton) Add support for implementing
   CL:INTERACTIVE-STREAM-P in for Gray streams. This is done via by
   making CL:INTERACTIVE-STREAM-P a generic function when the Gray
   streams module is required.
 
-* [r15742] (Tarn W. Burton) Add support for stream specific line
-  lengths.  This is done via the GRAY-STREAMS:STREAM-LINE-LENGTH
+* [r15748][r15745] (Tarn W. Burton) Add support for stream specific
+  line lengths.  This is done via the GRAY-STREAMS:STREAM-LINE-LENGTH
   generic function which is only used when CL:*PRINT-RIGHT-MARGIN* is
   NIL. The pretty printer and format have been updated to respect
   these line lengths.
 
-* [r15741] (Tarn W. Burton) Add some missing default methods in the
+* [r15747] (Tarn W. Burton) Add some missing default methods in the
   Gray streams module.
 
-* [r15739] (Tarn W. Burton) Add support for implementing
-  CL:FILE-LENGTH in for Gray streams. This is done via the
-  GRAY-STREAMS:STREAM-FILE-LENGTH generic function.
+* [r15743] (Alejandro) Fix CLOS change propagation for all subclasses.
+
+* [r15741] (Alejandro) Fix CLOS usage for 
+  UPDATE-INSTANCE-FOR-REDEFINED-CLASS generic function.
+
+* [r15740] (Alejandro) Fix for issue with CLOS incorrectly
+  propagating initargs.
+
+* [r15735-6] (Alejandro) Fix compilation of literal quoted parts which
+  share parts.
+
+* [r15734] Implement a more efficient vector-to-vector REPLACE.
+
+* [r15732] Implement UPGRADED-ARRAY-ELEMENT-TYPE for non-specialized
+  byte types.
+
+* [r15731] Signal error for malformed #b/#o/#x/#r reader macros.
+
+* [r15730] (Alan Ruttenberg) Fix MAPC/MAPCAR for circular lists.
+
+* [r15729] Implement MOP compound type specializer.
+
+* [r15728] (Alejandrozf) Fix Procyon decompiler implementation for
+  CL:DISASSEMBLE.
+
+* [r15727] Teach CL:SUBTYPEP that a list can either be null or a cons,
+  and that null is both a symbol and a list.
+
+* [3448:766c6862cd9a] The ANSI-TEST suite always succeeds when run via
+  Github actions.  This CI description is no longer pinned to a
+  specific revision of the ANSI-TEST suite, and as such, will vary by
+  invocation per the state of the suite available over the network.
 
 
 Version 1.9.2

@@ -14,7 +14,7 @@
   </parent>
   <groupId>org.abcl</groupId>
   <artifactId>abcl-contrib</artifactId>
-  <version>1.9.3-SNAPSHOT</version>
+  <version>1.10.0</version>
   <packaging>jar</packaging>
   <name>Armed Bear Common Lisp (ABCL) Contribs</name>
   <description>Extra contributions for ABCL code not necessarily
@@ -26,7 +26,7 @@
         Individual ASDF system licensing: examine and accept individual terms by explicit consent
       </name>
       <url>
-        https://abcl.org/svn/tags/1.9.2/contrib/README.markdown
+        https://abcl.org/svn/tags/1.10.0/contrib/README.markdown
       </url>
       <distribution>repo</distribution>
     </license>
@@ -38,7 +38,7 @@
     <developerConnection>
       scm:git:https://gitlab.common-lisp.net/abcl/abcl
     </developerConnection>
-    <url>https://abcl.org/trac/browser/tags/1.9.2/contrib/</url>
+    <url>https://abcl.org/trac/browser/tags/1.10.0/contrib/</url>
   </scm>
   <developers>
     <developer>
