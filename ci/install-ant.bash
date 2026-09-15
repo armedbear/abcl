@@ -3,7 +3,7 @@
 
 tmpdir=/tmp
 pushd "${tmpdir}"
-ant_base=apache-ant-1.10.14
+ant_base=apache-ant-1.10.18
 wget https://www-eu.apache.org/dist/ant/binaries/${ant_base}-bin.zip
 unzip ${tmpdir}/${ant_base}-bin.zip
 popd 
