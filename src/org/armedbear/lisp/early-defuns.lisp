@@ -56,6 +56,31 @@
       (setf end (length sequence)))
   end)
 
+;; boot.lisp, which is loaded as source, defines these as forwarders
+;; to the primitives before anything can be compiled.  Defining them
+;; again here makes them compiled functions: as interpreted closures,
+;; every call to LENGTH or SUBSEQ from compiled code went through the
+;; interpreter, at about twenty times the cost of the work itself.
+;; extensible-sequences.lisp redefines the sequence functions again
+;; when it is loaded.
+(defun eval (form)
+  (%eval form))
+
+(defun length (sequence)
+  (%length sequence))
+
+(defun elt (sequence index)
+  (%elt sequence index))
+
+(defun subseq (sequence start &optional end)
+  (%subseq sequence start end))
+
+(defun reverse (sequence)
+  (%reverse sequence))
+
+(defun nreverse (sequence)
+  (%nreverse sequence))
+
 (defun require-type (arg type)
   (if (typep arg type)
       arg
