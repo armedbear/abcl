@@ -166,3 +166,12 @@
     (third (second (macroexpand-1 '(formatter "~
 "))))
   (block nil))
+
+;;; boot.lisp defines LENGTH, ELT, SUBSEQ, REVERSE, NREVERSE and EVAL
+;;; while nothing can be compiled; early-defuns.lisp must replace them
+;;; with compiled functions, or every call from compiled code runs in
+;;; the interpreter.
+(deftest boot-forwarders-compiled.1
+    (remove-if (lambda (name) (compiled-function-p (fdefinition name)))
+               '(length elt subseq reverse nreverse eval))
+  nil)
