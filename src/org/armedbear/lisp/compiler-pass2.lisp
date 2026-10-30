@@ -4946,6 +4946,38 @@ given a specific common representation.")
       (fix-boxing representation nil)
       (emit-move-from-stack target representation))))
 
+(defparameter *compare-and-swap-methods*
+  '((%compare-and-swap-car "compareAndSwapCar" 3)
+    (%compare-and-swap-cdr "compareAndSwapCdr" 3)
+    (%compare-and-swap-svref "compareAndSwapSvref" 4)
+    (%compare-and-swap-structure-ref "compareAndSwapStructureRef" 4)
+    (%compare-and-swap-standard-instance-access
+     "compareAndSwapStandardInstanceAccess" 4)
+    (%compare-and-swap-slot-value "compareAndSwapSlotValue" 4)
+    (%compare-and-swap-symbol-value "compareAndSwapSymbolValue" 3))
+  "The primitives under EXT:COMPARE-AND-SWAP, each with the static method
+of org.armedbear.lisp.Atomic that P2-COMPARE-AND-SWAP calls for it and
+its argument count.")
+
+;; (%compare-and-swap-car cons old new) and its siblings => witness, as
+;; a static call rather than a full call through the symbol's function
+(defknown p2-compare-and-swap (t t t) t)
+(defun p2-compare-and-swap (form target representation)
+  (destructuring-bind (method arity)
+      (cdr (assoc (car form) *compare-and-swap-methods*))
+    (let ((args (cdr form)))
+      (unless (= (length args) arity)
+        (compile-function-call form target representation)
+        (return-from p2-compare-and-swap))
+      (with-operand-accumulation
+          ((dolist (arg args)
+             (compile-operand arg nil))
+           (apply #'maybe-emit-clear-values args)))
+      (emit-invokestatic +lisp-atomic+ method
+                         (lisp-object-arg-types arity) +lisp-object+)
+      (fix-boxing representation nil)
+      (emit-move-from-stack target representation))))
+
 (defknown p2-stream-element-type (t t t) t)
 (define-inlined-function p2-stream-element-type (form target representation)
   ((check-arg-count form 1))
@@ -7828,6 +7860,8 @@ Could arguably better named as *SIGNAL-COMPILE-WARNINGS-P*.")
   (install-p2-handler 'vectorp             'p2-vectorp)
   (install-p2-handler 'vector-push-extend  'p2-vector-push-extend)
   (install-p2-handler 'write-8-bits        'p2-write-8-bits)
+  (dolist (entry *compare-and-swap-methods*)
+    (install-p2-handler (first entry) 'p2-compare-and-swap))
   (install-p2-handler 'zerop               'p2-zerop)
   (install-p2-handler 'with-inline-code    'p2-with-inline-code)
   t)
