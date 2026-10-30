@@ -603,7 +603,7 @@ public static synchronized final void handleInterrupt()
               {
                 try
                   {
-                    thread.envStack.push(new Environment(null,NIL,fun));
+                    thread.envStack.push(fun);
                     return eval(macroexpand(obj, env, thread), env, thread);}
                 finally
                   {
