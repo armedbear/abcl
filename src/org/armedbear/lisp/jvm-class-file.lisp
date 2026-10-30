@@ -184,6 +184,7 @@ initialized from the `java-dotted-name'."
 (define-class-name +lisp-single-float+ "org.armedbear.lisp.SingleFloat")
 (define-class-name +lisp-double-float+ "org.armedbear.lisp.DoubleFloat")
 (define-class-name +lisp-cons+ "org.armedbear.lisp.Cons")
+(define-class-name +lisp-atomic+ "org.armedbear.lisp.Atomic")
 (define-class-name +lisp-load+ "org.armedbear.lisp.Load")
 (define-class-name +lisp-character+ "org.armedbear.lisp.LispCharacter")
 (defconstant +lisp-character-array+ (class-array +lisp-character+))

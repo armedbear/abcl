@@ -333,6 +333,7 @@
                            "boole.lisp"
                            "butlast.lisp"
                            "byte-io.lisp"
+                           "cas.lisp"
                            "case.lisp"
                            "chars.lisp"
                            "check-type.lisp"

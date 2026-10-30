@@ -1020,6 +1020,45 @@ beyond the ANSI specification which are either widely adopted or are
 especially useful in working with the hosting \textsc{JVM}.  This
 chapter documents such extensions beyond ANSI conformation.
 
+\section{Compare-and-swap}
+\label{sec:compare-and-swap}
+\index{compare-and-swap}
+
+\code{EXT:COMPARE-AND-SWAP} follows the protocol of \textsc{SBCL}'s
+\code{SB-EXT:COMPARE-AND-SWAP}.  \code{(ext:compare-and-swap PLACE OLD
+NEW)} atomically stores \code{NEW} in \code{PLACE} if \code{PLACE}
+holds a value \code{EQL} to \code{OLD}, and returns the value
+\code{PLACE} held before, so that the swap happened if and only if
+that value is \code{EQ} to \code{OLD}.  The comparison is
+\code{EQL} rather than \code{EQ} because \textsc{ABCL} boxes
+fixnums, so two \code{EQL} fixnums need not be \code{EQ}.
+
+The supported places are \code{CAR}, \code{CDR}, \code{FIRST},
+\code{REST}, \code{SVREF}, the accessors of the writable slots of a
+\code{DEFSTRUCT} without \code{:TYPE}, \code{SYMBOL-VALUE} and
+special variables (the innermost dynamic binding if the current thread
+has one, the global value otherwise), \code{SLOT-VALUE} (which swaps
+the slot's storage directly, bypassing
+\code{SLOT-VALUE-USING-CLASS}) and
+\code{MOP:STANDARD-INSTANCE-ACCESS}.  \code{EXT:DEFINE-CAS-EXPANDER},
+\code{EXT:DEFCAS} and \code{EXT:GET-CAS-EXPANSION} extend the set of
+places, and \code{EXT:ATOMIC-UPDATE}, \code{EXT:ATOMIC-INCF},
+\code{EXT:ATOMIC-DECF}, \code{EXT:ATOMIC-PUSH} and
+\code{EXT:ATOMIC-POP} are built on it.  \code{EXT:ATOMIC-INCF}
+returns the old value, as in \textsc{SBCL}, and does not wrap around
+at the fixnum boundary.
+
+On \textsc{openjdk9} and later the swap is a lock-free
+\code{java.lang.invoke.VarHandle} \code{compareAndExchange} on the
+object's own field or array element.  On \textsc{openjdk8}, where
+VarHandles do not exist, it takes one of a fixed set of striped locks
+instead; it is then atomic only with respect to other
+compare-and-swap operations, and a plain \code{SETF} racing a swap of
+the same place may be lost.  \code{(ext:compare-and-swap-implementation)}
+returns \code{:VARHANDLE} or \code{:LOCK} accordingly.  A build made on
+\textsc{openjdk9} or later with \code{-source 1.8 -target 1.8} runs
+lock-free on later Javas and falls back to locks on \textsc{openjdk8}.
+
 \section{Compiler to Java Virtual Machine Bytecode}
 
 The \code{CL:COMPILE-FILE} interface emits a packed fasl \footnote{The
