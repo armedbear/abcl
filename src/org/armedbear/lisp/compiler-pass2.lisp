@@ -1989,23 +1989,52 @@ The field type of the object is specified by OBJ-REF."
        (compile-function-call form target representation)))))
 
 ;; gethash key hash-table &optional default => value, present-p
+;; gethash key hash-table &optional default => value, present-p
+;; GETHASH and GETHASH1 compile to a static call on HashTableFunctions,
+;; which sets GETHASH's values on the thread register, rather than to a
+;; full call through the symbol's function.
 (defun p2-gethash (form target representation)
-  (cond ((and (eq (car form) 'GETHASH1)
-              (= (length form) 3)
-              (eq (derive-type (%caddr form)) 'HASH-TABLE))
-         (let ((key-form (%cadr form))
-               (ht-form (%caddr form)))
+  (let ((args (cdr form)))
+    (cond ((and (eq (car form) 'GETHASH1)
+                (= (length args) 2)
+                (eq (derive-type (second args)) 'HASH-TABLE))
+           (let ((key-form (first args))
+                 (ht-form (second args)))
+             (with-operand-accumulation
+                 ((compile-operand ht-form nil +lisp-hash-table+)
+                  (compile-operand key-form nil)
+                  (maybe-emit-clear-values ht-form key-form)))
+             (emit-invokevirtual +lisp-hash-table+ "gethash1"
+                                 (lisp-object-arg-types 1) +lisp-object+)
+             (fix-boxing representation nil)
+             (emit-move-from-stack target representation)))
+          ((and (eq (car form) 'GETHASH1)
+                (= (length args) 2))
            (with-operand-accumulation
-               ((compile-operand ht-form nil +lisp-hash-table+)
-                (compile-operand key-form nil)
-                (maybe-emit-clear-values ht-form key-form)))
-           (emit-invokevirtual +lisp-hash-table+ "gethash1"
-                               (lisp-object-arg-types 1) +lisp-object+)
+               ((dolist (arg args)
+                  (compile-operand arg nil))
+                (apply #'maybe-emit-clear-values args)))
+           (emit-invokestatic +lisp-hash-table-functions+ "gethash1"
+                              (lisp-object-arg-types 2) +lisp-object+)
            (fix-boxing representation nil)
-           (emit-move-from-stack target representation)))
-        (t
-         (compile-function-call form target representation))))
+           (emit-move-from-stack target representation))
+          ((and (eq (car form) 'GETHASH)
+                (<= 2 (length args) 3))
+           (with-operand-accumulation
+               ((emit-thread-operand)
+                (dolist (arg args)
+                  (compile-operand arg nil))
+                (apply #'maybe-emit-clear-values args)))
+           (emit-invokestatic +lisp-hash-table-functions+ "gethash"
+                              (cons +lisp-thread+
+                                    (lisp-object-arg-types (length args)))
+                              +lisp-object+)
+           (fix-boxing representation nil)
+           (emit-move-from-stack target representation))
+          (t
+           (compile-function-call form target representation)))))
 
+;; puthash key hash-table new-value &optional default => value
 ;; puthash key hash-table new-value &optional default => value
 (defun p2-puthash (form target representation)
   (cond ((and (= (length form) 4)
@@ -2026,6 +2055,18 @@ The field type of the object is specified by OBJ-REF."
                  (t
                   (emit-invokevirtual +lisp-hash-table+ "put"
                                       (lisp-object-arg-types 2) nil)))))
+        ((= (length form) 4)
+         ;; The table's type is not known: a static call on
+         ;; HashTableFunctions rather than a full call.
+         (let ((args (cdr form)))
+           (with-operand-accumulation
+               ((dolist (arg args)
+                  (compile-operand arg nil))
+                (apply #'maybe-emit-clear-values args)))
+           (emit-invokestatic +lisp-hash-table-functions+ "puthash"
+                              (lisp-object-arg-types 3) +lisp-object+)
+           (fix-boxing representation nil)
+           (emit-move-from-stack target representation)))
         (t
          (compile-function-call form target representation))))
 
