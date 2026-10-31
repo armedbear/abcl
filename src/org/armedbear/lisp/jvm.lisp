@@ -675,7 +675,14 @@ than just restore the lastSpecialBinding (= dynamic environment).
         (let ((target-block (jump-target-block node)))
           (and (null (jump-non-local-p node))
                (member target-block *blocks*))))
-      (when (tagbody-node-p node) (tagbody-non-local-go-p node))
+      ;; Every TAGBODY, not only one with a non-local GO: a TAGBODY is
+      ;; how loops compile, and HotSpot cannot compile a running loop
+      ;; by on-stack replacement when its back edge has operands on the
+      ;; stack ('OSR starts with non-empty stack').  Such a loop, in an
+      ;; argument or the value of a special SETQ, ran interpreted for
+      ;; as long as the call lasted.  Saving the operands to registers
+      ;; first keeps the stack empty there.
+      (tagbody-node-p node)
       (when (block-node-p node) (block-non-local-return-p node))
       (catch-node-p node)))
 
