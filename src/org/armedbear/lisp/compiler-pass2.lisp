@@ -2233,22 +2233,41 @@ is registered (or not)."
         (t
          form)))
 
+(defun mapping-function-bindings (function)
+  "For the MAPCAR and MAPC source transforms: the LET* bindings that
+evaluate FUNCTION once, first, as a call would, and the form that names
+it in the loop.  #'NAME and a lambda form, which evaluating again cannot
+make observably different, are used as they are, so that (funcall
+#'name ...) still becomes a direct call and a lambda is still inlined."
+  (if (and (consp function)
+           (or (eq (car function) 'lambda)
+               (and (eq (car function) 'function)
+                    (or (symbolp (cadr function))
+                        (and (consp (cadr function))
+                             (eq (car (cadr function)) 'lambda))))))
+      (values () function)
+      (let ((var (gensym "FUNCTION")))
+        (values `((,var ,function)) var))))
+
 (define-source-transform mapcar (&whole form function &rest lists)
   (cond ((or (> *debug* *speed*)
              (> *space* *speed*))
          form)
         ((= (length lists) 1)
-         (let ((list (gensym))
-               (result (gensym))
-               (temp (gensym)))
-           `(let* ((,list ,(car lists))
-                   (,result (list nil))
-                   (,temp ,result))
-              (loop
-                (when (null ,list)
-                  (return (cdr ,result)))
-                (rplacd ,temp (setf ,temp (list (funcall ,function (car ,list)))))
-                (setf ,list (cdr ,list))))))
+         (multiple-value-bind (bindings fn)
+             (mapping-function-bindings function)
+           (let ((list (gensym))
+                 (result (gensym))
+                 (temp (gensym)))
+             `(let* (,@bindings
+                     (,list ,(car lists))
+                     (,result (list nil))
+                     (,temp ,result))
+                (loop
+                  (when (null ,list)
+                    (return (cdr ,result)))
+                  (rplacd ,temp (setf ,temp (list (funcall ,fn (car ,list)))))
+                  (setf ,list (cdr ,list)))))))
         (t
          form)))
 
@@ -2257,15 +2276,18 @@ is registered (or not)."
              (> *space* *speed*))
          form)
         ((= (length lists) 1)
-         (let ((list (gensym))
-               (result (gensym)))
-           `(let* ((,list ,(car lists))
-                   (,result ,list))
-              (loop
-                (when (null ,list)
-                  (return ,result))
-                (funcall ,function (car ,list))
-                (setf ,list (%cdr ,list))))))
+         (multiple-value-bind (bindings fn)
+             (mapping-function-bindings function)
+           (let ((list (gensym))
+                 (result (gensym)))
+             `(let* (,@bindings
+                     (,list ,(car lists))
+                     (,result ,list))
+                (loop
+                  (when (null ,list)
+                    (return ,result))
+                  (funcall ,fn (car ,list))
+                  (setf ,list (%cdr ,list)))))))
         (t
          form)))
 
