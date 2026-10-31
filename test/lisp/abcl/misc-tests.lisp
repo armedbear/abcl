@@ -166,3 +166,28 @@
     (third (second (macroexpand-1 '(formatter "~
 "))))
   (block nil))
+
+;;; Every full call pushes its function on the thread's envStack (read
+;;; by ABCL-INTROSPECT) and must pop it again, also when it is left by
+;;; a non-local exit.
+(defun env-stack-size ()
+  (java:jcall "size"
+              (java:jcall "get"
+                          (java:jcall "getField"
+                                      (java:jclass "org.armedbear.lisp.LispThread")
+                                      "envStack")
+                          (threads:current-thread))))
+
+(defun env-stack-descend (n)
+  (if (> n 0) (env-stack-descend (1- n)) (throw 'env-stack-out :thrown)))
+
+(deftest env-stack-balanced.1
+    (let ((descend (compile nil '(lambda (n) (env-stack-descend n))))
+          (call (compile nil '(lambda (f) (funcall f))))
+          (before (env-stack-size)))
+      (list (catch 'env-stack-out (funcall descend 20))
+            (handler-case (funcall call (lambda () (error "inner")))
+              (error () :error))
+            (block out (funcall call (lambda () (return-from out :returned))))
+            (- (env-stack-size) before)))
+  (:thrown :error :returned 0))

@@ -420,10 +420,11 @@ above have used annotate local functions"
 ;; calls which create environments, for instance to special operators
 ;; like sf_let, that are not in the lisp call stack.
 
-;; A function call marker in this context is an environment with a variable binding
-;; whose symbol is nil. Implementing the markers this way means we don't have
-;; to deal with different sorts of things on the envStack, which makes the
-;; java side of things easier.
+;; A function call marker in this context is the function itself: an
+;; entry on the envStack that is not an environment.  (Markers used to
+;; be environments with a single binding whose symbol is nil; those are
+;; still understood.)  A marker is pushed on every full call from
+;; compiled code, so it allocates nothing.
 
 ;; Environments are chained. So a binding of a new local, by e.g. let, will
 ;; have a new environment created which has the new binding and a pointer
@@ -448,16 +449,17 @@ above have used annotate local functions"
 (defun collapse-locals (thread)
   (flet ((stack-to-list (stack)
              (coerce (#"toArray" stack) 'list)))
-    (loop for bindings in (mapcar 'sys::environment-parts
-                                  (stack-to-list (jss:get-java-field thread "envStack" t)))
+    (loop for entry in (stack-to-list (jss:get-java-field thread "envStack" t))
+          for environment-p = (typep entry 'sys::environment)
+          for bindings = (and environment-p (sys::environment-parts entry))
+          for binding = (car bindings)
           with last-locals
           with last-function
-          for binding = (car bindings)
-          if (eq (second binding) nil)
+          if (or (not environment-p) (eq (second binding) nil))
             collect (prog1
                         (list last-function  last-locals)
                       (setq last-locals nil)
-                      (setq last-function (third binding)))
+                      (setq last-function (if environment-p (third binding) entry)))
           else
             do (setq last-locals bindings))))
 
