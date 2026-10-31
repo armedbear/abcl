@@ -402,7 +402,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                 (cl:cons
                  (list :variable ,(namestring *source*) ,*source-position*)
                  (cl:get ',name 'sys::source nil)))
-       ,form)))
+       ;; Compiled unless simple, like any other toplevel form, so that
+       ;; a closure in the initial value is a compiled closure.
+       ,(convert-toplevel-form form nil))))
 
 
 (declaim (ftype (function (t t t) t) process-toplevel-defpackage/in-package))
@@ -683,11 +685,12 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                 (PROCLAIM precompile-toplevel-form)
                 (PROGN process-toplevel-progn)
                 (PROVIDE precompile-toplevel-form)
-                (PUT precompile-toplevel-form)
+                ;; PUT and %SET-FDEFINITION are not here: they take
+                ;; the general path, compiled unless simple, so that a
+                ;; closure among their arguments is a compiled closure.
                 (QUOTE process-toplevel-quote)
                 (REQUIRE precompile-toplevel-form)
                 (SHADOW precompile-toplevel-form)
-                (%SET-FDEFINITION precompile-toplevel-form)
                 (MOP::ENSURE-METHOD process-toplevel-mop.ensure-method)
                 (record-source-information-for-type process-record-source-information)))
   (install-toplevel-handler (car pair) (cadr pair)))
