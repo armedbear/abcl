@@ -38,7 +38,7 @@ import static org.armedbear.lisp.Lisp.*;
 
 public abstract class LispClass extends StandardObject
 {
-  private static final ConcurrentHashMap<Symbol, LispObject> map
+  public static final ConcurrentHashMap<Symbol, LispObject> map
           = new ConcurrentHashMap<Symbol, LispObject>();
 
   public static <T extends LispClass> T addClass(Symbol symbol, T c)
