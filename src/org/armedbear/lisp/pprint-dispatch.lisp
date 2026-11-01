@@ -313,6 +313,15 @@
 (set-pprint-dispatch+ '(cons (member with-open-stream)) 'block-like '(0) *ipd*)
 (set-pprint-dispatch+ '(cons (member with-output-to-string)) 'block-like '(0) *ipd*)
 
+(set-pprint-dispatch+ '(cons (eql sys::backq-list)) 'pprint-backquote '(0) *ipd*)
+(set-pprint-dispatch+ '(cons (eql sys::backq-list*)) 'pprint-backquote '(0) *ipd*)
+(set-pprint-dispatch+ '(cons (eql sys::backq-append)) 'pprint-backquote '(0) *ipd*)
+(set-pprint-dispatch+ '(cons (eql sys::backq-nconc)) 'pprint-backquote '(0) *ipd*)
+(set-pprint-dispatch+ '(cons (eql sys::backq-cons)) 'pprint-backquote '(0) *ipd*)
+(set-pprint-dispatch+ '(cons (eql sys::backq-vector)) 'pprint-backquote '(0) *ipd*)
+(set-pprint-dispatch+ 'backq-comma 'pprint-backq-comma '(0) *ipd*)
+
+
 (defun pprint-dispatch-print (xp table)
   (let ((stuff (copy-list (others table))))
     (maphash #'(lambda (key val) (declare (ignore key))
