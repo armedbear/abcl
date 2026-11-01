@@ -613,7 +613,21 @@
 
 (defun maybe-initiate-xp-printing (object fn stream &rest args)
   (if (xp-structure-p stream)
-      (apply fn stream args)
+      (cond ((or (not *print-circle*)
+                 (null sys::*circularity-hash-table*)
+                 (sys::uniquely-identified-by-print-p object)
+                 ;; Our caller (%check-object) already consulted the
+                 ;; circularity hash table for this object and emitted
+                 ;; #n= if needed. Don't repeat the work.
+                 (eq object sys::*circularity-handled-object*))
+             (let ((sys::*circularity-handled-object* nil))
+               (apply fn stream args)))
+            (t
+             (let ((marker (sys::check-for-circularity object t)))
+               (cond ((null marker)
+                      (apply fn stream args))
+                     ((sys::handle-circularity marker stream)
+                      (apply fn stream args))))))
       (let ((*abbreviation-happened* nil)
             (*result* nil))
         (if (and *print-circle* (null sys::*circularity-hash-table*))
