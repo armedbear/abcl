@@ -394,7 +394,7 @@ public final class Load
     // ### *fasl-version*
     // internal symbol
     static final Symbol _FASL_VERSION_ =
-        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(43));
+        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(44));
 
     // ### *fasl-external-format*
     // internal symbol
@@ -412,6 +412,16 @@ public final class Load
      */
     public static final Symbol _FASL_UNINTERNED_SYMBOLS_ =
         internSpecial("*FASL-UNINTERNED-SYMBOLS*", PACKAGE_SYS, NIL);
+
+    // ### *fasl-instances*
+    /**
+     * Per-FASL vector of literal instances created by MAKE-LOAD-FORM.
+     * Bound to NIL upon FASL load; set to a fresh vector by a form
+     * emitted in the FASL prologue, then populated by creation forms
+     * emitted by the file compiler.
+     */
+    public static final Symbol _FASL_INSTANCES_ =
+        internSpecial("*FASL-INSTANCES*", PACKAGE_SYS, NIL);
 
     // Function to access the uninterned symbols "array"
     public final static LispObject getUninternedSymbol(int n) {
@@ -453,6 +463,7 @@ public final class Load
                 if (second.eql(_FASL_VERSION_.getSymbolValue())) {
                     // OK
                     thread.bindSpecial(_FASL_UNINTERNED_SYMBOLS_, NIL);
+                    thread.bindSpecial(_FASL_INSTANCES_, NIL);
                     thread.bindSpecial(_SOURCE_, NIL);
                     return faslLoadStream(thread);
                 }

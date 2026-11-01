@@ -76,13 +76,14 @@ public class FuncallableStandardObject extends StandardObject
   @Override
   public LispObject typep(LispObject type)
   {
+    // A funcallable-standard-object (e.g. a generic function) is not
+    // itself a COMPILED-FUNCTION regardless of whether its installed
+    // dispatcher function happens to be compiled: COMPILED-FUNCTION
+    // characterizes the object, not an internal implementation detail.
+    // Returning T here breaks TYPE-OF invariants (SUBTYPEP of the
+    // object's type would have to cover COMPILED-FUNCTION).
     if (type == Symbol.COMPILED_FUNCTION)
-      {
-        if (function != null)
-          return function.typep(type);
-        else
-          return NIL;
-      }
+      return NIL;
     if (type == Symbol.FUNCALLABLE_STANDARD_OBJECT)
       return T;
     if (type == StandardClass.FUNCALLABLE_STANDARD_OBJECT)

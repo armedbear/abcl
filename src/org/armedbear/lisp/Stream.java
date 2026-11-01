@@ -626,9 +626,22 @@ public class Stream extends StructureObject {
     public LispObject readSymbol(Readtable rt) {
         final StringBuilder sb = new StringBuilder();
         final BitSet flags = _readToken(sb, rt);
+        final String token = sb.toString();
+        // CLHS 2.4.8.7: the token after #: must not contain any unescaped
+        // package markers. Skip the check when *read-suppress* is true.
+        if (Symbol.READ_SUPPRESS.symbolValue() == NIL) {
+            final int len = token.length();
+            for (int i = 0; i < len; i++) {
+                if (token.charAt(i) == ':' && (flags == null || !flags.get(i))) {
+                    return error(new ReaderError(
+                        "Package marker not allowed in #: token: \"" + token + "\"",
+                        this));
+                }
+            }
+        }
         return new Symbol(rt.getReadtableCase() == Keyword.INVERT
-                          ? invert(sb.toString(), flags)
-                          : sb.toString());
+                          ? invert(token, flags)
+                          : token);
     }
 
     public LispObject readStructure(ReadtableAccessor rta) {

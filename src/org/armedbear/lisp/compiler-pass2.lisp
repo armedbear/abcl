@@ -7647,7 +7647,10 @@ Could arguably better named as *SIGNAL-COMPILE-WARNINGS-P*.")
   (unless definition
     (resolve name) ;; Make sure the symbol has been resolved by the autoloader
     (setf definition (fdefinition name)))
-  (when (compiled-function-p definition)
+  (when (or (compiled-function-p definition)
+            ;; Generic functions are runtime-assembled dispatchers; the
+            ;; file compiler has no LAMBDA expression to work from.
+            (typep definition 'mop:funcallable-standard-object))
     (return-from jvm-compile (values (or name definition) nil nil)))
   (let ((catch-errors *catch-errors*)
         (warnings-p nil)

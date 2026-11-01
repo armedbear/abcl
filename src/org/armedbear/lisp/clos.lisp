@@ -1175,8 +1175,8 @@ Will not modify existing classes to avoid breaking std-generic-function-p."
                         (loop for item in ',selecters
                           thereis (method-group-p item qualifiers)))
            :description ',description
-           :order ',order
-           :required ',required-p
+           :order ,order
+           :required ,required-p
            :*-selecter ,(equal selecters '(*)))))
 
 (defun extract-required-part (lambda-list)
@@ -1359,52 +1359,60 @@ Will not modify existing classes to avoid breaking std-generic-function-p."
                              and i upfrom 0
                              for supplied-binding = (or supplied-var (gensym))
                              for var-binding = (gensym)
-                             ;; check for excess parameters
-                             ;; only assign initform if the parameter
-                             ;; isn't in excess: the spec says explicitly
-                             ;; to bind parameters in excess to forms evaluating
-                             ;; to nil.
-                             ;; This leaves initforms to be used with
-                             ;; parameters not supplied in excess, but
-                             ;; not available in the arguments list
-                             ;;
-                             ;; Also, if specified, bind "supplied-p"
+                             ;; Optional parameters in excess of the
+                             ;; generic function's optional parameters
+                             ;; are bound to their initforms; their
+                             ;; supplied-p parameters are bound to nil.
+                             ;; Optional parameters within range use the
+                             ;; usual supplied-p/initform protocol at
+                             ;; effective-method invocation time.
                              collect `(,supplied-binding
-                                       (when (< ,i nopt)
-                                         (setq ,needs-args-len-var t)
+                                       (cond ((< ,i nopt)
+                                              (setq ,needs-args-len-var t)
                               ;; ### TODO: use a fresh symbol for the supplied binding
                               ;;   binding being generated and pushed into binding-forms
-                                         (push `(,',supplied-binding
-                                                 (< ,(+ ,i nreq) ,',args-len-var))
-                                               ,binding-forms)
-                                         ',supplied-binding))
-                             collect `(,var (when (< ,i nopt)
-                                              (push `(,',var-binding
-                                                      (if ,',supplied-binding
-                                                          (nth ,(+ ,i nreq)
-                                                               ,',args-var)
-                                                          ,',initform))
+                                              (push `(,',supplied-binding
+                                                      (< ,(+ ,i nreq) ,',args-len-var))
                                                     ,binding-forms)
-                                              ',var-binding)))
+                                              ',supplied-binding)
+                                             (t
+                                              (push `(,',supplied-binding nil)
+                                                    ,binding-forms)
+                                              ',supplied-binding)))
+                             collect `(,var (cond ((< ,i nopt)
+                                                   (push `(,',var-binding
+                                                           (if ,',supplied-binding
+                                                               (nth ,(+ ,i nreq)
+                                                                    ,',args-var)
+                                                               ,',initform))
+                                                         ,binding-forms)
+                                                   ',var-binding)
+                                                  (t
+                                                   (push `(,',var-binding ,',initform)
+                                                         ,binding-forms)
+                                                   ',var-binding))))
                         ,@(loop for ((key var) initform supplied-var) in keys
                              for supplied-binding = (or supplied-var (gensym))
                              for var-binding = (gensym)
-                             ;; Same as optional parameters:
-                             ;; even though keywords can't be supplied in
-                             ;; excess, we should bind "supplied-p" in case
-                             ;; the key isn't supplied in the arguments list
+                             for member-binding = (gensym)
+                             ;; Bind a hidden gensym to the tail returned
+                             ;; by MEMBER on the &rest arguments, so that
+                             ;; the user-visible supplied-p parameter is a
+                             ;; boolean (T or NIL) and the value parameter
+                             ;; can read (CADR ...) of the tail.
                              collect `(,supplied-binding
                                        (progn
-                              ;; ### TODO: use a fresh symbol for the rest
-                              ;;   binding being generated and pushed into binding-forms
-                                         (push `(,',supplied-binding
+                                         (push `(,',member-binding
                                                  (member ,',key ,',rest))
+                                               ,binding-forms)
+                                         (push `(,',supplied-binding
+                                                 (not (null ,',member-binding)))
                                                ,binding-forms)
                                          ',supplied-binding))
                              collect `(,var (progn
                                               (push `(,',var-binding
-                                                      (if ,',supplied-binding
-                                                          (cadr ,',supplied-binding)
+                                                      (if ,',member-binding
+                                                          (cadr ,',member-binding)
                                                           ,',initform))
                                                     ,binding-forms)
                                               ',var-binding)))
@@ -2572,6 +2580,19 @@ to ~S with argument list ~S."
             (setf emfun
                   (wrap-emfun-for-keyword-args-check gf emfun non-keyword-args
                                                      applicable-keywords)))
+          ;; Wrap EMFUN so that CALL-NEXT-METHOD can see the generic
+          ;; function and the sorted applicable methods, to detect
+          ;; changed-argument calls that would produce a different
+          ;; set of applicable methods.
+          (let ((raw-emfun emfun)
+                (context-methods applicable-methods)
+                (context-gf gf))
+            (setf emfun
+                  #'(lambda (args)
+                      (let ((*call-next-method-gf* context-gf)
+                            (*call-next-method-applicable-methods*
+                             context-methods))
+                        (funcall raw-emfun args)))))
           ;; The EMFCache only understand classes and EQL
           ;; specializers. Check the applicable methods and if any
           ;; have a specializer that isn't an eql-specializer or
@@ -2774,8 +2795,25 @@ to ~S with argument list ~S."
          (walk-form (%car form))
          (walk-form (%cdr form)))))
 
+(defvar *call-next-method-gf* nil)
+(defvar *call-next-method-applicable-methods* nil)
+
+(defun cnm-check-applicable-methods (cnm-args)
+  (let ((gf *call-next-method-gf*)
+        (expected *call-next-method-applicable-methods*))
+    (when gf
+      (let ((actual (if (std-generic-function-p gf)
+                        (std-compute-applicable-methods gf cnm-args)
+                        (or (compute-applicable-methods-using-classes
+                             gf (mapcar #'class-of cnm-args))
+                            (compute-applicable-methods gf cnm-args)))))
+        (unless (equal expected actual)
+          (error "CALL-NEXT-METHOD called with arguments that produce a different set of applicable methods than the original arguments."))))))
+
 (defmacro flet-call-next-method (args next-emfun &body body)
   `(flet ((call-next-method (&rest cnm-args)
+            (when cnm-args
+              (cnm-check-applicable-methods cnm-args))
             (if (null ,next-emfun)
                 (error "No next method for generic function.")
                 (funcall ,next-emfun (or cnm-args ,args))))
@@ -3272,7 +3310,24 @@ instance and, for setters, `new-value' the new value."
   (unless (>= (length form) 3)
     (error 'program-error "Wrong number of arguments for DEFCLASS."))
   (check-declaration-type name)
+  ;; CLHS: the compiler must make the class recognizable to later
+  ;; FIND-CLASS calls (including via a macro &environment argument)
+  ;; when DEFCLASS appears as a top-level form.  Register a
+  ;; forward-referenced-class placeholder at compile time, then at
+  ;; load time clear that placeholder (only when no other class has
+  ;; claimed it as a superclass) so the subsequent ENSURE-CLASS goes
+  ;; through the primitive (null) path and bypasses a MOP superclass
+  ;; check that built-in classes like STREAM fail.
   `(progn
+     (eval-when (:compile-toplevel)
+       (unless (find-class ',name nil)
+         (setf (find-class ',name)
+               (make-instance +the-forward-referenced-class+ :name ',name))))
+     (eval-when (:load-toplevel)
+       (let ((existing (find-class ',name nil)))
+         (when (and (typep existing 'forward-referenced-class)
+                    (null (class-direct-subclasses existing)))
+           (sys::%set-find-class ',name nil))))
      (sys::record-source-information-for-type ',name :class)
      (ensure-class ',name
                  :direct-superclasses
@@ -4207,9 +4262,44 @@ or T when any keyword is acceptable due to presence of
                 (funcall #',report condition stream)))
           ',name)))))
 
+(defun %resolve-compound-condition-type (type)
+  "Pick a concrete condition class from a compound type spec.  For OR,
+return the first disjunct that names a condition class.  For AND,
+prefer a conjunct that is a subtype of all the others (so the
+resulting instance satisfies TYPEP against the whole AND); fall back
+to any conjunct naming a condition class."
+  (cond
+    ((and (consp type) (eq (car type) 'or))
+     (or (find-if (lambda (sub) (and (symbolp sub) (find-class sub nil)))
+                  (cdr type))
+         (error 'simple-error
+                :format-control "MAKE-CONDITION: no disjunct of ~S names a condition class."
+                :format-arguments (list type))))
+    ((and (consp type) (eq (car type) 'and))
+     (or (find-if (lambda (sub)
+                    (and (symbolp sub)
+                         (find-class sub nil)
+                         (every (lambda (other) (subtypep sub other))
+                                (cdr type))))
+                  (cdr type))
+         (find-if (lambda (sub) (and (symbolp sub) (find-class sub nil)))
+                  (cdr type))
+         (error 'simple-error
+                :format-control "MAKE-CONDITION: cannot resolve type ~S to a condition class."
+                :format-arguments (list type))))
+    (t (error 'simple-error
+              :format-control "MAKE-CONDITION: unsupported type specifier ~S."
+              :format-arguments (list type)))))
+
 (defun make-condition (type &rest initargs)
   (or (%make-condition type initargs)
-      (let ((class (if (symbolp type) (find-class type) type)))
+      (let ((class (cond ((symbolp type) (find-class type))
+                         ((classp type) type)
+                         (t (let ((resolved
+                                    (%resolve-compound-condition-type type)))
+                              (if (symbolp resolved)
+                                  (find-class resolved)
+                                  resolved))))))
         (apply #'make-instance class initargs))))
 
 ;; Adapted from SBCL.
@@ -4601,7 +4691,9 @@ or T when any keyword is acceptable due to presence of
                  (autoload-ref-p (second function-name))))
         (fmakunbound function-name)
         (progn
-          (cerror "Redefine as generic function" "~A already names an ordinary function, macro, or special operator." function-name)
+          (error 'program-error
+                 :format-control "~A already names an ordinary function, macro, or special operator."
+                 :format-arguments (list function-name))
           (fmakunbound function-name)
           )))
   (apply (if (eq generic-function-class +the-standard-generic-function-class+)

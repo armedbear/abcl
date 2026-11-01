@@ -79,7 +79,8 @@
         (error 'program-error "bad DEFPACKAGE option: ~S" option))
       (case (car option)
         (:nicknames
-         (setq nicknames (stringify-names (cdr option))))
+         (let ((new (stringify-names (cdr option))))
+           (setq nicknames (append nicknames new))))
         (:size
          (cond (size
                 (error 'program-error "can't specify :SIZE twice"))

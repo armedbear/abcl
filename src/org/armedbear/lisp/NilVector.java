@@ -95,6 +95,18 @@ public final class NilVector extends AbstractString
             return T;
         if (type == BuiltInClass.SIMPLE_ARRAY)
             return T;
+        // A NIL-vector has upgraded element type NIL, which is a distinct
+        // array specialization from BASE-STRING's (vector base-char).  Per
+        // CLHS type upgrading rules these specializations are disjoint, so
+        // NIL-VECTOR is *not* a BASE-STRING.
+        if (type == Symbol.BASE_STRING)
+            return NIL;
+        if (type == BuiltInClass.BASE_STRING)
+            return NIL;
+        if (type == Symbol.SIMPLE_BASE_STRING)
+            return NIL;
+        if (type == BuiltInClass.SIMPLE_BASE_STRING)
+            return NIL;
         return super.typep(type);
     }
 

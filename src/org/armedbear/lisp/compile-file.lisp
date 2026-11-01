@@ -146,19 +146,17 @@ zero-length jvm classfile corresponding to ~A." classfile)
 (defun output-form (form)
   (if *binary-fasls*
       (push form *forms-for-output*)
-      (progn
-        (dump-form form *fasl-stream*)
-        (%stream-terpri *fasl-stream*))))
+      (%fasl-emit-toplevel-form form *fasl-stream*)))
 
 (defun finalize-fasl-output ()
   (when *binary-fasls*
     (let ((*package* (find-package :keyword))
           (*double-colon-package-separators* T))
-      (dump-form (convert-toplevel-form (list* 'PROGN
-                                               (nreverse *forms-for-output*))
-                                        t)
-                 *fasl-stream*))
-    (%stream-terpri *fasl-stream*)))
+      (%fasl-emit-toplevel-form
+       (convert-toplevel-form (list* 'PROGN
+                                     (nreverse *forms-for-output*))
+                              t)
+       *fasl-stream*))))
 
 
 (declaim (ftype (function (t) t) simple-toplevel-form-p))
@@ -811,6 +809,13 @@ COMPILE-FILE was invoked."
              :stream out :length nil))
     (%stream-terpri out)
 
+    (when (and (boundp '*fasl-instance-count*)
+               (plusp *fasl-instance-count*))
+      (write (list 'cl:setq 'sys::*fasl-instances*
+                   (list 'cl:make-array *fasl-instance-count*))
+             :stream out)
+      (%stream-terpri out))
+
     (when (> *class-number* 0)
       (write (list 'cl:setq 'sys:*fasl-loader*
                    `(sys::make-fasl-class-loader
@@ -840,6 +845,14 @@ COMPILE-FILE was invoked."
          (namestring (namestring *compile-file-truename*))
          (start (get-internal-real-time))
          *fasl-uninterned-symbols*
+         (*fasl-instance-table* (make-hash-table :test 'eq))
+         (*fasl-instance-forms* (make-hash-table :test 'eq))
+         (*fasl-instance-refs* (make-hash-table :test 'eq))
+         (*fasl-instance-created-p* (make-hash-table :test 'eq))
+         (*fasl-instance-initialized-p* (make-hash-table :test 'eq))
+         (*fasl-instance-in-creation-p* (make-hash-table :test 'eq))
+         (*fasl-instance-in-init-p* (make-hash-table :test 'eq))
+         (*fasl-instance-count* 0)
          (warnings-p nil)
          (in-package *package*)
          (failure-p nil))
