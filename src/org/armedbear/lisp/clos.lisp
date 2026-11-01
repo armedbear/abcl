@@ -756,8 +756,10 @@
             (eq metaclass +the-structure-class+)
             (eq metaclass +the-funcallable-standard-class+))
         (std-slot-value object slot-name)
-        (slot-value-using-class class object
-                                (find-slot-definition class slot-name)))))
+        (let ((slot-def (find-slot-definition class slot-name)))
+          (if slot-def
+              (slot-value-using-class class object slot-def)
+              (values (slot-missing class object slot-name 'slot-value)))))))
 
 (defun %set-slot-value (object slot-name new-value)
   (let* ((class (class-of object))
@@ -766,9 +768,12 @@
             (eq metaclass +the-structure-class+)
             (eq metaclass +the-funcallable-standard-class+))
         (setf (std-slot-value object slot-name) new-value)
-        (setf (slot-value-using-class class object
-                                      (find-slot-definition class slot-name))
-              new-value))))
+        (let ((slot-def (find-slot-definition class slot-name)))
+          (if slot-def
+              (setf (slot-value-using-class class object slot-def) new-value)
+              (progn
+                (slot-missing class object slot-name 'setf new-value)
+                new-value))))))
 
 (defsetf slot-value %set-slot-value)
 
@@ -776,8 +781,10 @@
   (let ((class (class-of object)))
     (if (std-class-p class)
         (std-slot-boundp object slot-name)
-        (slot-boundp-using-class class object
-                                 (find-slot-definition class slot-name)))))
+        (let ((slot-def (find-slot-definition class slot-name)))
+          (if slot-def
+              (slot-boundp-using-class class object slot-def)
+              (and (slot-missing class object slot-name 'slot-boundp) t))))))
 
 (defun std-slot-makunbound (instance slot-name)
   (let ((location (instance-slot-location instance slot-name)))
@@ -793,8 +800,12 @@
   (let ((class (class-of object)))
     (if (std-class-p class)
         (std-slot-makunbound object slot-name)
-        (slot-makunbound-using-class class object
-                                     (find-slot-definition class slot-name)))))
+        (let ((slot-def (find-slot-definition class slot-name)))
+          (if slot-def
+              (slot-makunbound-using-class class object slot-def)
+              (progn
+                (slot-missing class object slot-name 'slot-makunbound)
+                object))))))
 
 (defun std-slot-exists-p (instance slot-name)
   (not (null (find slot-name (class-slots (class-of instance))
