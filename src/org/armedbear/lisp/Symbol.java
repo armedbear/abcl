@@ -2973,6 +2973,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_EXT.addExternalSymbol("WEAK-REFERENCE");
   public static final Symbol ADD_PACKAGE_LOCAL_NICKNAME =
     PACKAGE_EXT.addExternalSymbol("ADD-PACKAGE-LOCAL-NICKNAME");
+  public static final Symbol _CAS =
+    PACKAGE_EXT.addExternalSymbol("%CAS");
 
   // MOP.
   public static final Symbol CLASS_LAYOUT =
