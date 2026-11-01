@@ -64,7 +64,13 @@
             (terpri stream))
           (incf count))))))
 
+(defmacro fail-when-in-batch-mode ()
+  '(when *batch-mode*
+     (format *debug-io* "~%*** ERROR WHILE RUNNING IN BATCH MODE! ***~%~A~%" *saved-backtrace*)
+     (quit :status 1)))
+
 (defun internal-debug ()
+  (fail-when-in-batch-mode)
   (if (fboundp 'tpl::repl)
       (let* ((current-debug-io
               (if (typep *debug-io* 'synonym-stream)
@@ -121,6 +127,7 @@ called by BREAK. This hook is run before *DEBUGGER-HOOK*.")
     (run-hook '*invoke-debugger-hook* condition *invoke-debugger-hook*)
     (run-hook '*debugger-hook*        condition *debugger-hook*)
     (invoke-debugger-report-condition condition)
+    (fail-when-in-batch-mode)
     (unless (fboundp 'tpl::repl)
       (quit))
     (let ((original-package *package*))
