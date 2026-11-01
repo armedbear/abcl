@@ -212,12 +212,21 @@ For help on the automatic tests available, use the Ant target 'help.test'.
             depends="abcl.init,abcl.java.warning">
       <mkdir dir="${build.dir}"/>
       <mkdir dir="${build.classes.dir}"/>
+      <!-- c.f. the abcl.constrain.platform target -->
+      <property name="${abcl.javac.platform.args}" value=""/>    
       <javac destdir="${build.classes.dir}"
              debug="true"
              includeantruntime="false"
              encoding="UTF-8"
              failonerror="true">
         <src path="${src.dir}"/>
+	<!-- 
+	     Using the `release` option would be better than `target`,
+	     as it restricts the compilation against the the specified
+	     Java platform, but it is only available on opnejdk9 or
+	     later
+	-->
+	<compilerarg line="${abcl.javac.platform.args}"/>
         <patternset refid="abcl.source.java"/>
       </javac>
     </target>
@@ -1253,12 +1262,24 @@ JVM System Properties
 </target>
 
     <target name="abcl.release" 
-            depends="abcl.clean,abcl.properties.autoconfigure.openjdk.8,abcl.binary.tar,abcl.source.tar,abcl.binary.zip,abcl.source.zip,abcl.wrapper">
+            depends="abcl.constrain.platform,abcl.clean,abcl.properties.autoconfigure.release,abcl.binary.tar,abcl.source.tar,abcl.binary.zip,abcl.source.zip,abcl.wrapper">
       <copy file="${abcl.jar.path}"
             tofile="${dist.dir}/abcl-${abcl.version}.jar"/>
       <copy file="${abcl-contrib.jar}"
             tofile="${dist.dir}/abcl-contrib-${abcl.version}.jar"/>
     </target>
+
+
+    <target name="abcl.constrain.platform">
+      <!-- JDK 8's javac has no `release`; use -source/-target there,
+	   Override with -Dabcl.javac.release.args="..." -->
+      <condition property="abcl.javac.platform.args"
+		 value="-target 8"
+		 else="--release 8">
+	<matches string="${java.specification.version}" pattern="^1\.[0-8]$"/>
+      </condition>
+      <echo>Release build: javac args '${abcl.javac.platform.args}'</echo>
+    </target>    
 
     <target name="abcl.documentation"
             depends="abcl.stamp.version.generate,abcl.documentation.manual,abcl.documentation.asdf"/>
@@ -1282,6 +1303,15 @@ JVM System Properties
             tofile="${dist.dir}/asdf.pdf"/>
     </target>
 
+    <target name="abcl.properties.autoconfigure.release">
+      <exec executable="/usr/bin/env">
+        <arg value="bash"/>
+        <arg value="ci/create-abcl-properties.bash"/>
+        <arg value="release"/>
+      </exec>
+    </target>
+    
+    <!-- deprecated -->
     <target name="abcl.properties.autoconfigure.openjdk.6">
       <exec executable="/usr/bin/env">
         <arg value="bash"/>
@@ -1290,7 +1320,7 @@ JVM System Properties
       </exec>
     </target>
 
-
+    <!-- deprecated -->
     <target name="abcl.properties.autoconfigure.openjdk.7">
       <exec executable="/usr/bin/env">
         <arg value="bash"/>
@@ -1395,6 +1425,7 @@ JVM System Properties
         <arg value="openjdk25"/>
       </exec>
     </target>
+
 
     <!-- TODO guess at a reasonable value -->
     <target name="abcl.config" depends="abcl.configure"/>
