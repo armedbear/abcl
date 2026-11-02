@@ -31,6 +31,7 @@
                          (:file "mop-tests"
                                 :depends-on ("mop-tests-setup"))
                          (:file "clos-tests")
+                         (:file "make-instance-tests")
                          (:file "file-system-tests")
                          #+abcl
                          (:file "jar-pathname"

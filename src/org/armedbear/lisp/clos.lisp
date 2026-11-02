@@ -520,11 +520,22 @@
            (class-precedence-list class))
    :key #'car :from-end t))
 
+(defvar *standard-initialization-epoch* 0
+  "Advanced whenever a class is finalized, or a method is added to or
+removed from INITIALIZE-INSTANCE or SHARED-INITIALIZE: whenever the
+methods applicable to some class's instances there may have changed.")
+
+(defvar *standard-initialization-cache* (make-hash-table :test #'eq)
+  "For each class, (EPOCH . P): whether, as of EPOCH, only the standard
+methods of INITIALIZE-INSTANCE and SHARED-INITIALIZE apply to its
+instances.  See STANDARD-INITIALIZATION-P.")
+
 (defun std-finalize-inheritance (class)
   ;; In case the class is already finalized, return
   ;; immediately, as per AMOP.
 ; (when (class-finalized-p class)
 ;    (return-from std-finalize-inheritance))
+  (incf *standard-initialization-epoch*)
   (setf (class-precedence-list class)
         (funcall (if (std-class-p class)
                      #'std-compute-class-precedence-list
@@ -2264,6 +2275,20 @@ Initialized with the true value near the end of the file.")
       (setf (class-direct-methods specializer)
             (remove method (class-direct-methods specializer)))))
 
+(defun note-initialization-methods-changed (gf)
+  "Invalidate what is cached about initialization when a method is added
+to or removed from GF.  ENSURE-METHOD clears the initargs caches too, but
+only on the DEFMETHOD path; ADD-METHOD and REMOVE-METHOD come here."
+  (when (or (eq gf *gf-initialize-instance*)
+            (eq gf *gf-shared-initialize*))
+    (incf *standard-initialization-epoch*))
+  (when (or (eq gf *gf-initialize-instance*)
+            (eq gf *gf-allocate-instance*)
+            (eq gf *gf-shared-initialize*)
+            (eq gf *gf-reinitialize-instance*))
+    (clrhash *make-instance-initargs-cache*)
+    (clrhash *reinitialize-instance-initargs-cache*)))
+
 (defun std-add-method (gf method)
   ;; calls sites need to make sure that method is either a method of the
   ;; given gf or does not have a gf.
@@ -2274,6 +2299,7 @@ Initialized with the true value near the end of the file.")
                (eq (class-of old-method) +the-standard-method-class+))
           (std-remove-method gf old-method)
           (remove-method gf old-method))))
+  (note-initialization-methods-changed gf)
   (setf (std-slot-value method 'sys::%generic-function) gf)
   (push method (std-slot-value gf 'sys::methods))
   (dolist (specializer (method-specializers method))
@@ -2282,6 +2308,7 @@ Initialized with the true value near the end of the file.")
   gf)
 
 (defun std-remove-method (gf method)
+  (note-initialization-methods-changed gf)
   (setf (std-slot-value gf 'sys::methods)
         (remove method (generic-function-methods gf)))
   (setf (std-slot-value method 'sys::%generic-function) nil)
@@ -3601,27 +3628,31 @@ applicable methods."
     (multiple-value-bind (allowable-initargs present-p)
         (when cache
           (gethash (class-of instance) cache))
-      (flet ((extract-init-args (list-args)
-               (loop :for arg :in list-args :by #'cddr :collect arg)))
-        (when (or (not present-p)
-                  (eq allowable-initargs t)
-                  (and present-p
-                       (set-difference (extract-init-args initargs)
-                                       (set-difference allowable-initargs '(:allow-other-keys)))))
-          (setf allowable-initargs
-                (calculate-allowable-initargs gf-list args instance
-                                              shared-initialize-param initargs))
-          (when cache
-            (setf (gethash (class-of instance) cache)
-                  allowable-initargs)))
-        (unless (eq t allowable-initargs)
-          (do* ((tail initargs (cddr tail))
-                (initarg (car tail) (car tail)))
-               ((null tail))
-            (unless (memq initarg allowable-initargs)
-              (error 'program-error
-                     :format-control "Invalid initarg ~S in call to ~S with arglist ~S."
-                     :format-arguments (list initarg call-site args)))))))))
+      ;; A cached set answers the question when it holds every initarg
+      ;; given, and a cached T (some applicable method accepts
+      ;; &ALLOW-OTHER-KEYS) answers it for any initargs; otherwise
+      ;; compute it again.  Checking membership directly, rather than
+      ;; through SET-DIFFERENCE, keeps the common case from consing.
+      (unless (and present-p
+                   (or (eq allowable-initargs t)
+                       (do ((tail initargs (cddr tail)))
+                           ((null tail) t)
+                         (unless (memq (car tail) allowable-initargs)
+                           (return nil)))))
+        (setf allowable-initargs
+              (calculate-allowable-initargs gf-list args instance
+                                            shared-initialize-param initargs))
+        (when cache
+          (setf (gethash (class-of instance) cache)
+                allowable-initargs)))
+      (unless (eq t allowable-initargs)
+        (do* ((tail initargs (cddr tail))
+              (initarg (car tail) (car tail)))
+             ((null tail))
+          (unless (memq initarg allowable-initargs)
+            (error 'program-error
+                   :format-control "Invalid initarg ~S in call to ~S with arglist ~S."
+                   :format-arguments (list initarg call-site args))))))))
 
 (defun merge-initargs-sets (list1 list2)
   (cond
@@ -3663,6 +3694,36 @@ or T when any keyword is acceptable due to presence of
           (push (funcall fn) default-initargs))))
     (append initargs (nreverse default-initargs))))
 
+(defvar *standard-initialize-instance-method* nil
+  "The system-supplied primary method of INITIALIZE-INSTANCE.
+Initialized with the true value near the end of the file.")
+(defvar *standard-shared-initialize-method* nil
+  "The system-supplied primary method of SHARED-INITIALIZE on a
+STANDARD-OBJECT.  Initialized with the true value near the end of the
+file.")
+
+(defun standard-initialization-p (class instance)
+  "True when only the system-supplied methods of INITIALIZE-INSTANCE and
+SHARED-INITIALIZE apply to INSTANCE, a new instance of CLASS.  Calling
+INITIALIZE-INSTANCE then comes down to STD-SHARED-INITIALIZE, which
+MAKE-INSTANCE may call directly.  Cached per class until
+*STANDARD-INITIALIZATION-EPOCH* moves."
+  (let ((epoch *standard-initialization-epoch*)
+        (entry (gethash class *standard-initialization-cache*)))
+    (if (and entry (eql (car entry) epoch))
+        (cdr entry)
+        (let ((p (and *standard-initialize-instance-method*
+                      *standard-shared-initialize-method*
+                      (equal (compute-applicable-methods
+                              *gf-initialize-instance* (list instance))
+                             (list *standard-initialize-instance-method*))
+                      (equal (compute-applicable-methods
+                              *gf-shared-initialize* (list instance t))
+                             (list *standard-shared-initialize-method*)))))
+          (setf (gethash class *standard-initialization-cache*)
+                (cons epoch p))
+          p))))
+
 (defmethod make-instance ((class standard-class) &rest initargs)
   (setf initargs (augment-initargs-with-defaults class initargs))
   (let ((instance (std-allocate-instance class)))
@@ -3670,7 +3731,9 @@ or T when any keyword is acceptable due to presence of
                     (list* instance initargs)
                     instance t initargs
                     *make-instance-initargs-cache* 'make-instance)
-    (apply #'initialize-instance instance initargs)
+    (if (standard-initialization-p class instance)
+        (std-shared-initialize instance t initargs)
+        (apply #'initialize-instance instance initargs))
     instance))
 
 (defmethod make-instance ((class funcallable-standard-class) &rest initargs)
@@ -3680,7 +3743,9 @@ or T when any keyword is acceptable due to presence of
                     (list* instance initargs)
                     instance t initargs
                     *make-instance-initargs-cache* 'make-instance)
-    (apply #'initialize-instance instance initargs)
+    (if (standard-initialization-p class instance)
+        (std-shared-initialize instance t initargs)
+        (apply #'initialize-instance instance initargs))
     instance))
 
 (defmethod make-instance ((class symbol) &rest initargs)
@@ -3720,18 +3785,37 @@ or T when any keyword is acceptable due to presence of
       (error 'program-error
              :format-control "Initarg ~S not a symbol."
              :format-arguments (list initarg))))
-  (dolist (slot (class-slots (class-of instance)))
-    (let ((slot-name (slot-definition-name slot)))
-      (multiple-value-bind (init-key init-value foundp)
-          (get-properties all-keys (slot-definition-initargs slot))
-        (if foundp
-            (setf (slot-value instance slot-name) init-value)
-            (unless (slot-boundp instance slot-name)
-              (let ((initfunction (slot-definition-initfunction slot)))
-                (when (and initfunction (or (eq slot-names t)
-                                            (memq slot-name slot-names)))
-                  (setf (slot-value instance slot-name)
-                        (funcall initfunction)))))))))
+  (let* ((class (class-of instance))
+         ;; SLOT-VALUE and SLOT-BOUNDP come down to these for an
+         ;; instance of a standard class; decide that once, not per slot.
+         (std-p (std-class-p class)))
+    (flet ((set-slot (slot-name value)
+             (if std-p
+                 (setf (std-slot-value instance slot-name) value)
+                 (setf (slot-value instance slot-name) value))))
+      (dolist (slot (class-slots class))
+        ;; Read a standard effective slot definition directly, as
+        ;; SLOT-DEFINITION-DISPATCH does, rather than through three
+        ;; generic function calls.
+        (multiple-value-bind (slot-name initargs initfunction)
+            (if (eq (class-of slot) +the-standard-effective-slot-definition-class+)
+                (values (std-slot-value slot 'sys:name)
+                        (std-slot-value slot 'sys::initargs)
+                        (std-slot-value slot 'sys::initfunction))
+                (values (slot-definition-name slot)
+                        (slot-definition-initargs slot)
+                        (slot-definition-initfunction slot)))
+          (multiple-value-bind (init-key init-value foundp)
+              (get-properties all-keys initargs)
+            (declare (ignore init-key))
+            (if foundp
+                (set-slot slot-name init-value)
+                (unless (if std-p
+                            (std-slot-boundp instance slot-name)
+                            (slot-boundp instance slot-name))
+                  (when (and initfunction (or (eq slot-names t)
+                                              (memq slot-name slot-names)))
+                    (set-slot slot-name (funcall initfunction))))))))))
   instance)
 
 (defgeneric shared-initialize (instance slot-names
@@ -4030,13 +4114,14 @@ or T when any keyword is acceptable due to presence of
 ;;; Slot definition accessors
 
 (defmacro slot-definition-dispatch (slot-definition std-form generic-form)
+  ;; Not CASE: its keys are not evaluated, so it compared the class
+  ;; with these three symbols and always took GENERIC-FORM.
   `(let (($cl (class-of ,slot-definition)))
-     (case $cl
-       ((+the-standard-slot-definition-class+
-         +the-standard-direct-slot-definition-class+
-         +the-standard-effective-slot-definition-class+)
-        ,std-form)
-       (t ,generic-form))))
+     (if (or (eq $cl +the-standard-slot-definition-class+)
+             (eq $cl +the-standard-direct-slot-definition-class+)
+             (eq $cl +the-standard-effective-slot-definition-class+))
+         ,std-form
+         ,generic-form)))
 
 (atomic-defgeneric slot-definition-allocation (slot-definition)
   (:method ((slot-definition slot-definition))
@@ -4335,6 +4420,11 @@ or T when any keyword is acceptable due to presence of
 (setf *gf-allocate-instance* (symbol-function 'allocate-instance))
 (setf *gf-shared-initialize* (symbol-function 'shared-initialize))
 (setf *gf-reinitialize-instance* (symbol-function 'reinitialize-instance))
+(setf *standard-initialize-instance-method*
+      (find-method #'initialize-instance '() (list +the-standard-object-class+)))
+(setf *standard-shared-initialize-method*
+      (find-method #'shared-initialize '()
+                   (list +the-standard-object-class+ (find-class 't))))
 (setf *clos-booting* nil)
 
 (atomic-defgeneric class-prototype (class)
