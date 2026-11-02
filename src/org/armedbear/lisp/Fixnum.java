@@ -679,10 +679,20 @@ public final class Fixnum extends LispInteger
         if (obj instanceof Fixnum)
           {
             int divisor = ((Fixnum)obj).value;
-            int quotient = value / divisor;
-            int remainder = value % divisor;
-            value1 = Fixnum.getInstance(quotient);
-            value2 = remainder == 0 ? Fixnum.ZERO : Fixnum.getInstance(remainder);
+            if (divisor == -1 && value == Integer.MIN_VALUE)
+              {
+                // The one quotient of two fixnums that is not a fixnum;
+                // int division would wrap it back to MIN_VALUE.
+                value1 = Bignum.getInstance(-(long)value);
+                value2 = Fixnum.ZERO;
+              }
+            else
+              {
+                int quotient = value / divisor;
+                int remainder = value % divisor;
+                value1 = Fixnum.getInstance(quotient);
+                value2 = remainder == 0 ? Fixnum.ZERO : Fixnum.getInstance(remainder);
+              }
           }
         else if (obj instanceof Bignum)
           {
