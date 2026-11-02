@@ -1272,11 +1272,27 @@
   (if (not (and (consp (cdr loop)) (symbolp (cadr loop)))) ; old-style loop
       (fn-call xp loop)
       (pprint-logical-block (xp loop :prefix "(" :suffix ")")
-        (let (token type)
+        (let (token type (rest (cdr loop)))
+          ;; REST follows the tokens still to come, so that a clause can
+          ;; tell when its first token is the form's last: NEXT-TOKEN
+          ;; would then leave the form before that token was written --
+          ;; (LOOP NIL) and (LOOP FOR X IN Y DO) lost their last token.
+          ;; A dotted tail counts as the end too, and PPRINT-POP writes it
+          ;; as ". tail" with no space before the dot: write one, or
+          ;; (LOOP FOR X . 3) printed as (LOOP FOR X. 3).
           (labels ((next-token ()
                      (pprint-exit-if-list-exhausted)
+                     (when (and rest (atom rest))
+                       (write-char #\space xp))
                      (setq token (pprint-pop))
+                     (when (consp rest) (setq rest (cdr rest)))
                      (setq type (token-type token)))
+                   (last-token-p ()
+                     (atom rest))
+                   (print-last-token (xp)
+                     (pprint-logical-block (xp nil)
+                       (write token :stream xp))
+                     (next-token))
                    (print-clause (xp)
                      (case type
                        (:linear-head (print-exprs xp nil :mandatory))
@@ -1284,6 +1300,7 @@
                        (:finally (print-exprs xp T :mandatory))
                        (otherwise (print-exprs xp nil :fill))))
                    (print-exprs (xp skip-first-non-expr newline-type)
+                     (when (last-token-p) (print-last-token xp))
                      (let ((first token))
                        (next-token)     ;so always happens no matter what
                        (pprint-logical-block (xp nil)
@@ -1301,6 +1318,7 @@
                                  (write-char #\space xp)
                                  (pprint-newline newline-type xp))))))
                    (print-cond (xp)
+                     (when (last-token-p) (print-last-token xp))
                      (let ((first token))
                        (next-token)     ;so always happens no matter what
                        (pprint-logical-block (xp nil)
