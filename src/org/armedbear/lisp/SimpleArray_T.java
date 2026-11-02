@@ -48,8 +48,11 @@ public final class SimpleArray_T extends AbstractArray
     this.elementType = elementType;
     totalSize = computeTotalSize(dimv);
     data = new LispObject[totalSize];
+    // ADJUST-ARRAY's new elements: 0, or #\Nul in a character array
+    final LispObject zero = (elementType == Symbol.CHARACTER)
+      ? LispCharacter.getInstance('\0') : Fixnum.ZERO;
     for (int i = totalSize; i-- > 0;)
-      data[i] = Fixnum.ZERO;
+      data[i] = zero;
   }
 
   public SimpleArray_T(int[] dimv,
@@ -99,6 +102,17 @@ public final class SimpleArray_T extends AbstractArray
       this.totalSize = computeTotalSize(dimv);
   }
 
+  // This class holds every simple array of rank two or more whose element
+  // type has no array class of its own (BIT and CHARACTER among them), so
+  // it keeps the element type itself: an object that is not of it is not
+  // stored.  An array of element type T pays one comparison.
+  private LispObject checked(LispObject obj)
+  {
+    if (elementType != T && obj.typep(elementType) == NIL)
+      return type_error(obj, elementType);
+    return obj;
+  }
+
   private int setInitialContents(int axis, int[] dims, LispObject contents,
                                  int index)
 
@@ -107,7 +121,7 @@ public final class SimpleArray_T extends AbstractArray
       {
         try
           {
-            data[index] = contents;
+            data[index] = checked(contents);
           }
         catch (ArrayIndexOutOfBoundsException e)
           {
@@ -239,7 +253,7 @@ public final class SimpleArray_T extends AbstractArray
   {
     try
       {
-        data[index] = newValue;
+        data[index] = checked(newValue);
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
@@ -302,7 +316,7 @@ public final class SimpleArray_T extends AbstractArray
   {
     try
       {
-        data[getRowMajorIndex(subscripts)] = newValue;
+        data[getRowMajorIndex(subscripts)] = checked(newValue);
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
@@ -314,6 +328,7 @@ public final class SimpleArray_T extends AbstractArray
   @Override
   public void fill(LispObject obj)
   {
+    checked(obj);
     for (int i = totalSize; i-- > 0;)
       data[i] = obj;
   }

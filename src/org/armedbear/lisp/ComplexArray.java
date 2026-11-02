@@ -54,8 +54,11 @@ public final class ComplexArray extends AbstractArray
         this.elementType = elementType;
         totalSize = computeTotalSize(dimv);
         data = new LispObject[totalSize];
+        // ADJUST-ARRAY's new elements: 0, or #\Nul in a character array
+        final LispObject zero = (elementType == Symbol.CHARACTER)
+            ? LispCharacter.getInstance('\0') : Fixnum.ZERO;
         for (int i = totalSize; i-- > 0;)
-            data[i] = Fixnum.ZERO;
+            data[i] = zero;
     }
 
     public ComplexArray(int[] dimv,
@@ -85,13 +88,23 @@ public final class ComplexArray extends AbstractArray
         totalSize = computeTotalSize(dimv);
     }
 
+    // As in SimpleArray_T: the element type is this class's to keep for
+    // the element types with no array class of their own.  A displaced
+    // array stores through its target, which keeps its own.
+    private LispObject checked(LispObject obj)
+    {
+        if (elementType != T && obj.typep(elementType) == NIL)
+            return type_error(obj, elementType);
+        return obj;
+    }
+
     private int setInitialContents(int axis, int[] dims, LispObject contents,
                                    int index)
 
     {
         if (dims.length == 0) {
             try {
-                data[index] = contents;
+                data[index] = checked(contents);
             }
             catch (ArrayIndexOutOfBoundsException e) {
                 error(new LispError("Bad initial contents for array."));
@@ -211,7 +224,7 @@ public final class ComplexArray extends AbstractArray
     {
         if (data != null) {
             try {
-                data[index] = newValue;
+                data[index] = checked(newValue);
             }
             catch (ArrayIndexOutOfBoundsException e) {
                 error(new TypeError("Bad row major index " + index + "."));
@@ -224,6 +237,7 @@ public final class ComplexArray extends AbstractArray
     public void fill(LispObject obj)
     {
         if (data != null) {
+            checked(obj);
             for (int i = data.length; i-- > 0;)
                 data[i] = obj;
         } else {
