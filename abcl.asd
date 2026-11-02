@@ -19,6 +19,8 @@
                (:module test :depends-on (package)
                         :pathname "test/lisp/abcl/" :components
                         ((:file "utilities")
+                         #+abcl
+                         (:file "cas-tests")
                          (:file "compiler-tests")
                          (:file "condition-tests")
                          #+abcl
