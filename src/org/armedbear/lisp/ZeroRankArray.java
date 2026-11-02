@@ -65,6 +65,14 @@ public final class ZeroRankArray extends AbstractArray
         return BuiltInClass.ARRAY;
     }
 
+    // ADJUSTABLE-ARRAY-P answers as TYPE-OF and TYPEP do.  The default,
+    // true, called every array of rank zero adjustable.
+    @Override
+    public boolean isAdjustable()
+    {
+        return adjustable;
+    }
+
     @Override
     public LispObject typep(LispObject type)
     {
@@ -177,9 +185,11 @@ public final class ZeroRankArray extends AbstractArray
               data = initialContents;
           return this;
       } else {
+          // Nor here: the one element is kept unless initial contents
+          // replace it.  (Unreached while every array of rank zero called
+          // itself adjustable.)
           return new ZeroRankArray(elementType,
-                  initialContents != null ? initialContents :
-                      initialElement != null ? initialElement : data, false);
+                  initialContents != null ? initialContents : data, false);
       }
   }
 

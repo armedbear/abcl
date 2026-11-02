@@ -80,6 +80,14 @@ public final class NilVector extends AbstractString
         return BuiltInClass.NIL_VECTOR;
     }
 
+    // A nil vector is always simple (TYPEP above), so ADJUSTABLE-ARRAY-P
+    // answers NIL; the default, true, said otherwise.
+    @Override
+    public boolean isAdjustable()
+    {
+        return false;
+    }
+
     @Override
     public LispObject typep(LispObject type)
     {
