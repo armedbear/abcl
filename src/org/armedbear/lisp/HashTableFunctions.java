@@ -432,6 +432,59 @@ public final class HashTableFunctions
       }
   };
 
+  // The entry points that compiled code calls directly (P2-GETHASH and
+  // P2-PUTHASH in compiler-pass2.lisp) instead of the primitives above.
+  // GETHASH sets its two values on the caller's thread.
+
+  public static LispObject gethash(LispThread thread, LispObject key,
+                                   LispObject ht)
+  {
+    if (ht instanceof HashTable) {
+      final LispObject value = ((HashTable)ht).get(key);
+      return value != null
+        ? thread.setValues(value, T)
+        : thread.setValues(NIL, NIL);
+    }
+    if (ht instanceof WeakHashTable)
+      return ((WeakHashTable)ht).gethash(key);
+    return type_error(ht, Symbol.HASH_TABLE);
+  }
+
+  public static LispObject gethash(LispThread thread, LispObject key,
+                                   LispObject ht, LispObject defaultValue)
+  {
+    if (ht instanceof HashTable) {
+      final LispObject value = ((HashTable)ht).get(key);
+      return value != null
+        ? thread.setValues(value, T)
+        : thread.setValues(defaultValue, NIL);
+    }
+    if (ht instanceof WeakHashTable)
+      return ((WeakHashTable)ht).gethash(key, defaultValue);
+    return type_error(ht, Symbol.HASH_TABLE);
+  }
+
+  public static LispObject gethash1(LispObject key, LispObject ht)
+  {
+    if (ht instanceof HashTable) {
+      final LispObject value = ((HashTable)ht).get(key);
+      return value != null ? value : NIL;
+    }
+    if (ht instanceof WeakHashTable)
+      return ((WeakHashTable)ht).gethash1(key);
+    return type_error(ht, Symbol.HASH_TABLE);
+  }
+
+  public static LispObject puthash(LispObject key, LispObject ht,
+                                   LispObject value)
+  {
+    if (ht instanceof HashTable)
+      return ((HashTable)ht).puthash(key, value);
+    if (ht instanceof WeakHashTable)
+      return ((WeakHashTable)ht).puthash(key, value);
+    return type_error(ht, Symbol.HASH_TABLE);
+  }
+
   protected static HashTable checkHashTable(LispObject ht) {
     if (ht instanceof HashTable) return (HashTable)ht;
     type_error(ht, Symbol.HASH_TABLE);    
