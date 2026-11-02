@@ -134,8 +134,11 @@ public final class make_array
         LispObject data;
         if (initialElementProvided != NIL) {
           data = initialElement;
-        } else {
+        } else if (initialContents != NIL) {
           data = initialContents;
+        } else {
+          LispObject d = defaultElement(upgradedType);
+          data = (d != null) ? d : NIL;
         }
         return new ZeroRankArray(upgradedType, data, adjustable != NIL);
     } else if (rank == 1) {
@@ -343,7 +346,7 @@ public final class make_array
             if (initialElementProvided != NIL) {
               array.fill(initialElement);
             } else {
-              array.fill(NIL);
+              fillDefault(array, upgradedType);
             }
           }
         }
@@ -394,13 +397,36 @@ public final class make_array
             if (initialElementProvided != NIL) {
               array.fill(initialElement);
             } else {
-              array.fill(NIL);
+              fillDefault(array, upgradedType);
             }
           }
         }
       }
       return array;
     }
+  }
+
+  // What a new array of UPGRADED-TYPE holds where no initial element or
+  // contents is given: the element type's own zero, as the vectors already
+  // do (0 in a bit vector, #\Nul in a string).  The arrays of rank zero and
+  // of rank two or more were filled with NIL whatever the type, so a bit
+  // array held NIL.  NULL for an element type with no element to give.
+  private static LispObject defaultElement(LispObject upgradedType)
+  {
+    if (upgradedType == T)
+      return NIL;
+    if (upgradedType == Symbol.CHARACTER)
+      return LispCharacter.getInstance('\0');
+    if (Fixnum.ZERO.typep(upgradedType) != NIL)
+      return Fixnum.ZERO;
+    return null;
+  }
+
+  private static void fillDefault(AbstractArray array, LispObject upgradedType)
+  {
+    LispObject d = defaultElement(upgradedType);
+    if (d != null)
+      array.fill(d);
   }
 
   private static final Primitive _MAKE_ARRAY = new make_array();
