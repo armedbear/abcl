@@ -525,13 +525,6 @@
         (setf t2 (%car type2) i2 (%cdr type2)))
     (cond ((null t1)
            (return-from %subtypep (values t t)))
-          ((eq t1 'atom)
-           (return-from %subtypep (values (eq t2 t) t)))
-          ((eq t2 'atom)
-           (return-from %subtypep (cond ((memq t1 '(cons list sequence))
-                                        (values nil t))
-                                       (t
-                                        (values t t)))))
           ((eq t1 'member)
            (dolist (e i1)
              (unless (typep e type2) (return-from %subtypep (values nil t))))
@@ -561,10 +554,12 @@
                 (member 'list i1))
              (return-from %subtypep (values t t)))
            (return-from %subtypep (values nil nil)))
-          ((eq t1 'cons)
+          ((and (eq t1 'cons) (not (memq t2 '(or and))))
            (case t2
              ((LIST SEQUENCE)
               (return-from %subtypep (values t t)))
+             (ATOM
+              (return-from %subtypep (values nil t)))
              (CONS
               (when (and (%subtypep (car i1) (car i2))
                          (%subtypep (cadr i1) (cadr i2)))
@@ -587,6 +582,21 @@
              (multiple-value-bind (tv flag) (%subtypep type1 tt)
                (unless tv (return-from %subtypep (values tv flag)))))
            (return-from %subtypep (values t t)))
+          ;; ATOM is (NOT CONS).  The MEMBER, EQL, OR, AND and CONS cases
+          ;; above take ATOM on either side; what is left is a type
+          ;; against ATOM itself.  ATOM is a subtype of (NOT X) when X is
+          ;; a subtype of CONS, and (NOT X) of ATOM when CONS is of X.
+          ((eq t1 'atom)
+           (return-from %subtypep
+             (cond ((eq t2 'not) (%subtypep (car i2) 'cons))
+                   ((eq t2 'satisfies) (values nil nil))
+                   (t (values nil t)))))
+          ((eq t2 'atom)
+           (return-from %subtypep
+             (cond ((memq t1 '(t cons list sequence)) (values nil t))
+                   ((eq t1 'not) (%subtypep 'cons (car i1)))
+                   ((eq t1 'satisfies) (values nil nil))
+                   (t (values t t)))))
           ((eq t1 'mod)
            (return-from %subtypep
              (%subtypep `(integer 0 ,(1- (first i1)))
