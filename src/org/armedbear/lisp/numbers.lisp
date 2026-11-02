@@ -129,8 +129,6 @@
               (return init-value))
             (setq init-value iterated-value))))))
 
-;; FIXME Need to add support for denormalized floats!
-
 ;; "FLOAT-PRECISION returns the number of significant radix b digits present in
 ;; FLOAT; if FLOAT is a float zero, then the result is an integer zero."
 
@@ -139,15 +137,17 @@
 ;; for a denormalized or zero number.
 (defun float-precision (float)
   (if (floatp float)
-      (cond ((zerop float)
-             0)
-            ((typep float 'single-float)
-             24)
-            ((typep float 'double-float)
-             53)
-            (t
-             ;; Shouldn't get here!
-             (aver nil)))
+      (if (zerop float)
+          0
+          ;; A denormalized float has fewer significant digits: its
+          ;; significand lacks the leading one.  INTEGER-DECODE-FLOAT
+          ;; returns such a significand shifted left, with an exponent
+          ;; below the least one (-149, -1074); the shift is not digits.
+          (multiple-value-bind (significand exponent)
+              (integer-decode-float float)
+            (- (integer-length significand)
+               (max 0 (- (if (typep float 'single-float) -149 -1074)
+                         exponent)))))
       (error 'simple-type-error
              :format-control "~S is not of type FLOAT."
              :format-arguments (list float))))
@@ -164,31 +164,32 @@
              :format-arguments (list float)))))
 
 ;;; From <http://paste.lisp.org/display/10847>.  Thanks Xophe!
+;;; The mantissa is brought to FLOAT-DIGITS bits, the format's width,
+;;; so that DECODE-FLOAT's significand lies in [1/2, 1) for a
+;;; denormalized float too; FLOAT-PRECISION is fewer bits for those.
 (defun sane-integer-decode-float (float)
   (multiple-value-bind (mantissa exp sign)
       (integer-decode-float float)
-    (let ((fixup (- (integer-length mantissa) (float-precision float))))
+    (let ((fixup (- (integer-length mantissa) (float-digits float))))
       (values (ash mantissa (- fixup))
               (+ exp fixup)
               sign))))
 
 (defun decode-float-single (float)
-  ;; TODO memoize
-  (let ((float-precision-single (float-precision 1f0)))
+  (let ((digits (float-digits 1f0)))
     (multiple-value-bind (significand exponent sign)
         (sane-integer-decode-float float)
-      (values (coerce (/ significand (expt 2 float-precision-single)) 'single-float)
-              (+ exponent float-precision-single)
+      (values (coerce (/ significand (expt 2 digits)) 'single-float)
+              (+ exponent digits)
               (if (minusp sign) -1f0 1f0)))))
 
 
 (defun decode-float-double (float)
-  ;; TODO memoize
-  (let ((float-precision-double (float-precision 1d0)))
+  (let ((digits (float-digits 1d0)))
     (multiple-value-bind (significand exponent sign)
         (sane-integer-decode-float float)
-      (values (coerce (/ significand (expt 2 float-precision-double)) 'double-float)
-              (+ exponent float-precision-double)
+      (values (coerce (/ significand (expt 2 digits)) 'double-float)
+              (+ exponent digits)
               (if (minusp sign) -1d0 1d0)))))
 
 (defun conjugate (number)
