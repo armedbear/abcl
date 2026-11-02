@@ -610,3 +610,29 @@
       (delete-file tmpfile)
       (equal (cl-user::foobar) '(cl-user::bar cl-user::foo)))
   t)
+
+;;; In a compiled file, a closure made by the initial value of a toplevel
+;;; DEFVAR or DEFPARAMETER, or by a toplevel (SETF FDEFINITION) or
+;;; (SETF GET), must be a compiled closure, not an interpreted one.
+(deftest compile-file.toplevel-closures.1
+    (let ((source (ext:make-temp-file :suffix ".lisp"))
+          (fasl nil))
+      (unwind-protect
+           (progn
+             (with-open-file (s source :direction :output :if-exists :supersede)
+               (write-string "(in-package :abcl.test.lisp)
+(defvar *toplevel-closure-1* (lambda (x) x))
+(defparameter *toplevel-closure-2* (let ((k 1)) (lambda (x) (+ x k))))
+(setf (fdefinition 'toplevel-closure-3) (lambda (x) x))
+(setf (get 'toplevel-closure-4 'function) (lambda (x) x))
+" s))
+             (setf fasl (compile-file source))
+             (load fasl)
+             (mapcar #'compiled-function-p
+                     (list (symbol-value '*toplevel-closure-1*)
+                           (symbol-value '*toplevel-closure-2*)
+                           (fdefinition 'toplevel-closure-3)
+                           (get 'toplevel-closure-4 'function))))
+        (delete-file source)
+        (when fasl (delete-file fasl))))
+  (t t t t))
