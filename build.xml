@@ -59,6 +59,12 @@ For help on the automatic tests available, use the Ant target 'help.test'.
         </condition>
     </fail>
 
+    <!-- java.lang.invoke.VarHandle (openjdk9 and later) gives lock-free
+         COMPARE-AND-SWAP.  Without it AtomicVarHandles.java is not
+         compiled, and Atomic.java falls back to locks at runtime. -->
+    <available property="abcl.varhandle.p"
+               classname="java.lang.invoke.VarHandle"/>
+
     <!-- Deprecated.  Checks if JSR-223 support is available.  Should always be true.  Unused.  D -->
     <available property="abcl.jsr-223.p"
                classname="javax.script.ScriptEngine"/>
@@ -219,6 +225,8 @@ For help on the automatic tests available, use the Ant target 'help.test'.
              failonerror="true">
         <src path="${src.dir}"/>
         <patternset refid="abcl.source.java"/>
+        <exclude name="org/armedbear/lisp/AtomicVarHandles.java"
+                 unless="abcl.varhandle.p"/>
       </javac>
     </target>
 

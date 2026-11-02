@@ -554,6 +554,13 @@ public class Autoload extends Function
         autoload(PACKAGE_PROF, "stop-profiler", "Profiler", true);
         autoload(PACKAGE_SYS, "%%string=", "StringFunctions");
         autoload(PACKAGE_SYS, "%adjust-array", "adjust_array");
+        autoload(PACKAGE_SYS, "%compare-and-swap-car", "Atomic", true);
+        autoload(PACKAGE_SYS, "%compare-and-swap-cdr", "Atomic", true);
+        autoload(PACKAGE_SYS, "%compare-and-swap-slot-value", "Atomic", true);
+        autoload(PACKAGE_SYS, "%compare-and-swap-standard-instance-access", "Atomic", true);
+        autoload(PACKAGE_SYS, "%compare-and-swap-structure-ref", "Atomic", true);
+        autoload(PACKAGE_SYS, "%compare-and-swap-svref", "Atomic", true);
+        autoload(PACKAGE_SYS, "%compare-and-swap-symbol-value", "Atomic", true);
         autoload(PACKAGE_SYS, "%defpackage", "PackageFunctions");
         autoload(PACKAGE_SYS, "%get-output-stream-bytes", "ByteArrayOutputStream"); //AS 20090325
         autoload(PACKAGE_SYS, "%get-output-stream-array", "ByteArrayOutputStream");
@@ -688,6 +695,7 @@ public class Autoload extends Function
         autoload(PACKAGE_JAVA, "%jget-property-value", "JavaBeans", false);
         autoload(PACKAGE_JAVA, "%jset-property-value", "JavaBeans", false);
 
+        autoload(PACKAGE_EXT, "compare-and-swap-implementation", "Atomic", true);
         autoload(PACKAGE_EXT, "autoload-setf-expander", "AutoloadGeneralizedReference", true);
         autoload(PACKAGE_EXT, "autoload-setf-function", "AutoloadGeneralizedReference", true);
         autoload(PACKAGE_EXT, "autoload-ref-p", "AutoloadGeneralizedReference", true);

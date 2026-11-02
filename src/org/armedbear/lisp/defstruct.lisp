@@ -425,8 +425,18 @@
           (unless (assoc accessor-name *dd-inherited-accessors*)
             (setf result (nconc result (define-reader slot)))
             (unless (dsd-read-only slot)
-              (setf result (nconc result (define-writer slot))))))))
+              (setf result (nconc result (define-writer slot))))
+            (setf result (nconc result (define-cas-slot slot)))))))
     result))
+
+(defun define-cas-slot (slot)
+  ;; What EXT:COMPARE-AND-SWAP needs to expand (ACCESSOR instance):
+  ;; the structure name, the slot index and the slot type, or NIL for
+  ;; a read-only slot or a structure of :TYPE LIST or VECTOR.
+  `((eval-when (:compile-toplevel :load-toplevel :execute)
+      (setf (get ',(dsd-reader slot) 'cas-structure-slot)
+            ',(unless (or *dd-type* (dsd-read-only slot))
+                (list *dd-name* (dsd-index slot) (dsd-type slot)))))))
 
 (defun define-copier ()
   (when *dd-copier*
