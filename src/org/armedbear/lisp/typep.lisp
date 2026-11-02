@@ -31,8 +31,13 @@
 
 (in-package #:system)
 
+;;; "The type of an array that is not displaced to another array, has no
+;;; fill pointer, and is not expressly adjustable" (CLHS SIMPLE-ARRAY).
+;;; Adjustability was not checked, so an adjustable array was of every
+;;; compound SIMPLE-ARRAY type its element type and dimensions allowed.
 (defun simple-array-p (object)
   (and (arrayp object)
+       (not (adjustable-array-p object))
        (not (array-has-fill-pointer-p object))
        (multiple-value-bind (displaced-to offset) (array-displacement object)
          (and (null displaced-to) (zerop offset)))))
