@@ -610,3 +610,32 @@
       (delete-file tmpfile)
       (equal (cl-user::foobar) '(cl-user::bar cl-user::foo)))
   t)
+
+;;; Compiled MAPCAR and MAPC evaluate the function form once, and
+;;; before the list form, as a call does (CLHS 3.1.2.1.2.3).
+(deftest mapcar.function-form-once.1
+    (let ((count 0))
+      (list (funcall (compile nil '(lambda (count-fn)
+                                    (mapcar (progn (funcall count-fn) #'1+)
+                                            (list 1 2 3 4 5))))
+                     (lambda () (incf count)))
+            count))
+  ((2 3 4 5 6) 1))
+
+(deftest mapc.function-form-once.1
+    (let ((count 0))
+      (funcall (compile nil '(lambda (count-fn)
+                              (mapc (progn (funcall count-fn) #'identity)
+                                    (list 1 2 3 4 5))))
+               (lambda () (incf count)))
+      count)
+  1)
+
+(deftest mapcar.evaluation-order.1
+    (let ((order '()))
+      (funcall (compile nil '(lambda (note)
+                              (mapcar (progn (funcall note :function) #'1+)
+                                      (progn (funcall note :list) (list 1 2)))))
+               (lambda (what) (push what order)))
+      (reverse order))
+  (:function :list))
