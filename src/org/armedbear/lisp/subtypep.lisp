@@ -246,6 +246,18 @@
              (FUNCTION
               (make-ctype 'FUNCTION type)))))))
 
+;;; An array of element type E1 is always one of element type E2 when E2
+;;; is unspecified, or when both are specified and upgrade alike.  An
+;;; unspecified E1 is the union of every element type, so it is within no
+;;; specified E2: (UPGRADED-ARRAY-ELEMENT-TYPE '*) answers T, and testing
+;;; that against E2 put VECTOR within (VECTOR T), a string included.
+(defun element-type-subtypep (e1 e2)
+  (or (eq e2 '*)
+      (and (not (eq e1 '*))
+           (or (equal e1 e2)
+               (equal (upgraded-array-element-type e1)
+                      (upgraded-array-element-type e2))))))
+
 (defun csubtypep-array (ct1 ct2)
   (let ((type1 (normalize-type (ctype-type ct1)))
         (type2 (normalize-type (ctype-type ct2))))
@@ -267,10 +279,7 @@
                  (d2 (cadr i2)))
              (cond ((and (eq e2 '*) (eq d2 '*))
                     (values t t))
-                   ((or (eq e2 '*)
-                        (equal e1 e2)
-                        (equal (upgraded-array-element-type e1)
-                               (upgraded-array-element-type e2)))
+                   ((element-type-subtypep e1 e2)
                     (values (dimension-subtypep d1 d2) t))
                    (t
                     (values nil t)))))
@@ -363,10 +372,7 @@
                     (d2 (cadr i2)))
                 (cond ((and (eq e2 '*) (eq d2 '*))
                        (values t t))
-                      ((or (eq e2 '*)
-                           (equal e1 e2)
-                           (equal (upgraded-array-element-type e1)
-                                  (upgraded-array-element-type e2)))
+                      ((element-type-subtypep e1 e2)
                        (values (dimension-subtypep d1 d2) t))
                       (t
                        (values nil t)))))
@@ -389,6 +395,23 @@
                       (return-from csubtypep-array (values nil t))))))
              (t
               (values nil t))))
+          ;; An array type whose element type upgrades to BIT, of rank
+          ;; one and a matching length, is a bit vector (and a simple one
+          ;; when it is a SIMPLE-ARRAY type).  No case took these, and
+          ;; (SIMPLE-ARRAY BIT (*)) was surely not a SIMPLE-BIT-VECTOR.
+          ((and (memq t2 '(bit-vector simple-bit-vector))
+                (memq t1 '(array simple-array))
+                (or (eq t2 'bit-vector) (eq t1 'simple-array)))
+           (let* ((e1 (car i1))
+                  (d1 (cadr i1))
+                  (size2 (car i2))
+                  (rank-one (or (eql d1 1) (and (consp d1) (= (length d1) 1))))
+                  (length1 (if (consp d1) (car d1) '*)))
+             (values (and (element-type-subtypep e1 'bit)
+                          rank-one
+                          (or (member size2 '(nil *)) (eql length1 size2))
+                          t)
+                     t)))
           ((eq t2 'bit-vector)
            (let ((size1 (car i1))
                  (size2 (car i2)))
@@ -429,9 +452,13 @@
                            (values nil t))))
                    ((and (eq class-name 'simple-vector)
                          (eq t1 'simple-array))
+                    ;; SIMPLE-VECTOR is (SIMPLE-ARRAY T (*)): rank one and
+                    ;; an element type that upgrades to T.  Only the rank
+                    ;; was checked, so a string type was a simple vector.
                     (let ((dim (cadr i1)))
-                      (if (or (eql dim 1)
-                              (and (consp dim) (= (length dim) 1)))
+                      (if (and (or (eql dim 1)
+                                   (and (consp dim) (= (length dim) 1)))
+                               (element-type-subtypep (car i1) t))
                           (values t t)
                           (values nil t))))
                    ((and (eq class-name 'bit-vector)
@@ -664,10 +691,7 @@
                  (d2 (cadr i2)))
              (cond ((and (eq e2 '*) (eq d2 '*))
                     (values t t))
-                   ((or (eq e2 '*)
-                        (equal e1 e2)
-                        (equal (upgraded-array-element-type e1)
-                               (upgraded-array-element-type e2)))
+                   ((element-type-subtypep e1 e2)
                     (values (dimension-subtypep d1 d2) t))
                    (t
                     (values nil t)))))
@@ -727,10 +751,7 @@
                     (d2 (cadr i2)))
                 (cond ((and (eq e2 '*) (eq d2 '*))
                        (values t t))
-                      ((or (eq e2 '*)
-                           (equal e1 e2)
-                           (equal (upgraded-array-element-type e1)
-                                  (upgraded-array-element-type e2)))
+                      ((element-type-subtypep e1 e2)
                        (values (dimension-subtypep d1 d2) t))
                       (t
                        (values nil t)))))
@@ -753,6 +774,23 @@
                       (return-from %subtypep (values nil t))))))
              (t
               (values nil t))))
+          ;; An array type whose element type upgrades to BIT, of rank
+          ;; one and a matching length, is a bit vector (and a simple one
+          ;; when it is a SIMPLE-ARRAY type).  No case took these, and
+          ;; (SIMPLE-ARRAY BIT (*)) was surely not a SIMPLE-BIT-VECTOR.
+          ((and (memq t2 '(bit-vector simple-bit-vector))
+                (memq t1 '(array simple-array))
+                (or (eq t2 'bit-vector) (eq t1 'simple-array)))
+           (let* ((e1 (car i1))
+                  (d1 (cadr i1))
+                  (size2 (car i2))
+                  (rank-one (or (eql d1 1) (and (consp d1) (= (length d1) 1))))
+                  (length1 (if (consp d1) (car d1) '*)))
+             (values (and (element-type-subtypep e1 'bit)
+                          rank-one
+                          (or (member size2 '(nil *)) (eql length1 size2))
+                          t)
+                     t)))
           ((eq t2 'bit-vector)
            (let ((size1 (car i1))
                  (size2 (car i2)))
@@ -785,9 +823,13 @@
                            (values nil t))))
                    ((and (eq class-name 'simple-vector)
                          (eq t1 'simple-array))
+                    ;; SIMPLE-VECTOR is (SIMPLE-ARRAY T (*)): rank one and
+                    ;; an element type that upgrades to T.  Only the rank
+                    ;; was checked, so a string type was a simple vector.
                     (let ((dim (cadr i1)))
-                      (if (or (eql dim 1)
-                              (and (consp dim) (= (length dim) 1)))
+                      (if (and (or (eql dim 1)
+                                   (and (consp dim) (= (length dim) 1)))
+                               (element-type-subtypep (car i1) t))
                           (values t t)
                           (values nil t))))
                    ((and (eq class-name 'bit-vector)
