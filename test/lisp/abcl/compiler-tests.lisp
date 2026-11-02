@@ -610,3 +610,33 @@
       (delete-file tmpfile)
       (equal (cl-user::foobar) '(cl-user::bar cl-user::foo)))
   t)
+
+;;; A loop whose value is an operand -- an argument, the value of a
+;;; special SETQ, an element of LIST or CONS -- is compiled with the
+;;; operands before it saved in registers, so that the JVM stack is
+;;; empty at the loop's back edge and HotSpot can compile the loop by
+;;; on-stack replacement.  Check that those paths compute the same values.
+(defvar *loop-operand-special* nil)
+
+(deftest compiler.loop-operands.1
+    (funcall
+     (compile nil
+              '(lambda (n)
+                (flet ((sum-to (n) (let ((s 0)) (dotimes (i n s) (incf s i)))))
+                  (declare (notinline sum-to))
+                  (let ((k 100)
+                        (v (make-array 1))
+                        (c (list nil)))
+                    (setf *loop-operand-special*
+                          (let ((s 0)) (dotimes (i n s) (incf s i))))
+                    (setf (svref v 0) (let ((s 0)) (dotimes (i n s) (incf s i))))
+                    (setf (car c) (loop for i below n sum i))
+                    (list *loop-operand-special*
+                          (+ k (let ((s 0)) (dotimes (i n s) (incf s i))))
+                          (cons :x (loop for i below n collect i))
+                          (list :y (sum-to n) (loop for i below n sum i))
+                          (svref v 0)
+                          (car c)
+                          (mapcar #'1+ (loop for i below n collect i)))))))
+     5)
+  (10 110 (:x 0 1 2 3 4) (:y 10 10) 10 10 (1 2 3 4 5)))
