@@ -205,6 +205,8 @@ initialized from the `java-dotted-name'."
     "org.armedbear.lisp.CompiledPrimitive")
 (define-class-name +lisp-eql-hash-table+ "org.armedbear.lisp.EqlHashTable")
 (define-class-name +lisp-hash-table+ "org.armedbear.lisp.HashTable")
+(define-class-name +lisp-hash-table-functions+
+    "org.armedbear.lisp.HashTableFunctions")
 (define-class-name +lisp-package+ "org.armedbear.lisp.Package")
 (define-class-name +lisp-readtable+ "org.armedbear.lisp.Readtable")
 (define-class-name +lisp-stream+ "org.armedbear.lisp.Stream")
