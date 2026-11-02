@@ -42,7 +42,6 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Stack; 
 import java.text.MessageFormat;
 
 import java.util.concurrent.ThreadFactory;
@@ -94,8 +93,45 @@ public final class LispThread
                        JavaObject.getInstance(javaThread)));
     }
 
-    /** Stack holding bindings for evaluated functions */
-    public Stack<Environment>envStack = new Stack<Environment>();
+    /** The environments of interpreted code and, between them, the
+     *  function each call entered, innermost last: read by
+     *  ABCL-INTROSPECT to find the locals of interpreted frames.
+     *
+     *  Every full call from compiled code pushes and pops its function
+     *  here, so this is a plain array, owned by the thread and
+     *  unsynchronized, and the function itself is the call marker. */
+    public final EnvironmentStack envStack = new EnvironmentStack();
+
+    public static final class EnvironmentStack
+    {
+        private LispObject[] items = new LispObject[64];
+        private int size = 0;
+
+        public void push(LispObject item)
+        {
+            if (size == items.length)
+                items = java.util.Arrays.copyOf(items, size * 2);
+            items[size++] = item;
+        }
+
+        public LispObject pop()
+        {
+            LispObject item = items[--size];
+            items[size] = null;
+            return item;
+        }
+
+        public int size()
+        {
+            return size;
+        }
+
+        /** The entries, outermost first. */
+        public Object[] toArray()
+        {
+            return java.util.Arrays.copyOf(items, size, Object[].class);
+        }
+    }
 
     LispThread(Thread javaThread)
     {
@@ -888,7 +924,7 @@ public final class LispThread
         stack[stackPtr + 1] = STACK_MARKER_0;
         stackPtr += STACK_FRAME_EXTRA;
         try {
-            envStack.push(new Environment(null,NIL,function));
+            envStack.push(function);
             return function.execute();
         }
         finally {
@@ -906,7 +942,7 @@ public final class LispThread
         stack[stackPtr + 2] = STACK_MARKER_1;
         stackPtr += 1 + STACK_FRAME_EXTRA;
         try {
-            envStack.push(new Environment(null,NIL,function));
+            envStack.push(function);
             return function.execute(arg);
         }
         finally {
@@ -926,7 +962,7 @@ public final class LispThread
         stack[stackPtr + 3] = STACK_MARKER_2;
         stackPtr += 2 + STACK_FRAME_EXTRA;
         try {
-            envStack.push(new Environment(null,NIL,function));
+            envStack.push(function);
             return function.execute(first, second);
         }
         finally {
@@ -947,7 +983,7 @@ public final class LispThread
         stack[stackPtr + 4] = STACK_MARKER_3;
         stackPtr += 3 + STACK_FRAME_EXTRA;
         try {
-            envStack.push(new Environment(null,NIL,function));
+            envStack.push(function);
             return function.execute(first, second, third);
         }
         finally {
@@ -970,7 +1006,7 @@ public final class LispThread
         stack[stackPtr + 5] = STACK_MARKER_4;
         stackPtr += 4 + STACK_FRAME_EXTRA;
         try {
-            envStack.push(new Environment(null,NIL,function));
+            envStack.push(function);
             return function.execute(first, second, third, fourth);
         }
         finally {
@@ -994,7 +1030,7 @@ public final class LispThread
         stack[stackPtr + 6] = STACK_MARKER_5;
         stackPtr += 5 + STACK_FRAME_EXTRA;
         try {
-            envStack.push(new Environment(null,NIL,function));
+            envStack.push(function);
             return function.execute(first, second, third, fourth, fifth);
         }
         finally {
@@ -1020,7 +1056,7 @@ public final class LispThread
         stack[stackPtr + 7] = STACK_MARKER_6;
         stackPtr += 6 + STACK_FRAME_EXTRA;
         try {
-            envStack.push(new Environment(null,NIL,function));
+            envStack.push(function);
             return function.execute(first, second, third, fourth, fifth, sixth);
         }
         finally {
@@ -1047,7 +1083,7 @@ public final class LispThread
         stack[stackPtr + 8] = STACK_MARKER_7;
         stackPtr += 7 + STACK_FRAME_EXTRA;
         try {
-            envStack.push(new Environment(null,NIL,function));
+            envStack.push(function);
             return function.execute(first, second, third, fourth, fifth, sixth,
                                     seventh);
         }
@@ -1076,7 +1112,7 @@ public final class LispThread
         stack[stackPtr + 9] = STACK_MARKER_8;
         stackPtr += 8 + STACK_FRAME_EXTRA;
         try {
-            envStack.push(new Environment(null,NIL,function));
+            envStack.push(function);
             return function.execute(first, second, third, fourth, fifth, sixth,
                                     seventh, eighth);
         }
@@ -1094,7 +1130,7 @@ public final class LispThread
         stack[stackPtr + args.length + 1] = new StackMarker(args.length);
         stackPtr += args.length + STACK_FRAME_EXTRA;
         try {
-            envStack.push(new Environment(null,NIL,function));
+            envStack.push(function);
             return function.execute(args);
         }
         finally {
