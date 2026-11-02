@@ -520,11 +520,22 @@
            (class-precedence-list class))
    :key #'car :from-end t))
 
+(defvar *slot-access-epoch* 0
+  "Advanced whenever a class is finalized, or a method is added to or
+removed from one of the slot-access generic functions: whenever
+STANDARD-SLOT-ACCESS-P's answer for some class may change.")
+
+(defvar *slot-access-generic-functions* ()
+  "SLOT-VALUE-USING-CLASS, its SETF, SLOT-BOUNDP-USING-CLASS and
+SLOT-MAKUNBOUND-USING-CLASS, each consed to the position of its CLASS
+parameter.  Initialized near the end of the file.")
+
 (defun std-finalize-inheritance (class)
   ;; In case the class is already finalized, return
   ;; immediately, as per AMOP.
 ; (when (class-finalized-p class)
 ;    (return-from std-finalize-inheritance))
+  (incf *slot-access-epoch*)
   (setf (class-precedence-list class)
         (funcall (if (std-class-p class)
                      #'std-compute-class-precedence-list
@@ -749,12 +760,71 @@
   (let ((layout (std-instance-layout instance)))
     (and layout (layout-slot-location layout slot-name))))
 
+(defvar *system-slot-access-methods* ()
+  "The methods of those generic functions that this file defines.
+Initialized near the end of the file.")
+
+(defvar *standard-slot-access-cache* (make-hash-table :test #'eq)
+  "For each class, (EPOCH METACLASS . P).  See STANDARD-SLOT-ACCESS-P.")
+
+(defun slot-access-method-may-apply-p (method class-position class)
+  "Whether METHOD, of a slot-access generic function whose CLASS
+parameter is at CLASS-POSITION, may apply to a slot access on an
+instance of CLASS.  Errs towards T: an EQL specializer on the instance
+counts as applying, and the new value of a SETF is not considered."
+  (let ((specializers (nthcdr class-position (method-specializers method)))
+        (slots (class-slots class)))
+    (flet ((class-or-eql-p (specializer class-test eql-test)
+             (if (typep specializer 'eql-specializer)
+                 (funcall eql-test (eql-specializer-object specializer))
+                 (funcall class-test specializer))))
+      (and (class-or-eql-p (first specializers)
+                           (lambda (s) (subtypep (class-of class) s))
+                           (lambda (object) (eq object class)))
+           (class-or-eql-p (second specializers)
+                           (lambda (s) (subtypep class s))
+                           (constantly t))
+           (class-or-eql-p (third specializers)
+                           (lambda (s) (some (lambda (slot) (typep slot s)) slots))
+                           (lambda (object) (memq object slots)))))))
+
+(defun standard-slot-access-p (class)
+  "True when SLOT-VALUE and the rest may skip the *-USING-CLASS generic
+functions for an instance of CLASS, as they do for a STANDARD-CLASS:
+CLASS's metaclass is a subclass of STANDARD-CLASS or
+FUNCALLABLE-STANDARD-CLASS, and no method of those generic functions
+but the ones this file defines may apply to its instances, so that
+they would come down to STD-SLOT-VALUE and its siblings anyway.  Cached
+per class until *SLOT-ACCESS-EPOCH* moves or the class changes
+metaclass."
+  (let ((epoch *slot-access-epoch*)
+        (metaclass (class-of class))
+        (entry (gethash class *standard-slot-access-cache*)))
+    (if (and entry (eql (car entry) epoch) (eq (cadr entry) metaclass))
+        (cddr entry)
+        (let ((p (and *system-slot-access-methods*
+                      (class-finalized-p class)
+                      (or (subtypep metaclass +the-standard-class+)
+                          (subtypep metaclass +the-funcallable-standard-class+))
+                      (notany
+                       (lambda (gf-and-position)
+                         (some (lambda (method)
+                                 (and (not (memq method *system-slot-access-methods*))
+                                      (slot-access-method-may-apply-p
+                                       method (cdr gf-and-position) class)))
+                               (generic-function-methods (car gf-and-position))))
+                       *slot-access-generic-functions*))))
+          (setf (gethash class *standard-slot-access-cache*)
+                (list* epoch metaclass p))
+          p))))
+
 (defun slot-value (object slot-name)
   (let* ((class (class-of object))
          (metaclass (class-of class)))
     (if (or (eq metaclass +the-standard-class+)
             (eq metaclass +the-structure-class+)
-            (eq metaclass +the-funcallable-standard-class+))
+            (eq metaclass +the-funcallable-standard-class+)
+            (standard-slot-access-p class))
         (std-slot-value object slot-name)
         (slot-value-using-class class object
                                 (find-slot-definition class slot-name)))))
@@ -764,7 +834,8 @@
          (metaclass (class-of class)))
     (if (or (eq metaclass +the-standard-class+)
             (eq metaclass +the-structure-class+)
-            (eq metaclass +the-funcallable-standard-class+))
+            (eq metaclass +the-funcallable-standard-class+)
+            (standard-slot-access-p class))
         (setf (std-slot-value object slot-name) new-value)
         (setf (slot-value-using-class class object
                                       (find-slot-definition class slot-name))
@@ -774,7 +845,7 @@
 
 (defun slot-boundp (object slot-name)
   (let ((class (class-of object)))
-    (if (std-class-p class)
+    (if (or (std-class-p class) (standard-slot-access-p class))
         (std-slot-boundp object slot-name)
         (slot-boundp-using-class class object
                                  (find-slot-definition class slot-name)))))
@@ -791,7 +862,7 @@
 
 (defun slot-makunbound (object slot-name)
   (let ((class (class-of object)))
-    (if (std-class-p class)
+    (if (or (std-class-p class) (standard-slot-access-p class))
         (std-slot-makunbound object slot-name)
         (slot-makunbound-using-class class object
                                      (find-slot-definition class slot-name)))))
@@ -2274,6 +2345,8 @@ Initialized with the true value near the end of the file.")
                (eq (class-of old-method) +the-standard-method-class+))
           (std-remove-method gf old-method)
           (remove-method gf old-method))))
+  (when (assoc gf *slot-access-generic-functions*)
+    (incf *slot-access-epoch*))
   (setf (std-slot-value method 'sys::%generic-function) gf)
   (push method (std-slot-value gf 'sys::methods))
   (dolist (specializer (method-specializers method))
@@ -2282,6 +2355,8 @@ Initialized with the true value near the end of the file.")
   gf)
 
 (defun std-remove-method (gf method)
+  (when (assoc gf *slot-access-generic-functions*)
+    (incf *slot-access-epoch*))
   (setf (std-slot-value gf 'sys::methods)
         (remove method (generic-function-methods gf)))
   (setf (std-slot-value method 'sys::%generic-function) nil)
@@ -4335,6 +4410,14 @@ or T when any keyword is acceptable due to presence of
 (setf *gf-allocate-instance* (symbol-function 'allocate-instance))
 (setf *gf-shared-initialize* (symbol-function 'shared-initialize))
 (setf *gf-reinitialize-instance* (symbol-function 'reinitialize-instance))
+(setf *slot-access-generic-functions*
+      (list (cons #'slot-value-using-class 0)
+            (cons #'(setf slot-value-using-class) 1)
+            (cons #'slot-boundp-using-class 0)
+            (cons #'slot-makunbound-using-class 0)))
+(setf *system-slot-access-methods*
+      (loop for (gf) in *slot-access-generic-functions*
+            append (copy-list (generic-function-methods gf))))
 (setf *clos-booting* nil)
 
 (atomic-defgeneric class-prototype (class)
