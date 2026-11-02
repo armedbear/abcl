@@ -224,15 +224,21 @@ public final class FloatFunctions
         public LispObject execute(LispObject first, LispObject second)
 
         {
+            // Math.scalb scales by 2^n in one correctly rounded step.
+            // Multiplying by Math.pow(2, n) overflowed to infinity, or
+            // underflowed to zero, whenever n alone lay outside the
+            // format's exponent range, although the product was
+            // representable: (scale-float least-positive-double-float 1074)
+            // was infinity instead of 1d0.
             if (first instanceof SingleFloat) {
                 float f = ((SingleFloat)first).value;
                 int n = Fixnum.getValue(second);
-                return new SingleFloat(f * (float) Math.pow(2, n));
+                return new SingleFloat(Math.scalb(f, n));
             }
             if (first instanceof DoubleFloat) {
                 double d = ((DoubleFloat)first).value;
                 int n = Fixnum.getValue(second);
-                return new DoubleFloat(d * Math.pow(2, n));
+                return new DoubleFloat(Math.scalb(d, n));
             }
             return type_error(first, Symbol.FLOAT);
         }
