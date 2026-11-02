@@ -83,7 +83,7 @@
 
 (in-package #:system)
 
-;; Redefined in precompiler.lisp.
+;; Redefined in early-defuns.lisp.
 (defun eval (form)
   (%eval form))
 
@@ -137,7 +137,7 @@
   (sys::%format t "~A~%" condition)
   (ext:quit))
 
-;;Redefined in extensible-sequences.lisp
+;; Redefined in early-defuns.lisp, and again in extensible-sequences.lisp.
 (defun length (sequence)
   (%length sequence))
 
