@@ -36,9 +36,22 @@
            #:start
            #:stop
            #:*stepper-stop-packages*
-           #:*stepper-stop-symbols*))
+           #:*stepper-stop-symbols*
+           #:*stepper-watch-symbols*
+           #:*current-render-client*
+           #:*env*
+           #:send-code
+           #:connect-to-websocket
+           #:clean-connection
+           #:read-user-action
+           #:path
+           #:port
+           #:render-client
+           #:get-watched-bindings))
 
 (in-package #:abcl-stepper)
+
+(defparameter *env* nil)
 
 (defparameter *stepper-stop-packages* nil
   "List of packages in which the stepper will stop in its external symbols")
@@ -54,6 +67,40 @@
 
 (defparameter *step-next-counter* -1
   "Indicates if the feature step-next is active by showing the current step to be completed")
+
+
+(defclass render-client ()
+  ;; Represents an abstract interface on code that will be
+  ;; interacting with a server for visualize the stepping workflow
+  ;; on a separate UI
+  (path  ;; the path on the websocket server
+   port  ;; the port running the websocket server
+   ))
+
+
+;; The following methods must be implemented in subclasses of render-client
+(macrolet ((not-implemented-error () `(error "Not implemented yet, derive this class to make it work")))
+  (defmethod send-code ((client render-client) code)
+    (declare (ignorable client code))
+    (not-implemented-error))
+
+  (defmethod clean-connection ((client render-client))
+    (declare (ignorable client))
+    (not-implemented-error))
+
+  (defmethod connect-to-websocket ((client render-client))
+    (declare (ignorable client))
+    (not-implemented-error))
+
+  (defmethod read-user-action ((client render-client))
+    (declare (ignorable client))
+    (not-implemented-error)))
+
+(defparameter *current-render-client* nil)
+
+(defmacro with-defined-render-client (&body body)
+  `(when *current-render-client*
+     ,@body))
 
 (defun clear-step-next ()
   (setf *step-next-counter* -1)
@@ -71,6 +118,13 @@
 
 (defun print-stepper-str (string newline)
   "Prints a line using the java method 'System.out.println'"
+  (with-defined-render-client
+    (without-active-stepping
+      (when (search "==> value:" string)
+        (let ((*print-case* :downcase))
+          (send-code
+           *current-render-client*
+           (list (list :step-value string)))))))
   (without-active-stepping
     (princ string)
     (if newline (terpri))
@@ -90,7 +144,20 @@
   (print-stepper-str
    (with-output-to-string (s)
      (pprint `(,symbol ,@args) s))
-   t))
+   t)
+  (with-defined-render-client
+    (without-active-stepping
+      (let ((*print-case* :downcase))
+        (send-code
+         *current-render-client*
+         (list
+          (list
+           :step-count
+           step-count)
+          (list
+           :code
+           (with-output-to-string (s)
+             (pprint `(,symbol ,@args) s)))))))))
 
 (defun add-breakpoint ()
   (print-stepper-str "Type the name of the symbol to use as a breakpoint with next (n): " nil)
@@ -196,6 +263,13 @@ states of the stepper"
       (and (consp object)
            (eq (car object)
                'CL:MULTIPLE-VALUE-PROG1)
+           (equal (car (last (butlast object)))
+                  '(system:%set-delimited-stepping-off))
+           (equal (car (last object))
+                  '(with-defined-render-client (clean-connection *current-render-client*))))
+      (and (consp object)
+           (eq (car object)
+               'CL:MULTIPLE-VALUE-PROG1)
            (equal (car (last object))
                   '(system:%set-delimited-stepping-off)))
       (equal fun #'sys:%set-stepper-off))
@@ -232,29 +306,67 @@ states of the stepper"
             *stepper-stop-packages*)))
 
 (defun list-locals (env)
-  (print-stepper-str "Showing the values of variable bindings." t)
-  (print-stepper-str "From inner to outer scopes:" t)
-  (pprint-list-locals (sys:environment-all-variables env))
-  (print-stepper-str "Showing the values of function bindings." t)
-  (print-stepper-str "From inner to outer scopes:" t)
-  (pprint-list-locals (sys:environment-all-functions env)))
+  (if *current-render-client*
+      (let ((*print-case* :downcase))
+        (send-code *current-render-client*
+                   (list
+                    (list :locals
+                          (list (sys:environment-all-variables env)
+                                (sys:environment-all-functions env))))))
+      (progn
+        (print-stepper-str "Showing the values of variable bindings." t)
+        (print-stepper-str "From inner to outer scopes:" t)
+        (pprint-list-locals (sys:environment-all-variables env))
+        (print-stepper-str "Showing the values of function bindings." t)
+        (print-stepper-str "From inner to outer scopes:" t)
+        (pprint-list-locals (sys:environment-all-functions env)))))
+
 
 (defun print-watched-symbols (env)
   (when *stepper-watch-symbols*
     (print-stepper-str "Watched bindings:" t)
     (loop :for watch-symbol :in *stepper-watch-symbols*
-           :do (lookup-symbol watch-symbol env t))))
+          :do (lookup-symbol watch-symbol env t))))
+
+
+(defun get-watched-bindings (env)
+  (when *stepper-watch-symbols*
+    (let* ((lookup-method (java:jmethod "org.armedbear.lisp.Environment"
+                                        "lookup" "org.armedbear.lisp.LispObject")))
+      (loop :for symbol :in *stepper-watch-symbols*
+            :collect
+            (let ((symbol-lookup (java:jcall-raw lookup-method env symbol))
+                  (symbol-str (format nil "~a::~a"
+                                      (package-name (symbol-package symbol))
+                                      (symbol-name symbol))))
+              (cond ((or (not (java:java-object-p symbol-lookup))
+                         (not (java:jnull-ref-p symbol-lookup)))
+                     (list :var symbol :var-str symbol-str :value symbol-lookup))
+                    ((boundp symbol)
+                     (list :var symbol :var-str symbol-str :value (symbol-value symbol)))
+                    (t
+                     (list :var symbol :var-str symbol-str :value (format nil "Couldn't find a value for symbol ~a" symbol-str) t))))))))
 
 (defun handle-user-interaction (env)
+  (setf *env* env)
   (let ((leave-prompt nil)
         (unexpected-input-user nil)
         (char-input-user nil))
     (loop :until leave-prompt
           :do (unless unexpected-input-user
                 (print-stepper-str "Type ':?' for a list of options" t)
-                (without-active-stepping (print-watched-symbols env)))
+                (without-active-stepping
+                  (if *current-render-client*
+                      (let ((*print-case* :downcase))
+                        (send-code *current-render-client*
+                                   (list (list :watched-bindings
+                                               (get-watched-bindings env)))))
+                      (print-watched-symbols env))))
               (without-active-stepping
-                (setf char-input-user (read))
+                (setf char-input-user
+                      (if *current-render-client*
+                          (read-user-action *current-render-client*)
+                          (read)))
                 (clear-input))
               (case char-input-user
                 ((:? :help)
@@ -274,9 +386,11 @@ states of the stepper"
                 ((:q :quit)
                  (sys:%set-stepper-off)
                  (sys:%set-delimited-stepping-off)
+                 (with-defined-render-client
+                   (clean-connection *current-render-client*))
                  (sys:%return-from-stepper))
                 ((:i :inspect)
-                  (without-active-stepping (inspect-variable env)))
+                 (without-active-stepping (inspect-variable env)))
                 ((:b :br+ :add-breakpoint)
                  (without-active-stepping (add-breakpoint)))
                 ((:r :br- :remove-breakpoint)
@@ -292,7 +406,11 @@ states of the stepper"
                    ;; we avoid the first 2 entries of the backtrace
                    ;; because they are constant and unrelated to the code
                    ;; being stepped
-                   (pprint-stepper-str (subseq (sys:backtrace) 2))))
+                   (if *current-render-client*
+                       (let ((*print-case* :downcase))
+                         (send-code *current-render-client*
+                                    (list (list :backtrace (sys:backtrace)))))
+                       (pprint-stepper-str (subseq (sys:backtrace) 2)))))
                 (otherwise (setf unexpected-input-user t))))))
 
 (defun in-slime-repl-p ()
@@ -306,6 +424,9 @@ states of the stepper"
   (print-stepper-str "This function activates the stepper." t)
   (print-stepper-str "Remember to deactivate it after the end of the execution using (stepper:stop)." t)
   (print-stepper-str "To clean its internal flags" t)
+  (with-defined-render-client
+    (connect-to-websocket
+     *current-render-client*))
   (sys:%initialize-step-counter)
   (sys:%initialize-step-block)
   (sys:%set-stepper-on))
@@ -315,18 +436,26 @@ states of the stepper"
   (sys:%set-stepper-off)
   (clear-step-next)
   (sys:%set-delimited-stepping-off)
-  (sys:%set-stepping-task-off))
+  (sys:%set-stepping-task-off)
+  (setf *env* nil)
+  (with-defined-render-client
+    (clean-connection *current-render-client*)))
 
 (defmacro step (form)
   (let ((stepper-block (gensym)))
     `(let ()
        (block ,stepper-block
+         (with-defined-render-client
+           (connect-to-websocket
+            *current-render-client*))
          (sys:%initialize-step-counter)
          (sys:%initialize-step-block)
          (sys:%set-stepper-on)
          (multiple-value-prog1 ,form
            (sys:%set-stepper-off)
            (clear-step-next)
-           (sys:%set-delimited-stepping-off))))))
+           (sys:%set-delimited-stepping-off)
+           (with-defined-render-client
+             (clean-connection *current-render-client*)))))))
 
 (provide :abcl-stepper)
