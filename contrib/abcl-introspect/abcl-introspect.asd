@@ -2,7 +2,7 @@
 (defsystem abcl-introspect
   :author ("Alan Ruttenberg" "Mark Evenson")
   :description "Introspection on compiled function to aid source location and other debugging functions."
-  :long-description "<urn:abcl.org/release/1.9.2/contrib/abcl-introspect#>"
+  :long-description "<urn:abcl.org/release/1.10.0/contrib/abcl-introspect#>"
   :version "2.1.0"
   :depends-on (jss)
   :components ((:module package

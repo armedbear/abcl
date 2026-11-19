@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP -*-
 (defsystem jss
   :author "Alan Ruttenberg, Mark Evenson"
-  :long-description "<urn:abcl.org/release/1.9.2/contrib/jss#>"
+  :long-description "<urn:abcl.org/release/1.10.0/contrib/jss#>"
   :version "3.7.0" 
   :components ((:module base 
                         :pathname "" :serial t 

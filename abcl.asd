@@ -1,10 +1,10 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP -*-
 (defsystem abcl
-  :version "1.9.2"
+  :version "1.10.0"
   :in-order-to ((test-op (test-op "abcl/test/lisp"))))
 
 (defsystem abcl/test/lisp
-  :version "1.9.2"
+  :version "1.10.0"
   :description "Test ABCL with the its own collection of unit tests."
   :perform  (test-op (o s)
                      (uiop:symbol-call :abcl.test.lisp '#:run))
@@ -80,8 +80,8 @@
 the ANSI test suite, so that we may build on its 'API'.
 
 Requires that the contents of <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git> ~
-be in a directory named '../ansi-test/'."
-  :pathname "../ansi-test/" ;;; NB works when loaded from ASDF but not with a naked EVAL
+be in a sibling directory readable as './../ansi-test/'."
+  :pathname "./../ansi-test/" ;;; NB works when loaded from ASDF but not with a naked EVAL
   :default-component-class cl-source-file.lsp
   :components ((:file "rt-package")
                (:file "rt" :depends-on (rt-package))))
