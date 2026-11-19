@@ -33,12 +33,17 @@
 
 package org.armedbear.lisp;
 
-/** This class merely serves as the super class for
- * Fixnum and Bignum
- */
-public class LispInteger extends LispObject implements java.io.Serializable
-{
+import static org.armedbear.lisp.Lisp.*;
 
+/** 
+ * An INTEGER is either a FIXNUM or a BIGNUM
+ *
+ * See the Fixnum and Bignum classes for the Java implementations.
+ */
+public class LispInteger
+  extends LispObject
+  implements java.io.Serializable
+{
   public static LispInteger getInstance(long l) {
       if (Integer.MIN_VALUE <= l && l <= Integer.MAX_VALUE)
           return Fixnum.getInstance((int)l);
@@ -50,5 +55,45 @@ public class LispInteger extends LispObject implements java.io.Serializable
       return Fixnum.getInstance(i);
   }
 
+  public static LispInteger getUnsignedInstance(long l) {
+    if (Long.signum(l) == -1) {
+      return Bignum.getInstance(Long.toUnsignedString(l), 10); // TOOD faster with bytes arithimetic
+    }
+    return getInstance(l);
+  }
 
+  // TODO ??? consider asUnsignedLong should be an instance method
+  public static long asUnsignedLong(LispInteger i) {
+    if (i instanceof Bignum) {
+      return ((Bignum)i).value.longValue();
+    }
+    return i.longValue();
+  }
+
+  public static LispInteger coerceAsUnsigned(LispObject o) {
+    // TODO what should we return if we are already a negative
+    // LispInteger?  currently only used in coercing unsigned byte
+    // types, for which we should maybe use the expected size to
+    // interpret negative values?  This would help when dealing with
+    // converting signed Java byte/short/int/long but wouldn't be
+    // conforming ANSI behavior.
+    if (o instanceof LispInteger) {
+      return (LispInteger)o;
+    }
+    if (o instanceof JavaObject) {
+      Object obj = o.javaInstance();
+      if (obj instanceof Byte) {
+        return getInstance(Byte.toUnsignedInt(((Byte)obj).byteValue()));
+      } else if (obj instanceof Short) {
+        return getInstance(Short.toUnsignedInt(((Short)obj).shortValue()));
+      } else if (obj instanceof Integer) {
+        return getUnsignedInstance(Integer.toUnsignedLong(((Integer)obj).intValue()));
+      } else if (obj instanceof Long) {
+        return getUnsignedInstance(((Long)obj).longValue());
+      }
+    }
+
+    return (LispInteger) type_error("Failed to coerce to unsigned integer",
+                                    o, (LispObject)new JavaObject(LispInteger.class)); 
+  }
 }

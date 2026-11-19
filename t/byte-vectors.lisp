@@ -112,7 +112,7 @@
                         :nio-buffer nio-buffer)))
     (prove:ok
      (equalp original result)
-     (format nil "Creating an (unsigned-byte 8) array from nio-buffer where~%~2t~a EQUALP ~a" result result))))
+     (format nil "Creating an (unsigned-byte 32) array from nio-buffer where~%~2t~a EQUALP ~a" result result))))
 
 (prove:finalize)
 
