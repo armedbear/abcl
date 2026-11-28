@@ -44,21 +44,18 @@ public final class Cons extends LispObject implements java.io.Serializable
   {
     this.car = car;
     this.cdr = cdr;
-    ++count;
   }
 
   public Cons(LispObject car)
   {
     this.car = car;
     this.cdr = NIL;
-    ++count;
   }
 
   public Cons(String name, LispObject value)
   {
     this.car = new SimpleString(name);
     this.cdr = value != null ? value : NULL_VALUE;
-    ++count;
   }
 
   public Cons(Cons original) 
@@ -75,7 +72,6 @@ public final class Cons extends LispObject implements java.io.Serializable
     result = result.nreverse();
     this.car = result.car();
     this.cdr = result.cdr();
-    ++count;
   }
 
   @Override
@@ -596,18 +592,5 @@ public final class Cons extends LispObject implements java.io.Serializable
     else
       sb.append('#');
     return sb.toString();
-  }
-
-  // Statistics for TIME.
-  private static long count;
-
-  /*package*/ static long getCount()
-  {
-    return count;
-  }
-
-  /*package*/ static void setCount(long n)
-  {
-    count = n;
   }
 }

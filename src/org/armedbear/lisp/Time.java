@@ -49,13 +49,13 @@ public final class Time
     }
     @Override
     public LispObject execute(LispObject arg) {
-      Cons.setCount(0);
+      long bytesStart = threadAllocatedBytes();
       long realStart = System.currentTimeMillis();
       try {
         return arg.execute();
       } finally {
         long realElapsed = System.currentTimeMillis() - realStart;
-        long count = Cons.getCount();
+        long bytesEnd = threadAllocatedBytes();
         Stream out 
           = checkCharacterOutputStream(Symbol.TRACE_OUTPUT.symbolValue());
             out.freshLine();
@@ -63,16 +63,41 @@ public final class Time
             sb.append(String.valueOf((float)realElapsed / 1000));
             sb.append(" seconds real time");
             sb.append(System.getProperty("line.separator"));
-            sb.append(count);
-            sb.append(" cons cell");
-            if (count != 1)
-              sb.append('s');
-            sb.append(System.getProperty("line.separator"));
+            if (bytesStart >= 0 && bytesEnd >= 0) {
+              sb.append(bytesEnd - bytesStart);
+              sb.append(" bytes consed");
+              sb.append(System.getProperty("line.separator"));
+            }
             out._writeString(sb.toString());
             out._finishOutput();
       }
     }
   };
+
+  /** The bytes the current thread has allocated so far, or -1 where
+   * the JVM does not count them.  TIME used to count cons cells in a
+   * static field incremented by every Cons constructor, which every
+   * consing thread then wrote to.
+   */
+  static long threadAllocatedBytes() {
+    try {
+      return AllocationCounter.bytes();
+    } catch (Throwable t) { // no com.sun.management in this JVM
+      return -1;
+    }
+  }
+
+  private static final class AllocationCounter {
+    static final com.sun.management.ThreadMXBean bean
+      = (com.sun.management.ThreadMXBean)
+        java.lang.management.ManagementFactory.getThreadMXBean();
+
+    static long bytes() {
+      if (!bean.isThreadAllocatedMemoryEnabled())
+        return -1;
+      return bean.getThreadAllocatedBytes(Thread.currentThread().getId());
+    }
+  }
 
   // ### get-internal-real-time
   private static final Primitive GET_INTERNAL_REAL_TIME = new pf_get_internal_real_time();
