@@ -40,6 +40,7 @@
                          (:file "math-tests"
                                 :depends-on ("compiler-tests"))
                          (:file "misc-tests")
+                         (:file "fixnum-truncate-overflow-tests")
                          (:file "latin1-tests")
                          (:file "bugs" :depends-on 
                                 ("file-system-tests"))
