@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="antlib:org.apache.tools.ant"
+         xmlns:if="ant:if"
+         xmlns:unless="ant:unless"
          name="abcl-master" default="abcl.wrapper" basedir=".">
     <description>Compiling, testing, and packaging Armed Bear Common Lisp</description>
 
@@ -51,10 +53,10 @@ For help on the automatic tests available, use the Ant target 'help.test'.
               value="${abcl.jar.path}"/>
 
     <!-- TODO verify me -->
-    <fail message="Please build using Ant 1.7.1 or higher.">
+    <fail message="Please build using Ant 1.9.1 or later.">
         <condition>
             <not>
-                <antversion atleast="1.7.1"/>
+                <antversion atleast="1.9.1"/>
             </not>
         </condition>
     </fail>
@@ -91,7 +93,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
     </patternset>
 
     <patternset id="abcl.objects">
-      <!-- "system.lisp" is dynamically created by COMPILE-fSYSTEM -->
+      <!-- "system.lisp" is dynamically created by COMPILE-SYSTEM -->
       <include name="org/armedbear/lisp/system.lisp"/> 
       <include name="org/armedbear/lisp/**/*.class"/>
       <include name="org/armedbear/lisp/**/*.cls"/> 
@@ -360,7 +362,7 @@ from ${abcl.home.dir}
         <or>
             <available
                 file="svnversion.exe"
-                filepath="${env.Path}"/>
+                filepath="${env.PATH}"/>
             <available
                 file="svnversion.exe"
                 filepath="${env.PATH}"/>
@@ -374,7 +376,24 @@ from ${abcl.home.dir}
       </and>
     </condition>
 
-    <target name="abcl.version.src" depends="abcl.version.src.3"/>
+    <condition property="abcl.version.git.p">
+      <and>
+        <available
+            file="${basedir}/.git"
+            type="dir"/>
+        <or>
+            <available
+                file="git"
+                filepath="${env.PATH}"/>
+            <available
+                file="git.exe"
+                filepath="${env.PATH}"/>
+        </or>
+      </and>
+    </condition>
+
+    <target name="abcl.version.src"
+            depends="abcl.version.src.3"/>
 
     <target name="abcl.version.src.0" if="windows">
       <exec
@@ -385,14 +404,23 @@ from ${abcl.home.dir}
     </target>
 
     <target name="abcl.version.src.1" depends="abcl.version.src.0">
-      <exec 
+      <exec
+          if:set="abcl.version.svn.p"
           executable="svnversion"
           outputproperty="abcl.version.svn.raw"
           failifexecutionfails="false"
           searchpath="true" />
+      <exec
+          if:set="abcl.version.git.p"
+          executable="git"
+          outputproperty="abcl.version.git.raw"
+          failifexecutionfails="false"
+          searchpath="true">
+        <arg line="rev-parse --short HEAD"/>
+      </exec>
     </target>
 
-    <target name="abcl.version.src.2" 
+    <target name="abcl.version.src.svn" 
             depends="abcl.version.src.1"
             if="abcl.version.svn.p">
 
@@ -410,12 +438,47 @@ from ${abcl.home.dir}
                 value="svn-${abcl.version.svn}"/>
     </target>
 
+    <target name="abcl.version.src.git"
+            depends="abcl.version.src.1"
+            if="abcl.version.git.p">
+
+      <!-- Transform all occurances of ":" ==> "-" in the version string -->
+      <tempfile property="version-tmp.path"/>
+      <echo message="${abcl.version.git.raw}"
+            file="${version-tmp.path}"/>
+      <replace file="${version-tmp.path}"
+               token=":" value="-"/>
+      <loadfile property="abcl.version.git" srcFile="${version-tmp.path}"/>
+      <delete file="${version-tmp.path}"/>
+
+      <echo>abcl.version.git: ${abcl.version.git}</echo>
+      <property name="abcl.version.src"
+                value="git-${abcl.version.git}"/>
+    </target>
+
+
+    <target name="abcl.src.not-under-version-control">
+      <condition property="abcl.src.not-under-version-control.p">
+        <and>
+          <not>
+            <isset property="abcl.version.svn.p"/>
+          </not>
+          <not>
+            <isset property="abcl.version.git.p"/>
+          </not>
+        </and>
+      </condition>
+    </target>
+      
+    
     <target name="abcl.version.src.3"
-            depends="abcl.version.src.2"
-            unless="abcl.version.svn.p">
+            depends="abcl.version.src.svn,abcl.version.src.git"
+            if="abcl.src.not-under-version-control.p">
       <property name="abcl.version.src"
                 value=""/>
     </target>
+
+    
 
     <property name="abcl.home.dir"
               value="${src.dir}/org/armedbear/lisp/"/>
@@ -433,12 +496,6 @@ from ${abcl.home.dir}
     </target>
 
     <!-- 
-The usage of abcl.implementation.version is deprecated as not working.
-The intention of this value was that if a given source tree could be
-unidentified as being under source control by the presence of given
-revision control system artifacts, the abcl.implementation.version
-would contain a version derived from the revision control system.
-
 To hack around the non-prescriptive nature of Ant, chains of
 conditional targets had to be created that while might have once
 worked for Subversion, were going to get increasingly hairy for
@@ -446,7 +503,7 @@ Mercurial and Git.
     -->
 
     <target name="abcl.stamp.version" 
-            depends="abcl.version.src,abcl.stamp.version.1,abcl.stamp.version.2"
+            depends="abcl.version.src,abcl.stamp.version.1,abcl.stamp.version.2,abcl.stamp.version.uptodate"
             unless="abcl.stamp.version.uptodate.p">
       <mkdir dir="${abcl.version.path}/.."/>
       <echo>ABCL implementation version: ${abcl.implementation.version}</echo>
@@ -468,15 +525,15 @@ Mercurial and Git.
     </target>
 
     <target name="abcl.stamp.version.1"
-            depends="abcl.stamp.version.0"
-            unless="abcl.version.svn.p">
+            depends="abcl.stamp.version.0,abcl.src.not-under-version-control"
+            if="abcl.src.not-under-version-control.p">
       <property name="abcl.implementation.version"
                 value="${abcl.version}"/>
     </target>
 
     <target name="abcl.stamp.version.2" 
             depends="abcl.stamp.version.0"
-            if="abcl.version.svn.p">
+            unless="abcl.src.not-under-version-control.p">
       <property name="abcl.implementation.version"
                 value="${abcl.version}-${abcl.version.src}"/>
     </target>
@@ -728,7 +785,8 @@ will compile (if necessary) and load JSS.
       </java>
     </target>
 
-    <target name="abcl.clean">
+    <target name="abcl.clean"
+            depends="abcl.clean.version">
       <delete dir="${build.dir}"/>
       <delete file="${abcl.jar.path}"/>
       <delete file="abcl"/>
